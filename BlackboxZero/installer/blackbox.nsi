@@ -114,23 +114,38 @@ Function windetection
   nsDialogs::Show
 FunctionEnd
  
+Var usr_win
+Var usr_bits
+Var builddir
+
 Function RadioClick
   Pop $hwnd
   ${If} $hwnd == $Group1RadioXP
       StrCpy $usr_win_xp 1
+      StrCpy $usr_win "xp"
   ${ElseIf} $hwnd == $Group1RadioVista
       StrCpy $usr_win_xp 0
+      StrCpy $usr_win "vista"
   ${ElseIf} $hwnd == $Group2Radio32
       StrCpy $usr_64_bits 0
+      StrCpy $usr_bits "32"
   ${ElseIf} $hwnd == $Group2Radio64
       StrCpy $usr_64_bits 1
+      StrCpy $usr_bits "64"
   ${EndIf}
+
+  StrCpy $1 $usr_win
+  StrCpy $2 $usr_bits
+
+  StrCpy $builddir "vs_$1_$2"
+  #MessageBox MB_OK|MB_ICONINFORMATION "build $builddir"
 FunctionEnd
+
 
 Section "BlackBox"
   SetOutPath $INSTDIR
   CreateDirectory $INSTDIR
-	File "bbnote.exe"
+	File $builddir\"bbnote.exe"
 	File "bbnote-proxy.dll"
 	File "bbstylemaker.exe"
 	File "blackbox.exe"
@@ -142,84 +157,84 @@ Section "BlackBox"
   #createShortCut "$SMPROGRAMS\BlackBox.lnk" ""
 SectionEnd
 
-Section /o "BlackBox Styles"
-  SetOutPath $INSTDIR\backgrounds
-  File /r "backgrounds\"
-  SetOutPath $INSTDIR\styles
-  File /r "styles\"
-SectionEnd
-
-Section "BlackBox Configs"
-  SetOutPath $INSTDIR
-  CreateDirectory $INSTDIR
-	File "blackbox.rc"
-	File "bsetroot.rc"
-	File "extensions.rc"
-	File "menu.rc"
-	File "plugins.rc"
-	File "shellfolders.rc"
-	File "stickywindows.ini"
-SectionEnd
-
-Section "BlackBox Essential Plugins"
-  SetOutPath $INSTDIR\plugins\bbAnalog
-	File /r "plugins\bbAnalog\"
-  SetOutPath $INSTDIR\plugins\bbColor3dc
-	File /r "plugins\bbColor3dc\"
-  SetOutPath $INSTDIR\plugins\bbIconBox
-	File /r "plugins\bbIconBox\"
-  SetOutPath $INSTDIR\plugins\bbInterface
-	File /r "plugins\bbInterface\"
-  SetOutPath $INSTDIR\plugins\bbKeys
-	File /r "plugins\bbKeys\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar
-	File /r "plugins\bbLeanBar\"
-  SetOutPath $INSTDIR\plugins\bbLeanSkin
-	File /r "plugins\bbLeanSkin\"
-  SetOutPath $INSTDIR\plugins\bbSlit
-	File /r "plugins\bbSlit\"
-SectionEnd
-
-Section /o "BlackBox Extended Plugin Set I."
-  SetOutPath $INSTDIR\plugins\BBAnalogEx
-	File /r "plugins\BBAnalogEx\"
-  SetOutPath $INSTDIR\plugins\bbCalendar
-	File /r "plugins\bbCalendar\"
-  SetOutPath $INSTDIR\plugins\BBDigitalEx
-	File /r "plugins\BBDigitalEx\"
-  SetOutPath $INSTDIR\plugins\bbFoomp
-	File /r "plugins\bbFoomp\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar+
-	File /r "plugins\bbLeanBar+\"
-  SetOutPath $INSTDIR\plugins\BBMagnify
-	File /r "plugins\BBMagnify\"
-  SetOutPath $INSTDIR\plugins\BBPager
-	File /r "plugins\BBPager\"
-  SetOutPath $INSTDIR\plugins\bbRecycleBin
-	File /r "plugins\bbRecycleBin\"
-  SetOutPath $INSTDIR\plugins\BBRSS
-	File /r "plugins\BBRSS\"
-  SetOutPath $INSTDIR\plugins\BBStyle
-	File /r "plugins\BBStyle\"
-  SetOutPath $INSTDIR\plugins\BBSysMeter
-	File /r "plugins\BBSysMeter\"
-  SetOutPath $INSTDIR\plugins\bbWorkspaceWheel
-	File /r "plugins\bbWorkspaceWheel\"
-  SetOutPath $INSTDIR\plugins\SystemBarEx
-	File /r "plugins\SystemBarEx\"
-SectionEnd
-
-Section /o "BlackBox Extended Plugin Set II."
-  SetOutPath $INSTDIR\plugins\BB8Ball
-	File /r "plugins\BB8Ball\"
-  SetOutPath $INSTDIR\plugins\bbInterface_iTunes
-	File /r "plugins\bbInterface_iTunes\"
-  SetOutPath $INSTDIR\plugins\BBMessageBox
-	File /r "plugins\BBMessageBox\"
-  SetOutPath $INSTDIR\plugins\BBXO
-	File /r "plugins\BBXO\"
-SectionEnd
-
-
-
-
+#Section /o "BlackBox Styles"
+#  SetOutPath $INSTDIR\backgrounds
+#  File /r "backgrounds\"
+#  SetOutPath $INSTDIR\styles
+#  File /r "styles\"
+#SectionEnd
+#
+#Section "BlackBox Configs"
+#  SetOutPath $INSTDIR
+#  CreateDirectory $INSTDIR
+#	File "blackbox.rc"
+#	File "bsetroot.rc"
+#	File "extensions.rc"
+#	File "menu.rc"
+#	File "plugins.rc"
+#	File "shellfolders.rc"
+#	File "stickywindows.ini"
+#SectionEnd
+#
+#Section "BlackBox Essential Plugins"
+#  SetOutPath $INSTDIR\plugins\bbAnalog
+#	File /r "plugins\bbAnalog\"
+#  SetOutPath $INSTDIR\plugins\bbColor3dc
+#	File /r "plugins\bbColor3dc\"
+#  SetOutPath $INSTDIR\plugins\bbIconBox
+#	File /r "plugins\bbIconBox\"
+#  SetOutPath $INSTDIR\plugins\bbInterface
+#	File /r "plugins\bbInterface\"
+#  SetOutPath $INSTDIR\plugins\bbKeys
+#	File /r "plugins\bbKeys\"
+#  SetOutPath $INSTDIR\plugins\bbLeanBar
+#	File /r "plugins\bbLeanBar\"
+#  SetOutPath $INSTDIR\plugins\bbLeanSkin
+#	File /r "plugins\bbLeanSkin\"
+#  SetOutPath $INSTDIR\plugins\bbSlit
+#	File /r "plugins\bbSlit\"
+#SectionEnd
+#
+#Section /o "BlackBox Extended Plugin Set I."
+#  SetOutPath $INSTDIR\plugins\BBAnalogEx
+#	File /r "plugins\BBAnalogEx\"
+#  SetOutPath $INSTDIR\plugins\bbCalendar
+#	File /r "plugins\bbCalendar\"
+#  SetOutPath $INSTDIR\plugins\BBDigitalEx
+#	File /r "plugins\BBDigitalEx\"
+#  SetOutPath $INSTDIR\plugins\bbFoomp
+#	File /r "plugins\bbFoomp\"
+#  SetOutPath $INSTDIR\plugins\bbLeanBar+
+#	File /r "plugins\bbLeanBar+\"
+#  SetOutPath $INSTDIR\plugins\BBMagnify
+#	File /r "plugins\BBMagnify\"
+#  SetOutPath $INSTDIR\plugins\BBPager
+#	File /r "plugins\BBPager\"
+#  SetOutPath $INSTDIR\plugins\bbRecycleBin
+#	File /r "plugins\bbRecycleBin\"
+#  SetOutPath $INSTDIR\plugins\BBRSS
+#	File /r "plugins\BBRSS\"
+#  SetOutPath $INSTDIR\plugins\BBStyle
+#	File /r "plugins\BBStyle\"
+#  SetOutPath $INSTDIR\plugins\BBSysMeter
+#	File /r "plugins\BBSysMeter\"
+#  SetOutPath $INSTDIR\plugins\bbWorkspaceWheel
+#	File /r "plugins\bbWorkspaceWheel\"
+#  SetOutPath $INSTDIR\plugins\SystemBarEx
+#	File /r "plugins\SystemBarEx\"
+#SectionEnd
+#
+#Section /o "BlackBox Extended Plugin Set II."
+#  SetOutPath $INSTDIR\plugins\BB8Ball
+#	File /r "plugins\BB8Ball\"
+#  SetOutPath $INSTDIR\plugins\bbInterface_iTunes
+#	File /r "plugins\bbInterface_iTunes\"
+#  SetOutPath $INSTDIR\plugins\BBMessageBox
+#	File /r "plugins\BBMessageBox\"
+#  SetOutPath $INSTDIR\plugins\BBXO
+#	File /r "plugins\BBXO\"
+#SectionEnd
+#
+#
+#
+#
