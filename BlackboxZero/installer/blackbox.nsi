@@ -1,66 +1,131 @@
-# comment
+# This is install script for NSIS installer for BlackBox 4 Windows
+
 # where to create install.exe
 OutFile c:\_install\install.exe
 
+# where to install program
 InstallDir c:\bb_i
 
-; Set the text to prompt user to enter a directory
+!include LogicLib.nsh
+!include WinVer.nsh
+!include nsDialogs.nsh
+!include x64.nsh
+
+Var win_xp
+Var win_64
+
+Function .onInit
+  ${If} ${AtLeastWinVista}
+    ${If} ${RunningX64}
+        StrCpy $win_xp 0
+        StrCpy $win_64 1
+    ${Else}
+        StrCpy $win_xp 0
+        StrCpy $win_64 0
+    ${EndIf}
+  ${Else}
+    ${If} ${RunningX64}
+        StrCpy $win_xp 1
+        StrCpy $win_64 1
+    ${Else}
+        StrCpy $win_xp 1
+        StrCpy $win_64 0
+    ${EndIf}
+  ${EndIf} 
+FunctionEnd
+
+# Set the text to prompt user to enter a directory
 DirText "This will install BlackBox 4 Windows program on your computer. Choose a directory"
 
 Name "BlackBox 4 Windows"
 RequestExecutionLevel admin
-#TargetMinimalOS 5.1    ; target Windows XP or more recent
-
 AddBrandingImage left 256
 
 Page custom brandimage "" ": Brand Image"
+Page custom windetection
 Page license
 Page components
 Page directory
 Page instfiles
-UninstPage uninstConfirm
-UninstPage instfiles
+#UninstPage uninstConfirm
+#UninstPage instfiles
 
-Section "Installer Section"
-SectionEnd
-
-Section "un.Uninstaller Section"
-SectionEnd
+#Section "Installer Section"
+#SectionEnd
+#Section "un.Uninstaller Section"
+#SectionEnd
 
 Function brandimage
   SetOutPath "$TEMP"
-
   SetFileAttributes installer.bmp temporary
   File installer.bmp
   SetBrandingImage "$TEMP\installer.bmp" /resizetofit
 FunctionEnd
 
-/*
-docs\
-lib\
+var dialog
+var hwnd
+var Group1RadioXP
+var Group1RadioVista
+var Group2Radio32
+var Group2Radio64
+var usr_win_xp
+var usr_64_bits
+Var grp1
+Var grp2
+ 
+Function windetection
+  nsDialogs::Create 1018
+    Pop $dialog
 
-backgrounds\
-styles\
+  ${NSD_CreateGroupBox} 2% 2% 48% 98% "Windows"
+  Pop $grp1
 
-blackbox.rc
-bsetroot.rc
-extensions.rc
-menu.rc
-plugins.rc
-shellfolders.rc
-stickywindows.ini
+  ${NSD_CreateRadioButton} 5% 33% 40% 6% "XP"
+    Pop $Group1RadioXP
+    ${NSD_AddStyle} $Group1RadioXP ${WS_GROUP}
+    ${NSD_OnClick} $Group1RadioXP RadioClick
+  ${NSD_CreateRadioButton} 5% 66% 40% 6% "Vista, Win7 or Win8"
+    Pop $Group1RadioVista
+    ${NSD_OnClick} $Group1RadioVista RadioClick
 
-bbnote.exe
-bbnote-proxy.dll
-bbstylemaker.exe
-blackbox.exe
-bsetbg.exe
-bsetroot.exe
-bsetshell.exe
-deskhook.dll
-readme.txt
-*/
+  ${NSD_CreateGroupBox} 52% 2% 46% 98% "bits"
+  Pop $grp2
+ 
+  ${NSD_CreateRadioButton} 55% 33% 40% 6% "32"
+    Pop $Group2Radio32
+    ${NSD_AddStyle} $Group2Radio32 ${WS_GROUP}
+    ${NSD_OnClick} $Group2Radio32 RadioClick
+  ${NSD_CreateRadioButton} 55% 66% 40% 6% "64"
+    Pop $Group2Radio64
+    ${NSD_OnClick} $Group2Radio64 RadioClick
 
+  ${If} $win_xp == 1
+    ${NSD_SetState} $Group1RadioXP ${BST_CHECKED}
+  ${Else}
+    ${NSD_SetState} $Group1RadioVista ${BST_CHECKED}
+  ${EndIf}
+
+  ${If} $win_64 == 1
+    ${NSD_SetState} $Group2Radio64 ${BST_CHECKED}
+  ${Else}
+    ${NSD_SetState} $Group2Radio32 ${BST_CHECKED}
+  ${EndIf}
+
+  nsDialogs::Show
+FunctionEnd
+ 
+Function RadioClick
+  Pop $hwnd
+  ${If} $hwnd == $Group1RadioXP
+      StrCpy $usr_win_xp 1
+  ${ElseIf} $hwnd == $Group1RadioVista
+      StrCpy $usr_win_xp 0
+  ${ElseIf} $hwnd == $Group2Radio32
+      StrCpy $usr_64_bits 0
+  ${ElseIf} $hwnd == $Group2Radio64
+      StrCpy $usr_64_bits 1
+  ${EndIf}
+FunctionEnd
 
 Section "BlackBox"
   SetOutPath $INSTDIR
@@ -95,37 +160,6 @@ Section "BlackBox Configs"
 	File "shellfolders.rc"
 	File "stickywindows.ini"
 SectionEnd
-
-
-/*
-plugins\bbAnalog
-plugins\bbColor3dc
-plugins\bbIconBox
-plugins\bbInterface
-plugins\bbKeys
-plugins\bbLeanBar
-plugins\bbLeanSkin
-plugins\bbSlit
-
-plugins\BBAnalogEx
-plugins\bbCalendar
-plugins\BBDigitalEx
-plugins\bbFoomp
-plugins\bbLeanBar+
-plugins\BBMagnify
-plugins\BBPager
-plugins\bbRecycleBin
-plugins\BBRSS
-plugins\BBStyle
-plugins\BBSysMeter
-plugins\bbWorkspaceWheel
-plugins\SystemBarEx
-
-plugins\BB8Ball
-plugins\bbInterface_iTunes
-plugins\BBMessageBox
-plugins\BBXO
-*/
 
 Section "BlackBox Essential Plugins"
   SetOutPath $INSTDIR\plugins\bbAnalog
