@@ -1,4 +1,5 @@
 rem this batch creates packed builds in OUTDIR
+@echo off
 set PATH="C:\Program Files\WinRAR\";%path%
 
 set OUTDIR=c:/_builds

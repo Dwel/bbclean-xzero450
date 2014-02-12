@@ -146,12 +146,12 @@ function(install_if_absent)
 endfunction()
 
 set(main_CONFIGS
-  menu.rc 
-  blackbox.rc
-  extensions.rc
-  plugins.rc
-  shellfolders.rc
-  stickywindows.ini
+  config/menu.rc 
+  config/blackbox.rc
+  config/extensions.rc
+  config/plugins.rc
+  config/shellfolders.rc
+  config/stickywindows.ini
 )
 
 install_if_absent(${main_CONFIGS})

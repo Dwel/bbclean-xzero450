@@ -1,4 +1,5 @@
 rem this batch creates NSIS installer for blackbox(es) in OUTDIR
+@echo off
 set PATH="C:\Program Files\WinRAR\";%path%
 
 set OUTDIR=c:/_builds
