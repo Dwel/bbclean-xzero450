@@ -68,17 +68,17 @@ if( buildbits EQUAL 64 )
 
 	set(bbLeanSkin_SOURCE_DIR  ${CMAKE_SOURCE_DIR}/plugins/bbLeanSkin)
 
-	set(bbLeanSkinEng32_PATH ${bbLeanSkin_SOURCE_DIR}/bbLeanSkinEng32)
-	message("bbLeanSkin on 64bit... path=${bbLeanSkinEng32_PATH}")
-	ExternalProject_Add (
-		bbLeanSkinEng32
-		CMAKE_GENERATOR ${GENERATOR_FOR_32}
-		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
-		SOURCE_DIR  ${bbLeanSkinEng32_PATH}
-		DOWNLOAD_COMMAND ""
-		INSTALL_DIR ${CMAKE_BINARY_DIR}/grr
-	)
-	set_property(TARGET bbLeanSkinEng32 PROPERTY FOLDER "plugins/bbLeanSkin")
+	#set(bbLeanSkinEng32_PATH ${bbLeanSkin_SOURCE_DIR}/bbLeanSkinEng32)
+	#message("bbLeanSkin on 64bit... path=${bbLeanSkinEng32_PATH}")
+	#ExternalProject_Add (
+	#	bbLeanSkinEng32
+	#	CMAKE_GENERATOR ${GENERATOR_FOR_32}
+	#	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+	#	SOURCE_DIR  ${bbLeanSkinEng32_PATH}
+	#	DOWNLOAD_COMMAND ""
+	#	INSTALL_DIR ${CMAKE_BINARY_DIR}/grr
+	#)
+	#set_property(TARGET bbLeanSkinEng32 PROPERTY FOLDER "plugins/bbLeanSkin")
 
   set(bbLeanSkinRun32_PATH ${bbLeanSkin_SOURCE_DIR}/bbLeanSkinRun32)
   message("bbLeanSkin on 64bit... path=${bbLeanSkinRun32_PATH}")
