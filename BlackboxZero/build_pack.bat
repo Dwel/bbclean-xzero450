@@ -1,19 +1,28 @@
-set path="C:\Program Files\WinRAR\";%path%
+rem this batch creates packed builds in OUTDIR
+@echo off
+set PATH="C:\Program Files\WinRAR\";%path%
 
-set PREFIX="c:"
 set OUTDIR=c:/_builds
 
-rem set BUILD="bbZero.vs32.dbg"
-rem set BUILD="bbZero.vs32_xp.dbg"
-rem set BUILD="bbZero.vs64.dbg"
+set INSTDIR=vs_vista_32
+winrar a -z%OUTDIR%/comment.txt -afzip -df %OUTDIR%/%BUILD%.zip %OUTDIR%/%BUILD%
+if %errorlevel% neq 0 goto TERM
 
-set BUILD="bbZero.vs32"
-winrar a -z%OUTDIR%/comment.txt -afzip -df %OUTDIR%/%BUILD%.zip %PREFIX%/%BUILD%
+set INSTDIR=vs_vista_64
+winrar a -z%OUTDIR%/comment.txt -afzip -df %OUTDIR%/%BUILD%.zip %OUTDIR%/%BUILD%
+if %errorlevel% neq 0 goto TERM
 
-set BUILD="bbZero.vs64"
-winrar a -z%OUTDIR%/comment.txt -afzip -df %OUTDIR%/%BUILD%.zip %PREFIX%/%BUILD%
+set INSTDIR=vs_xp_32
+winrar a -z%OUTDIR%/comment.txt -afzip -df %OUTDIR%/%BUILD%.zip %OUTDIR%/%BUILD%
+if %errorlevel% neq 0 goto TERM
 
-set BUILD="bbZero.vs32_xp"
-winrar a -z%OUTDIR%/comment.txt -afzip -df %OUTDIR%/%BUILD%.zip %PREFIX%/%BUILD%
+set INSTDIR=vs_xp_64
+winrar a -z%OUTDIR%/comment.txt -afzip -df %OUTDIR%/%BUILD%.zip %OUTDIR%/%BUILD%
+if %errorlevel% neq 0 goto TERM
 
+goto NOPAUSE
+
+:TERM
 pause
+
+:NOPAUSE

@@ -1,4 +1,4 @@
-# bbLeanSkinRun32.exe on 64b system
+# bbLeanSkinEng32.dll and bbLeanSkinRun32.exe on 64b system
 cmake_minimum_required(VERSION 2.8)
 
 add_executable(bbLeanSkinRun32
