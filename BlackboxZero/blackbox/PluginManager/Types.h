@@ -1,17 +1,6 @@
 #ifndef __PluginManager_Types_H__
 #define __PluginManager_Types_H__
 
-#define SetFlag(x, f, e) (x = (e) ? ((x) | (f)) : ((x) & ~(f)))
-#define ClearFlag(x, f) (x = (x) & ~(f))
-#define CheckFlag(x, f) !!((x) & (f))
-#define ToggleFlag(x, f) (x ^= (f))
-
-typedef enum {
-    Plugin_IsEnabled = 1 << 0,  // plugin should be loaded
-    Plugin_UseSlit = 1 << 1,    // plugin should be loaded into slit
-    Plugin_InSlit  = 1 << 2,    // plugin is in the slit
-} PluginFlags;
-
 enum plugin_errors {
     error_plugin_is_built_in       = 1,
     error_plugin_dll_not_found     ,
@@ -31,33 +20,18 @@ struct PluginList
     char *name;     // display name as in the menu, NULL for comments
     char *path;     // as in plugins.rc, entire line for comments
 
-    UINT flags;
+    bool isEnabled;
+    bool canUseSlit;
+    bool useSlit;
+    bool inSlit;
 
-    bool inslit;    
-
-    HMODULE hmodule; // as returned by LoadLibrary
     int n_instance; // if the same plugin name is used more than once
 
-    int (*beginPlugin)(HINSTANCE);
-    int (*beginPluginEx)(HINSTANCE, HWND);
-    int (*beginSlitPlugin)(HINSTANCE, HWND);
-    int (*endPlugin)(HINSTANCE);
-    const char* (*pluginInfo)(int);
-};
-
-// same order as function ptrs above
-static const char* const pluginFunctionNames[] = {
-    "beginPlugin"       ,
-    "beginPluginEx"     ,
-    "beginSlitPlugin"   ,
-    "endPlugin"         ,
-    "pluginInfo"        ,
-    NULL
+    void* loaderInfo; // place for the loader to put loader-specific data
 };
 
 struct PluginPtr {
     struct PluginPtr* next;
-
     struct PluginList* entry;
 };
 
@@ -76,6 +50,8 @@ struct PluginLoaderList {
 		
 	const char* (*GetName)();
     const char* (*GetApi)();
+
+    const char* (*GetPluginInfo)(struct PluginList* plugin, int factId);
 
 	int (*LoadPlugin)(struct PluginList* plugin, HWND hSlit, char** errorMsg);
 	int (*UnloadPlugin)(struct PluginList* plugin, char** errorMsg);
@@ -96,4 +72,6 @@ static const char* const pluginLoaderFunctionNames[] = {
                                      *msgVar = msg; \
                                    return error_plugin_message; \
                                  }
+#define BreakWithCode(errVar, code) { errVar = code; break; }
+
 #endif
