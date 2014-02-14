@@ -9,7 +9,10 @@ add_library(${target_name32}
   ../engine/subclass.cpp
   ../../bbPlugin/drawico.cpp # FIXME: required DrawIconSatnHue
 )
-
+set_target_properties(bbLeanSkinEng32 PROPERTIES LINK_FLAGS_DEBUG          "/SUBSYSTEM:WINDOWS")
+set_target_properties(bbLeanSkinEng32 PROPERTIES LINK_FLAGS_RELEASE        "/SUBSYSTEM:WINDOWS")
+set_target_properties(bbLeanSkinEng32 PROPERTIES LINK_FLAGS_MINSIZEREL     "/SUBSYSTEM:WINDOWS")
+set_target_properties(bbLeanSkinEng32 PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS")
 #FIXME: the paths are bit messed, this is a hotfix
 include_directories(${CMAKE_SOURCE_DIR}/../../../blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/../../../lib)
