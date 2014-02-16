@@ -77,8 +77,11 @@ Section "Styles" SecStyles
 SectionEnd
 Section "Core plugins" SecCorePlugins
 SectionEnd
-Section "Optional plugins" SecPlugins
+Section "Optional plugins I." SecPlugins
 SectionEnd
+Section "Optional plugins II." SecPlugins2
+SectionEnd
+
 
 # Invisible section
 Section "-ReadOptions"
@@ -123,12 +126,9 @@ SectionEnd
 
 ################################# XP 32b ######################################
 Section /o "-XP_32" Sec_XP_32
-
-  SetOutPath $INSTDIR
-
-  # XP 32 bit files and stuff here
   DetailPrint "XP 32 bit Required Files"
 
+  SetOutPath $INSTDIR
   File "vs_xp_32\bbnote.exe"
   File "vs_xp_32\bbnote-proxy.dll"
   File "vs_xp_32\bbstylemaker.exe"
@@ -138,27 +138,106 @@ Section /o "-XP_32" Sec_XP_32
   File "vs_xp_32\bsetshell.exe"
   File "vs_xp_32\deskhook.dll"
   File "vs_xp_32\readme.txt"
-  
-  # Check for plugins and styles
-  StrCmp $OptPlugins 0 SkipXP32_1
-  # Plugin files go here
-  DetailPrint "XP 32 bit Optional Plugins"
+ 
+  StrCmp $OptConfigs 0 SkipXP32_1
+  DetailPrint "XP 32 bit Optional Configs"
+
+  SetOutPath $INSTDIR
+  CreateDirectory $INSTDIR
+  File "vs_xp_32\blackbox.rc"
+  File "vs_xp_32\bsetroot.rc"
+  File "vs_xp_32\extensions.rc"
+  File "vs_xp_32\menu.rc"
+  File "vs_xp_32\plugins.rc"
+  File "vs_xp_32\shellfolders.rc"
+  File "vs_xp_32\stickywindows.ini"
+
 SkipXP32_1:
 
   StrCmp $OptStyles 0 SkipXP32_2
-  # Style files go here
   DetailPrint "XP 32 bit Optional Styles"
+ 
+  SetOutPath $INSTDIR\backgrounds
+  File /r "vs_xp_32\backgrounds\"
+  SetOutPath $INSTDIR\styles
+  File /r "vs_xp_32\styles\"
+
 SkipXP32_2:
+
+  StrCmp $OptCorePlugins 0 SkipXP32_3
+  DetailPrint "XP 32 bit Optional Core Plugins"
+
+  SetOutPath $INSTDIR\plugins\bbAnalog
+	File /r "vs_xp_32\plugins\bbAnalog\"
+  SetOutPath $INSTDIR\plugins\bbColor3dc
+	File /r "vs_xp_32\plugins\bbColor3dc\"
+  SetOutPath $INSTDIR\plugins\bbIconBox
+	File /r "vs_xp_32\plugins\bbIconBox\"
+  SetOutPath $INSTDIR\plugins\bbInterface
+	File /r "vs_xp_32\plugins\bbInterface\"
+  SetOutPath $INSTDIR\plugins\bbKeys
+	File /r "vs_xp_32\plugins\bbKeys\"
+  SetOutPath $INSTDIR\plugins\bbLeanBar
+	File /r "vs_xp_32\plugins\bbLeanBar\"
+  SetOutPath $INSTDIR\plugins\bbLeanSkin
+	File /r "vs_xp_32\plugins\bbLeanSkin\"
+  SetOutPath $INSTDIR\plugins\bbSlit
+	File /r "vs_xp_32\plugins\bbSlit\"
+
+SkipXP32_3:
+
+  StrCmp $OptPlugins 0 SkipXP32_4
+  DetailPrint "XP 32 bit Optional Plugins 1"
+
+  SetOutPath $INSTDIR\plugins\BBAnalogEx
+	File /r "vs_xp_32\plugins\BBAnalogEx\"
+  SetOutPath $INSTDIR\plugins\bbCalendar
+	File /r "vs_xp_32\plugins\bbCalendar\"
+  SetOutPath $INSTDIR\plugins\BBDigitalEx
+	File /r "vs_xp_32\plugins\BBDigitalEx\"
+  SetOutPath $INSTDIR\plugins\bbFoomp
+	File /r "vs_xp_32\plugins\bbFoomp\"
+  SetOutPath $INSTDIR\plugins\bbLeanBar+
+	File /r "vs_xp_32\plugins\bbLeanBar+\"
+  SetOutPath $INSTDIR\plugins\BBMagnify
+	File /r "vs_xp_32\plugins\BBMagnify\"
+  SetOutPath $INSTDIR\plugins\BBPager
+	File /r "vs_xp_32\plugins\BBPager\"
+  SetOutPath $INSTDIR\plugins\bbRecycleBin
+	File /r "vs_xp_32\plugins\bbRecycleBin\"
+  SetOutPath $INSTDIR\plugins\BBRSS
+	File /r "vs_xp_32\plugins\BBRSS\"
+  SetOutPath $INSTDIR\plugins\BBStyle
+	File /r "vs_xp_32\plugins\BBStyle\"
+  SetOutPath $INSTDIR\plugins\BBSysMeter
+	File /r "vs_xp_32\plugins\BBSysMeter\"
+  SetOutPath $INSTDIR\plugins\bbWorkspaceWheel
+	File /r "vs_xp_32\plugins\bbWorkspaceWheel\"
+  SetOutPath $INSTDIR\plugins\SystemBarEx
+	File /r "vs_xp_32\plugins\SystemBarEx\"
+
+SkipXP32_4:
+
+  StrCmp $OptPlugins2 0 SkipXP32_5
+  DetailPrint "XP 32 bit Optional Plugins 2"
+
+  SetOutPath $INSTDIR\plugins\BB8Ball
+	File /r "vs_xp_32\plugins\BB8Ball\"
+  SetOutPath $INSTDIR\plugins\bbInterface_iTunes
+	File /r "vs_xp_32\plugins\bbInterface_iTunes\"
+  SetOutPath $INSTDIR\plugins\BBMessageBox
+	File /r "vs_xp_32\plugins\BBMessageBox\"
+  SetOutPath $INSTDIR\plugins\BBXO
+	File /r "vs_xp_32\plugins\BBXO\"
+
+SkipXP32_5:
 SectionEnd
 
 ################################# XP 64b ######################################
 Section /o "-XP_64" Sec_XP_64
-
-  SetOutPath $INSTDIR
- 
-  # XP 64 bit files and stuff here
   DetailPrint "XP 64 bit Required Files"
 
+  SetOutPath $INSTDIR
   File "vs_xp_64\bbnote.exe"
   File "vs_xp_64\bbnote-proxy.dll"
   File "vs_xp_64\bbstylemaker.exe"
@@ -168,17 +247,100 @@ Section /o "-XP_64" Sec_XP_64
   File "vs_xp_64\bsetshell.exe"
   File "vs_xp_64\deskhook.dll"
   File "vs_xp_64\readme.txt"
-  
-  # Check for plugins and styles
-  StrCmp $OptPlugins 0 SkipXP64_1
-  # Plugin files go here
-  DetailPrint "XP 64 bit Optional Plugins"
+ 
+  StrCmp $OptConfigs 0 SkipXP64_1
+  DetailPrint "XP 64 bit Optional Configs"
+
+  SetOutPath $INSTDIR
+  CreateDirectory $INSTDIR
+  File "vs_xp_64\blackbox.rc"
+  File "vs_xp_64\bsetroot.rc"
+  File "vs_xp_64\extensions.rc"
+  File "vs_xp_64\menu.rc"
+  File "vs_xp_64\plugins.rc"
+  File "vs_xp_64\shellfolders.rc"
+  File "vs_xp_64\stickywindows.ini"
+
 SkipXP64_1:
 
   StrCmp $OptStyles 0 SkipXP64_2
-  # Style files go here
   DetailPrint "XP 64 bit Optional Styles"
+ 
+  SetOutPath $INSTDIR\backgrounds
+  File /r "vs_xp_64\backgrounds\"
+  SetOutPath $INSTDIR\styles
+  File /r "vs_xp_64\styles\"
+
 SkipXP64_2:
+
+  StrCmp $OptCorePlugins 0 SkipXP64_3
+  DetailPrint "XP 64 bit Optional Core Plugins"
+
+  SetOutPath $INSTDIR\plugins\bbAnalog
+	File /r "vs_xp_64\plugins\bbAnalog\"
+  SetOutPath $INSTDIR\plugins\bbColor3dc
+	File /r "vs_xp_64\plugins\bbColor3dc\"
+  SetOutPath $INSTDIR\plugins\bbIconBox
+	File /r "vs_xp_64\plugins\bbIconBox\"
+  SetOutPath $INSTDIR\plugins\bbInterface
+	File /r "vs_xp_64\plugins\bbInterface\"
+  SetOutPath $INSTDIR\plugins\bbKeys
+	File /r "vs_xp_64\plugins\bbKeys\"
+  SetOutPath $INSTDIR\plugins\bbLeanBar
+	File /r "vs_xp_64\plugins\bbLeanBar\"
+  SetOutPath $INSTDIR\plugins\bbLeanSkin
+	File /r "vs_xp_64\plugins\bbLeanSkin\"
+  SetOutPath $INSTDIR\plugins\bbSlit
+	File /r "vs_xp_64\plugins\bbSlit\"
+
+SkipXP64_3:
+
+  StrCmp $OptPlugins 0 SkipXP64_4
+  DetailPrint "XP 64 bit Optional Plugins 1"
+
+  SetOutPath $INSTDIR\plugins\BBAnalogEx
+	File /r "vs_xp_64\plugins\BBAnalogEx\"
+  SetOutPath $INSTDIR\plugins\bbCalendar
+	File /r "vs_xp_64\plugins\bbCalendar\"
+  SetOutPath $INSTDIR\plugins\BBDigitalEx
+	File /r "vs_xp_64\plugins\BBDigitalEx\"
+  SetOutPath $INSTDIR\plugins\bbFoomp
+	File /r "vs_xp_64\plugins\bbFoomp\"
+  SetOutPath $INSTDIR\plugins\bbLeanBar+
+	File /r "vs_xp_64\plugins\bbLeanBar+\"
+  SetOutPath $INSTDIR\plugins\BBMagnify
+	File /r "vs_xp_64\plugins\BBMagnify\"
+  SetOutPath $INSTDIR\plugins\BBPager
+	File /r "vs_xp_64\plugins\BBPager\"
+  SetOutPath $INSTDIR\plugins\bbRecycleBin
+	File /r "vs_xp_64\plugins\bbRecycleBin\"
+  SetOutPath $INSTDIR\plugins\BBRSS
+	File /r "vs_xp_64\plugins\BBRSS\"
+  SetOutPath $INSTDIR\plugins\BBStyle
+	File /r "vs_xp_64\plugins\BBStyle\"
+  SetOutPath $INSTDIR\plugins\BBSysMeter
+	File /r "vs_xp_64\plugins\BBSysMeter\"
+  SetOutPath $INSTDIR\plugins\bbWorkspaceWheel
+	File /r "vs_xp_64\plugins\bbWorkspaceWheel\"
+  SetOutPath $INSTDIR\plugins\SystemBarEx
+	File /r "vs_xp_64\plugins\SystemBarEx\"
+
+SkipXP64_4:
+
+  StrCmp $OptPlugins2 0 SkipXP64_5
+  DetailPrint "XP 64 bit Optional Plugins 2"
+
+  SetOutPath $INSTDIR\plugins\BB8Ball
+	File /r "vs_xp_64\plugins\BB8Ball\"
+  SetOutPath $INSTDIR\plugins\bbInterface_iTunes
+	File /r "vs_xp_64\plugins\bbInterface_iTunes\"
+  SetOutPath $INSTDIR\plugins\BBMessageBox
+	File /r "vs_xp_64\plugins\BBMessageBox\"
+  SetOutPath $INSTDIR\plugins\BBXO
+	File /r "vs_xp_64\plugins\BBXO\"
+
+SkipXP64_5:
+
 SectionEnd
 
 ################################ Vista 32b ####################################
@@ -276,7 +438,7 @@ SkipVista32_3:
 
 SkipVista32_4:
 
-  StrCmp $OptPlugins 0 SkipVista32_5
+  StrCmp $OptPlugins2 0 SkipVista32_5
   DetailPrint "Vista 32 bit Optional Plugins 2"
 
   SetOutPath $INSTDIR\plugins\BB8Ball
@@ -387,7 +549,7 @@ SkipVista64_3:
 
 SkipVista64_4:
 
-  StrCmp $OptPlugins 0 SkipVista64_5
+  StrCmp $OptPlugins2 0 SkipVista64_5
   DetailPrint "Vista 64 bit Optional Plugins 2"
 
   SetOutPath $INSTDIR\plugins\BB8Ball
