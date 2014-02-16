@@ -15,8 +15,6 @@ ShowInstDetails Show
 !include x64.nsh
 !include Sections.nsh
 
-Var win_xp
-Var win_64
 Var OptStyles
 Var OptPlugins
 
@@ -32,8 +30,8 @@ Page Custom windetectionPageEnter windetectionPageLeave
 Page License
 Page Components
 Page Directory
-Page Custom shellPageEnter shellPageLeave
 Page InstFiles
+Page Custom shellPageEnter shellPageLeave
 #UninstPage uninstConfirm
 #UninstPage instfiles
 
@@ -46,33 +44,41 @@ Function brandimage
   SetBrandingImage "$TEMP\installer.bmp" /resizetofit
 FunctionEnd
 
-var dialog
-var hwnd
-var Group1RadioXP
-var Group1RadioVista
-var Group2Radio32
-var Group2Radio64
-Var grp1
-Var grp2
+# build selection variables
+Var win_xp
+Var win_64
+var BuildVerDialog
+var Group1BuildVerRadioXP
+var Group1BuildVerRadioVista
+var Group1BuildVer2Radio32
+var Group1BuildVer2Radio64
+Var GroupBox1
+Var GroupBox2
+# 'as shell' variables
+var as_shell
+var ShellDialog
+Var GroupBox3
+var RadioButtonAsShell
+var RadioButtonNoShell
  
-; Dummy section visible, RO means read only, user can't
-; change this. This should remain empty.
+# Dummy section visible, RO means read only, user can't
+# change this. This should remain empty.
 Section "Required Files"
 SectionIn RO
 SectionEnd
 
-; Visible options for the user
+# Visible options for the user
 Section "Optional plugins" SecPlugins
 SectionEnd
 
-; Visible options for the user
+# Visible options for the user
 Section "Optional styles" SecStyles
 SectionEnd
 
-; Invisible section
+# Invisible section
 Section "-ReadOptions"
-  ; This is where we read the optional sections to see if
-  ; they are selected, and set our variables to reflect this
+  # This is where we read the optional sections to see if
+  # they are selected, and set our variables to reflect this
   SectionGetFlags ${SecPlugins} $0
   IntOp $0 $0 & ${SF_SELECTED}
   IntCmp $0 ${SF_SELECTED} 0 +3 +3
@@ -93,7 +99,7 @@ Section /o "-XP_32" Sec_XP_32
 
   SetOutPath $INSTDIR
 
-  ; XP 32 bit files and stuff here
+  # XP 32 bit files and stuff here
   DetailPrint "XP 32 bit Required Files"
 
   File vs_xp_32\bbnote.exe
@@ -106,14 +112,14 @@ Section /o "-XP_32" Sec_XP_32
   File vs_xp_32\deskhook.dll
   File vs_xp_32\readme.txt
   
-  ; Check for plugins and styles
+  # Check for plugins and styles
   StrCmp $OptPlugins 0 SkipXP32_1
-  ; Plugin files go here
+  # Plugin files go here
   DetailPrint "XP 32 bit Optional Plugins"
 SkipXP32_1:
 
   StrCmp $OptStyles 0 SkipXP32_2
-  ; Style files go here
+  # Style files go here
   DetailPrint "XP 32 bit Optional Styles"
 SkipXP32_2:
 SectionEnd
@@ -123,7 +129,7 @@ Section /o "-XP_64" Sec_XP_64
 
   SetOutPath $INSTDIR
  
-  ; XP 64 bit files and stuff here
+  # XP 64 bit files and stuff here
   DetailPrint "XP 64 bit Required Files"
 
   File vs_xp_64\bbnote.exe
@@ -136,14 +142,14 @@ Section /o "-XP_64" Sec_XP_64
   File vs_xp_64\deskhook.dll
   File vs_xp_64\readme.txt
   
-  ; Check for plugins and styles
+  # Check for plugins and styles
   StrCmp $OptPlugins 0 SkipXP64_1
-  ; Plugin files go here
+  # Plugin files go here
   DetailPrint "XP 64 bit Optional Plugins"
 SkipXP64_1:
 
   StrCmp $OptStyles 0 SkipXP64_2
-  ; Style files go here
+  # Style files go here
   DetailPrint "XP 64 bit Optional Styles"
 SkipXP64_2:
 SectionEnd
@@ -153,8 +159,8 @@ Section /o "-Vista_32" Sec_Vista_32
 
   SetOutPath $INSTDIR
 
-  ; Vista 32 bit files and stuff here
-  DetailPrint "Vista 32 bit Required Files" ; Here for clarity
+  # Vista 32 bit files and stuff here
+  DetailPrint "Vista 32 bit Required Files" # Here for clarity
 
   File vs_vista_32\bbnote.exe
   File vs_vista_32\bbnote-proxy.dll
@@ -166,14 +172,14 @@ Section /o "-Vista_32" Sec_Vista_32
   File vs_vista_32\deskhook.dll
   File vs_vista_32\readme.txt
 
-  ; Check for plugins and styles
+  # Check for plugins and styles
   StrCmp $OptPlugins 0 SkipVista32_1
-  ; Plugin files go here
+  # Plugin files go here
   DetailPrint "Vista 32 bit Optional Plugins"
 SkipVista32_1:
 
   StrCmp $OptStyles 0 SkipVista32_2
-  ; Style files go here
+  # Style files go here
   DetailPrint "Vista 32 bit Optional Styles"
 SkipVista32_2:
 SectionEnd
@@ -183,8 +189,8 @@ Section /o "-Vista_64" Sec_Vista_64
 
   SetOutPath $INSTDIR
  
-  ; Vista 64 bit files and stuff here
-  DetailPrint "Vista 64 bit Required Files" ; Here for clarity
+  # Vista 64 bit files and stuff here
+  DetailPrint "Vista 64 bit Required Files" # Here for clarity
 
   File vs_vista_64\bbnote.exe
   File vs_vista_64\bbnote-proxy.dll
@@ -196,19 +202,20 @@ Section /o "-Vista_64" Sec_Vista_64
   File vs_vista_64\deskhook.dll
   File vs_vista_64\readme.txt
  
-  ; Check for plugins and styles
+  # Check for plugins and styles
   StrCmp $OptPlugins 0 SkipVista64_1
-  ; Plugin files go here
+  # Plugin files go here
   DetailPrint "Vista 64 bit Optional Plugins"
 SkipVista64_1:
 
   StrCmp $OptStyles 0 SkipVista64_2
-  ; Style files go here
+  # Style files go here
   DetailPrint "Vista 64 bit Optional Styles"
 SkipVista64_2:
 SectionEnd
 
 
+# windows detection
 Function windetectionPageEnter
   ${If} ${AtLeastWinVista}
     ${If} ${RunningX64}
@@ -229,55 +236,47 @@ Function windetectionPageEnter
   ${EndIf} 
 
   nsDialogs::Create 1018
-  Pop $dialog
+  Pop $BuildVerDialog
 
   ${NSD_CreateGroupBox} 2% 2% 48% 98% "Windows"
-  Pop $grp1
+  Pop $GroupBox1
 
   ${NSD_CreateRadioButton} 5% 33% 40% 6% "XP"
-    Pop $Group1RadioXP
-    ${NSD_AddStyle} $Group1RadioXP ${WS_GROUP}
-    ${NSD_OnClick} $Group1RadioXP RadioClick
+    Pop $Group1BuildVerRadioXP
+    ${NSD_AddStyle} $Group1BuildVerRadioXP ${WS_GROUP}
   ${NSD_CreateRadioButton} 5% 66% 40% 6% "Vista, Win7 or Win8"
-    Pop $Group1RadioVista
-    ${NSD_OnClick} $Group1RadioVista RadioClick
+    Pop $Group1BuildVerRadioVista
 
   ${NSD_CreateGroupBox} 52% 2% 46% 98% "bits"
-  Pop $grp2
+  Pop $GroupBox2
  
   ${NSD_CreateRadioButton} 55% 33% 40% 6% "32"
-    Pop $Group2Radio32
-    ${NSD_AddStyle} $Group2Radio32 ${WS_GROUP}
-    ${NSD_OnClick} $Group2Radio32 RadioClick
+    Pop $Group1BuildVer2Radio32
+    ${NSD_AddStyle} $Group1BuildVer2Radio32 ${WS_GROUP}
   ${NSD_CreateRadioButton} 55% 66% 40% 6% "64"
-    Pop $Group2Radio64
-    ${NSD_OnClick} $Group2Radio64 RadioClick
+    Pop $Group1BuildVer2Radio64
 
   ${If} $win_xp == 1
-    ${NSD_SetState} $Group1RadioXP ${BST_CHECKED}
+    ${NSD_SetState} $Group1BuildVerRadioXP ${BST_CHECKED}
   ${Else}
-    ${NSD_SetState} $Group1RadioVista ${BST_CHECKED}
+    ${NSD_SetState} $Group1BuildVerRadioVista ${BST_CHECKED}
   ${EndIf}
 
   ${If} $win_64 == 1
-    ${NSD_SetState} $Group2Radio64 ${BST_CHECKED}
+    ${NSD_SetState} $Group1BuildVer2Radio64 ${BST_CHECKED}
   ${Else}
-    ${NSD_SetState} $Group2Radio32 ${BST_CHECKED}
+    ${NSD_SetState} $Group1BuildVer2Radio32 ${BST_CHECKED}
   ${EndIf}
 
   nsDialogs::Show
 FunctionEnd
  
-Function RadioClick
-  Pop $hwnd
-FunctionEnd
-
 Var radio_xp
 Var radio_64
 
 Function windetectionPageLeave
-  ${NSD_GetState} $Group1RadioXP $radio_xp
-  ${NSD_GetState} $Group2Radio64 $radio_64
+  ${NSD_GetState} $Group1BuildVerRadioXP $radio_xp
+  ${NSD_GetState} $Group1BuildVer2Radio64 $radio_64
 
   ${If} $radio_xp == ${BST_CHECKED}
     ${If} $radio_64 == ${BST_CHECKED}
@@ -294,6 +293,35 @@ Function windetectionPageLeave
   ${EndIf}
 # MessageBox MB_OK "You typed:$\n$\n$0"
 FunctionEnd
+
+# as shell dialogue
+Function shellPageEnter
+  nsDialogs::Create 1018
+  Pop $ShellDialog
+
+  ${NSD_CreateGroupBox} 2% 2% 98% 98% "shell"
+  Pop $GroupBox3
+
+  ${NSD_CreateRadioButton} 5% 33% 95% 6% "no, do NOT install as shell"
+    Pop $RadioButtonNoShell
+    ${NSD_AddStyle} $RadioButtonNoShell ${WS_GROUP}
+  ${NSD_CreateRadioButton} 5% 66% 95% 6% "yes, install blackbox as default shell"
+    Pop $RadioButtonAsShell
+
+  ${NSD_SetState} $RadioButtonNoShell ${BST_CHECKED}
+  nsDialogs::Show
+FunctionEnd
+ 
+Function shellPageLeave
+  ${NSD_GetState} $RadioButtonAsShell $as_shell
+
+  ${If} $as_shell == ${BST_CHECKED}
+    StrCpy $as_shell 1
+  ${Else}
+    StrCpy $as_shell 0
+  ${EndIf}
+FunctionEnd
+
 
 Function .onInit
 FunctionEnd
