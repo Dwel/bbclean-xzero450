@@ -28,13 +28,16 @@ RequestExecutionLevel admin
 AddBrandingImage left 256
 
 Page Custom brandimage "" ": Brand Image"
-Page Custom windetection
+Page Custom windetectionPageEnter windetectionPageLeave
 Page License
 Page Components
 Page Directory
+Page Custom shellPageEnter shellPageLeave
 Page InstFiles
 #UninstPage uninstConfirm
 #UninstPage instfiles
+
+LicenseData "GPL.txt" 
 
 Function brandimage
   SetOutPath "$TEMP"
@@ -49,8 +52,6 @@ var Group1RadioXP
 var Group1RadioVista
 var Group2Radio32
 var Group2Radio64
-var usr_win_xp
-var usr_64_bits
 Var grp1
 Var grp2
  
@@ -89,6 +90,9 @@ SectionEnd
 
 ################################# XP 32b ######################################
 Section /o "-XP_32" Sec_XP_32
+
+  SetOutPath $INSTDIR
+
   ; XP 32 bit files and stuff here
   DetailPrint "XP 32 bit Required Files"
 
@@ -116,6 +120,9 @@ SectionEnd
 
 ################################# XP 64b ######################################
 Section /o "-XP_64" Sec_XP_64
+
+  SetOutPath $INSTDIR
+ 
   ; XP 64 bit files and stuff here
   DetailPrint "XP 64 bit Required Files"
 
@@ -143,6 +150,9 @@ SectionEnd
 
 ################################ Vista 32b ####################################
 Section /o "-Vista_32" Sec_Vista_32
+
+  SetOutPath $INSTDIR
+
   ; Vista 32 bit files and stuff here
   DetailPrint "Vista 32 bit Required Files" ; Here for clarity
 
@@ -170,6 +180,9 @@ SectionEnd
 
 ################################ Vista 64b ####################################
 Section /o "-Vista_64" Sec_Vista_64
+
+  SetOutPath $INSTDIR
+ 
   ; Vista 64 bit files and stuff here
   DetailPrint "Vista 64 bit Required Files" ; Here for clarity
 
@@ -195,9 +208,28 @@ SkipVista64_1:
 SkipVista64_2:
 SectionEnd
 
-Function windetection
+
+Function windetectionPageEnter
+  ${If} ${AtLeastWinVista}
+    ${If} ${RunningX64}
+        StrCpy $win_xp 0
+        StrCpy $win_64 1
+    ${Else}
+        StrCpy $win_xp 0
+        StrCpy $win_64 0
+    ${EndIf}
+  ${Else}
+    ${If} ${RunningX64}
+        StrCpy $win_xp 1
+        StrCpy $win_64 1
+    ${Else}
+        StrCpy $win_xp 1
+        StrCpy $win_64 0
+    ${EndIf}
+  ${EndIf} 
+
   nsDialogs::Create 1018
-    Pop $dialog
+  Pop $dialog
 
   ${NSD_CreateGroupBox} 2% 2% 48% 98% "Windows"
   Pop $grp1
@@ -236,63 +268,34 @@ Function windetection
   nsDialogs::Show
 FunctionEnd
  
-Var usr_win
-Var usr_bits
-
 Function RadioClick
   Pop $hwnd
-  ${If} $hwnd == $Group1RadioXP
-      StrCpy $usr_win_xp 1
-      StrCpy $usr_win "xp"
-  ${ElseIf} $hwnd == $Group1RadioVista
-      StrCpy $usr_win_xp 0
-      StrCpy $usr_win "vista"
-  ${ElseIf} $hwnd == $Group2Radio32
-      StrCpy $usr_64_bits 0
-      StrCpy $usr_bits "32"
-  ${ElseIf} $hwnd == $Group2Radio64
-      StrCpy $usr_64_bits 1
-      StrCpy $usr_bits "64"
-  ${EndIf}
+FunctionEnd
 
-  ${If} $usr_win_xp == 0
-    ${If} $usr_64_bits == 1
-        SectionSetFlags ${Sec_Vista_64} ${SF_SELECTED}
-    ${Else}
-        SectionSetFlags ${Sec_Vista_32} ${SF_SELECTED}
-    ${EndIf}
-  ${Else}
-    ${If} $usr_64_bits == 1
+Var radio_xp
+Var radio_64
+
+Function windetectionPageLeave
+  ${NSD_GetState} $Group1RadioXP $radio_xp
+  ${NSD_GetState} $Group2Radio64 $radio_64
+
+  ${If} $radio_xp == ${BST_CHECKED}
+    ${If} $radio_64 == ${BST_CHECKED}
         SectionSetFlags ${Sec_XP_64} ${SF_SELECTED}
     ${Else}
         SectionSetFlags ${Sec_XP_32} ${SF_SELECTED}
     ${EndIf}
-  ${EndIf} 
-
+  ${Else}
+    ${If} $radio_64 == ${BST_CHECKED}
+        SectionSetFlags ${Sec_Vista_64} ${SF_SELECTED}
+    ${Else}
+        SectionSetFlags ${Sec_Vista_32} ${SF_SELECTED}
+    ${EndIf}
+  ${EndIf}
+# MessageBox MB_OK "You typed:$\n$\n$0"
 FunctionEnd
 
 Function .onInit
-  ${If} ${AtLeastWinVista}
-    ${If} ${RunningX64}
-        StrCpy $win_xp 0
-        StrCpy $win_64 1
-        SectionSetFlags ${Sec_Vista_64} ${SF_SELECTED}
-    ${Else}
-        StrCpy $win_xp 0
-        StrCpy $win_64 0
-        SectionSetFlags ${Sec_Vista_32} ${SF_SELECTED}
-    ${EndIf}
-  ${Else}
-    ${If} ${RunningX64}
-        StrCpy $win_xp 1
-        StrCpy $win_64 1
-        SectionSetFlags ${Sec_XP_64} ${SF_SELECTED}
-    ${Else}
-        StrCpy $win_xp 1
-        StrCpy $win_64 0
-        SectionSetFlags ${Sec_XP_32} ${SF_SELECTED}
-    ${EndIf}
-  ${EndIf} 
 FunctionEnd
 
 
