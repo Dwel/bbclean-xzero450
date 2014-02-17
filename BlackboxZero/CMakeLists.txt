@@ -105,6 +105,10 @@ add_subdirectory(plugins/BBPager)
 add_subdirectory(plugins/BBStyle)
 add_subdirectory(plugins/bbRecycleBin)
 add_subdirectory(plugins/bbInterface)
+add_subdirectory(plugins/bbFooMan)
+#add_subdirectory(plugins/bbMuse)
+#add_subdirectory(plugins/bbPlayer)
+#add_subdirectory(plugins/bbSeekBar)
 
 # NOTE: mingw 64 bit does not work yet!
 if (MSVC)
