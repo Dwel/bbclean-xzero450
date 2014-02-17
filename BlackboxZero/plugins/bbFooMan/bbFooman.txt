@@ -1,0 +1,198 @@
+//////////////////
+// bbFooman 1.1 //
+//////////////////
+
+
+///////////////////
+// [Description] //
+///////////////////
+
+	bbFooman is a plugin for Blackbox for Windows <http://bb4win.org/> that
+	allow remote control for Foobar2k player.
+
+	bbFooman has no GUI element. I did it specially.
+	You can create you own interface, that you want, using BBInterface
+	(sample BBI module include in archive) or 
+	send bro@ms to plugin (for ex. from menu).
+
+	Plugin send BBI commands to controls and
+	set Title, Seekbar, Volume & AlbumArt.
+	It also can display playlist as menu.
+
+
+/////////////////////////
+// [Supported Players] //
+/////////////////////////
+
+	Tested on foobar2000 0.9.2 & foobar2000 0.9.4.2
+	Must work in others (can be demanded recompilation foo_control plugin
+	[edit FOOBAR2000_CLIENT_VERSION in foobar2000.h]).
+
+
+////////////////////
+// [Requirements] //
+////////////////////
+
+	Plugin uses BBInterface, so install it if you want to create graphic
+	controls.
+	GDI+ library need.
+
+	bbFooman was writen for WinXP SP2 & bbLean 1.16b.
+	Must work in othes (not sure about Win98).
+
+
+///////////////
+// [Install] //
+///////////////
+
+	1. Copy foo_control.dll to Foobar2000 plugin directory.
+		Ex.:	C:\Program files\Foobar2000\components\
+	2. Copy bbFooman.dll to anywhere you want.
+	3. Add the path to bbFooman.dll in your plugins.rc.
+	   	Ex.:	plugins\bbFooman\bbFooman.dll
+	4. If you use BBInterface then load bbFoomanInt.rc or create own interface.
+		BBI menu: Configuration->Edit Modules->Add module...
+	5. Edit bbFooman.rc if need
+	6. Restart the shell.
+
+
+
+//////////////
+// [Bro@ms] //
+//////////////
+
+	@bbFooman.FooStart
+	@bbFooman.FooExit
+	@bbFooman.FooShow
+	@bbFooman.FooHide
+
+	@bbFooman.Play
+	@bbFooman.PlayTrack 1-...(playlist count)
+	@bbFooman.Play_Pause
+	@bbFooman.Stop
+	@bbFooman.Next
+	@bbFooman.Prev
+	@bbFooman.Random
+	@bbFooman.Seek 0-...(track length)
+	
+	@bbFooman.VolUp
+	@bbFooman.VolDown
+	@bbFooman.Volume 0-100
+	@bbFooman.Mute
+
+	@bbFooman.Add
+	@bbFooman.Open
+	@bbFooman.AddDir
+
+	@bbFooman.ShowPlaylist
+
+	@bbFooman.Order_Default
+	@bbFooman.Order_Shuffle
+	@bbFooman.Order_RepeatAll
+	@bbFooman.Order_RepeatOne
+
+	@bbFooman.About
+
+
+///////////////////
+// [bbFooman.rc] //
+///////////////////
+
+	int	bbfooman.RefreshData
+		Interval to refresh BBI controls.
+
+	string	bbfooman.titleFormat
+		Format BBI title label. For more information see titleformat_help.html
+		in foobar2000 folder.
+		Ex.:	$if(%title%,$if2(%album artist%,%artist%) - %title%,%_filename_ext%)
+
+	string	bbfooman.playlistHeader
+		Header of playlist menu. See bbfooman.titleFormat.
+
+	string	bbfooman.BBITitleControlName
+		Name of BBI title label.
+
+	string	bbfooman.BBISeekControlName
+		Name of BBI seek slider.
+
+	string	bbfooman.BBIVolumeControlName
+		Name of BBI volume slider.
+
+	string	bbFooman.BBIAlbumArtControlName
+		Name of BBI albumart control.
+		
+	bool	bbfooman.setBBITitle, bbfooman.setBBISeek, bbfooman.setBBIVolume,
+		bbfooman.setBBIAlbumArt
+		Need to set BBI controls?
+
+	int	bbfooman.BBIAlbumArtHeight, bbfooman.BBIAlbumArtWidth
+		Size of albumart control.
+
+	string	bbfooman.BBIAAImgNames
+		Possible names of album image.
+		Ex.:	folder;cover;coverart;front;album;albumart;
+		Must contain ';' at end of line! 
+
+	string	bbfooman.BBIAAImgTypes
+		Possible types of album image.
+		Ex.:	 jpg;gif;png;bmp;tif;
+		Must contain ';' at end of line!
+
+	string	bbfooman.BBIAANoImage
+		Display if track image did't found.
+		Leave empty if not use.
+
+	string bbfooman.FoobarPath
+		Path to foobar2k player (use for start).
+
+
+/////////////////
+// [ChangeLog] //
+/////////////////
+
+1.1	2007-08-29
+	(!) Callback functionality added to foo_control plugin. Now bbFooman is eating
+		minimum system resources!
+	(+) Two new @broams added:
+		@bbFooman.PlayTrack X 	- start X track in active playlist
+		@bbFooman.ShowPlaylist	- show playlist as menu
+		(thanks to ysuke <zb2_460@yahoo.co.jp> whos code I use as sample)
+	(+) Now bbFooman can display track image (see AlbumArt options in bbFooman.rc)
+	(^) Add, Open & AddDir dialogs are be shown at the top of screen
+	(^) Fixed memory overflow error (thanks to Tamplier <au89@mail.ru> for bugreport)
+	(^) I rethinked how must work @bbFooman.Play & @bbFooman.Play_Pause:
+		@bbFooman.Play continue play if paused before
+		@bbFooman.Play_Pause not start playing track if not paused
+	(^) Some other small code changes in bbFooman & foo_control
+
+1.0	2007-05-15
+	- First release. Happy birthday!
+
+
+////////////
+// [Bugs] //
+////////////
+
+	If you find a bug or have any ideas, please contact me.
+
+
+///////////////
+// [License] //
+///////////////
+
+============================================================================
+
+  This program is free software, released under the GNU General Public License
+  (GPL version 2 or later).
+
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+  for more details.
+
+  http://www.fsf.org/licenses/gpl.html
+
+============================================================================
+
+Copyright (c) RustyNail, 2007
+Nail.mailme [at] gmail.com

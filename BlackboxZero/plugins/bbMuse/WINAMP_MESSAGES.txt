@@ -1,0 +1,89 @@
+//---- WINAMP MESSAGE ID's ----\\
+
+BBI_SPECIAL messages....
+
+106 - Same as WM_USER 106, but uses percentage values instead of milliseconds.
+
+WM_COMMAND messages....
+
+40044 - Previous track button
+40048 - Next track button
+40045 - Play button
+40046 - Pause/Unpause button
+40047 - Stop button
+40147 - Fadeout and stop
+40157 - Stop after current track
+40148 - Fast-forward 5 seconds
+40144 - Fast-rewind 5 seconds
+40154 - Start of playlist
+40158 - Go to end of playlist
+40029 - Open file dialog
+40155 - Open URL dialog
+40188 - Open file info box
+40037 - Set time display mode to elapsed
+40038 - Set time display mode to remaining
+40012 - Toggle preferences screen
+40190 - Open visualization options
+40191 - Open visualization plug-in options
+40192 - Execute current visualization plug-in
+40041 - Toggle about box
+40189 - Toggle title Autoscrolling
+40019 - Toggle always on top
+40064 - Toggle Windowshade
+40266 - Toggle Playlist Windowshade
+40165 - Toggle doublesize mode
+40036 - Toggle EQ
+40040 - Toggle playlist editor
+40258 - Toggle main window visible
+40298 - Toggle minibrowser
+40186 - Toggle easymove
+40058 - Raise volume by 1%
+40059 - Lower volume by 1%
+40022 - Toggle repeat
+40023 - Toggle shuffle
+40193 - Open jump to time dialog
+40194 - Open jump to file dialog
+40219 - Open skin selector
+40221 - Configure current visualization plug-in
+40291 - Reload the current skin
+40001 - Close Winamp
+40197 - Moves back 10 tracks in playlist
+40320 - Show the edit bookmarks
+40321 - Adds current track as a bookmark
+40323 - Play audio CD
+40253 - Load a preset from EQ
+40254 - Save a preset to EQF
+40172 - Opens load presets dialog
+40173 - Opens auto-load presets dialog
+40174 - Load default preset
+40175 - Opens save preset dialog
+40176 - Opens auto-load save preset
+40178 - Opens delete preset dialog
+40180 - Opens delete an auto load preset dialog
+
+WM_USER messages....
+
+0   - Retrieves the version of Winamp running. Version will be 0x20yx for 2.yx. This is a good way to determine if you did in fact find the right window, etc. 
+100 - Starts playback. A lot like hitting 'play' in Winamp, but not exactly the same 
+101 - Clears Winamp's internal playlist. 
+102 - Begins play of selected track. 
+103 - Makes Winamp change to the directory C:\\download 
+104 - Returns the status of playback. If 'ret' is 1, Winamp is playing. If 'ret' is 3, Winamp is paused. Otherwise, playback is stopped. 
+105 - If data is 0, returns the position in milliseconds of playback. If data is 1, returns current track length in seconds. Returns -1 if not playing or if an error occurs. 
+106 - Seeks within the current track. The offset is specified in 'data', in milliseconds. (BBmuse interprets a message sent to winamp of this type to be using percentage values in order to be compliant with bbinterface)
+120 - Writes out the current playlist to Winampdir\winamp.m3u, and returns the current position in the playlist. 
+121 - Sets the playlist position to the position specified in tracks in 'data'. 
+122 - Sets the volume to 'data', which can be between 0 (silent) and 255 (maximum). 
+123 - Sets the panning to 'data', which can be between 0 (all left) and 255 (all right). 
+124 - Returns length of the current playlist, in tracks. 
+125 - Returns the position in the current playlist, in tracks (requires Winamp 2.05+). 
+126 - Retrieves info about the current playing track. Returns samplerate (i.e. 44100) if 'data' is set to 0, bitrate if 'data' is set to 1, and number of channels if 'data' is set to 2. (requires Winamp 2.05+) 
+127 - Retrieves one element of equalizer data, based on what 'data' is set to. 0-9 The 10 bands of EQ data. Will return 0-63 (+20db - -20db). 10 The preamp value. Will return 0-63 (+20db - -20db). 11 Enabled. Will return zero if disabled, nonzero if enabled. 
+128 - Autoload. Will return zero if disabled, nonzero if enabled. To set an element of equalizer data, simply query which item you wish to set using the message above (127), then call this message with data 
+129 - Adds the specified file to the Winamp bookmark list 
+135 - Restarts Winamp
+
+
+Taken from: http://forums.winamp.com/showthread.php?s=91343817eaf1370b47612539788fe514&threadid=180297
+
+Many thanks go out to "CraigF" who provided the above info :D

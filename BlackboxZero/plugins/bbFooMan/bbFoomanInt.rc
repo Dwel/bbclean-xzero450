@@ -1,0 +1,230 @@
+!------ Module: bbFoomanInt
+!-- Author: RustyNail
+!-- Comments: using by bbFooman
+!--------------------
+
+!---- bbFoomanIntFrame ----
+@BBInterface Control Create Frame bbFoomanIntFrame
+@BBInterface Control SetWindowProperty bbFoomanIntFrame X 100
+@BBInterface Control SetWindowProperty bbFoomanIntFrame Y 100
+@BBInterface Control SetWindowProperty bbFoomanIntFrame Width 278
+@BBInterface Control SetWindowProperty bbFoomanIntFrame Height 50
+@BBInterface Control SetWindowProperty bbFoomanIntFrame Border true
+@BBInterface Control SetWindowProperty bbFoomanIntFrame IsVisible true
+@BBInterface Control SetWindowProperty bbFoomanIntFrame Style "Toolbar"
+@BBInterface Control SetWindowProperty bbFoomanIntFrame IsToggledWithPlugins true
+@BBInterface Control SetWindowProperty bbFoomanIntFrame IsOnAllWorkspaces true
+@BBInterface Control SetWindowProperty bbFoomanIntFrame IsOnTop true
+@BBInterface Control SetWindowProperty bbFoomanIntFrame AutoHide false
+@BBInterface Control SetWindowProperty bbFoomanIntFrame IsSlitted false
+@BBInterface Control SetWindowProperty bbFoomanIntFrame IsTransparent false
+@BBInterface Control SetWindowProperty bbFoomanIntFrame Transparency 100
+@BBInterface Control SetWindowProperty bbFoomanIntFrame MakeInvisible "Never"
+@BBInterface Control SetControlProperty bbFoomanIntFrame HAlign "Center"
+@BBInterface Control SetControlProperty bbFoomanIntFrame VAlign "Top"
+@BBInterface Control SetControlProperty bbFoomanIntFrame HasTitleBar false
+@BBInterface Control SetControlProperty bbFoomanIntFrame IsLocked false
+
+!---- bbFoomanIntFrame::Title ----
+@BBInterface Control CreateChild bbFoomanIntFrame Label Title
+@BBInterface Control SetWindowProperty Title X 2
+@BBInterface Control SetWindowProperty Title Y 2
+@BBInterface Control SetWindowProperty Title Width 211
+@BBInterface Control SetWindowProperty Title Height 16
+@BBInterface Control SetWindowProperty Title Border true
+@BBInterface Control SetWindowProperty Title IsVisible true
+@BBInterface Control SetWindowProperty Title Style "Inset"
+@BBInterface Control SetControlProperty Title HAlign "Center"
+@BBInterface Control SetControlProperty Title VAlign "Center"
+@BBInterface Control SetAgent Title Caption StaticText "Iron Maiden - Tailgunner"
+
+!---- bbFoomanIntFrame::Stop ----
+@BBInterface Control CreateChild bbFoomanIntFrame Button Stop
+@BBInterface Control SetWindowProperty Stop X 2
+@BBInterface Control SetWindowProperty Stop Y 17
+@BBInterface Control SetWindowProperty Stop Width 16
+@BBInterface Control SetWindowProperty Stop Height 16
+@BBInterface Control SetWindowProperty Stop Border true
+@BBInterface Control SetWindowProperty Stop IsVisible true
+@BBInterface Control SetWindowProperty Stop Style "Inset"
+@BBInterface Control SetControlProperty Stop HAlign "Center"
+@BBInterface Control SetControlProperty Stop VAlign "Center"
+@BBInterface Control SetAgent Stop Caption StaticText "*"
+@BBInterface Control SetAgent Stop LeftMouseDown Bro@m "@bbFooman.Stop"
+
+!---- bbFoomanIntFrame::Pause ----
+@BBInterface Control CreateChild bbFoomanIntFrame Button Pause
+@BBInterface Control SetWindowProperty Pause X 17
+@BBInterface Control SetWindowProperty Pause Y 17
+@BBInterface Control SetWindowProperty Pause Width 16
+@BBInterface Control SetWindowProperty Pause Height 16
+@BBInterface Control SetWindowProperty Pause Border true
+@BBInterface Control SetWindowProperty Pause IsVisible true
+@BBInterface Control SetWindowProperty Pause Style "Inset"
+@BBInterface Control SetControlProperty Pause HAlign "Center"
+@BBInterface Control SetControlProperty Pause VAlign "Center"
+@BBInterface Control SetAgent Pause Caption StaticText "||"
+@BBInterface Control SetAgent Pause LeftMouseDown Bro@m "@bbFooman.Play_Pause"
+
+!---- bbFoomanIntFrame::Play ----
+@BBInterface Control CreateChild bbFoomanIntFrame Button Play
+@BBInterface Control SetWindowProperty Play X 33
+@BBInterface Control SetWindowProperty Play Y 17
+@BBInterface Control SetWindowProperty Play Width 16
+@BBInterface Control SetWindowProperty Play Height 16
+@BBInterface Control SetWindowProperty Play Border true
+@BBInterface Control SetWindowProperty Play IsVisible true
+@BBInterface Control SetWindowProperty Play Style "Inset"
+@BBInterface Control SetControlProperty Play HAlign "Center"
+@BBInterface Control SetControlProperty Play VAlign "Center"
+@BBInterface Control SetAgent Play Caption StaticText ">"
+@BBInterface Control SetAgent Play LeftMouseDown Bro@m "@bbFooman.Play"
+
+!---- bbFoomanIntFrame::Prev ----
+@BBInterface Control CreateChild bbFoomanIntFrame Button Prev
+@BBInterface Control SetWindowProperty Prev X 49
+@BBInterface Control SetWindowProperty Prev Y 17
+@BBInterface Control SetWindowProperty Prev Width 16
+@BBInterface Control SetWindowProperty Prev Height 16
+@BBInterface Control SetWindowProperty Prev Border true
+@BBInterface Control SetWindowProperty Prev IsVisible true
+@BBInterface Control SetWindowProperty Prev Style "Inset"
+@BBInterface Control SetControlProperty Prev HAlign "Center"
+@BBInterface Control SetControlProperty Prev VAlign "Center"
+@BBInterface Control SetAgent Prev Caption StaticText "<-"
+@BBInterface Control SetAgent Prev LeftMouseDown Bro@m "@bbFooman.Prev"
+
+!---- bbFoomanIntFrame::Next ----
+@BBInterface Control CreateChild bbFoomanIntFrame Button Next
+@BBInterface Control SetWindowProperty Next X 65
+@BBInterface Control SetWindowProperty Next Y 17
+@BBInterface Control SetWindowProperty Next Width 16
+@BBInterface Control SetWindowProperty Next Height 16
+@BBInterface Control SetWindowProperty Next Border true
+@BBInterface Control SetWindowProperty Next IsVisible true
+@BBInterface Control SetWindowProperty Next Style "Inset"
+@BBInterface Control SetControlProperty Next HAlign "Center"
+@BBInterface Control SetControlProperty Next VAlign "Center"
+@BBInterface Control SetAgent Next Caption StaticText "->"
+@BBInterface Control SetAgent Next LeftMouseDown Bro@m "@bbFooman.Next"
+
+!---- bbFoomanIntFrame::Random ----
+@BBInterface Control CreateChild bbFoomanIntFrame Button Random
+@BBInterface Control SetWindowProperty Random X 81
+@BBInterface Control SetWindowProperty Random Y 17
+@BBInterface Control SetWindowProperty Random Width 16
+@BBInterface Control SetWindowProperty Random Height 16
+@BBInterface Control SetWindowProperty Random Border true
+@BBInterface Control SetWindowProperty Random IsVisible true
+@BBInterface Control SetWindowProperty Random Style "Inset"
+@BBInterface Control SetControlProperty Random HAlign "Center"
+@BBInterface Control SetControlProperty Random VAlign "Center"
+@BBInterface Control SetAgent Random Caption StaticText "R"
+@BBInterface Control SetAgent Random LeftMouseDown Bro@m "@bbFooman.Random"
+
+!---- bbFoomanIntFrame::Open ----
+@BBInterface Control CreateChild bbFoomanIntFrame Button Open
+@BBInterface Control SetWindowProperty Open X 97
+@BBInterface Control SetWindowProperty Open Y 17
+@BBInterface Control SetWindowProperty Open Width 16
+@BBInterface Control SetWindowProperty Open Height 16
+@BBInterface Control SetWindowProperty Open Border true
+@BBInterface Control SetWindowProperty Open IsVisible true
+@BBInterface Control SetWindowProperty Open Style "Inset"
+@BBInterface Control SetControlProperty Open HAlign "Center"
+@BBInterface Control SetControlProperty Open VAlign "Center"
+@BBInterface Control SetAgent Open Caption StaticText "^"
+@BBInterface Control SetAgent Open LeftMouseDown Bro@m "@bbFooman.Open"
+
+!---- bbFoomanIntFrame::ShowPlaylist ----
+@BBInterface Control CreateChild bbFoomanIntFrame Button ShowPlaylist
+@BBInterface Control SetWindowProperty ShowPlaylist X 113
+@BBInterface Control SetWindowProperty ShowPlaylist Y 17
+@BBInterface Control SetWindowProperty ShowPlaylist Width 16
+@BBInterface Control SetWindowProperty ShowPlaylist Height 16
+@BBInterface Control SetWindowProperty ShowPlaylist Border true
+@BBInterface Control SetWindowProperty ShowPlaylist IsVisible true
+@BBInterface Control SetWindowProperty ShowPlaylist Style "Inset"
+@BBInterface Control SetControlProperty ShowPlaylist HAlign "Center"
+@BBInterface Control SetControlProperty ShowPlaylist VAlign "Center"
+@BBInterface Control SetAgent ShowPlaylist Caption StaticText "$$"
+@BBInterface Control SetAgent ShowPlaylist LeftMouseDown Bro@m "@bbFooman.ShowPlaylist"
+
+!---- bbFoomanIntFrame::Start ----
+@BBInterface Control CreateChild bbFoomanIntFrame Button Start
+@BBInterface Control SetWindowProperty Start X 213
+@BBInterface Control SetWindowProperty Start Y 2
+@BBInterface Control SetWindowProperty Start Width 16
+@BBInterface Control SetWindowProperty Start Height 16
+@BBInterface Control SetWindowProperty Start Border true
+@BBInterface Control SetWindowProperty Start IsVisible true
+@BBInterface Control SetWindowProperty Start Style "Inset"
+@BBInterface Control SetControlProperty Start HAlign "Center"
+@BBInterface Control SetControlProperty Start VAlign "Center"
+@BBInterface Control SetAgent Start Caption StaticText "@"
+@BBInterface Control SetAgent Start LeftMouseUp Bro@m "@bbFooman.FooStart"
+
+!---- bbFoomanIntFrame::Volume ----
+@BBInterface Control CreateChild bbFoomanIntFrame Slider Volume
+@BBInterface Control SetWindowProperty Volume X 129
+@BBInterface Control SetWindowProperty Volume Y 17
+@BBInterface Control SetWindowProperty Volume Width 84
+@BBInterface Control SetWindowProperty Volume Height 16
+@BBInterface Control SetWindowProperty Volume Border true
+@BBInterface Control SetWindowProperty Volume IsVisible true
+@BBInterface Control SetWindowProperty Volume Style "Toolbar"
+@BBInterface Control SetControlProperty Volume Value 0.000000
+@BBInterface Control SetControlProperty Volume Vertical false
+@BBInterface Control SetControlProperty Volume Reversed false
+@BBInterface Control SetControlProperty Volume Appearance 0
+@BBInterface Control SetControlProperty Volume BroadcastValueMinimum 0
+@BBInterface Control SetControlProperty Volume BroadcastValueMaximum 100
+@BBInterface Control SetAgent Volume OnChange Bro@m "@bbFooman.Volume $$BroadcastValue$$"
+
+!---- bbFoomanIntFrame::Seek ----
+@BBInterface Control CreateChild bbFoomanIntFrame Slider Seek
+@BBInterface Control SetWindowProperty Seek X 2
+@BBInterface Control SetWindowProperty Seek Y 33
+@BBInterface Control SetWindowProperty Seek Width 227
+@BBInterface Control SetWindowProperty Seek Height 15
+@BBInterface Control SetWindowProperty Seek Border true
+@BBInterface Control SetWindowProperty Seek IsVisible true
+@BBInterface Control SetWindowProperty Seek Style "Toolbar"
+@BBInterface Control SetControlProperty Seek Value 0.027237
+@BBInterface Control SetControlProperty Seek Vertical false
+@BBInterface Control SetControlProperty Seek Reversed false
+@BBInterface Control SetControlProperty Seek Appearance 2
+@BBInterface Control SetControlProperty Seek BroadcastValueMinimum 0
+@BBInterface Control SetControlProperty Seek BroadcastValueMaximum 257
+@BBInterface Control SetAgent Seek OnChange Bro@m "@bbFooman.Seek $$BroadcastValue$$"
+
+!---- bbFoomanIntFrame::Mute ----
+@BBInterface Control CreateChild bbFoomanIntFrame SwitchButton Mute
+@BBInterface Control SetWindowProperty Mute X 213
+@BBInterface Control SetWindowProperty Mute Y 17
+@BBInterface Control SetWindowProperty Mute Width 16
+@BBInterface Control SetWindowProperty Mute Height 16
+@BBInterface Control SetWindowProperty Mute Border true
+@BBInterface Control SetWindowProperty Mute IsVisible true
+@BBInterface Control SetWindowProperty Mute Style "Toolbar"
+@BBInterface Control SetControlProperty Mute HAlign "Center"
+@BBInterface Control SetControlProperty Mute VAlign "Center"
+@BBInterface Control SetAgent Mute Pressed Bro@m "@bbFooman.Mute"
+@BBInterface Control SetAgent Mute Unpressed Bro@m "@bbFooman.Mute"
+@BBInterface Control SetControlProperty Mute Pressed true
+
+!---- bbFoomanIntFrame::AlbumArt ----
+@BBInterface Control CreateChild bbFoomanIntFrame Label AlbumArt
+@BBInterface Control SetWindowProperty AlbumArt X 230
+@BBInterface Control SetWindowProperty AlbumArt Y 2
+@BBInterface Control SetWindowProperty AlbumArt Width 46
+@BBInterface Control SetWindowProperty AlbumArt Height 46
+@BBInterface Control SetWindowProperty AlbumArt Border true
+@BBInterface Control SetWindowProperty AlbumArt IsVisible true
+@BBInterface Control SetWindowProperty AlbumArt Style "Toolbar"
+@BBInterface Control SetControlProperty AlbumArt HAlign "Center"
+@BBInterface Control SetControlProperty AlbumArt VAlign "Center"
+@BBInterface Control SetAgent AlbumArt Image Bitmap ""
+@BBInterface Control SetAgentProperty AlbumArt Image Scale 100
+@BBInterface Control SetAgentProperty AlbumArt Image VAlign "Center"
+@BBInterface Control SetAgentProperty AlbumArt Image HAlign "Center"

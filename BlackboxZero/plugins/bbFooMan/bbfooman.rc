@@ -1,0 +1,35 @@
+# ------------------------------------------------------
+# - bbFooman.rc - for bbFooman 1.1
+
+# Lines starting with # or ! are ignored
+
+# This configuration for using bbFooman with
+# bbInterface.
+
+bbfooman.useBBInterface:            true
+
+# string format to obtain the data from foobar2k
+# (for more info see titleformat_help.html
+# in foobar2k directory)
+bbfooman.titleFormat:               $if(%title%,$if2(%album artist%,%artist%) - %title%,%_filename_ext%)
+bbfooman.playlistHeader:            $if2(%album artist%,%artist%) '['%album%']'
+
+# If you creating interface in module
+# you must specified the module name
+# Example:	bbFoomanInt:Seek
+bbfooman.BBITitleControlName:       bbFoomanInt:Title
+bbfooman.BBISeekControlName:        bbFoomanInt:Seek
+bbfooman.BBIVolumeControlName:      bbFoomanInt:Volume
+bbFooman.BBIAlbumArtControlName:    bbFoomanInt:AlbumArt
+bbfooman.setBBITitle:               true
+bbfooman.setBBISeek:                true
+bbfooman.setBBIVolume:              true
+bbfooman.setBBIAlbumArt:            true
+bbfooman.BBIAlbumArtHeight:         50
+bbfooman.BBIAlbumArtWidth:          50
+# string must contane ';' at the end!
+bbfooman.BBIAAImgNames:             folder;cover;coverart;front;album;albumart;
+bbfooman.BBIAAImgTypes:             jpg;gif;png;bmp;tif;
+# leave empty if not use
+bbfooman.BBIAANoImage:              C:\bbLean\NoImage.jpg
+bbfooman.FoobarPath:                E:\Program Files\Foobar2000\Foobar2000.exe
