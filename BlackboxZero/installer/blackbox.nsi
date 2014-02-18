@@ -4,7 +4,7 @@
 OutFile c:\_builds\install.exe
 
 # where to install program
-InstallDir c:\bb_i
+InstallDir c:\bbzero_beta
 
 # good for debugging
 ShowInstDetails Show
@@ -14,6 +14,7 @@ ShowInstDetails Show
 !include nsDialogs.nsh
 !include x64.nsh
 !include Sections.nsh
+!addplugindir .
 
 Var OptConfigs
 Var OptStyles
@@ -29,10 +30,10 @@ RequestExecutionLevel admin
 AddBrandingImage left 256
 
 Page Custom brandimage "" ": Brand Image"
-Page Custom windetectionPageEnter windetectionPageLeave
 Page License
-Page Components
 Page Directory
+Page Components
+Page Custom windetectionPageEnter windetectionPageLeave
 Page InstFiles
 Page Custom shellPageEnter shellPageLeave
 #UninstPage uninstConfirm
@@ -642,10 +643,25 @@ Function windetectionPageLeave
         SectionSetFlags ${Sec_Vista_32} ${SF_SELECTED}
     ${EndIf}
   ${EndIf}
-# MessageBox MB_OK "You typed:$\n$\n$0"
+
+  call redistPageEnter
 FunctionEnd
 
-# as shell dialogue
+### msvc redist
+Function redistPageEnter
+
+  File redist\vcredist_x64.exe
+  File redist\vcredist_x86.exe
+
+  ${If} $radio_64 == 1
+    ExecWait 'vcredist_x64.exe /install /passive'
+    ExecWait 'vcredist_x86.exe /install /passive'
+  ${Else}
+    ExecWait 'vcredist_x86.exe /install /passive'
+  ${EndIf}
+FunctionEnd
+
+### as shell dialogue
 Function shellPageEnter
   nsDialogs::Create 1018
   Pop $ShellDialog
