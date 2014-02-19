@@ -1,7 +1,6 @@
 #define CDECL __cdecl
 
 #include <windows.h>
-#include <stdbool.h>
 #include <math.h>
 #include "gdiplus.h"
 #include "BBApi.h"

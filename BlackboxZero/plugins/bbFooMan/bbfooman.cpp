@@ -37,7 +37,7 @@ GdiplusStartupInput GdiStartStruct={1, &DebugEventProcM, 0, 0, &GdiplusStartupIn
 GdiplusStartupOutput GdiOutpustStruct;
 HANDLE gdiToken;
 
-#include "bbf_settings.c"
+#include "bbf_settings.cpp"
 
 int CDECL beginPlugin(HINSTANCE hPluginInstance)
 {

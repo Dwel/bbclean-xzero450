@@ -1,6 +1,6 @@
 project(bbFooMan)
 set(bbFooMan_SOURCES
-  bbf_settings.cpp
+  #bbf_settings.cpp #@NOTE: this file is included from inside bbfooman.cpp
   bbfooman.cpp
 )
 
