@@ -13,15 +13,16 @@
 
  ============================================================================
 */
+#include <windows.h>
+#include <gdiplus.h>
+#include <stdio.h>
+using namespace Gdiplus;
 
-#pragma comment(lib, "blackbox.lib")
-#pragma comment(lib, "gdiplus.lib")
 #pragma comment(linker, "/EXPORT:beginPlugin")
 #pragma comment(linker, "/EXPORT:endPlugin")
 #pragma comment(linker, "/EXPORT:pluginInfo")
 
 #include "bbFooman.h"
-
 // Global
 HINSTANCE hInstance;
 HWND hWndPlugin, hWndBlackbox, rhWnd;
@@ -33,9 +34,9 @@ VOID WINGDIPAPI GdiplusStartupInputProcM(
 	BOOL suppressBackgroundThread = FALSE,
 	BOOL suppressExternalCodecs = FALSE){};
 VOID WINGDIPAPI DebugEventProcM(DWORD level, CHAR *message){};
-GdiplusStartupInput GdiStartStruct={1, &DebugEventProcM, 0, 0, &GdiplusStartupInputProcM};
+GdiplusStartupInput GdiStartStruct;
 GdiplusStartupOutput GdiOutpustStruct;
-HANDLE gdiToken;
+ULONG_PTR gdiToken;
 
 #include "bbf_settings.cpp"
 
@@ -61,7 +62,11 @@ int CDECL beginPlugin(HINSTANCE hPluginInstance)
 	}
 	ReadRCSettings();
 
-	if(setBBIAlbumArt && useBBInterface) GdiplusStartup(&gdiToken, &GdiStartStruct, &GdiOutpustStruct);
+
+	if(setBBIAlbumArt && useBBInterface)
+	{
+		GdiplusStartup(&gdiToken, &GdiStartStruct, &GdiOutpustStruct);
+	}
 
 	if(useBBInterface)
 	{
@@ -87,7 +92,7 @@ void CDECL endPlugin(HINSTANCE hPluginInstance)
         DestroyWindow(hWndPlugin);
         SendMessage(hWndBlackbox, BB_UNREGISTERMESSAGE, (WPARAM)hWndPlugin, (LPARAM)msgs);
         UnregisterClass(szAppName, hPluginInstance);
-	if(setBBIAlbumArt && useBBInterface) GdiplusShutdown(&gdiToken);
+	if(setBBIAlbumArt && useBBInterface) GdiplusShutdown(gdiToken);
 }
 
 LPCSTR CDECL pluginInfo(int field)
@@ -323,7 +328,6 @@ void ShowAlbumArt(char *szPath)
 {
 	char buf[MAX_PATH+128], path[MAX_PATH];
 	wchar_t wfname[MAX_PATH];
-	GpImage *image;
 	unsigned int width, height, scale;
 	int i=-1, j=-1;
 	float wScale, hScale;
@@ -348,10 +352,10 @@ void ShowAlbumArt(char *szPath)
 
 		if(found || BBIAANoImage[0])
 		{
-			GdipLoadImageFromFile(wfname, &image);
-			GdipGetImageWidth(image, &width);
-			GdipGetImageHeight(image, &height);
-			GdipDisposeImage(image);
+			Image img(wfname); // GdipLoadImageFromFile(wfname, &image);
+			width = img.GetWidth(); //GdipGetImageWidth(image, &width);
+			height = img.GetHeight(); //GdipGetImageHeight(image, &height);
+			//GdipDisposeImage(image);
 
 			hScale = (float)BBIAlbumArtHeight/height;
 			wScale = (float)BBIAlbumArtWidth/width;

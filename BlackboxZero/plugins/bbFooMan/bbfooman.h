@@ -1,8 +1,7 @@
-#define CDECL __cdecl
+//#define CDECL __cdecl
 
 #include <windows.h>
 #include <math.h>
-#include "gdiplus.h"
 #include "BBApi.h"
 #include "foomes.h"
 
