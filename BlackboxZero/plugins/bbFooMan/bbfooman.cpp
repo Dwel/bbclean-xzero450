@@ -18,9 +18,9 @@
 #include <stdio.h>
 using namespace Gdiplus;
 
-#pragma comment(linker, "/EXPORT:beginPlugin")
-#pragma comment(linker, "/EXPORT:endPlugin")
-#pragma comment(linker, "/EXPORT:pluginInfo")
+//#pragma comment(linker, "/EXPORT:beginPlugin")
+//#pragma comment(linker, "/EXPORT:endPlugin")
+//#pragma comment(linker, "/EXPORT:pluginInfo")
 
 #include "bbFooman.h"
 // Global
@@ -40,7 +40,7 @@ ULONG_PTR gdiToken;
 
 #include "bbf_settings.cpp"
 
-int CDECL beginPlugin(HINSTANCE hPluginInstance)
+int __declspec(dllexport)  beginPlugin(HINSTANCE hPluginInstance)
 {
 	WNDCLASS wc;
 	hWndBlackbox = GetBBWnd();
@@ -80,7 +80,7 @@ int CDECL beginPlugin(HINSTANCE hPluginInstance)
 	return 0;
 }
 
-void CDECL endPlugin(HINSTANCE hPluginInstance)
+void __declspec(dllexport)  endPlugin(HINSTANCE hPluginInstance)
 {
 	WriteRCSettings();
 	if(useBBInterface) SendMessage(rhWnd, WM_FOO_UNREGISTER_CALLBACK,
@@ -95,7 +95,7 @@ void CDECL endPlugin(HINSTANCE hPluginInstance)
 	if(setBBIAlbumArt && useBBInterface) GdiplusShutdown(gdiToken);
 }
 
-LPCSTR CDECL pluginInfo(int field)
+LPCSTR __declspec(dllexport)  pluginInfo(int field)
 {
 	switch(field)
 	{

@@ -1,6 +1,8 @@
 rem this file is intended for usage from cmd.exe or from explorer (clicking on it)
 @echo off
 
+set PATH=C:\Program Files (x86)\CMake 2.8\bin;%PATH%
+
 echo 32b xp...
 
 set INSTDIR=c:/_builds/vs_xp_32

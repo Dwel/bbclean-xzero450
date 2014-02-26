@@ -1,6 +1,8 @@
 rem this file is intended for usage from cmd.exe or from explorer (clicking on it)
 @echo off
 
+set PATH=C:\Program Files (x86)\CMake 2.8\bin;%PATH%
+
 set INSTDIR=c:/_builds/vs_vista_64
 mkdir _projects.vs11.64
 cd _projects.vs11.64

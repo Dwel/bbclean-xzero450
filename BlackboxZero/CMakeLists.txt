@@ -47,7 +47,7 @@ add_subdirectory(blackbox/Hooks)
 
 # documentation
 add_subdirectory(build/fuzzydoc)
-#add_subdirectory(docs)
+add_subdirectory(docs)
 
 # plugins
 add_subdirectory(3rd_party/iTunesCOMWindowsSDK)
