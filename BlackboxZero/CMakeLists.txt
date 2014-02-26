@@ -106,7 +106,7 @@ add_subdirectory(plugins/BBStyle)
 add_subdirectory(plugins/bbRecycleBin)
 add_subdirectory(plugins/bbInterface)
 add_subdirectory(plugins/bbFooMan)
-#add_subdirectory(plugins/bbMuse)
+add_subdirectory(plugins/bbMuse)
 #add_subdirectory(plugins/bbPlayer)
 #add_subdirectory(plugins/bbSeekBar)
 

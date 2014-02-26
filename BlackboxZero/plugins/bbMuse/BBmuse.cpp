@@ -24,7 +24,7 @@
 #define DLL_EXPORT
 #endif
 
-#include "../../includes/BBApi.h"
+#include "BBApi.h"
 #include <stdlib.h>
 #include <windows.h>
 #include <mmsystem.h>
@@ -421,7 +421,7 @@ VOID CALLBACK WinEventProc(	HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd,
 							if(pa->thread != NULL){
 								GetExitCodeThread(pa->thread, &exitcode);
 								TerminateThread(pa->thread, exitcode);
-								pa->thread == NULL;
+								pa->thread = NULL;
 							}
 						}
 						sendBroam("@BBmuse_fromWinamp_Closed");
@@ -714,7 +714,7 @@ void endPlugin(HINSTANCE hPluginInstance)
 		if(pa->thread != NULL){
 			GetExitCodeThread(pa->thread, &exitcode);
 			TerminateThread(pa->thread, exitcode);
-			pa->thread == NULL;
+			pa->thread = NULL;
 		}
 	}
 	
@@ -778,9 +778,7 @@ LPCSTR pluginInfo(int field)
 
 void ShowMyMenu(bool popup)
 {
-	char buff1[50], buff2[5];
-	int n;
-	Menu *pMenu, *pSub, *tabPosMenu, *scopeTypeMenu, *scopeWidthMenu, *KHzMenu, *BitMenu, *BufferMenu, *FPSMenu, *BlurMenu, *stylemenu;
+	Menu *pMenu, *pSub;
 	Menu *scrollstyle, *idle;
 	// We create the main plugin menu.
 	// Each menu or submenu has an unique ID-string, which identifies it
@@ -1201,7 +1199,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			const char *msg_string = (LPCSTR)lParam;
 			
-			if (!stricmp(msg_string, "@BBmuse GetWinampInfo"))
+			if (!_stricmp(msg_string, "@BBmuse GetWinampInfo"))
 			{
 				// @BBShowPlugins: Show window (global bro@m)
 				getWinampInfo();
@@ -1227,7 +1225,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			
 			// First we check for the two "global" bro@ms,
-			if (!stricmp(msg_string, "@BBShowPlugins"))
+			if (!_stricmp(msg_string, "@BBShowPlugins"))
 			{
 				// @BBShowPlugins: Show window (global bro@m)
 				if(!inSlit){
@@ -1236,7 +1234,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 			}
-			if (!stricmp(msg_string, "@BBHidePlugins"))
+			if (!_stricmp(msg_string, "@BBHidePlugins"))
 			{
 				// @BBHidePlugins: Hide window (global bro@m)
 				if(!inSlit){
@@ -1297,12 +1295,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			static const char Example_Broam_ID[] = "@BBmuseInternal";
 
-			if (!strnicmp(msg_string, Example_Broam_ID, sizeof Example_Broam_ID - 1))
+			if (!_strnicmp(msg_string, Example_Broam_ID, sizeof Example_Broam_ID - 1))
 			{
 				msg_string += sizeof Example_Broam_ID - 1;
 				while (*msg_string == ' ') msg_string ++;
 				
-				if (!stricmp(msg_string, "SlitToggle"))
+				if (!_stricmp(msg_string, "SlitToggle"))
 				{
 					if(inSlit && hSlit)
 					{
@@ -1331,7 +1329,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						);
 				}
 				
-				if (!stricmp(msg_string, "ToggleBBInterface"))
+				if (!_stricmp(msg_string, "ToggleBBInterface"))
 				{
 					// make use of our frienly ghost from above
 					toggle_setting(&bbInterfaceEnabled,        // the * to the bool to toggle
@@ -1351,7 +1349,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 				}
 				
-				if (!stricmp(msg_string, "ToggleBorder"))
+				if (!_stricmp(msg_string, "ToggleBorder"))
 				{
 					// make use of our frienly ghost from above
 					toggle_setting(&showBorder,        // the * to the bool to toggle
@@ -1360,7 +1358,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						);
 					break;
 				}
-				if (!stricmp(msg_string, "ToggleScrolling"))
+				if (!_stricmp(msg_string, "ToggleScrolling"))
 				{
 					// make use of our frienly ghost from above
 					toggle_setting(&scrolling,        // the * to the bool to toggle
@@ -1369,7 +1367,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						);
 					break;
 				}
-				if (!stricmp(msg_string, "AlwaysOnTop"))
+				if (!_stricmp(msg_string, "AlwaysOnTop"))
 				{
 					// make use of our frienly ghost from above
 					toggle_setting(&alwaysOnTop,        // the * to the bool to toggle
@@ -1378,7 +1376,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						);
 					break;
 				}
-				if (!stricmp(msg_string, "SnapWindowToEdge"))
+				if (!_stricmp(msg_string, "SnapWindowToEdge"))
 				{
 					toggle_setting(&snapWindow,
 						msg_string,
@@ -1386,7 +1384,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						);
 					break;
 				}
-				if (!stricmp(msg_string, "TransparencyEnabled"))
+				if (!_stricmp(msg_string, "TransparencyEnabled"))
 				{
 					toggle_setting(&transparencyEnabled,
 						msg_string,
@@ -1394,7 +1392,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						);
 					break;
 				}
-				if (!stricmp(msg_string, "TransbackEnabled"))
+				if (!_stricmp(msg_string, "TransbackEnabled"))
 				{
 					toggle_setting(&transback,
 						msg_string,
@@ -1412,7 +1410,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					// the integer item sends a message like this:
 					//      "@ExampleInternal TransparencyAlpha 45"
 
-					if (!memicmp(msg_string, trans_alpha_id, sizeof(trans_alpha_id)-1))
+					if (!_memicmp(msg_string, trans_alpha_id, sizeof(trans_alpha_id)-1))
 					{
 						transparencyAlpha = atoi(msg_string + sizeof(trans_alpha_id)-1);
 						set_window_modes();
@@ -1421,7 +1419,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 				}
 
-				if (!stricmp(msg_string, "ToggleWithPlugins"))
+				if (!_stricmp(msg_string, "ToggleWithPlugins"))
 				{
 					toggle_setting(&pluginToggle,
 						msg_string,
@@ -1430,7 +1428,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 				}
 				
-				if (!stricmp(msg_string, "ToggleTrackNumber"))
+				if (!_stricmp(msg_string, "ToggleTrackNumber"))
 				{
 					toggle_setting(&showTrackNumber,
 						msg_string,
@@ -1440,7 +1438,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 				}
 				
-				if (!stricmp(msg_string, "ToggleScrollStyle"))
+				if (!_stricmp(msg_string, "ToggleScrollStyle"))
 				{
 					scroll_style = !scroll_style;
 					WriteString(rcpath, "BBmuse.plugin.scroll_style:", scroll_style?"EndToEnd":"Stream");
@@ -1448,13 +1446,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 				}
 				
-				if (!stricmp(msg_string, "Edit"))
+				if (!_stricmp(msg_string, "Edit"))
 				{
 					GetBlackboxEditor(szTemp);
 					BBExecute(NULL, NULL, szTemp, rcpath, NULL, SW_SHOWNORMAL, false);
 					break;
 				}
-				if (!stricmp(msg_string, "About"))
+				if (!_stricmp(msg_string, "About"))
 				{
 					sprintf(szTemp,
 						"%s\n\n"
