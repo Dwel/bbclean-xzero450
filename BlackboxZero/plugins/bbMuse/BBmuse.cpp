@@ -30,6 +30,8 @@
 #include <mmsystem.h>
 #include <stdio.h>
 #include <time.h>
+#include <malloc.h>
+
 
 #pragma comment (lib, "msimg32.lib")
 
@@ -213,24 +215,22 @@ void sendWinampDataBroam(int id, int data, char *broam_name, UINT type){
 	SendMessage(hwndBlackbox, BB_BROADCAST, 0, (LPARAM)buf);
 }
 
-int *getStringDimensions(char *str){
-	int str_dimensions[2];
-	
+void getStringDimensions(char *str, int & v0, int & v1)
+{	
 	RECT r = {0,0,0,0};
 	HDC hdc = CreateCompatibleDC(NULL);
 	HGDIOBJ otherfont = SelectObject(hdc, hFont);
 	DrawText(hdc, str, -1, &r, DT_LEFT|DT_CALCRECT);
 
-	str_dimensions[0] = r.right;
-	str_dimensions[1] = r.bottom;
+	v0 = r.right;
+	v1 = r.bottom;
 
 	SelectObject(hdc, otherfont);
 	DeleteDC(hdc);
-	
-	return str_dimensions;
 }
 
-char *getErrorString(bool play_stopped){
+char * getErrorString(bool play_stopped, char * buf, size_t max_buf_sz)
+{
 	switch(display_state){
 		case DISP_ERRORS:{
 			if(play_stopped && hwndWinamp != NULL)return "Playback Stopped";
@@ -239,8 +239,7 @@ char *getErrorString(bool play_stopped){
 		case DISP_TIME:{
 			const time_t t = time(0);
 			const tm *tml = localtime(&t);
-			char buf[MAX_PATH];
-			strftime(buf, MAX_PATH, timestrval, tml);
+			strftime(buf, max_buf_sz, timestrval, tml);
 			return buf;
 		}
 		case DISP_MESSAGE:{
@@ -286,15 +285,14 @@ int circularstrstr(char* a, char* b, int nb)
 	END
 */
 
-char *readSongName(){
+char *readSongName(char * buff, size_t const buff_sz){
 	if(hwndWinamp == NULL){
-		return getErrorString(false);
+		return getErrorString(false, buff, buff_sz);
 	}
 	
 	int pos, length;
-	char buffer[MAX_PATH];
-	GetWindowText(hwndWinamp, buffer, MAX_PATH);
-	length = strlen(buffer);
+	GetWindowText(hwndWinamp, buff, buff_sz);
+	length = strlen(buff);
 	
 	/*
 		START
@@ -304,17 +302,17 @@ char *readSongName(){
 		
 		The following is partialy modified from the original source.
 	*/
-	if ((pos = circularstrstr(buffer, "- Winamp ***", 12)) != -1) {
+	if ((pos = circularstrstr(buff, "- Winamp ***", 12)) != -1) {
 		// The option "scroll song title in taskbar" is on...
 		
-		char buffer2[MAX_PATH];
+		char * buffer2 = static_cast<char *>(alloca(buff_sz));
 		int i, j=0;
 	
 		for (i=(pos+12)%length; i!=pos; i=(i+1)%length)
-			buffer2[j++] = buffer[i];
+			buffer2[j++] = buff[i];
 		
 		buffer2[j] = '\0';
-		strcpy(buffer, buffer2);
+		strcpy(buff, buffer2);
 	}
 	/*
 		END
@@ -322,7 +320,7 @@ char *readSongName(){
 	
 	// Get rid of the annoying " - Winamp" tag...
 	char *ptr;
-	ptr = strstr(buffer, " - Winamp");
+	ptr = strstr(buff, " - Winamp");
 	if(ptr != NULL){
 		while(*ptr != '\0'){
 			*ptr++ = '\0';
@@ -331,14 +329,14 @@ char *readSongName(){
 	
 	// Toggle track number...
 	if(!showTrackNumber){
-		ptr = strstr(buffer, ".");
+		ptr = strstr(buff, ".");
 		if(ptr == NULL){
-			ptr = buffer;
+			ptr = buff;
 		}else{
 			ptr += 2;
 		}
 	}else{
-		ptr = buffer;
+		ptr = buff;
 	}
 	
 	return ptr;
@@ -360,8 +358,7 @@ void setTitleString(const char *str){
 	strcpy(title_string, str);
 	
 	if(!STREQ(title_string, title_string_old)){
-		title_string_len = getStringDimensions(title_string)[0];
-		title_string_height = getStringDimensions(title_string)[1];
+		getStringDimensions(title_string, title_string_len, title_string_height);
 		tickmax = 0;
 		tickmin = (width - ((bevelWidth + borderWidth)*2)) - title_string_len;
 		strcpy(title_string_old, title_string);
@@ -377,23 +374,27 @@ void getWinampInfo(){
 	findWinamp();
 	
 	playback = getWinampData(WINAMP_PLAYBACK_STATUS, WM_USER);
+
+	size_t const buff_sz = 1024;
+	char buff[buff_sz];
 	
 	if(playback == WINAMP_PLAYBACK_PAUSED){
 		tickspeed = 0;
 		motionblur = true;
-		setTitleString(readSongName());
+		setTitleString(readSongName(buff, buff_sz));
 		sendBroam("@BBmuse_fromWinamp_Paused");
 	}else if(playback == WINAMP_PLAYBACK_PLAYING){
 		flash = true;
 		tickspeed = 1;
 		motionblur = false;
-		setTitleString(readSongName());
+		setTitleString(readSongName(buff, buff_sz));
 		sendBroam("@BBmuse_fromWinamp_Playing");
 	}else{
 		flash = true;
 		tickspeed = 1;
 		motionblur = false;
-		setTitleString(getErrorString(true));
+		char buff[1024];
+		setTitleString(getErrorString(true, buff, 1024));
 		sendBroam("@BBmuse_fromWinamp_Stopped");
 	}
 }
