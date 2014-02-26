@@ -87,7 +87,7 @@ void CDECL endPlugin(HINSTANCE hPluginInstance)
         DestroyWindow(hWndPlugin);
         SendMessage(hWndBlackbox, BB_UNREGISTERMESSAGE, (WPARAM)hWndPlugin, (LPARAM)msgs);
         UnregisterClass(szAppName, hPluginInstance);
-	if(setBBIAlbumArt && useBBInterface) GdiplusShutdown(gdiToken);
+	if(setBBIAlbumArt && useBBInterface) GdiplusShutdown(&gdiToken);
 }
 
 LPCSTR CDECL pluginInfo(int field)
@@ -306,7 +306,7 @@ int MakePlaylist()
 			if(SendMessage(rhWnd, WM_FOO_GET_PLAYLIST_ITEM, is_playing ? nowplay : 0, 0) != P_ERROR)
 				GetWindowText(rhWnd, title, 128);
 
-	HANDLE menu = MakeNamedMenu(plcount ? title : "Foobar2k playlist (no items)", "bbFooman", true);
+	Menu * menu = MakeNamedMenu(plcount ? title : "Foobar2k playlist (no items)", "bbFooman", true);
 	for(int i=0; i<plcount; i++)
 		if(SetWindowText(rhWnd, titleFormat))
 			if(SendMessage(rhWnd, WM_FOO_GET_PLAYLIST_ITEM, i, 0) != P_ERROR)
@@ -355,7 +355,11 @@ void ShowAlbumArt(char *szPath)
 
 			hScale = (float)BBIAlbumArtHeight/height;
 			wScale = (float)BBIAlbumArtWidth/width;
+#if defined __MINGW__
 			scale = hScale>wScale ? lrintf(wScale*100) : lrintf(hScale*100);
+#else
+			scale = hScale>wScale ? static_cast<unsigned>(wScale*100.0f + 0.5f) : static_cast<unsigned>(hScale*100.0f + 0.5f);
+#endif
 
 			sprintf(buf, "@BBInterface Control SetAgent %s Image Bitmap \"%s\"", BBIAlbumArtName,
 					found ? path : BBIAANoImage);

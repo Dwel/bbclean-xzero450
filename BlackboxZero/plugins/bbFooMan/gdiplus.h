@@ -5,9 +5,9 @@
 
 typedef VOID (WINAPI *DebugEventProc)(DWORD level, CHAR *message);
 typedef VOID (WINAPI *GdiplusStartupInputProc)(
-        DebugEventProc debugEventCallback = NULL,
-        BOOL suppressBackgroundThread = FALSE,
-        BOOL suppressExternalCodecs = FALSE);
+        DebugEventProc debugEventCallback,
+        BOOL suppressBackgroundThread,
+        BOOL suppressExternalCodecs);
 
 typedef struct
 {
