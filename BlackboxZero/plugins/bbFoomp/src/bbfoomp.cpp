@@ -78,9 +78,9 @@
 #include "bbfoomp.h"
 
 LPSTR szAppName = "bbFoomp";			// The name of our window class, etc.
-LPSTR szVersion = "bbFoomp 1.7";		// Used in MessageBox titlebars
+LPSTR szVersion = "bbFoomp 1.7.1";		// Used in MessageBox titlebars
 
-LPSTR szInfoVersion = "1.7";
+LPSTR szInfoVersion = "1.7.1";
 LPSTR szInfoAuthor = "freeb0rn";
 LPSTR szInfoRelDate = "FILL IN LATER";
 LPSTR szInfoLink = "http://freeb0rn.com";
@@ -95,7 +95,11 @@ bool SlitExists = false;
 
 int beginPlugin(HINSTANCE hPluginInstance)
 {
-	if (!hwndSlit) return 0;
+	if (!hwndSlit)
+  {
+    MessageBox(0, "bbFoomp wants to be placed in slit!\nModify your plugins.rc, please.", szVersion, MB_OK | MB_ICONINFORMATION);
+    return 1;
+  }
 
 	WNDCLASS wc;
 	hwndBlackbox = GetBBWnd();
@@ -201,7 +205,9 @@ int beginSlitPlugin(HINSTANCE hPluginInstance, HWND hwndBBSlit)
 //===========================================================================
 
 void endPlugin(HINSTANCE hPluginInstance)
-{	
+{
+  if (!hwndSlit)
+    return;
 
 	// Write current position to the config file if *not* docked to the slit...
 	if (!FooDockedToSlit)
