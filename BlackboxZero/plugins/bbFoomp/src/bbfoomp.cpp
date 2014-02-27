@@ -1370,8 +1370,12 @@ void ReadRCSettings()
 	//====================
 
 	// Read bbfoomp settings from config file...
-	strcpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Progra~1\\foobar2000\\foobar2000.exe"));
-	strcpy(NoInfoText, ReadString(rcpath, "bbfoomp.DefaultText:", "Nothing is playing"));
+#if defined _WIN64
+	strcpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Program Files (x86)\\foobar2000\\foobar2000.exe"));
+#else
+  strcpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Progra~1\\foobar2000\\foobar2000.exe"));
+#endif
+  strcpy(NoInfoText, ReadString(rcpath, "bbfoomp.DefaultText:", "Nothing is playing"));
 	FooWidth = ReadInt(rcpath, "bbfoomp.foowidth:" , 200);
 	height = ReadInt(rcpath, "bbfoomp.height:", 20);
 	FooMode = ReadInt(rcpath, "bbfoomp.displaytype:", 2);
@@ -1428,7 +1432,11 @@ void WriteDefaultRCSettings()
 	if (file)
 	{
 		strcpy(szTemp,
-			"bbfoomp.foobar.path: C:\\Progra~1\\foobar2000\\foobar2000.exe\r\n" // Foo Directory [FooPath]
+#if defined _WIN64
+      "bbfoomp.foobar.path: C:\\Program Files (x86)\\foobar2000\\foobar2000.exe\r\n" // Foo Directory [FooPath]
+#else
+      "bbfoomp.foobar.path: C:\\Progra~1\\foobar2000\\foobar2000.exe\r\n" // Foo Directory [FooPath]
+#endif
 			"bbfoomp.displaytype: 2\r\n"										// FooMode (Mouse Over Mode) [FooMode]
 			"bbfoomp.foowidth: 200\r\n"											// FooWidth [self-explanatory]
 			"bbfoomp.height: 22\r\n"											// Height [self-explanatory]
