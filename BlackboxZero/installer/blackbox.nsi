@@ -196,6 +196,14 @@ SkipXP32_3:
 	File /r "vs_xp_32\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
 	File /r "vs_xp_32\plugins\BBDigitalEx\"
+  SetOutPath $INSTDIR\plugins\bbFooMan
+	File /r "vs_xp_32\plugins\bbFooMan\"
+  SetOutPath $INSTDIR\plugins\bbMuse
+	File /r "vs_xp_32\plugins\bbMuse\"
+  SetOutPath $INSTDIR\plugins\bbPlayer
+	File /r "vs_xp_32\plugins\bbPlayer\"
+  SetOutPath $INSTDIR\plugins\bbSeekBar
+	File /r "vs_xp_32\plugins\bbSeekBar\"
   SetOutPath $INSTDIR\plugins\bbFoomp
 	File /r "vs_xp_32\plugins\bbFoomp\"
   SetOutPath $INSTDIR\plugins\bbLeanBar+
@@ -305,6 +313,14 @@ SkipXP64_3:
 	File /r "vs_xp_64\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
 	File /r "vs_xp_64\plugins\BBDigitalEx\"
+  SetOutPath $INSTDIR\plugins\bbFooMan
+	File /r "vs_xp_64\plugins\bbFooMan\"
+  SetOutPath $INSTDIR\plugins\bbMuse
+	File /r "vs_xp_64\plugins\bbMuse\"
+  SetOutPath $INSTDIR\plugins\bbPlayer
+	File /r "vs_xp_64\plugins\bbPlayer\"
+  SetOutPath $INSTDIR\plugins\bbSeekBar
+	File /r "vs_xp_64\plugins\bbSeekBar\"
   SetOutPath $INSTDIR\plugins\bbFoomp
 	File /r "vs_xp_64\plugins\bbFoomp\"
   SetOutPath $INSTDIR\plugins\bbLeanBar+
@@ -416,6 +432,14 @@ SkipVista32_3:
 	File /r "vs_vista_32\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
 	File /r "vs_vista_32\plugins\BBDigitalEx\"
+  SetOutPath $INSTDIR\plugins\bbFooMan
+	File /r "vs_vista_32\plugins\bbFooMan\"
+  SetOutPath $INSTDIR\plugins\bbMuse
+	File /r "vs_vista_32\plugins\bbMuse\"
+  SetOutPath $INSTDIR\plugins\bbPlayer
+	File /r "vs_vista_32\plugins\bbPlayer\"
+  SetOutPath $INSTDIR\plugins\bbSeekBar
+	File /r "vs_vista_32\plugins\bbSeekBar\"
   SetOutPath $INSTDIR\plugins\bbFoomp
 	File /r "vs_vista_32\plugins\bbFoomp\"
   SetOutPath $INSTDIR\plugins\bbLeanBar+
@@ -527,6 +551,14 @@ SkipVista64_3:
 	File /r "vs_vista_64\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
 	File /r "vs_vista_64\plugins\BBDigitalEx\"
+  SetOutPath $INSTDIR\plugins\bbFooMan
+	File /r "vs_vista_64\plugins\bbFooMan\"
+  SetOutPath $INSTDIR\plugins\bbMuse
+	File /r "vs_vista_64\plugins\bbMuse\"
+  SetOutPath $INSTDIR\plugins\bbPlayer
+	File /r "vs_vista_64\plugins\bbPlayer\"
+  SetOutPath $INSTDIR\plugins\bbSeekBar
+	File /r "vs_vista_64\plugins\bbSeekBar\"
   SetOutPath $INSTDIR\plugins\bbFoomp
 	File /r "vs_vista_64\plugins\bbFoomp\"
   SetOutPath $INSTDIR\plugins\bbLeanBar+
