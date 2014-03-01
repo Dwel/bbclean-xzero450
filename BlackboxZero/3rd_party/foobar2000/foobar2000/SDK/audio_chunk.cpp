@@ -238,7 +238,7 @@ void audio_chunk::pad_with_silence(t_size samples) {
 	if (samples > get_sample_count())
 	{
 		t_size old_size = get_sample_count() * get_channels();
-		t_size new_size = pfc::multiply_guarded(samples,get_channels());
+		t_size new_size = pfc::multiply_guarded(static_cast<unsigned>(samples),get_channels());
 		set_data_size(new_size);
 		pfc::memset_t(get_data() + old_size,(audio_sample)0,new_size - old_size);
 		set_sample_count(samples);
