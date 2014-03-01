@@ -1,4 +1,9 @@
 project(bbSeekBar)
+
+add_subdirectory(foo_seek_remote)
+add_subdirectory(foobar2000)
+add_subdirectory(winamp)
+
 set(bbSeekBar_SOURCES
   bbseekbar.cpp
 )

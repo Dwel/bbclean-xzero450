@@ -16,7 +16,7 @@
 
 #include "bbseekbar.h"
 
-char *plugin_info[] =
+char const * plugin_info[] =
 {
 	"BBSeekbar 0.0.5b",
 	"BBSeekbar",
