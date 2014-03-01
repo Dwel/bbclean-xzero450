@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "../SDK/foobar2000.h"
+#include "foobar2000.h"
 #include "foo_seek_remote.h"
 
 BOOL APIENTRY DllMain( HANDLE hModule, 

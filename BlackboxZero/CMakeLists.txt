@@ -51,7 +51,7 @@ add_subdirectory(build/fuzzydoc)
 
 # plugins
 add_subdirectory(3rd_party/iTunesCOMWindowsSDK)
-add_subdirectory(3rd_party/foobar2000/foobar2000/SDK)
+add_subdirectory(3rd_party/foobar2000)
 add_subdirectory(plugins/bbKeys)
 add_subdirectory(plugins/bbPlugin)
 add_subdirectory(plugins/bbLeanBar)

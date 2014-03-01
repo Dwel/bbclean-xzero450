@@ -28,10 +28,14 @@
 
 #define SHARED_API /*NOTHROW*/ __stdcall
 
+#if defined STATIC
+#define SHARED_EXPORT 
+#else
 #ifndef SHARED_EXPORTS
 #define SHARED_EXPORT __declspec(dllimport) SHARED_API
 #else
 #define SHARED_EXPORT __declspec(dllexport) SHARED_API
+#endif
 #endif
 
 extern "C" {
@@ -62,7 +66,7 @@ int SHARED_EXPORT uCharCompare(t_uint32 p_char1,t_uint32 p_char2);
 int SHARED_EXPORT uStringCompare_ConvertNumbers(const char * elem1,const char * elem2);
 HINSTANCE SHARED_EXPORT uLoadLibrary(const char * name);
 HANDLE SHARED_EXPORT uCreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes,BOOL bManualReset,BOOL bInitialState, const char * lpName);
-HANDLE SHARED_EXPORT GetInfiniteWaitEvent();
+inline HANDLE SHARED_EXPORT GetInfiniteWaitEvent() { return INVALID_HANDLE_VALUE; }
 DWORD SHARED_EXPORT uGetModuleFileName(HMODULE hMod,pfc::string_base & out);
 BOOL SHARED_EXPORT uSetClipboardString(const char * ptr);
 BOOL SHARED_EXPORT uGetClipboardString(pfc::string_base & out);
@@ -106,7 +110,7 @@ BOOL SHARED_EXPORT uGetOpenFileName(HWND parent,const char * p_ext_mask,unsigned
 HANDLE SHARED_EXPORT uLoadImage(HINSTANCE hIns,const char * name,UINT type,int x,int y,UINT flags);
 UINT SHARED_EXPORT uRegisterClipboardFormat(const char * name);
 BOOL SHARED_EXPORT uGetClipboardFormatName(UINT format,pfc::string_base & out);
-BOOL SHARED_EXPORT uFormatSystemErrorMessage(pfc::string_base & p_out,DWORD p_code);
+inline BOOL SHARED_EXPORT uFormatSystemErrorMessage(pfc::string_base & p_out,DWORD p_code) { /* dummy */ return true; }
 
 HANDLE SHARED_EXPORT uSortStringCreate(const char * src);
 int SHARED_EXPORT uSortStringCompare(HANDLE string1,HANDLE string2);
@@ -430,8 +434,8 @@ class uCallStackTracker
 {
 	t_size param;
 public:
-	explicit SHARED_EXPORT uCallStackTracker(const char * name);
-	SHARED_EXPORT ~uCallStackTracker();
+	explicit SHARED_EXPORT uCallStackTracker(const char * name) { }
+	SHARED_EXPORT ~uCallStackTracker() { }
 };
 
 extern "C"
@@ -467,7 +471,7 @@ static int uExceptFilterProc_inline(LPEXCEPTION_POINTERS param) {
 #if !defined(FOOBAR2000_TARGET_VERSION) || FOOBAR2000_TARGET_VERSION >= 76
 extern "C" {
 	LONG SHARED_EXPORT uExceptFilterProc(LPEXCEPTION_POINTERS param);
-	PFC_NORETURN void SHARED_EXPORT uBugCheck();
+	inline PFC_NORETURN void SHARED_EXPORT uBugCheck() { /* dummy */ }
 }
 #else
 #define uExceptFilterProc uExceptFilterProc_inline

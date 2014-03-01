@@ -1,4 +1,4 @@
-
+add_definitions(-DSTATIC)
 add_definitions(-DUNICODE -D_UNICODE)
 
 set(foobar2000SDK_SOURCES
@@ -55,5 +55,4 @@ set(foobar2000SDK_SOURCES
 )
 
 add_library(foobar2000SDK STATIC ${foobar2000SDK_SOURCES})
-
 set_property(TARGET foobar2000SDK PROPERTY FOLDER "3rd/foobar2000SDK")
