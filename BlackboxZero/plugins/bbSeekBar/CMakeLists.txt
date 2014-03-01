@@ -20,7 +20,7 @@ target_link_libraries(bbSeekBar version comctl32 gdiplus winmm msimg32)
 set_property(TARGET bbSeekBar PROPERTY FOLDER "plugins/bbSeekBar")
 
 install(TARGETS bbSeekBar RUNTIME DESTINATION plugins/bbSeekBar)
-if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbSeekBar/${bbSeekBar_RESOURCES}")
-	install(FILES ${bbSeekBar_RESOURCES} DESTINATION plugins/bbSeekBar)
+if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbSeekBar/${bbSeekBar_CONFIGS}")
+	install(FILES ${bbSeekBar_CONFIGS} DESTINATION plugins/bbSeekBar)
 endif()
 

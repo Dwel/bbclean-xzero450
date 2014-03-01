@@ -20,7 +20,7 @@ target_link_libraries(bbFooMan version comctl32 gdiplus winmm msimg32)
 set_property(TARGET bbFooMan PROPERTY FOLDER "plugins/bbFooMan")
 
 install(TARGETS bbFooMan RUNTIME DESTINATION plugins/bbFooMan)
-if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbFooMan/${bbFooMan_RESOURCES}")
-	install(FILES ${bbFooMan_RESOURCES} DESTINATION plugins/bbFooMan)
+if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbFooMan/${bbFooMan_CONFIGS}")
+	install(FILES ${bbFooMan_CONFIGS} DESTINATION plugins/bbFooMan)
 endif()
 

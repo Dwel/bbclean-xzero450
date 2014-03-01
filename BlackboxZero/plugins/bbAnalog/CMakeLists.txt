@@ -2,7 +2,7 @@ set(bbAnalog_SOURCES
 	bbAnalog.cpp
 )
 
-set(bbAnalog_RESOURCES bbAnalog.rc)
+set(bbAnalog_CONFIGS bbAnalog.rc)
 
 include_directories(${CMAKE_SOURCE_DIR}/blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
@@ -15,7 +15,7 @@ set_property(TARGET bbAnalog PROPERTY FOLDER "plugins/bbAnalog")
 
 install(FILES readme.txt DESTINATION plugins/bbAnalog)
 install(TARGETS bbAnalog RUNTIME DESTINATION plugins/bbAnalog)
-if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbAnalog/${bbAnalog_RESOURCES}")
-	install(FILES ${bbAnalog_RESOURCES} DESTINATION plugins/bbAnalog)
+if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbAnalog/${bbAnalog_CONFIGS}")
+	install(FILES ${bbAnalog_CONFIGS} DESTINATION plugins/bbAnalog)
 endif()
 

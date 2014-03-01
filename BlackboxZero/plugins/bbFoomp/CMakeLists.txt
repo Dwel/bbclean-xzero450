@@ -5,7 +5,6 @@ include_directories(${CMAKE_SOURCE_DIR}/blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin)
 
-#set(bbFoomp_RESOURCES bbFoomp.rc)
 set(bbFoomp_SOURCES
 	src/bbfoomp.cpp
 )
@@ -18,7 +17,4 @@ set_property(TARGET bbFoomp PROPERTY FOLDER "plugins/bbFoomp")
 
 #install(FILES readme.txt DESTINATION plugins/bbFoomp)
 install(TARGETS bbFoomp RUNTIME DESTINATION plugins/bbFoomp)
-#if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbFoomp/${bbFoomp_RESOURCES}")
-#	install(FILES ${bbFoomp_RESOURCES} DESTINATION plugins/bbFoomp)
-#endif()
 

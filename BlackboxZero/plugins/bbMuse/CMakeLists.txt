@@ -20,7 +20,7 @@ target_link_libraries(bbMuse version comctl32 gdiplus winmm msimg32)
 set_property(TARGET bbMuse PROPERTY FOLDER "plugins/bbMuse")
 
 install(TARGETS bbMuse RUNTIME DESTINATION plugins/bbMuse)
-if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbMuse/${bbMuse_RESOURCES}")
-	install(FILES ${bbMuse_RESOURCES} DESTINATION plugins/bbMuse)
+if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbMuse/${bbMuse_CONFIGS}")
+	install(FILES ${bbMuse_CONFIGS} DESTINATION plugins/bbMuse)
 endif()
 
