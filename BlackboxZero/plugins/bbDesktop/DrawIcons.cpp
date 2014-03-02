@@ -109,7 +109,11 @@ int Main(HINSTANCE hInstance)
     PaintIcons(GetBlackboxDC());
 
     // Hook the desktop
-    OldWndProc = (WNDPROC)SetWindowLong(GetBlackboxWindow(), GWL_WNDPROC, (LONG)DesktopWndProc);
+#if defined _WIN64
+    OldWndProc = (WNDPROC)SetWindowLongPtr(GetBlackboxWindow(), GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(DesktopWndProc));
+#else
+	OldWndProc = (WNDPROC)SetWindowLong(GetBlackboxWindow(), GWL_WNDPROC, (LONG)DesktopWndProc);
+#endif
     return(0);
 }
 
@@ -174,7 +178,11 @@ bool ReadConfiguration()
 bool CleanUp()
 {
     // Release subclassing
+#if defined _WIN64
+    SetWindowLongPtr(GetBlackboxWindow(), GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(OldWndProc));
+#else
     SetWindowLong(GetBlackboxWindow(), GWL_WNDPROC, (LONG)OldWndProc);
+#endif
     // Send a InvalidateRect message to the desktop
     InvalidateRect(GetBlackboxWindow(), NULL, true);
     // Delete all current icons

@@ -76,7 +76,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // case insensitive string compare, up to lenght of second string
 int my_substr_icmp(const char *a, const char *b)
 {
-	return memicmp(a, b, strlen(b));
+	return _memicmp(a, b, strlen(b));
 }
 
 
