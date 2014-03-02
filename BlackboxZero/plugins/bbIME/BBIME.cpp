@@ -26,8 +26,8 @@
 
 #include "BBApi.h"
 #include <windows.h>
-#include "m_alloc.h"
-#include "Tinylist.cpp"
+//#include "m_alloc.h"
+//#include "Tinylist.cpp"
 
 //
 // Function templates
@@ -117,16 +117,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		// A broam! Check if the first 7 chars are "@bbIME".
 		case BB_BROADCAST:
-			if (0 == memicmp((LPCSTR)lParam, "@bbIME.", 7))
+			if (0 == _memicmp((LPCSTR)lParam, "@bbIME.", 7))
 			{
 				const char *bbmsg = (LPCSTR)lParam + 7;
-				if (stricmp(bbmsg, "NextLanguage") == 0) {
+				if (_stricmp(bbmsg, "NextLanguage") == 0) {
 					dbg_printf("Switching to next language!");
 					HWND hWnd=GetForegroundWindow();
 					if (hWnd)
 						PostMessage(hWnd,WM_INPUTLANGCHANGEREQUEST,0,(LPARAM)HKL_NEXT);
 				}
-				if (stricmp(bbmsg, "PreviousLanguage") == 0) {
+				if (_stricmp(bbmsg, "PreviousLanguage") == 0) {
 					HWND hWnd=GetForegroundWindow();
 					if (hWnd)
 						PostMessage(hWnd,WM_INPUTLANGCHANGEREQUEST,0,(LPARAM)HKL_PREV);
@@ -161,7 +161,7 @@ int beginPlugin(HINSTANCE hPluginInstance)
 	BBhwnd = GetBBWnd();
 
 	// Match the version to make sure it's bbLean
-	if (0 != memicmp(GetBBVersion(), "bbLean", 6))
+	if (0 != _memicmp(GetBBVersion(), "bbLean", 6))
 	{
 		MessageBox(NULL, "This plugin requires bbLean.", szVersion, MB_OK|MB_TOPMOST|MB_SETFOREGROUND);
 		return 1;
