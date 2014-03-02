@@ -2,7 +2,7 @@
 extern "C" {
 #include "lua.h"
 #include "lualib.h"
-#include "lauxlib.h"
+//#include "lauxlib.h"
 }
 
 const int MAX_EVENTS = 512;

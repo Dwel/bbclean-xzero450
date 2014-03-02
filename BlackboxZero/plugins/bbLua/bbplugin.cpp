@@ -142,7 +142,7 @@ enum eval_menu_cmd_modes
 // case insensitive string compare, up to lenght of second string
 int my_substr_icmp(const char *a, const char *b)
 {
-	return memicmp(a, b, strlen(b));
+	return _memicmp(a, b, strlen(b));
 }
 
 // debugging (checkout "DBGVIEW" from "http://www.sysinternals.com/")
