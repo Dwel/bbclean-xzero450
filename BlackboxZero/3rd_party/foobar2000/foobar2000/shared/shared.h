@@ -52,9 +52,9 @@ LRESULT SHARED_EXPORT uSendDlgItemMessageText(HWND wnd,UINT id,UINT msg,WPARAM w
 BOOL SHARED_EXPORT uGetWindowText(HWND wnd,pfc::string_base & out);
 BOOL SHARED_EXPORT uSetWindowText(HWND wnd,const char * p_text);
 BOOL SHARED_EXPORT uSetWindowTextEx(HWND wnd,const char * p_text,unsigned p_text_length);
-BOOL SHARED_EXPORT uGetDlgItemText(HWND wnd,UINT id,pfc::string_base & out);
-BOOL SHARED_EXPORT uSetDlgItemText(HWND wnd,UINT id,const char * p_text);
-BOOL SHARED_EXPORT uSetDlgItemTextEx(HWND wnd,UINT id,const char * p_text,unsigned p_text_length);
+inline BOOL SHARED_EXPORT uGetDlgItemText(HWND wnd,UINT id,pfc::string_base & out) { return false; }
+inline BOOL SHARED_EXPORT uSetDlgItemText(HWND wnd,UINT id,const char * p_text) { return false; }
+inline BOOL SHARED_EXPORT uSetDlgItemTextEx(HWND wnd,UINT id,const char * p_text,unsigned p_text_length) { return false; }
 BOOL SHARED_EXPORT uBrowseForFolder(HWND parent,const char * title,pfc::string_base & out);
 BOOL SHARED_EXPORT uBrowseForFolderWithFile(HWND parent,const char * title,pfc::string_base & out,const char * p_file_to_find);
 int SHARED_EXPORT uMessageBox(HWND wnd,const char * text,const char * caption,UINT type);

@@ -16,9 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include <BBApiEx.h>
-
-DLL_EXPORT LPCTSTR stylePath(LPCSTR);
+#include <BBApi.h>
 
 #define NUMBER_OF(a) (sizeof(a) / sizeof((a)[0]))
 

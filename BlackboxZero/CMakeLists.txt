@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.9)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 # use this for develoment, if you do not pass it from command line:
-#set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
+set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
 
 message("bb generator=${CMAKE_GENERATOR}")
 message("bb install path=${CMAKE_INSTALL_PREFIX}")
@@ -96,12 +96,6 @@ add_subdirectory(plugins/bbColor3dc)
 add_subdirectory(plugins/bbWorkspaceWheel)
 add_subdirectory(plugins/bbPlugin+)
 add_subdirectory(plugins/bbLeanBar+)
-
-# NOTE: following plugins are not yet mingw compatible
-if (NOT MINGW)
-	add_subdirectory(plugins/bbInterface_iTunes)
-endif (NOT MINGW)
-
 add_subdirectory(plugins/BBPager)
 add_subdirectory(plugins/BBStyle)
 add_subdirectory(plugins/bbRecycleBin)
@@ -110,10 +104,22 @@ add_subdirectory(plugins/bbFooMan)
 add_subdirectory(plugins/bbMuse)
 add_subdirectory(plugins/bbPlayer)
 add_subdirectory(plugins/bbSeekBar)
+add_subdirectory(plugins/BBColorEx)
+#add_subdirectory(plugins/bbLeanBar2)
+#add_subdirectory(plugins/bbDesktop)
+#add_subdirectory(plugins/bbIME)
+#add_subdirectory(plugins/bbLua)
+#add_subdirectory(plugins/bbSetCursors)
+#add_subdirectory(plugins/bbTaskSwitch)
+
+# NOTE: following plugins are not yet mingw compatible
+if (NOT MINGW)
+	add_subdirectory(plugins/bbInterface_iTunes)
+endif (NOT MINGW)
 
 # NOTE: mingw 64 bit does not work yet!
 if (MSVC)
-	add_subdirectory(plugins/SystemBarEx)
+	add_subdirectory(plugins/bbSystemBarEx)
 endif (MSVC)
 if (MINGW)
 	if (NOT ${buildbits} MATCHES "64")
