@@ -80,7 +80,9 @@ bool ConfigFile::Save(string filename)
 		rcfile.close();
 		// Save the filename...
 		mFileName = lFileName;
+		return true;
 	}
+	return false;
 }
 
 bool ConfigFile::Close()

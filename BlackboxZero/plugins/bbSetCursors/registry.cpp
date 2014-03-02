@@ -33,6 +33,7 @@ bool registry::closeKey() {
 	// Close the key if its opened
 	if (m_key)
 		RegCloseKey( m_key );
+	return true;
 }
 
 bool registry::is_open() {

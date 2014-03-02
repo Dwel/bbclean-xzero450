@@ -106,6 +106,7 @@ bool applyCursors()
 	else
 	{
 		cout << "Failed to open registry key!" << endl;
+		return false;
 	}
 }
 

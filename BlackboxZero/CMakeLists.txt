@@ -108,8 +108,8 @@ add_subdirectory(plugins/BBColorEx)
 #add_subdirectory(plugins/bbLeanBar2)
 add_subdirectory(plugins/bbDesktop)
 add_subdirectory(plugins/bbIME)
-add_subdirectory(plugins/bbLua)
-#add_subdirectory(plugins/bbSetCursors)
+#add_subdirectory(plugins/bbLua)
+add_subdirectory(plugins/bbSetCursors)
 #add_subdirectory(plugins/bbTaskSwitch)
 
 # NOTE: following plugins are not yet mingw compatible
