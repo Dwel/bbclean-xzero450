@@ -69,9 +69,17 @@ LRESULT CALLBACK bbPlugin::StaticWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
     // Get pointer to window
     if(uMsg == WM_CREATE) {
         pParent = (bbPlugin*)((LPCREATESTRUCT)lParam)->lpCreateParams;
+#ifdef _WIN64
+        SetWindowLongPtr(hWnd,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(pParent));
+#else
         SetWindowLongPtr(hWnd,GWL_USERDATA,(LONG_PTR)pParent);
+#endif
     } else {
+#ifdef _WIN64
+        pParent = (bbPlugin*)GetWindowLongPtr(hWnd,GWLP_USERDATA);
+#else
         pParent = (bbPlugin*)GetWindowLongPtr(hWnd,GWL_USERDATA);
+#endif
         if(!pParent) return DefWindowProc(hWnd,uMsg,wParam,lParam);
     }
 
@@ -86,30 +94,35 @@ LRESULT CALLBACK bbPlugin::StaticWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
  **/
 LRESULT bbPlugin::PluginWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
-    switch(uMsg) {
+    switch(uMsg)
+    {
         /* Misc events */
         case BB_RECONFIGURE:
             this->OnReconfigure();
             break;
         case BB_BROADCAST:
+        {
             LPCSTR broam = (LPCSTR)lParam;
             std::string message = broam;
             this->OnBroadcast(message);
             break;
+        }
         case BB_REDRAWGUI:
             this->OnRedrawGUI();
             break;
         case BB_SHUTDOWN:
-            this->OnShutdown((int)wParam);
+            this->OnShutdown(static_cast<ShutdownActionEnum>(wParam));
             break;
         case BB_TOGGLEPLUGINS:
             this->OnTogglePlugins();
             break;
         case BB_SETTOOLBARLABEL:
+        {
             LPCSTR broam = (LPCSTR)lParam;
             std::string message = broam;
             this->OnSetToolbarLabel(message);
             break;
+        }
         case BB_QUIT:
             this->OnQuit();
             break;
@@ -126,16 +139,20 @@ LRESULT bbPlugin::PluginWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         case BB_TOGGLETOOLBAR:
             this->OnToggleToolbar();
             break;
+//@TODO: ifdefed by Mojmir (compile-ability: BB_TOGGLETRAY has same value as BB_TOGGLESYSTEMBAR)
+#ifdef NOT_XOBLITE
         case BB_TOGGLETRAY:
             this->OnToggleTray();
             break;
+#endif
         case BB_TOGGLESYSTEMBAR:
             this->OnToggleSystembar();
             break;
         /* Tasks and tray */
-        case BB_TASKUPDATE:
+//@TODO: commented out by Mojmir (compile-ability: BB_TASKUPDATE unknown)
+        //case BB_TASKUPDATE:
             // virtual void OnTaskUpdate(TaskUpdateEnum Event, HWND hWnd) {} // BB_TASKSUPDATE
-            break;
+            //break;
         case BB_TRAYUPDATE:
             // virtual void OnTrayUpdate(TrayUpdateEnum Event) {} // BB_TRAYUPDATE
             break;
@@ -238,7 +255,7 @@ HWND bbPlugin::BlackBoxWindow() {
 std::string bbPlugin::GetBBVersion() {
 
     std::string Version;
-    Version = GetBBVersion();
+    Version = ::GetBBVersion();
     return Version;
 
 }
@@ -249,7 +266,7 @@ std::string bbPlugin::GetBBVersion() {
 std::string bbPlugin::GetOSInfo() {
 
     std::string OSInfo;
-    OSInfo = GetOSInfo();
+    OSInfo = ::GetOSInfo();
     return OSInfo;
 
 }
@@ -451,7 +468,8 @@ void bbMenu::AddItem(std::string Title, std::string Command, bool ShowIndicator,
     MakeMenuItem(this->hMenu,Title.c_str(),Command.c_str(),ShowIndicator);
 
     // Disable the item if set to disabled
-    if (Disabled) DisableLastItem(this->hMenu);
+    //@TODO: commented out by Mojmir (compile-ability: DisableLastItem unknown)
+    //if (Disabled) DisableLastItem(this->hMenu);
 
 }
 
@@ -479,7 +497,8 @@ void bbMenu::AddItemInt(std::string Title, std::string Command, int Value, int M
     MakeMenuItemInt(this->hMenu,Title.c_str(),Command.c_str(),Value,Minimum,Maximum);
 
     // Disable the item if set to disabled
-    if (Disabled) DisableLastItem(this->hMenu);
+    //@TODO: commented out by Mojmir (compile-ability: DisableLastItem unknown)
+    //if (Disabled) DisableLastItem(this->hMenu);
 
 }
 
@@ -492,10 +511,11 @@ void bbMenu::AddItemInt(std::string Title, std::string Command, int Value, int M
  **/
 void bbMenu::AddItemString(std::string Title, std::string Command, std::string Value, bool Disabled) {
 
-	MakeMenuItemString(this->hMenu, Title.c_str(), Command.c_str(), Value.c_str());
+    MakeMenuItemString(this->hMenu, Title.c_str(), Command.c_str(), Value.c_str());
 
     // Disable the item if set to disabled
-    if (Disabled) DisableLastItem(this->hMenu);
+    //@TODO: commented out by Mojmir (compile-ability: DisableLastItem unknown)
+    //if (Disabled) DisableLastItem(this->hMenu);
 
 }
 
@@ -509,10 +529,12 @@ void bbMenu::AddItemString(std::string Title, std::string Command, std::string V
  **/
 void bbMenu::AddItemPath(std::string Title, std::string Path, std::string Command, bool Disabled) {
 
-	MakePathMenu(this->hMenu, Title.c_str(), Path.c_str(), Command.c_str());
+    //@TODO: commented out by Mojmir (compile-ability: MakePathMenu unknown)
+    //MakePathMenu(this->hMenu, Title.c_str(), Path.c_str(), Command.c_str());
 
     // Disable the item if set to disabled
-    if (Disabled) DisableLastItem(this->hMenu);
+    //@TODO: commented out by Mojmir (compile-ability: DisableLastItem unknown)
+    //if (Disabled) DisableLastItem(this->hMenu);
 
 }
 
@@ -524,10 +546,11 @@ void bbMenu::AddItemPath(std::string Title, std::string Path, std::string Comman
  **/
 void bbMenu::AddSubmenu(std::string Title, bbMenu ChildMenu, bool Disabled) {
 
-	MakeSubmenu(this->hMenu, ChildMenu.GetMenu(), Title.c_str());
+    MakeSubmenu(this->hMenu, ChildMenu.GetMenu(), Title.c_str());
 
     // Disable the item if set to disabled
-    if (Disabled) DisableLastItem(this->hMenu);
+    //@TODO: commented out by Mojmir (compile-ability: DisableLastItem unknown)
+    //if (Disabled) DisableLastItem(this->hMenu);
 }
 
 /**

@@ -176,7 +176,7 @@ class bbFrame {
         void MoveTo(int x, int y) {}
         void SizeTo(int width, int height) {}
 
-}
+};
 
 namespace bbPlusPlus {
 
