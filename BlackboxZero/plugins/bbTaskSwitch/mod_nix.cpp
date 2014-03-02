@@ -5,7 +5,7 @@
 
 #include <tchar.h>
 
-#include <BBApiEx.h>
+#include <BBApi.h>
 
 #include "cpp_adaptor.h"
 #include "misc.h"

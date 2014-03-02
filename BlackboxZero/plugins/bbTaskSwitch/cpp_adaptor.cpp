@@ -3,7 +3,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include <BBApiEx.h>
+#include <BBApi.h>
 
 #include "cpp_adaptor.h"
 

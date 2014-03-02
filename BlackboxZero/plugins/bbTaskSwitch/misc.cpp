@@ -8,7 +8,7 @@
 
 #include <tchar.h>
 
-#include <BBApiEx.h> // BBApi-C.h
+#include <BBApi.h> // BBApi-C.h
 
 #include "misc.h"
 
@@ -26,13 +26,21 @@
 
 static HMODULE g_User32Module;
 
+// note: this does not work, you cannot use cdecl with variable (mojmir)
+#if 0
 #define DECLARE(TYPE, NAME, ARGS) \
         typedef TYPE NAME##_f ARGS; \
         static TYPE (*p##NAME) ARGS;
 DECLARE(HMONITOR WINAPI, MonitorFromWindow, (HWND, DWORD))
 DECLARE(BOOL WINAPI, GetMonitorInfo, (HMONITOR, LPMONITORINFO))
 #undef DECLARE
+#endif
 
+typedef HMONITOR WINAPI MonitorFromWindow_f (HWND, DWORD);
+static HMONITOR (*pMonitorFromWindow) (HWND, DWORD);
+
+typedef BOOL WINAPI GetMonitorInfo_f (HMONITOR, LPMONITORINFO);
+static BOOL (*pGetMonitorInfo) (HMONITOR, LPMONITORINFO);
 
 
 
