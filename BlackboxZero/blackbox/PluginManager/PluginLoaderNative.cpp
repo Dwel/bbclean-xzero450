@@ -1,10 +1,9 @@
 #include "../BB.h"
+#include "../BBApiPluginloader.h"
+
 #include "PluginManager.h"
 #include "PluginLoaderNative.h"
 #include "Types.h"
-
-#define DLL_EXPORT
-#include "../BBApiPluginloader.h"
 
 char name[255];
 
@@ -21,12 +20,13 @@ struct PluginLoaderList nativeLoader = {
 	
     GetName,
 	GetApi,
+    GetPluginInfo,
 
 	LoadPlugin,
 	UnloadPlugin
 };
 
-bool Init() {
+bool Init(char* workingDir) {
     sprintf(name, "Core Pluginloader %s", GetBBVersion());
     return true;
 }
@@ -41,39 +41,36 @@ const char *GetApi() {
     return GetBBVersion();
 }
 
+const char *GetPluginInfo(struct PluginList* plugin, int factId) {
+    struct NativePluginInfo* pInfo = (struct NativePluginInfo*)plugin->loaderInfo;
+
+    if(pInfo == NULL || pInfo->pluginInfo == NULL)
+        return NULL;
+
+    return pInfo->pluginInfo(factId);
+}
+
 int LoadPlugin(struct PluginList* q, HWND hSlit, char** errorMsg) {
-    HINSTANCE hModule = NULL;
+    struct NativePluginInfo* pInfo = c_new(struct NativePluginInfo);
     int error = 0;
     bool useslit;
-    int r, i;
+    int r;
     char plugin_path[MAX_PATH];
 
     for (;;)
     {
         //---------------------------------------
-        // check for compatibility
-
-#ifndef BBTINY
-        if (0 == _stricmp(q->name, "BBDDE"))
-        {
-            error = error_plugin_is_built_in;
-            break;
-        }
-#endif
-
-        //---------------------------------------
         // load the dll
-
         if (0 == FindRCFile(plugin_path, q->path, NULL)) {
             error = error_plugin_dll_not_found;
             break;
         }
 
         r = SetErrorMode(0); // enable 'missing xxx.dll' system message
-        hModule = LoadLibrary(plugin_path);
+        pInfo->module = LoadLibrary(plugin_path);
         SetErrorMode(r);
 
-        if (NULL == hModule)
+        if (NULL == pInfo->module)
         {
             r = GetLastError();
             // char buff[200]; win_error(buff, sizeof buff);
@@ -87,50 +84,47 @@ int LoadPlugin(struct PluginList* q, HWND hSlit, char** errorMsg) {
 
         //---------------------------------------
         // grab interface functions
-
-        for (i = 0; pluginFunctionNames[i]; ++i)
-            ((FARPROC*)&q->beginPlugin)[i] =
-            GetProcAddress(hModule, pluginFunctionNames[i]);
+        LoadFunction(pInfo, beginPlugin);
+        LoadFunction(pInfo, beginPluginEx);
+        LoadFunction(pInfo, beginSlitPlugin);
+        LoadFunction(pInfo, endPlugin);
+        LoadFunction(pInfo, pluginInfo);
 
         //---------------------------------------
-        // check interface presence
+        // check interfaces
+        if(!pInfo->endPlugin)
+            BreakWithCode(error, error_plugin_missing_entry);
+        
+        // check whether plugin supports the slit
+        q->canUseSlit = !!pInfo->beginPluginEx || !!pInfo->beginSlitPlugin;
+        
+        if(!q->canUseSlit)
+            q->useSlit = false;
 
-        if (NULL == q->endPlugin) {
-            error = error_plugin_missing_entry;
-            break;
-        }
+        useslit = hSlit && q->useSlit;
 
-        if (NULL == q->beginPluginEx && NULL == q->beginSlitPlugin)
-            ClearFlag(q->flags, Plugin_UseSlit);
-            //q->useslit = false;
-
-        useslit = hSlit && CheckFlag(q->flags, Plugin_UseSlit); // q->useslit;
-
-        if (false == useslit && NULL == q->beginPluginEx && NULL == q->beginPlugin) {
-            error = error_plugin_missing_entry;
-            break;
-        }
+        if (!useslit && !pInfo->beginPluginEx && !pInfo->beginPlugin)
+            BreakWithCode(error, error_plugin_missing_entry);
 
         //---------------------------------------
         // inititalize plugin
-
         TRY
         {
             if (useslit) {
-                if (q->beginPluginEx)
-                    r = q->beginPluginEx(hModule, hSlit);
+                if (pInfo->beginPluginEx)
+                    r = pInfo->beginPluginEx(pInfo->module, hSlit);
                 else
-                    r = q->beginSlitPlugin(hModule, hSlit);
+                    r = pInfo->beginSlitPlugin(pInfo->module, hSlit);
             } else {
-                if (q->beginPlugin)
-                    r = q->beginPlugin(hModule);
+                if (pInfo->beginPlugin)
+                    r = pInfo->beginPlugin(pInfo->module);
                 else
-                    r = q->beginPluginEx(hModule, NULL);
+                    r = pInfo->beginPluginEx(pInfo->module, NULL);
             }
 
             if (BEGINPLUGIN_OK == r) {
-                q->hmodule = hModule;
-                q->inslit = useslit;
+                q->loaderInfo = pInfo;
+                q->inSlit = useslit;
             } else if (BEGINPLUGIN_FAILED_QUIET != r) {
                 error = error_plugin_fail_to_load;
             }
@@ -144,27 +138,33 @@ int LoadPlugin(struct PluginList* q, HWND hSlit, char** errorMsg) {
     }
 
     // clean up after error
-    if (NULL == q->hmodule && hModule)
-        FreeLibrary(hModule);
+    if(error) {
+        if (pInfo->module)
+            FreeLibrary(pInfo->module);
+
+        q->loaderInfo = NULL;
+        c_del(pInfo);
+    }
 
     return error;
 }
 
 int UnloadPlugin(struct PluginList* q, char** errorMsg) {
+    struct NativePluginInfo* pi = (struct NativePluginInfo*)(q->loaderInfo);
+    
     int error = 0;
-    if (q->hmodule)
-    {
-        TRY
-        {
-            q->endPlugin(q->hmodule);
-        }
-        EXCEPT(EXCEPTION_EXECUTE_HANDLER)
-        {
+    if (pi != NULL && pi->module) {
+        TRY {
+            pi->endPlugin(pi->module);
+        } EXCEPT(EXCEPTION_EXECUTE_HANDLER) {
             error = error_plugin_crash_on_unload;
         }
 
-        FreeLibrary(q->hmodule);
-        q->hmodule = NULL;
+        FreeLibrary(pi->module);
+        pi->module = NULL;
+        
+        q->loaderInfo = NULL;
+        c_del(pi);
     }
 
     return error;

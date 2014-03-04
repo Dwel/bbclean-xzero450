@@ -60,7 +60,9 @@ void PluginManager_Init(void)
 
     initPluginLoader(&nativeLoader, NULL);
     bbplugins = c_new(struct PluginList);
-    bbplugins->flags = Plugin_IsEnabled;
+    
+    bbplugins->isEnabled = true;
+    
     bbplugins->name = (char*)c_alloc(sizeof(char) * strlen(nativeLoader.name) + 1);
     bbplugins->path = (char*)c_alloc(sizeof(char));
     strcpy(bbplugins->name, nativeLoader.name);
@@ -87,7 +89,7 @@ void PluginManager_Exit(void)
 
     reverse_list(&bbplugins);
     dolist (q, bbplugins)
-        ClearFlag(q->flags, Plugin_IsEnabled);
+        q->isEnabled = false;
     applyPluginStates();
     while (bbplugins)
         free_plugin(&bbplugins);
@@ -132,8 +134,8 @@ static struct PluginList *parseConfigLine(const char *rcline) {
 
     q->path = new_str(pathAndName[1].str().c_str());
 
-    SetFlag(q->flags, Plugin_IsEnabled, !std::regex_match(rcline, std::regex("[ &]*(!)[ &]*.*")));
-    SetFlag(q->flags, Plugin_UseSlit, std::regex_match(rcline, std::regex("[ !]*(&)[ !]*.*")));
+    q->isEnabled = !std::regex_match(rcline, std::regex("[ &]*(!)[ &]*.*"));
+    q->useSlit = std::regex_match(rcline, std::regex("[ !]*(&)[ !]*.*"));
 
     char name[MAX_PATH]; 
     name[MAX_PATH-1] = 0;
@@ -164,24 +166,25 @@ static struct PluginList *parseConfigLine(const char *rcline) {
 
 static void applyPluginState(struct PluginList *q)
 {
+    char *errorMsg = "(Unknown error)";
+
     int error = 0;
-    if (q->hmodule) {
-        if (CheckFlag(q->flags, Plugin_IsEnabled) && 
-            (CheckFlag(q->flags, Plugin_UseSlit) && hSlit) == q->inslit)
+    if (q->loaderInfo) {
+        if (q->isEnabled && (q->useSlit && hSlit) == q->inSlit)
             return;
-        error = unloadPlugin(q, NULL);
+        error = unloadPlugin(q, &errorMsg);
     }
 
-    if (CheckFlag(q->flags, Plugin_IsEnabled)) {
+    if (q->isEnabled) {
         if (0 == error)
-            error = loadPlugin(q, hSlit, NULL);
-        if (NULL == q->hmodule)
-            ClearFlag(q->flags, Plugin_IsEnabled);
+            error = loadPlugin(q, hSlit, &errorMsg);
+        if (!q->loaderInfo)
+            q->isEnabled = false;
         if (error)
             write_plugins();
     }
 
-    showPluginErrorMessage(q, error, "(Unknown error)");
+    showPluginErrorMessage(q, error, errorMsg);
 }
 
 static void applyPluginStates()
@@ -191,7 +194,7 @@ static void applyPluginStates()
     hSlit = NULL;
 
     // load slit first
-    if(slitPlugin && CheckFlag(slitPlugin->flags, Plugin_IsEnabled)) {
+    if(slitPlugin && slitPlugin->isEnabled) {
         applyPluginState(slitPlugin);
         hSlit = FindWindow("BBSlit", NULL);
     }
@@ -202,7 +205,7 @@ static void applyPluginStates()
             applyPluginState(q);
 
     // unload slit last
-    if(slitPlugin && !CheckFlag(slitPlugin->flags, Plugin_IsEnabled))
+    if(slitPlugin && !slitPlugin->isEnabled)
         applyPluginState(slitPlugin);
 }
 
@@ -279,13 +282,13 @@ static int loadPlugin(struct PluginList *plugin, HWND hSlit, char** errorMsg) {
     int lastError = 0;
 
     dolist(pll, pluginLoaders) {
-        lastError = pluginLoaders->LoadPlugin(plugin, hSlit, errorMsg);
+        lastError = pll->LoadPlugin(plugin, hSlit, errorMsg);
 
         if(lastError == 0) {
             struct PluginPtr *pp = c_new(struct PluginPtr);
             pp->entry = plugin;
 
-            append_node(&(pluginLoaders->plugins), pp);
+            append_node(&(pll->plugins), pp);
             break;
         }
     }
@@ -302,7 +305,8 @@ static int unloadPlugin(struct PluginList *q, char** errorMsg) {
             if(pll == &nativeLoader)
                 return 0;
 
-            q->hmodule = NULL;
+            q->loaderInfo = NULL;
+
             return unloadPluginLoader(pll, errorMsg);
         }
 
@@ -356,9 +360,9 @@ static bool write_plugins(void)
 
     dolist(q, bbplugins) {
         if (q->name) {
-            if(!CheckFlag(q->flags, Plugin_IsEnabled))
+            if(!q->isEnabled)
                 fprintf(fp,"! ");
-            if(CheckFlag(q->flags, Plugin_UseSlit)) //  false != q->useslit)
+            if(q->useSlit)
                 fprintf(fp,"& ");
         }
         fprintf(fp,"%s\n", q->path);
@@ -376,6 +380,10 @@ static bool isPluginLoader(char *path) {
 
     // HACK: this way of loading the dll is actually not recommended, but it is the cheapest way to work with the image
     auto pll = LoadLibraryEx(path, NULL, DONT_RESOLVE_DLL_REFERENCES);
+
+    if(pll == nullptr) {
+        return false;
+    }
 
     // walking the headers, checking consistency as we go
     auto dosHeader = (PIMAGE_DOS_HEADER)pll;
@@ -424,8 +432,10 @@ static bool isPluginLoader(char *path) {
         auto exportName = (char*)(*names + (SIZE_T)pll);
 
         for(int j=0; pluginLoaderFunctionNames[j]; j++) {
-            if(!strcmp(exportName, pluginLoaderFunctionNames[j]))
+            if(!strcmp(exportName, pluginLoaderFunctionNames[j])) {
                 exportsFound++;
+                break;
+            }
         }
 
         if(exportsFound == numLoaderFunctions)
@@ -463,14 +473,15 @@ static int loadPluginLoader(struct PluginList* plugin, char** errorMsg) {
     r = initPluginLoader(pll, errorMsg);
 
     if (0 == r) {
-        plugin->hmodule = module;
+        plugin->useSlit = false;
+        plugin->loaderInfo = pll;
         
-        char* pName = (char *)c_alloc(sizeof(char) * strlen(pll->name) + 1);
-        strcpy(plugin->name, pName);
+        //plugin->name = (char *)realloc(plugin->name, strlen(pll->name) + 1);
+        //strcpy(plugin->name, pll->name);
 
         pll->parent = plugin;
-        
-        append_node(pluginLoaders, pll);
+      
+        append_node(&pluginLoaders, pll);
 
         return 0;
     }
@@ -499,12 +510,19 @@ static int initPluginLoader(struct PluginLoaderList* pll, char** errorMsg) {
     if(!LoadFunction(pll, UnloadPlugin))
         FailWithMsg(errorMsg, "unloadPlugin not present in pluginLoader");
     
-    if(!pll->Init())
+    char pluginPath[MAX_PATH];
+    char pluginWorkDir[MAX_PATH];
+
+    GetModuleFileName(pll->module, pluginPath, MAX_PATH);
+
+    file_directory(pluginWorkDir, pluginPath);
+
+    if(!pll->Init(pluginWorkDir))
         FailWithMsg(errorMsg, "PluginLoader could not initialize.");
 
     pll->name = pll->GetName();
     pll->api = pll->GetApi();
-    
+
     return 0;
 }
 
@@ -526,6 +544,8 @@ static int unloadPluginLoader(struct PluginLoaderList *loader, char** errorMsg) 
     FreeLibrary(loader->module);
     loader->module = NULL;
 
+    remove_node(&pluginLoaders, loader);
+
     return lastError;
 }
 
@@ -536,36 +556,52 @@ void PluginManager_aboutPlugins(void)
 {
     int l, x = 0;
     char *msg = (char*)c_alloc(l = 4096);
-    const char* (*pluginInfo)(int);
+    const char* (*pluginInfo)(struct PluginList *q, int);
+    struct PluginPtr *pp;
     struct PluginList *q;
+    struct PluginLoaderList* pll;
+
+    dolist(pll, pluginLoaders) {
+        if (l - x < MAX_PATH + 100)
+            msg = (char*)m_realloc(msg, l*=2);
+        if (x)
+            msg[x++] = '\n';
+        x += sprintf(msg + x, "%s\t", pll->name);
+    }
     
-    dolist(q, bbplugins)
-        if (q->hmodule || q == nativeLoader.parent) {
-            if (l - x < MAX_PATH + 100)
-                msg = (char*)m_realloc(msg, l*=2);
-            if (x)
-                msg[x++] = '\n';
-            pluginInfo = q->pluginInfo;
-            if (pluginInfo)
-                x += sprintf(msg + x,
-                "%s %s %s %s (%s)\t",
-                pluginInfo(PLUGIN_NAME),
-                pluginInfo(PLUGIN_VERSION),
-                NLS2("$About_Plugins_By$", "by"),
-                pluginInfo(PLUGIN_AUTHOR),
-                pluginInfo(PLUGIN_RELEASE)
-                );
-            else
-                x += sprintf(msg + x, "%s\t", q->name);
+    dolist(pll, pluginLoaders) {
+        dolist(pp, pll->plugins) {
+            q = pp->entry;
+
+            if (q->loaderInfo) {
+                if (l - x < MAX_PATH + 100)
+                    msg = (char*)m_realloc(msg, l*=2);
+                if (x)
+                    msg[x++] = '\n';
+            
+                pluginInfo = pll->GetPluginInfo;
+                if (pluginInfo)
+                    x += sprintf(msg + x,
+                    "%s %s %s %s (%s)\t",
+                    pluginInfo(q, PLUGIN_NAME),
+                    pluginInfo(q, PLUGIN_VERSION),
+                    NLS2("$About_Plugins_By$", "by"),
+                    pluginInfo(q, PLUGIN_AUTHOR),
+                    pluginInfo(q, PLUGIN_RELEASE)
+                    );
+                else
+                    x += sprintf(msg + x, "%s\t", q->name);
+            }
         }
+    }
+    
+    BBMessageBox(MB_OK,
+        "#"BBAPPNAME" - %s#%s\t",
+        NLS2("$About_Plugins_Title$", "About loaded plugins"),
+        x ? msg : NLS1("No plugins loaded.")
+        );
 
-        BBMessageBox(MB_OK,
-            "#"BBAPPNAME" - %s#%s\t",
-            NLS2("$About_Plugins_Title$", "About loaded plugins"),
-            x ? msg : NLS1("No plugins loaded.")
-            );
-
-        m_free(msg);
+    m_free(msg);
 }
 
 //===========================================================================
@@ -655,19 +691,10 @@ static Menu *get_menu(const char *title, char *menu_id, bool pop, struct PluginL
         if (q->name) {
             if (0 == b_slit) {
                 sprintf(broam, "@BBCfg.plugin.load %s", q->name);
-                pItem = MakeMenuItem(pMenu, q->name, broam, CheckFlag(q->flags, Plugin_IsEnabled));
-#if 0
-                sprintf(end_id, "_opt_%s", q->name);
-                pSub = MakeNamedMenu(q->name, menu_id, pop);
-                MenuItemOption(pItem, BBMENUITEM_RMENU, pSub);
-
-                MakeMenuItem(pSub, "Load", broam, q->enabled);
+                pItem = MakeMenuItem(pMenu, q->name, broam, q->isEnabled);
+            } else if(q->isEnabled && q->canUseSlit) {
                 sprintf(broam, "@BBCfg.plugin.inslit %s", q->name);
-                MakeMenuItem(pSub, "In Slit", broam, q->useslit);
-#endif
-            } else if(CheckFlag(q->flags, Plugin_IsEnabled) && (q->beginPluginEx || q->beginSlitPlugin)) {
-                sprintf(broam, "@BBCfg.plugin.inslit %s", q->name);
-                MakeMenuItem(pMenu, q->name, broam, CheckFlag(q->flags, Plugin_UseSlit)); // q->useslit);
+                MakeMenuItem(pMenu, q->name, broam, q->useSlit);
             }
         } else if (0 == b_slit) {
             cp = q->path;
@@ -841,35 +868,30 @@ int PluginManager_handleBroam(const char *args)
         q = parseConfigLine(buffer);
         append_node(&bbplugins, q);
 
-        SetFlag(q->flags, Plugin_UseSlit, true);
-        return 1;
+        q->useSlit = true;
+    } else {
+        skipUntil(q, bbplugins, q->name && !_stricmp(q->name, buffer));
     }
-
-    //dolist (q, bbplugins)
-    //    if (q->name && !_stricmp(q->name, buffer))
-    //        break;
-
-    skipUntil(q, bbplugins, q->name && !_stricmp(q->name, buffer));
 
     if (q == NULL)
         return 1;
 
     if (e_remove == action)
-        ClearFlag(q->flags, Plugin_IsEnabled);
+        q->isEnabled = false;
     else if (e_load == action)
         if(get_false_true(args) == -1)
-            ToggleFlag(q->flags, Plugin_IsEnabled);
+            q->isEnabled ^= true;
         else
-            SetFlag(q->flags, Plugin_IsEnabled, !!get_false_true(args));
+            q->isEnabled = !!get_false_true(args);
     else if (e_inslit == action)
         if(get_false_true(args) == -1)
-            ToggleFlag(q->flags, Plugin_UseSlit);
+            q->useSlit ^= true;
         else
-            SetFlag(q->flags, Plugin_UseSlit, !!get_false_true(args));
+            q->useSlit = !!get_false_true(args);
 
     applyPluginStates();
 
-    if (e_remove == action || (e_add == action && !CheckFlag(q->flags, Plugin_IsEnabled)))
+    if (e_remove == action || (e_add == action && !q->isEnabled))
         free_plugin((struct PluginList **)member_ptr(&bbplugins, q));
 
     write_plugins();

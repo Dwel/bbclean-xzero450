@@ -98,7 +98,6 @@ protected:
     HWND        m_hwnd;         // window handle, only while onscreen
     HWND        m_hwndChild;    // edit control of StringItems
     HWND        m_hwndRef;      // hwnd to send notifications to */
-
 	int         m_minwidth; /* BlackboxZero 12.17.2011 */
     int         m_maxwidth;
     int         m_maxheight;
@@ -288,6 +287,8 @@ protected:
 #define MENU_TRACKMOUSE_TIMER   2
 #define MENU_INTITEM_TIMER      3
 
+#define MENU_ICON_LOADED 4
+
 //---------------------------------
 // values for m_MenuID
 
@@ -366,6 +367,11 @@ public:
     char *m_pszIcon;
     void DrawIcon(HDC hDC);
 //#endif
+private:
+    HANDLE iconLoaderMutex;
+    HANDLE iconLoaderThread;
+    void *iconLoaderParams;
+
 };
 
 //---------------------------------

@@ -395,6 +395,11 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hDLLInst, DWORD fdwReason, LPVOID lpvRe
         // The DLL is being loaded for the first time by a given process.
         // Perform per-process initialization here.  If the initialization
         // is successful, return TRUE; if unsuccessful, return FALSE.
+        
+        // TODO: DisableThreadLibraryCalls screws with msvcrt
+        // TODO: RegisterWindowMessage is not safe to called from the dllmain, it can lead to deadlocks.
+        //       we should put it into some initializer instead.
+        
         hInstance = hDLLInst;
         DisableThreadLibraryCalls(hDLLInst);
         bbSkinMsg = RegisterWindowMessage(BBLEANSKIN_MSG);
