@@ -26,7 +26,7 @@ struct PluginLoaderList nativeLoader = {
 	UnloadPlugin
 };
 
-bool Init() {
+bool Init(char* workingDir) {
     sprintf(name, "Core Pluginloader %s", GetBBVersion());
     return true;
 }

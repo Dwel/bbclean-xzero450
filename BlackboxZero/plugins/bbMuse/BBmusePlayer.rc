@@ -1,0 +1,106 @@
+!---- BBInterface 0.9.7u ----
+@BBInterface Plugin SetPluginProperty SnapWindows true
+@BBInterface Plugin SetPluginProperty SnapDistance 7
+@BBInterface Plugin SetPluginProperty SnapPadding 2
+@BBInterface Plugin SetPluginProperty IconSaturation 255
+@BBInterface Plugin SetPluginProperty IconHue 0
+@BBInterface Plugin SetPluginProperty ClickRaise false
+@BBInterface Plugin SetPluginProperty DeskDropCommand ""
+@BBInterface Plugin SetPluginProperty SuppressErrors true
+@BBInterface Plugin SetPluginProperty ZeroControlsAllowed false
+@BBInterface Plugin SetPluginProperty UseTooltip true
+@BBInterface Plugin SetPluginProperty ClearConfigurationOnLoad false
+
+!---- WinampFrame ----
+@BBInterface Control Create Frame WinampFrame
+@BBInterface Control SetWindowProperty WinampFrame X 216
+@BBInterface Control SetWindowProperty WinampFrame Y 100
+@BBInterface Control SetWindowProperty WinampFrame Width 170
+@BBInterface Control SetWindowProperty WinampFrame Height 61
+@BBInterface Control SetWindowProperty WinampFrame Border true
+@BBInterface Control SetWindowProperty WinampFrame Style "Toolbar"
+@BBInterface Control SetWindowProperty WinampFrame IsVisible true
+@BBInterface Control SetWindowProperty WinampFrame IsToggledWithPlugins true
+@BBInterface Control SetWindowProperty WinampFrame IsOnAllWorkspaces true
+@BBInterface Control SetWindowProperty WinampFrame IsOnTop true
+@BBInterface Control SetWindowProperty WinampFrame AutoHide false
+@BBInterface Control SetWindowProperty WinampFrame IsSlitted false
+@BBInterface Control SetWindowProperty WinampFrame IsTransparent false
+@BBInterface Control SetWindowProperty WinampFrame Transparency 100
+@BBInterface Control SetControlProperty WinampFrame HAlign "Center"
+@BBInterface Control SetControlProperty WinampFrame VAlign "Top"
+@BBInterface Control SetControlProperty WinampFrame HasTitleBar false
+@BBInterface Control SetControlProperty WinampFrame IsLocked false
+
+!---- WinampFrame::ExternalPlugins ----
+@BBInterface Control ExternalPlugin WinampFrame Load "plugins\BBmuse\BBmuse.dll"
+@BBInterface Control ExternalPlugin WinampFrame SetProperty BBmuse IsVisible true
+@BBInterface Control ExternalPlugin WinampFrame SetProperty BBmuse Position 2 2
+@BBInterface Control ExternalPlugin WinampFrame Load "plugins\BBSpectrum\bbspectrum.dll"
+@BBInterface Control ExternalPlugin WinampFrame SetProperty bbspectrum IsVisible true
+@BBInterface Control ExternalPlugin WinampFrame SetProperty bbspectrum Position 56 21
+
+!---- WinampFrame::winampslider ----
+@BBInterface Control CreateChild WinampFrame Slider winampslider
+@BBInterface Control SetWindowProperty winampslider X 2
+@BBInterface Control SetWindowProperty winampslider Y 42
+@BBInterface Control SetWindowProperty winampslider Width 166
+@BBInterface Control SetWindowProperty winampslider Height 17
+@BBInterface Control SetWindowProperty winampslider Border true
+@BBInterface Control SetWindowProperty winampslider Style "Toolbar"
+@BBInterface Control SetWindowProperty winampslider IsVisible true
+@BBInterface Control SetControlProperty winampslider Value 0.096639
+@BBInterface Control SetControlProperty winampslider Vertical false
+@BBInterface Control SetControlProperty winampslider Reversed false
+@BBInterface Control SetControlProperty winampslider Appearance 0
+@BBInterface Control SetAgent winampslider Value Bro@m "@BBmuse_toWinamp BBI_SPECIAL 106 %d"
+@BBInterface Control SetAgentProperty winampslider Value MinValue 0
+@BBInterface Control SetAgentProperty winampslider Value MaxValue 100
+
+!---- WinampFrame::NextTrack ----
+@BBInterface Control CreateChild WinampFrame Button NextTrack
+@BBInterface Control SetWindowProperty NextTrack X 143
+@BBInterface Control SetWindowProperty NextTrack Y 21
+@BBInterface Control SetWindowProperty NextTrack Width 25
+@BBInterface Control SetWindowProperty NextTrack Height 19
+@BBInterface Control SetWindowProperty NextTrack Border true
+@BBInterface Control SetWindowProperty NextTrack Style "Toolbar"
+@BBInterface Control SetWindowProperty NextTrack IsVisible true
+@BBInterface Control SetAgent NextTrack Caption StaticText ">>"
+@BBInterface Control SetAgent NextTrack MouseDown Winamp 40048
+
+!---- WinampFrame::PrevTrack ----
+@BBInterface Control CreateChild WinampFrame Button PrevTrack
+@BBInterface Control SetWindowProperty PrevTrack X 2
+@BBInterface Control SetWindowProperty PrevTrack Y 21
+@BBInterface Control SetWindowProperty PrevTrack Width 25
+@BBInterface Control SetWindowProperty PrevTrack Height 19
+@BBInterface Control SetWindowProperty PrevTrack Border true
+@BBInterface Control SetWindowProperty PrevTrack Style "Toolbar"
+@BBInterface Control SetWindowProperty PrevTrack IsVisible true
+@BBInterface Control SetAgent PrevTrack Caption StaticText "<<"
+@BBInterface Control SetAgent PrevTrack MouseDown Winamp 40044
+
+!---- WinampFrame::Play ----
+@BBInterface Control CreateChild WinampFrame Button Play
+@BBInterface Control SetWindowProperty Play X 116
+@BBInterface Control SetWindowProperty Play Y 21
+@BBInterface Control SetWindowProperty Play Width 25
+@BBInterface Control SetWindowProperty Play Height 19
+@BBInterface Control SetWindowProperty Play Border true
+@BBInterface Control SetWindowProperty Play Style "Toolbar"
+@BBInterface Control SetWindowProperty Play IsVisible true
+@BBInterface Control SetAgent Play Caption StaticText ">"
+@BBInterface Control SetAgent Play MouseDown Winamp 40045
+
+!---- WinampFrame::Pause ----
+@BBInterface Control CreateChild WinampFrame Button Pause
+@BBInterface Control SetWindowProperty Pause X 29
+@BBInterface Control SetWindowProperty Pause Y 21
+@BBInterface Control SetWindowProperty Pause Width 25
+@BBInterface Control SetWindowProperty Pause Height 19
+@BBInterface Control SetWindowProperty Pause Border true
+@BBInterface Control SetWindowProperty Pause Style "Toolbar"
+@BBInterface Control SetWindowProperty Pause IsVisible true
+@BBInterface Control SetAgent Pause Caption StaticText "||"
+@BBInterface Control SetAgent Pause MouseDown Winamp 40046

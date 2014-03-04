@@ -36,8 +36,8 @@ struct PluginPtr {
 };
 
 struct PluginLoaderList {
-	struct PluginList* parent;
     struct PluginLoaderList* next;
+	struct PluginList* parent;
     
 	HMODULE module;
 	const char* name;
@@ -45,7 +45,7 @@ struct PluginLoaderList {
 		
 	struct PluginPtr* plugins;
 		
-	bool (*Init)();
+	bool (*Init)(char* workingDir);
 	void (*Finalize)();
 		
 	const char* (*GetName)();

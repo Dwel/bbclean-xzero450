@@ -1,0 +1,36 @@
+# bbDesktop icons.rc file
+bbdesktop.iconcount: 7
+bbdesktop.icon1.title: LightWave Modeller
+bbdesktop.icon1.command: d:\program\LightWave9\Programs\modeler.exe
+bbdesktop.icon1.parameters:
+bbdesktop.icon1.workdir: d:\program\LightWave9\Programs
+bbdesktop.icon1.icon: d:\program\LightWave9\Programs\modeler.exe
+bbdesktop.icon1.x: 20
+bbdesktop.icon1.y: 20
+bbdesktop.icon2.title: LightWave Layout
+bbdesktop.icon2.command: d:\program\LightWave9\Programs\lightwav.exe
+bbdesktop.icon2.parameters:
+bbdesktop.icon2.workdir: d:\program\LightWave9\Programs
+bbdesktop.icon2.icon: d:\program\LightWave9\Programs\lightwav.exe
+bbdesktop.icon2.x: 20
+bbdesktop.icon2.y: 90
+bbdesktop.icon3.title: µTorrent
+bbdesktop.icon3.command: c:\program\uTorrent\uTorrent.exe
+bbdesktop.icon3.x: 20
+bbdesktop.icon3.y: 160
+bbdesktop.icon4.title: Mozilla Thunderbird
+bbdesktop.icon4.command: c:\program\Mozilla Thunderbird\thunderbird.exe
+bbdesktop.icon4.x: 20
+bbdesktop.icon4.y: 230
+bbdesktop.icon5.title: Mozilla Minefield
+bbdesktop.icon5.command: c:\program\Minefield\firefox.exe
+bbdesktop.icon5.x: 20
+bbdesktop.icon5.y: 300
+bbdesktop.icon6.title: Mozilla Firefox
+bbdesktop.icon6.command: c:\program\Mozilla Firefox\firefox.exe
+bbdesktop.icon6.x: 20
+bbdesktop.icon6.y: 370
+bbdesktop.icon7.title: Mozilla Sunbird
+bbdesktop.icon7.command: c:\program\Mozilla SunBird\sunbird.exe
+bbdesktop.icon7.x: 20
+bbdesktop.icon7.y: 440

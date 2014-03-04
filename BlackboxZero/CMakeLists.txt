@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.9)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 # use this for develoment, if you do not pass it from command line:
-#set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
+set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
 
 message("bb generator=${CMAKE_GENERATOR}")
 message("bb install path=${CMAKE_INSTALL_PREFIX}")
@@ -51,6 +51,7 @@ add_subdirectory(build/fuzzydoc)
 
 # plugins
 add_subdirectory(3rd_party/iTunesCOMWindowsSDK)
+add_subdirectory(3rd_party/foobar2000)
 add_subdirectory(plugins/bbKeys)
 add_subdirectory(plugins/bbPlugin)
 add_subdirectory(plugins/bbLeanBar)
@@ -67,19 +68,6 @@ if( buildbits EQUAL 64 )
 	message("bbLeanSkin on 64bit... 32bit generator=${GENERATOR_FOR_32}")
 
 	set(bbLeanSkin_SOURCE_DIR  ${CMAKE_SOURCE_DIR}/plugins/bbLeanSkin)
-
-#	set(bbLeanSkinEng32_PATH ${bbLeanSkin_SOURCE_DIR}/bbLeanSkinEng32)
-#	message("bbLeanSkin on 64bit... path=${bbLeanSkinEng32_PATH}")
-#	ExternalProject_Add (
-#		bbLeanSkinEng32
-#		CMAKE_GENERATOR ${GENERATOR_FOR_32}
-#		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
-#		SOURCE_DIR  ${bbLeanSkinEng32_PATH}
-#		DOWNLOAD_COMMAND ""
-#		INSTALL_DIR ${CMAKE_BINARY_DIR}/grr
-#	)
-#	set_property(TARGET bbLeanSkinEng32 PROPERTY FOLDER "plugins/bbLeanSkin")
-
   set(bbLeanSkinRun32_PATH ${bbLeanSkin_SOURCE_DIR}/bbLeanSkinRun32)
   message("bbLeanSkin on 64bit... path=${bbLeanSkinRun32_PATH}")
 	ExternalProject_Add (
@@ -88,7 +76,6 @@ if( buildbits EQUAL 64 )
 		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 		SOURCE_DIR  ${bbLeanSkinRun32_PATH}
 		DOWNLOAD_COMMAND ""
-		INSTALL_DIR ${CMAKE_BINARY_DIR}/grr
 	)
 	set_property(TARGET bbLeanSkinRun32 PROPERTY FOLDER "plugins/bbLeanSkin")
 endif( buildbits EQUAL 64 )
@@ -109,20 +96,30 @@ add_subdirectory(plugins/bbColor3dc)
 add_subdirectory(plugins/bbWorkspaceWheel)
 add_subdirectory(plugins/bbPlugin+)
 add_subdirectory(plugins/bbLeanBar+)
+add_subdirectory(plugins/BBPager)
+add_subdirectory(plugins/BBStyle)
+add_subdirectory(plugins/bbRecycleBin)
+add_subdirectory(plugins/bbInterface)
+add_subdirectory(plugins/bbFooMan)
+add_subdirectory(plugins/bbMuse)
+add_subdirectory(plugins/bbPlayer)
+add_subdirectory(plugins/bbSeekBar)
+add_subdirectory(plugins/BBColorEx)
+#add_subdirectory(plugins/bbLeanBar2)
+add_subdirectory(plugins/bbDesktop)
+add_subdirectory(plugins/bbIME)
+#add_subdirectory(plugins/bbLua)
+add_subdirectory(plugins/bbSetCursors)
+add_subdirectory(plugins/bbTaskSwitch)
 
 # NOTE: following plugins are not yet mingw compatible
 if (NOT MINGW)
 	add_subdirectory(plugins/bbInterface_iTunes)
 endif (NOT MINGW)
 
-add_subdirectory(plugins/BBPager)
-add_subdirectory(plugins/BBStyle)
-add_subdirectory(plugins/bbRecycleBin)
-add_subdirectory(plugins/bbInterface)
-
 # NOTE: mingw 64 bit does not work yet!
 if (MSVC)
-	add_subdirectory(plugins/SystemBarEx)
+	add_subdirectory(plugins/bbSystemBarEx)
 endif (MSVC)
 if (MINGW)
 	if (NOT ${buildbits} MATCHES "64")

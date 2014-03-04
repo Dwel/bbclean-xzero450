@@ -2,8 +2,6 @@ set(bbColor3dc_SOURCES
 	bbColor3dc.cpp
 )
 
-#set(bbColor3dc_RESOURCES bbColor3dc.rc)
-
 include_directories(${CMAKE_SOURCE_DIR}/blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin)
@@ -15,7 +13,4 @@ set_property(TARGET bbColor3dc PROPERTY FOLDER "plugins/bbColor3dc")
 
 install(FILES readme.txt DESTINATION plugins/bbColor3dc)
 install(TARGETS bbColor3dc RUNTIME DESTINATION plugins/bbColor3dc)
-#if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbColor3dc/${bbColor3dc_RESOURCES}")
-#	install(FILES ${bbColor3dc_RESOURCES} DESTINATION plugins/bbColor3dc)
-#endif()
 

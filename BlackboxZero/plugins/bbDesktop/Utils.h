@@ -1,0 +1,2 @@
+HWND GetBlackboxWindow();
+HDC GetBlackboxDC();

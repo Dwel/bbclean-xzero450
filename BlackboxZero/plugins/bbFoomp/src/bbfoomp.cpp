@@ -78,9 +78,9 @@
 #include "bbfoomp.h"
 
 LPSTR szAppName = "bbFoomp";			// The name of our window class, etc.
-LPSTR szVersion = "bbFoomp 1.7";		// Used in MessageBox titlebars
+LPSTR szVersion = "bbFoomp 1.7.1";		// Used in MessageBox titlebars
 
-LPSTR szInfoVersion = "1.7";
+LPSTR szInfoVersion = "1.7.1";
 LPSTR szInfoAuthor = "freeb0rn";
 LPSTR szInfoRelDate = "FILL IN LATER";
 LPSTR szInfoLink = "http://freeb0rn.com";
@@ -95,7 +95,11 @@ bool SlitExists = false;
 
 int beginPlugin(HINSTANCE hPluginInstance)
 {
-	if (!hwndSlit) return 0;
+	if (!hwndSlit)
+  {
+    MessageBox(0, "bbFoomp wants to be placed in slit!\nModify your plugins.rc, please.", szVersion, MB_OK | MB_ICONINFORMATION);
+    return 1;
+  }
 
 	WNDCLASS wc;
 	hwndBlackbox = GetBBWnd();
@@ -201,7 +205,9 @@ int beginSlitPlugin(HINSTANCE hPluginInstance, HWND hwndBBSlit)
 //===========================================================================
 
 void endPlugin(HINSTANCE hPluginInstance)
-{	
+{
+  if (!hwndSlit)
+    return;
 
 	// Write current position to the config file if *not* docked to the slit...
 	if (!FooDockedToSlit)
@@ -1364,8 +1370,12 @@ void ReadRCSettings()
 	//====================
 
 	// Read bbfoomp settings from config file...
-	strcpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Progra~1\\foobar2000\\foobar2000.exe"));
-	strcpy(NoInfoText, ReadString(rcpath, "bbfoomp.DefaultText:", "Nothing is playing"));
+#if defined _WIN64
+	strcpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Program Files (x86)\\foobar2000\\foobar2000.exe"));
+#else
+  strcpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Progra~1\\foobar2000\\foobar2000.exe"));
+#endif
+  strcpy(NoInfoText, ReadString(rcpath, "bbfoomp.DefaultText:", "Nothing is playing"));
 	FooWidth = ReadInt(rcpath, "bbfoomp.foowidth:" , 200);
 	height = ReadInt(rcpath, "bbfoomp.height:", 20);
 	FooMode = ReadInt(rcpath, "bbfoomp.displaytype:", 2);
@@ -1422,7 +1432,11 @@ void WriteDefaultRCSettings()
 	if (file)
 	{
 		strcpy(szTemp,
-			"bbfoomp.foobar.path: C:\\Progra~1\\foobar2000\\foobar2000.exe\r\n" // Foo Directory [FooPath]
+#if defined _WIN64
+      "bbfoomp.foobar.path: C:\\Program Files (x86)\\foobar2000\\foobar2000.exe\r\n" // Foo Directory [FooPath]
+#else
+      "bbfoomp.foobar.path: C:\\Progra~1\\foobar2000\\foobar2000.exe\r\n" // Foo Directory [FooPath]
+#endif
 			"bbfoomp.displaytype: 2\r\n"										// FooMode (Mouse Over Mode) [FooMode]
 			"bbfoomp.foowidth: 200\r\n"											// FooWidth [self-explanatory]
 			"bbfoomp.height: 22\r\n"											// Height [self-explanatory]

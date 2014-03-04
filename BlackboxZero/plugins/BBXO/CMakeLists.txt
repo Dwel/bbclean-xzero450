@@ -4,8 +4,8 @@ set(BBXO_SOURCES
 )
 
 set(BBXO_RESOURCES Resource.rc)
-#set(CMAKE_RC_COMPILER_INIT windres)
-#ENABLE_LANGUAGE(RC)
+set(CMAKE_RC_COMPILER_INIT windres)
+ENABLE_LANGUAGE(RC)
 
 #readme.txt
 #Mortar.ico
@@ -24,7 +24,4 @@ set_property(TARGET BBXO PROPERTY FOLDER "plugins/BBXO")
 #INSTALL_IF_NEW = BBXO.rc
 #install(FILES changes.txt DESTINATION plugins/BBXO)
 install(TARGETS BBXO RUNTIME DESTINATION plugins/BBXO)
-#if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/BBXO/${BBXO_RESOURCES}")
-#	install(FILES ${BBXO_RESOURCES} DESTINATION plugins/BBXO)
-#endif()
 

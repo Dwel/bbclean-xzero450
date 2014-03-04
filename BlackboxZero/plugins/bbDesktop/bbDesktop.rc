@@ -1,0 +1,10 @@
+# Settings
+bbDesktop.maxIconLabelWidth: 60
+bbDesktop.gridSize: 10
+bbDesktop.snapToGrid: true
+bbDesktop.fontName: Tahoma
+bbDesktop.fontSize: 10
+bbDesktop.foreColor: #FFFFFF
+bbDesktop.shadowColor: #404040
+bbDesktop.textEffect: shadow
+bbDesktop.iconsFile: icons.rc

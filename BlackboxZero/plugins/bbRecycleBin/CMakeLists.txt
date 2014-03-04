@@ -2,8 +2,6 @@ set(bbRecycleBin_SOURCES
 	bbRecycleBin.cpp
 )
 
-set(bbRecycleBin_RESOURCES bbRecycleBin.rc)
-
 include_directories(${CMAKE_SOURCE_DIR}/blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin)
@@ -22,7 +20,4 @@ endif ( MSVC )
 
 install(FILES readme.txt DESTINATION plugins/bbRecycleBin)
 install(TARGETS bbRecycleBin RUNTIME DESTINATION plugins/bbRecycleBin)
-#if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbRecycleBin/${bbRecycleBin_RESOURCES}")
-#	install(FILES ${bbRecycleBin_RESOURCES} DESTINATION plugins/bbRecycleBin)
-#endif()
 

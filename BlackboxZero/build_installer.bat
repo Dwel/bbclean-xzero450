@@ -7,7 +7,9 @@ set OUTDIR=c:/_builds
 echo copying NSIS installer files...
 
 robocopy.exe installer %OUTDIR% blackbox.nsi installer.bmp 
-if %errorlevel% neq 0 goto TERM
+robocopy.exe . %OUTDIR% GPL.txt
+robocopy.exe 3rd_party\redistributables\2012u4 %OUTDIR%\redist vcredist_x86.exe vcredist_x64.exe
+rem if %errorlevel% neq 0 goto TERM
 
 echo NSIS creating installer.exe ...
 

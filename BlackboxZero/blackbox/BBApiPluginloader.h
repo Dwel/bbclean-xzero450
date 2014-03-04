@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-DLL_EXPORT bool Init();
+DLL_EXPORT bool Init(char* workingDir);
 DLL_EXPORT void Finalize();
 DLL_EXPORT const char *GetName();
 DLL_EXPORT const char *GetApi();

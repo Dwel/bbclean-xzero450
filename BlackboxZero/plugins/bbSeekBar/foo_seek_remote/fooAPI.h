@@ -1,0 +1,9 @@
+#pragma	  once
+
+// foo_remote include file
+const TCHAR FOO_SEEK_REMOTE_WND_NAME[] = TEXT( "SEEK REMOTE CONTROL" );
+const TCHAR FOO_SEEK_REMOTE_WND_CLASS[] = TEXT( "FOO_SEEK_REMOTE_CONTROL" );
+
+#define WM_FOO_GETPOSITION	(WM_USER + 1)
+#define WM_FOO_GETLENGTH	(WM_USER + 2)
+#define WM_FOO_JUMPTOTIME	(WM_USER + 3)

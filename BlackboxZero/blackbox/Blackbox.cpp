@@ -454,8 +454,8 @@ int WINAPI WinMain(
     multimon = have_imp(pGetMonitorInfoA);
     /* Are we running on top of Explorer? */
     underExplorer = NULL != FindWindow("Shell_TrayWnd", NULL);
-    nostartup |= underExplorer || StartupHasBeenRun();
-
+    //nostartup |= underExplorer || StartupHasBeenRun();
+    
 #ifndef BBTINY
     OleInitialize(0);
 #endif

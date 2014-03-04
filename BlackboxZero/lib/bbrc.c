@@ -385,11 +385,16 @@ ST VOID CALLBACK reset_reader_proc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD
             g_rc->used = 0;
             return;
         }
+        // @NOTE: first we remove the timer, because inside the reset_rcread an error can cause popup, which will in turn call reset_reader_proc... voila infinite recursion
+        KillTimer(hwnd, idEvent);
         reset_rcreader();
         g_rc->timer_set = 0;
     }
-    // dbg_printf("reset_reader %x %x %x %d", hwnd, uMsg, idEvent, dwTime);
-    KillTimer(hwnd, idEvent);
+    else
+    {
+        // dbg_printf("reset_reader %x %x %x %d", hwnd, uMsg, idEvent, dwTime);
+        KillTimer(hwnd, idEvent);
+    }
 }
 
 ST void set_reader_timer(void)
