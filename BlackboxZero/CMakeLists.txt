@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.9)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 # use this for develoment, if you do not pass it from command line:
-set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
+#set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
 
 message("bb generator=${CMAKE_GENERATOR}")
 message("bb install path=${CMAKE_INSTALL_PREFIX}")
@@ -129,7 +129,7 @@ endif (MINGW)
 
 # pluginloaders
 if (${buildbits} MATCHES "64")
-	add_subdirectory(pluginloaders/wow64adapter)
+	#add_subdirectory(pluginloaders/wow64adapter)
 ENDIF()
 
 # tools
