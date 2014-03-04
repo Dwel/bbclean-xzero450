@@ -5,6 +5,20 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 # use this for develoment, if you do not pass it from command line:
 #set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
+#set(USE_LOGGING 1)
+
+include_directories (3rd_party/flogging)
+include_directories (3rd_party/logging)
+include_directories (.)
+
+if(USE_LOGGING EQUAL 1)
+	add_definitions ("-DTRACE_ENABLED")
+	add_definitions ("-DTRACE_STATIC")
+	add_definitions ("-DTRACE_CONFIG_INCLUDE=\"${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/logging/config.h\"")
+	add_definitions ("-DTRACE_LEVELS_INCLUDE=\"${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/logging/levels.h\"")
+	add_definitions ("-DTRACE_CONTEXTS_INCLUDE=\"${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/logging/contexts.h\"")
+else(USE_LOGGING EQUAL 1)
+endif(USE_LOGGING EQUAL 1)
 
 message("bb generator=${CMAKE_GENERATOR}")
 message("bb install path=${CMAKE_INSTALL_PREFIX}")
@@ -20,6 +34,8 @@ else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 	set(buildbits 32)
   message("bb build=32bit")
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+
+add_subdirectory(3rd_party)
 
 # font tools and conversion
 add_subdirectory(build/bdf2fon)
@@ -50,8 +66,6 @@ add_subdirectory(build/fuzzydoc)
 #add_subdirectory(docs)
 
 # plugins
-add_subdirectory(3rd_party/iTunesCOMWindowsSDK)
-add_subdirectory(3rd_party/foobar2000)
 add_subdirectory(plugins/bbKeys)
 add_subdirectory(plugins/bbPlugin)
 add_subdirectory(plugins/bbLeanBar)

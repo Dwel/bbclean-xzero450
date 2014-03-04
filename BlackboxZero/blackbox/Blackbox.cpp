@@ -32,6 +32,7 @@
 #include "BImage.h"
 #include "bbshell.h"
 #include "bbrc.h"
+#include <logging.h>
 
 #include <mmsystem.h>
 #include <process.h>
@@ -404,6 +405,9 @@ int WINAPI WinMain(
     LPSTR lpCmdLine,
     int nShowCmd)
 {
+    TRACE_APPNAME("BlackBox");
+    TRACE_CONNECT();
+    TRACE_MSG(trace::e_Info, trace::CTX_BBCore, "Initializing BlackBox, version %s", BBLEAN_VERSION);
     MSG msg;
     MINIMIZEDMETRICS mm;
     int ret;
@@ -538,6 +542,7 @@ int WINAPI WinMain(
 #ifndef BBTINY
     OleUninitialize();
 #endif
+    TRACE_DISCONNECT();
 
     m_alloc_check_leaks("bbCore");
     return msg.wParam;
