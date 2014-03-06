@@ -1,8 +1,10 @@
 # Compiled source #
 *.o
+*.obj
 *.exe
 *.dll
 *.a
+*.lib:
 resource.res
 # projects usually go here:
 _projects*
