@@ -944,13 +944,13 @@ void WriteRCSettings()
 		sprintf(szTemp, "!============================\r\n\r\n");
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "BB8Ball.x: %d\r\n", xpos, temp);
+		sprintf(szTemp, "BB8Ball.x: %d\r\n", xpos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "BB8Ball.y: %d\r\n", ypos, temp);
+		sprintf(szTemp, "BB8Ball.y: %d\r\n", ypos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "BB8Ball.alpha: %d\r\n", alpha, temp);
+		sprintf(szTemp, "BB8Ball.alpha: %d\r\n", alpha);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		(wantInSlit) ? strcpy(temp, "true") : strcpy(temp, "false");
@@ -981,10 +981,10 @@ void WriteRCSettings()
 		sprintf(szTemp, "BB8Ball.hideMode: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "BB8Ball.message.x: %d\r\n", mxpos, temp);
+		sprintf(szTemp, "BB8Ball.message.x: %d\r\n", mxpos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "BB8Ball.message.y: %d\r\n", mypos, temp);
+		sprintf(szTemp, "BB8Ball.message.y: %d\r\n", mypos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		(apossition) ? strcpy(temp, "true") : strcpy(temp, "false");

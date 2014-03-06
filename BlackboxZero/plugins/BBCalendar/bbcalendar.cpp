@@ -1730,23 +1730,23 @@ void WriteRCSettings()
 		sprintf(szTemp, "bbcalendar.y: %d\r\n", ypos, temp);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbcalendar.width: %d\r\n", width, temp);
+		sprintf(szTemp, "bbcalendar.width: %d\r\n", width);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbcalendar.height: %d\r\n", height, temp);
+		sprintf(szTemp, "bbcalendar.height: %d\r\n", height);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "bbcalendar.placement: %d\r\n", placement, temp);
+		sprintf(szTemp, "bbcalendar.placement: %d\r\n", placement);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbcalendar.alpha: %d\r\n", alpha, temp);
+		sprintf(szTemp, "bbcalendar.alpha: %d\r\n", alpha);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 
-		sprintf(szTemp, "bbcalendar.fontSize.text: %d\r\n", fontSize, temp);
+		sprintf(szTemp, "bbcalendar.fontSize.text: %d\r\n", fontSize);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbcalendar.fontSize.date: %d\r\n", dateFontSize, temp);
+		sprintf(szTemp, "bbcalendar.fontSize.date: %d\r\n", dateFontSize);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		
@@ -1791,10 +1791,10 @@ void WriteRCSettings()
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		
-		sprintf(szTemp, "bbcalendar.styles: %d\r\n", (cstyle*100000 + dstyle*10000 + wstyle*1000 + cdstyle*100 + astyle*10 + nstyle), temp);
+		sprintf(szTemp, "bbcalendar.styles: %d\r\n", (cstyle*100000 + dstyle*10000 + wstyle*1000 + cdstyle*100 + astyle*10 + nstyle));
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbcalendar.mode: %d\r\n", (drawMode*10000 + text_pos*1000 + texta*100 + wpos*10 + bopt), temp);
+		sprintf(szTemp, "bbcalendar.mode: %d\r\n", (drawMode*10000 + text_pos*1000 + texta*100 + wpos*10 + bopt));
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		
@@ -2274,7 +2274,7 @@ sprintf(htime,"day%i.s:",n);
 s = ReadInt(freeformpath, htime, 1);
 ur.right = ur.left + 100;
 ur.bottom = ur.top + 100;
-char *nn = 0;
+char nn[128];
 _itoa(n,nn,10); 
 
 drawRect(hdc,BUTTON,ur,NULL,"dfsafdf");
