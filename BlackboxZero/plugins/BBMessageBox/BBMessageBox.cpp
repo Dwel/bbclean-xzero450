@@ -844,13 +844,13 @@ void WriteRCSettings()
 		sprintf(szTemp, "!============================\r\n\r\n");
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "BBMessageBox.x: %d\r\n", xpos, temp);
+		sprintf(szTemp, "BBMessageBox.x: %d\r\n", xpos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "BBMessageBox.y: %d\r\n", ypos, temp);
+		sprintf(szTemp, "BBMessageBox.y: %d\r\n", ypos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "BBMessageBox.alpha: %d\r\n", alpha, temp);
+		sprintf(szTemp, "BBMessageBox.alpha: %d\r\n", alpha);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 /*
 		(wantInSlit) ? strcpy(temp, "true") : strcpy(temp, "false");

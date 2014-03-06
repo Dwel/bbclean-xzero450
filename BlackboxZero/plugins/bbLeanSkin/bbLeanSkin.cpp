@@ -822,7 +822,8 @@ void readSettings(void)
         char buf[80];
         sprintf(buf, "bbleanskin.titlebar.%s%sClick:", modifiers[i%4], buttons[i/4]);
         const char *p = ReadString(rcpath, buf, "");
-        mSkin.captionClicks.Dbl[i] = (char)(1 + get_string_index(p, button_ids));
+        //NOTE: changed from i to i%4 by mojmir. the array is not that big!
+        mSkin.captionClicks.Dbl[i%4] = (char)(1 + get_string_index(p, button_ids));
     }
 
     p = ReadString(rcpath, "bbleanskin.titlebar.buttons:", "4-321");
