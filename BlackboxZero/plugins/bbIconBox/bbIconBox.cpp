@@ -53,7 +53,7 @@ LPCSTR pluginInfo(int field)
 // Global variables
 
 HWND BBhwnd;    // Blackbox window handle
-struct icon_box *g_PI;
+struct icon_box *g_PI = 0;
 int currentDesk;
 int BBVersion;
 int box_count;

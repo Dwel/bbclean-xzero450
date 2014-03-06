@@ -1268,16 +1268,16 @@ void WriteRCSettings()
 		sprintf(szTemp, "!============================\r\n\r\n");
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "bbrss.x: %d\r\n", xpos, temp);
+		sprintf(szTemp, "bbrss.x: %d\r\n", xpos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "bbrss.y: %d\r\n", ypos, temp);
+		sprintf(szTemp, "bbrss.y: %d\r\n", ypos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbrss.width: %d\r\n", width, temp);
+		sprintf(szTemp, "bbrss.width: %d\r\n", width);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbrss.height: %d\r\n", height, temp);
+		sprintf(szTemp, "bbrss.height: %d\r\n", height);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 	//	sprintf(szTemp, "bbrss.date.possition: %d\r\n", text_pos, temp);
@@ -1306,7 +1306,7 @@ void WriteRCSettings()
 		sprintf(szTemp, "bbrss.transparency: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbrss.alpha: %d\r\n", alpha, temp);
+		sprintf(szTemp, "bbrss.alpha: %d\r\n", alpha);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		(fullTrans) ? strcpy(temp, "true") : strcpy(temp, "false");
@@ -1340,7 +1340,7 @@ void WriteRCSettings()
 	//	sprintf(szTemp, "bbrss.enabled.alarms: %s\r\n", temp);
  	//	WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-    	sprintf(szTemp, "bbrss.fontSize: %d\r\n", fontSize, temp);
+    	sprintf(szTemp, "bbrss.fontSize: %d\r\n", fontSize);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
 	//	sprintf(szTemp, "bbrss.clockformat: %s\r\n", clockformat);

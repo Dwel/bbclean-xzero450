@@ -1203,10 +1203,7 @@ void createAlarmFile()
 
 void WriteRCSettings()
 {
-
-
 	static char szTemp[MAX_LINE_LENGTH];
-	static char temp[8];
 	
 	DWORD retLength = 0;
 
@@ -1223,79 +1220,67 @@ void WriteRCSettings()
 		sprintf(szTemp, "!============================\r\n\r\n");
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "bbdigitalex.x: %d\r\n", xpos, temp);
+		sprintf(szTemp, "bbdigitalex.x: %d\r\n", xpos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "bbdigitalex.y: %d\r\n", ypos, temp);
+		sprintf(szTemp, "bbdigitalex.y: %d\r\n", ypos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbdigitalex.width: %d\r\n", width, temp);
+		sprintf(szTemp, "bbdigitalex.width: %d\r\n", width);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbdigitalex.height: %d\r\n", height, temp);
+		sprintf(szTemp, "bbdigitalex.height: %d\r\n", height);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbdigitalex.date.possition: %d\r\n", text_pos, temp);
+		sprintf(szTemp, "bbdigitalex.date.possition: %d\r\n", text_pos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
 		sprintf(szTemp, "bbdigitalex.windowStyle: %s\r\n", windowStyle);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(wantInSlit) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.inSlit: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.inSlit: %s\r\n", wantInSlit ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(alwaysOnTop) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.alwaysOnTop: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.alwaysOnTop: %s\r\n", alwaysOnTop ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(snapWindow) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.snapWindow: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.snapWindow: %s\r\n", snapWindow ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(transparency) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.transparency: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.transparency: %s\r\n", transparency ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbdigitalex.alpha: %d\r\n", alpha, temp);
+		sprintf(szTemp, "bbdigitalex.alpha: %d\r\n", alpha);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(fullTrans) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.fullTrans: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.fullTrans: %s\r\n", fullTrans ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(pluginToggle) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.pluginToggle: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.pluginToggle: %s\r\n", pluginToggle ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(drawBorder) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.drawBorder: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.drawBorder: %s\r\n", drawBorder ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbdigitalex.drawMode: %d\r\n", drawMode, temp);
+		sprintf(szTemp, "bbdigitalex.drawMode: %d\r\n", drawMode);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(remove_zero) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.remove.0: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.remove.0: %s\r\n", remove_zero ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(showSeconds) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.show.seconds: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.show.seconds: %s\r\n", showSeconds ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(h24format) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.24hFormat: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.24hFormat: %s\r\n", h24format ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(alarms) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.enabled.alarms: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.enabled.alarms: %s\r\n", alarms ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(blink) ? strcpy(temp, "true") : strcpy(temp, "false");
-		sprintf(szTemp, "bbdigitalex.blink: %s\r\n", temp);
+		sprintf(szTemp, "bbdigitalex.blink: %s\r\n", blink ? "true" : "false");
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-    	sprintf(szTemp, "bbdigitalex.fontSize: %d\r\n", fontSize, temp);
+    	sprintf(szTemp, "bbdigitalex.fontSize: %d\r\n", fontSize);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
 		sprintf(szTemp, "bbdigitalex.clockformat: %s\r\n", clockformat);

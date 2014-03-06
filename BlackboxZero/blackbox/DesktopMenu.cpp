@@ -148,7 +148,7 @@ static BOOL CALLBACK recoverwindow_enum_proc(HWND hwnd, LPARAM lParam)
 
     if (IsWindowEnabled(hwnd) && (IsIconic(hwnd)
         || (GetClientRect(hwnd, &r) && r.right && r.bottom))
-        && GetWindowText(hwnd, windowtext, sizeof text))
+        && GetWindowText(hwnd, windowtext, sizeof(windowtext)))
     {
         classname[0] = 0;
         //GetClassName(hwnd, classname, sizeof classname);

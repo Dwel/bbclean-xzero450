@@ -179,7 +179,7 @@ void SFInsert::Measure(HDC hDC, SIZE *size)
 
 void SFInsert::RemoveStuff(void)
 {
-    MenuItem *mi, *next = NULL;
+    MenuItem *mi = 0, *next = NULL;
     if (NULL == m_pLast)
         return;
     for (mi = this->next; mi; ) {
