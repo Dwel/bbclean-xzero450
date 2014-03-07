@@ -803,16 +803,13 @@ void MakeSticky(HWND hwnd)
         return;
 
     if (is_bbwindow(hwnd)) {
-
         if (assoc(sticky_list, hwnd))
             return;
         p = (struct sticky_list*)m_alloc(sizeof(struct sticky_list));
         cons_node(&sticky_list, p);
         p->hwnd = hwnd;
         //dbg_window(hwnd, "[+%d]", listlen(sticky_list));
-
     } else {
-
         if (vwm_get_desk(hwnd) != currentScreen)
             setDesktop(hwnd, currentScreen, false);
         vwm_set_sticky(hwnd, true);

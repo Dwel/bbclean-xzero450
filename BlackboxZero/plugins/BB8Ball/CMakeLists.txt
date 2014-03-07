@@ -1,9 +1,15 @@
-
 set(BB8Ball_SOURCES
   BB8Ball.cpp
 )
 
-set(BB8Ball_RESOURCES Resource.rc)
+SET(BB8Ball_HEADERS
+	BB8Ball.h
+	Resource.h
+)
+
+set(BB8Ball_RESOURCES 
+	Resource.rc
+)
 #set(blackbox_RESOURCES resource.rc)
 #set(CMAKE_RC_COMPILER_INIT windres)
 #ENABLE_LANGUAGE(RC)
@@ -16,7 +22,7 @@ set(BB8Ball_RESOURCES Resource.rc)
 include_directories(${CMAKE_SOURCE_DIR}/blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin)
-add_library(BB8Ball SHARED ${BB8Ball_SOURCES})
+add_library(BB8Ball SHARED ${BB8Ball_SOURCES} ${BB8Ball_HEADERS} ${BB8Ball_RESOURCES})
 target_link_libraries(BB8Ball blackbox bblib bbPlugin)
 target_link_libraries(BB8Ball version comctl32 gdiplus winmm msimg32 shlwapi comdlg32)
 

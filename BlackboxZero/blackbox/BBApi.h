@@ -705,7 +705,7 @@ extern "C" {
     /* ------------------------------------ */
     /* Painting */
 
-    /* Generic Gradient Function */
+    // DEPRECATED, use MakeStyleGradient
     API_EXPORT void MakeGradient(
         HDC hdc,
         RECT rect,
@@ -720,6 +720,7 @@ extern "C" {
         int borderWidth
         );
 
+    // DEPRECATED, use MakeStyleGradient
 	API_EXPORT void MakeGradientEx(HDC hDC, RECT rect, int type, COLORREF colour_from, COLORREF colour_to, 
 					COLORREF colour_from_splitto, COLORREF colour_to_splitto, bool interlaced, int bevelStyle,
 					int bevelPosition, int bevelWidth, COLORREF borderColor, int borderWidth);

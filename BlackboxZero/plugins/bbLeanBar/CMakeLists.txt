@@ -7,7 +7,10 @@ include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin)
 
 set(bbLeanBar_CONFIGS bbLeanBar.rc)
 set(bbLeanBar_SOURCES
+	#BuffBmp.cpp
 	bbLeanBar.cpp
+	#bbLeanClasses.cpp
+	#TinyDropTarget.cpp
 )
 
 add_library(bbLeanBar SHARED ${bbLeanBar_SOURCES})

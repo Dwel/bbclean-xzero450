@@ -35,24 +35,12 @@
  ============================================================================
 */
 
-
-
 #ifndef __BB8BALL_H
 #define __BB8BALL_H
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
 #endif
-
-//temporary until upgrade to .9x BBAPI
-#ifndef SLIT_ADD
-#define SLIT_ADD 11001
-#endif
-
-#ifndef SLIT_REMOVE
-#define SLIT_REMOVE 11002
-#endif
-//end of temp fix
 
 #ifndef WS_EX_LAYERED
 #define WS_EX_LAYERED	0x00080000
@@ -63,22 +51,9 @@
 
 #include <windows.h>
 #include <math.h>
-//#include <time.h>
 #include <shlwapi.h>
 #include "BBApi.h"
 #include "MessageBox.h"
-//#include "AggressiveOptimize.h"
-
-
-//#pragma comment(lib, "Blackbox.lib")
-//#pragma comment(lib, "winmm.lib")
-//#pragma comment(lib, "Shlwapi.lib")
-//#pragma comment(lib, "MessageBox.lib")
-//#pragma comment(lib, "comdlg32.lib")
-//#pragma comment(lib, "msimg32.lib")
-
-
-//typedef float REAL;
 
 //===========================================================================
 
@@ -106,16 +81,12 @@ char advice[ADVICE_COUNT][30] = {
 	"Don't count on it."
 };
 
-
-
 //OS info storage
 DWORD      dwId;
 DWORD      dwMajorVer;
 DWORD      dwMinorVer;
 
 RECT rect,r1;
-//int fontsize;
-//temp storage
 static char szTemp[MAX_LINE_LENGTH];
 
 //window instances
@@ -124,22 +95,21 @@ HWND hwndBB8Ball, hwndBlackbox, hwndMessage;
 bool inSlit = false;	//Are we loaded in the slit? (default of no)
 HWND hSlit;				//The Window Handle to the Slit (for if we are loaded)
 
-// Blackbox messages we want to "subscribe" to:
-// BB_RECONFIGURE -> Sent when changing style and on reconfigure
-// BB_BROADCAST -> Broadcast message (bro@m)
-int msgs[] = {BB_RECONFIGURE, BB_BROADCAST, 0};
+// Blackbox messages we want to subscribe to:
+int msgs[] = {
+    BB_RECONFIGURE, // Sent when changing style and on reconfigure
+    BB_BROADCAST, // Broadcast message (bro@m)
+    0};
 
 //file path storage
 char rcpath[MAX_PATH];
 char fpath[MAX_PATH];
 char stylepath[MAX_PATH];
 char resmsg[MAX_LINE_LENGTH];
+
 //start up positioning
 int ScreenWidth;
 int ScreenHeight;
-
-
-
 
 //.rc file settings
 int xpos, ypos;
@@ -183,7 +153,6 @@ COLORREF labelfontColor;
 COLORREF winlabelfontColor;
 COLORREF clockfontColor;
 
-
 int bevelWidth;
 int borderWidth;
 COLORREF borderColor;
@@ -209,7 +178,8 @@ void GetStyleSettings();
 void ReadRCSettings();
 void WriteRCSettings();
 void InitBB8Ball();
-void setStatus();
+//void setStatus();
+void applyTransparencySettings();
 void showResult();
 void showFortune();
 int CreateMessageBox();
@@ -221,7 +191,6 @@ bool ompressed = false;
 bool fortunes;
 bool apossition = true;
 char fontFace[256];
-
 
 //===========================================================================
 
