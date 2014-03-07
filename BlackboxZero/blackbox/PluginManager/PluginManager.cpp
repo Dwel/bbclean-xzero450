@@ -166,7 +166,7 @@ static struct PluginList *parseConfigLine(const char *rcline) {
 
 static void applyPluginState(struct PluginList *q)
 {
-    char *errorMsg = "(Unknown error)";
+    const char *errorMsg = "(Unknown error)";
 
     int error = 0;
     if (q->loaderInfo) {
@@ -879,15 +879,19 @@ int PluginManager_handleBroam(const char *args)
     if (e_remove == action)
         q->isEnabled = false;
     else if (e_load == action)
+    {
         if(get_false_true(args) == -1)
             q->isEnabled ^= true;
         else
             q->isEnabled = !!get_false_true(args);
+    }
     else if (e_inslit == action)
+    {
         if(get_false_true(args) == -1)
             q->useSlit ^= true;
         else
             q->useSlit = !!get_false_true(args);
+    }
 
     applyPluginStates();
 
