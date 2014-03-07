@@ -7,6 +7,11 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 #set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
 #set(USE_LOGGING 1)
 
+# possibly enable c++11 for gcc
+#if (MINGW)
+#  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+#endif (MINGW)
+
 include_directories (3rd_party/flogging)
 include_directories (3rd_party/logging)
 include_directories (.)
@@ -114,7 +119,6 @@ add_subdirectory(plugins/BBPager)
 add_subdirectory(plugins/BBStyle)
 add_subdirectory(plugins/bbRecycleBin)
 add_subdirectory(plugins/bbInterface)
-add_subdirectory(plugins/bbFooMan)
 add_subdirectory(plugins/bbMuse)
 add_subdirectory(plugins/bbPlayer)
 add_subdirectory(plugins/bbSeekBar)
@@ -128,6 +132,7 @@ add_subdirectory(plugins/bbTaskSwitch)
 
 # NOTE: following plugins are not yet mingw compatible
 if (NOT MINGW)
+  add_subdirectory(plugins/bbFooMan)
 	add_subdirectory(plugins/bbInterface_iTunes)
 endif (NOT MINGW)
 

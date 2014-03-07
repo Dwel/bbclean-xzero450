@@ -33,8 +33,11 @@ set(blackbox_SOURCES
 	Menu/RecentItem.cpp
 	Menu/SpecialFolder.cpp
 	Menu/TitleItem.cpp
-	PluginManager/PluginManager.cpp
-	PluginManager/PluginLoaderNative.cpp
+)
+
+set(PluginManager_SOURCES
+    PluginManager/PluginManager.cpp
+    PluginManager/PluginLoaderNative.cpp
 )
 
 set (blackbox_HEADERS
@@ -56,10 +59,18 @@ set (blackbox_HEADERS
 	Menu/Menu.h
 	Menu/MenuMaker.h
 	Menu/RecentItem.h
-	PluginManager/PluginManager.h
-	PluginManager/PluginLoaderNative.h
-	PluginManager/Types.h
 )
+
+set(PluginManager_HEADERS
+    PluginManager/PluginManager.h
+    PluginManager/PluginLoaderNative.h
+    PluginManager/Types.h
+)
+
+if (NOT MINGW)
+  set(blackbox_SOURCES ${blackbox_SOURCES} PluginManager_SOURCES)
+  set(blackbox_HEADERS ${blackbox_HEADERS} PluginManager_HEADERS)
+endif (NOT MINGW)
 
 set(blackbox_RESOURCES resource.rc)
 set(CMAKE_RC_COMPILER_INIT windres)
@@ -81,8 +92,6 @@ add_executable(blackbox WIN32
 set_target_properties(blackbox PROPERTIES ENABLE_EXPORTS ON)
 target_link_libraries(blackbox bblib)
 target_link_libraries(blackbox version comctl32)
-
-#set_property(TARGET bbRecycleBin PROPERTY FOLDER "plugins/bbRecycleBin")
 
 install(TARGETS blackbox
 		RUNTIME DESTINATION .
