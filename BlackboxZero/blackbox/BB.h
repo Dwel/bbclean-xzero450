@@ -46,17 +46,20 @@
 #ifdef __BORLANDC__
   #define TRY __try
   #define EXCEPT(n) __except(n)
+  #define FINALLY(n) __finally(n)
 #endif
 
 #ifdef _MSC_VER
-  #define TRY _try
-  #define EXCEPT(n) _except(n)
+  #define TRY __try
+  #define EXCEPT(n) __except(n)
+  #define FINALLY(n) __finally(n)
 //  #pragma warning(disable: 4100) /* unreferenced function parameter */
 #endif
 
 #ifndef TRY
   #define TRY if (1)
   #define EXCEPT(n) if (0)
+  #define FINALLY if (0)
 #endif
 
 #define SIZEOFPART(s,e) (offsetof(s,e) + sizeof(((s*)0)->e))
