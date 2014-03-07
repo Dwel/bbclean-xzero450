@@ -574,9 +574,9 @@ void MenuItem::DrawIcon(HDC hDC)
 
     if(this->iconLoaderMutex != INVALID_HANDLE_VALUE) {
         if(WaitForSingleObject(this->iconLoaderMutex, 100) == WAIT_OBJECT_0) {
-            __try {
+            TRY {
                 iconAvailable = (this->m_hIcon != nullptr);
-            } __finally {
+            } FINALLY {
                 ReleaseMutex(this->iconLoaderMutex);
             }
         } else {

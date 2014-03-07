@@ -1148,19 +1148,19 @@ void WriteRCSettings()
 		sprintf(szTemp, "!============================\r\n\r\n");
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "bbmagnify.x: %d\r\n", xpos, temp);
+		sprintf(szTemp, "bbmagnify.x: %d\r\n", xpos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
-		sprintf(szTemp, "bbmagnify.y: %d\r\n", ypos, temp);
+		sprintf(szTemp, "bbmagnify.y: %d\r\n", ypos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbmagnify.width: %d\r\n", width, temp);
+		sprintf(szTemp, "bbmagnify.width: %d\r\n", width);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbmagnify.height: %d\r\n", height, temp);
+		sprintf(szTemp, "bbmagnify.height: %d\r\n", height);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbmagnify.ratio: %d\r\n", ratio, temp);
+		sprintf(szTemp, "bbmagnify.ratio: %d\r\n", ratio);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		
 		sprintf(szTemp, "bbmagnify.windowStyle: %s\r\n", windowStyle);
@@ -1213,7 +1213,7 @@ void WriteRCSettings()
 		sprintf(szTemp, "bbmagnify.magnifyAtStart: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-    	sprintf(szTemp, "bbmagnify.fontSize: %d\r\n", fontSize, temp);
+    	sprintf(szTemp, "bbmagnify.fontSize: %d\r\n", fontSize);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		sprintf(szTemp, "bbmagnify.bitmapFile: %s\r\n", bitmapFile);

@@ -773,9 +773,9 @@ char *config_get_module_setcomments_s(module *m)
 char *config_get_module_rename_s(module *m)
 {   sprintf(config_masterbroam, "%s %s %s %s", szBBroam, szBEntityModule, szBActionRename, m->name);    return config_masterbroam;  }
 char *config_get_module_onload_s(module *m)
-{   sprintf(config_masterbroam, "%s %s %s %s", szBBroam, szBEntityModule, szBActionOnLoad, m->name, m->actions[MODULE_ACTION_ONLOAD] ? m->actions[MODULE_ACTION_ONLOAD] : "");  return config_masterbroam;  }
+{   sprintf(config_masterbroam, "%s %s %s %s %s", szBBroam, szBEntityModule, szBActionOnLoad, m->name, m->actions[MODULE_ACTION_ONLOAD] ? m->actions[MODULE_ACTION_ONLOAD] : "");  return config_masterbroam;  }
 char *config_get_module_onunload_s(module *m)
-{   sprintf(config_masterbroam, "%s %s %s %s", szBBroam, szBEntityModule, szBActionOnUnload, m->name, m->actions[MODULE_ACTION_ONUNLOAD] ? m->actions[MODULE_ACTION_ONUNLOAD] : "");  return config_masterbroam;  }
+{   sprintf(config_masterbroam, "%s %s %s %s %s", szBBroam, szBEntityModule, szBActionOnUnload, m->name, m->actions[MODULE_ACTION_ONUNLOAD] ? m->actions[MODULE_ACTION_ONUNLOAD] : "");  return config_masterbroam;  }
 
 
 char *config_get_control_assigntomodule(control *c, module *m)

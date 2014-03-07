@@ -1663,21 +1663,21 @@ void ReadRCSettings()
 
 	for (int i=0;i<sccount;i++)
 	{
-		sprintf(szTemp, "bbanalogex.sc%d.x:", i, temp);
+		sprintf(szTemp, "bbanalogex.sc%d.x:", i);
 		scx[i] = ReadInt(rcpath, szTemp, 50);
-		sprintf(szTemp, "bbanalogex.sc%d.y:", i, temp);
+		sprintf(szTemp, "bbanalogex.sc%d.y:", i);
 		scy[i] = ReadInt(rcpath, szTemp, 50);
-		sprintf(szTemp, "bbanalogex.sc%d.r:", i, temp);
+		sprintf(szTemp, "bbanalogex.sc%d.r:", i);
 		scr[i] = ReadInt(rcpath, szTemp, 50);
-		sprintf(szTemp, "bbanalogex.sc%d.d:", i, temp);
+		sprintf(szTemp, "bbanalogex.sc%d.d:", i);
 		scdiff[i] = ReadInt(rcpath, szTemp, 50);
-		sprintf(szTemp, "bbanalogex.sc%d.s:", i, temp);
+		sprintf(szTemp, "bbanalogex.sc%d.s:", i);
 		scs[i] = ReadInt(rcpath, szTemp, 111);
-		sprintf(szTemp, "bbanalogex.sc%d.ch:", i, temp);
+		sprintf(szTemp, "bbanalogex.sc%d.ch:", i);
 		scch[i] = ReadColor(rcpath, szTemp,"0xffffff");
-		sprintf(szTemp, "bbanalogex.sc%d.cm:", i, temp);
+		sprintf(szTemp, "bbanalogex.sc%d.cm:", i);
 		sccm[i] = ReadColor(rcpath, szTemp,"0xffffff");
-		sprintf(szTemp, "bbanalogex.sc%d.cs:", i, temp);
+		sprintf(szTemp, "bbanalogex.sc%d.cs:", i);
 		sccs[i] = ReadColor(rcpath, szTemp,"0xffffff");
 	}
 
@@ -1740,16 +1740,16 @@ void WriteRCSettings()
 		sprintf(szTemp, "!============================\r\n\r\n");
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbanalogex.x: %d\r\n", xpos, temp);
+		sprintf(szTemp, "bbanalogex.x: %d\r\n", xpos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbanalogex.y: %d\r\n", ypos, temp);
+		sprintf(szTemp, "bbanalogex.y: %d\r\n", ypos);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbanalogex.width: %d\r\n", width, temp);
+		sprintf(szTemp, "bbanalogex.width: %d\r\n", width);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbanalogex.height: %d\r\n", height, temp);
+		sprintf(szTemp, "bbanalogex.height: %d\r\n", height);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		//		sprintf(szTemp, "bbanalogex.date.possition: %d\r\n", text_pos, temp);
@@ -1774,7 +1774,7 @@ void WriteRCSettings()
 		sprintf(szTemp, "bbanalogex.transparency: %s\r\n", temp);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbanalogex.alpha: %d\r\n", alpha, temp);
+		sprintf(szTemp, "bbanalogex.alpha: %d\r\n", alpha);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		(fullTrans) ? strcpy(temp, "true") : strcpy(temp, "false");
@@ -1789,7 +1789,7 @@ void WriteRCSettings()
 		sprintf(szTemp, "bbanalogex.drawBorder: %s\r\n", temp);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbanalogex.drawMode: %d\r\n", drawMode, temp);
+		sprintf(szTemp, "bbanalogex.drawMode: %d\r\n", drawMode);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		(anti) ? strcpy(temp, "true") : strcpy(temp, "false");
@@ -1825,7 +1825,7 @@ void WriteRCSettings()
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 
-		sprintf(szTemp, "bbanalogex.fontSize: %d\r\n", fontSize, temp);
+		sprintf(szTemp, "bbanalogex.fontSize: %d\r\n", fontSize);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		sprintf(szTemp, "bbanalogex.hands.width: %d\r\n", (hwidth*1000+mwidth*100+swidth*10+cwidth));
@@ -1840,24 +1840,24 @@ void WriteRCSettings()
 		sprintf(szTemp, "bbanalogex.overBitmapFile: %s\r\n", overBitmapFile);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbanalogex.sc.count: %d\r\n", sccount, temp);
+		sprintf(szTemp, "bbanalogex.sc.count: %d\r\n", sccount);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		for (int i=0;i<sccount;i++)
 		{
-			sprintf(szTemp, "bbanalogex.sc%d.x: %d\r\n", i,scx[i], temp);
+			sprintf(szTemp, "bbanalogex.sc%d.x: %d\r\n", i,scx[i]);
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-			sprintf(szTemp, "bbanalogex.sc%d.y: %d\r\n", i,scy[i], temp);
+			sprintf(szTemp, "bbanalogex.sc%d.y: %d\r\n", i,scy[i]);
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-			sprintf(szTemp, "bbanalogex.sc%d.r: %d\r\n", i,scr[i], temp);
+			sprintf(szTemp, "bbanalogex.sc%d.r: %d\r\n", i,scr[i]);
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-			sprintf(szTemp, "bbanalogex.sc%d.d: %d\r\n", i,scdiff[i], temp);
+			sprintf(szTemp, "bbanalogex.sc%d.d: %d\r\n", i,scdiff[i]);
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-			sprintf(szTemp, "bbanalogex.sc%d.s: %d\r\n", i,scs[i], temp);
+			sprintf(szTemp, "bbanalogex.sc%d.s: %d\r\n", i,scs[i]);
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 			sprintf(szTemp, "bbanalogex.sc%d.ch: #%.2x%.2x%.2x\r\n",i, GetRValue(scch[i]),GetGValue(scch[i]),GetBValue(scch[i]));
@@ -2146,13 +2146,13 @@ void createMenu()
 
 	for (int i=0;i<sccount;i++)
 	{
-		sprintf(szTemp, "@BBAnalogExscx %d", i, temp);
+		sprintf(szTemp, "@BBAnalogExscx %d", i);
 		MakeMenuItemInt(smallclockSubmenu, "X Possition", szTemp, scx[i], 1,width);
-		sprintf(szTemp, "@BBAnalogExscy %d", i, temp);
+		sprintf(szTemp, "@BBAnalogExscy %d", i);
 		MakeMenuItemInt(smallclockSubmenu, "Y Possition", szTemp, scy[i], 1,height);
-		sprintf(szTemp, "@BBAnalogExscradius %d", i, temp);
+		sprintf(szTemp, "@BBAnalogExscradius %d", i);
 		MakeMenuItemInt(smallclockSubmenu, "Radius", szTemp, scr[i], 1,width/2);
-		sprintf(szTemp, "@BBAnalogExscdiff %d", i, temp);
+		sprintf(szTemp, "@BBAnalogExscdiff %d", i);
 		MakeMenuItemInt(smallclockSubmenu, "Difference", szTemp, scdiff[i], 0,23);
 	}
 	//attach defined menus together
