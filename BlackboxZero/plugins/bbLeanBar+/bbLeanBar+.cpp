@@ -979,7 +979,9 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
             p_rcPaint = &ps.rcPaint;
             this->pLeanBar->draw();
             this->pLeanBar->settip();
-            this->pBuff->ClearBitmaps();
+            this->pBuff->
+				
+				();
 
             BitBltRect(hdc, buf, &ps.rcPaint);
             DeleteObject(SelectObject(buf, other));

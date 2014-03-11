@@ -375,7 +375,7 @@ public:
         if (lit)
         {
             bool bordered = pSI->bordered || pSI->parentRelative;
-            m_bar->pBuff->MakeStyleGradient(m_bar->hdcPaint, &mr, pSI, bordered);
+            /*m_bar->pBuff->*/MakeStyleGradient(m_bar->hdcPaint, &mr, pSI, bordered);
         }
 
         HICON icon = tl->icon;
@@ -405,7 +405,7 @@ public:
         else
             bordered = pSI->bordered;
 
-        m_bar->pBuff->MakeStyleGradient(m_bar->hdcPaint, &mr, pSI, bordered);
+        /*m_bar->pBuff->*/MakeStyleGradient(m_bar->hdcPaint, &mr, pSI, bordered);
 
         HGDIOBJ oldfont = SelectObject(m_bar->hdcPaint, m_bar->hFont);
         SetBkMode(m_bar->hdcPaint, TRANSPARENT);
@@ -696,7 +696,7 @@ public:
     void draw()
     {
         StyleItem *pSI = (StyleItem*)GetSettingPtr(m_Style);
-        m_bar->pBuff->MakeStyleGradient(m_bar->hdcPaint,  &mr, pSI, pSI->bordered);
+        /*m_bar->pBuff->*/MakeStyleGradient(m_bar->hdcPaint,  &mr, pSI, pSI->bordered);
         SetBkMode(m_bar->hdcPaint, TRANSPARENT);
         HGDIOBJ oldfont = SelectObject(m_bar->hdcPaint, m_bar->hFont);
         RECT r;
@@ -836,7 +836,7 @@ public:
             ? SN_TOOLBARBUTTONP : SN_TOOLBARBUTTON
             );
 
-        m_bar->pBuff->MakeStyleGradient(m_bar->hdcPaint, &mr, pSI, pSI->bordered);
+        /*m_bar->pBuff->*/MakeStyleGradient(m_bar->hdcPaint, &mr, pSI, pSI->bordered);
 
         if (0 == dir)
         {

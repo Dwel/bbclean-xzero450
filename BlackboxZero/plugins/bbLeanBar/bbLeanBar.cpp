@@ -126,7 +126,7 @@ void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam)
 
 //===========================================================================
 
-#include "BuffBmp.cpp"
+//#include "BuffBmp.cpp"
 #ifndef NO_DROP
 #include "TinyDropTarg.cpp"
 #endif
@@ -924,7 +924,7 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
                 int h = bbLeanBarLineHeight[i];
                 r.bottom = r.top + h;
                 StyleItem *T = (StyleItem *)GetSettingPtr(SN_TOOLBAR);
-                this->pBuff->MakeStyleGradient(buf, &r, T, T->bordered);
+                /*this->pBuff->*/MakeStyleGradient(buf, &r, T, T->bordered);
                 r.top += h - styleBorderWidth;
             }
 
@@ -932,7 +932,7 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
             p_rcPaint = &ps.rcPaint;
             this->pLeanBar->draw();
             this->pLeanBar->settip();
-            this->pBuff->ClearBitmaps();
+            //this->pBuff->ClearBitmaps();
 
             BitBltRect(hdc, buf, &ps.rcPaint);
             DeleteObject(SelectObject(buf, other));
@@ -944,7 +944,7 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
         //=============================================
         case WM_CREATE:
             SendMessage(BBhwnd, BB_REGISTERMESSAGE, (WPARAM)hwnd, (LPARAM)msgs);
-            this->pBuff = new BuffBmp;
+            //this->pBuff = new BuffBmp;
             this->pLeanBar = new LeanBar(this);
 
             GetRCSettings();

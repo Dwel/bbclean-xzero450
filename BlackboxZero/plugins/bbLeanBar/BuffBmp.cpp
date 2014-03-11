@@ -27,6 +27,7 @@
 
 // call after everything is drawn, and once at end of program to cleanup
 // void BuffBmp::ClearBitmaps(void);
+#include "../../blackbox/BBApi.h"
 
 class BuffBmp
 {

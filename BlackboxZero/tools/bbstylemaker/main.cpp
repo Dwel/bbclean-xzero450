@@ -238,14 +238,14 @@ const char *fextension(const char *path)
 
 /*----------------------------------------------------------------------------*/
 // dialog resource
-
+#define dwnAdj 68
 const struct button main_buttons[] = {
 #if 0
 #include "dlgitems.rc"
 #else
-
+//1
 { ""              , BN_RECT  , SEC_RCT  ,  10,  32,  74, 136, BN_EXT },
-{ "section"       , BN_STR   , SEC_HDR  ,  10,  32,  74,  18, BN_EXT },
+{ "1.section"       , BN_STR   , SEC_HDR  ,  10,  32,  74,  18, BN_EXT },
 
 { "toolbar"       , BN_CHK   , SEC_TOO  ,  10,  54,  74,  14, BN_RAD|BN_GRP },
 { "menu"          , BN_CHK   , SEC_MEN  ,  10,  70,  74,  14, BN_RAD },
@@ -253,9 +253,9 @@ const struct button main_buttons[] = {
 { "window u"      , BN_CHK   , SEC_WIU  ,  10, 102,  74,  14, BN_RAD },
 { "slit"          , BN_CHK   , SEC_SLI  ,  10, 118,  74,  14, BN_RAD },
 { "other"         , BN_CHK   , SEC_MIS  ,  10, 134,  74,  14, BN_RAD },
-
+//2
 { ""              , BN_RECT  , ITM_RCT  ,  10, 172,  74, 136, BN_EXT },
-{ "item"          , BN_STR   , ITM_HDR  ,  10, 172,  74,  18, BN_EXT },
+{ "2.item"          , BN_STR   , ITM_HDR  ,  10, 172,  74,  18, BN_EXT },
 
 { "frame"         , BN_CHK   , TOO_BAC  ,  10, 194,  74,  14, BN_RAD|BN_GRP },
 { "button"        , BN_CHK   , TOO_BUT  ,  10, 210,  74,  14, BN_RAD },
@@ -285,52 +285,52 @@ const struct button main_buttons[] = {
 { "styleinfo"     , BN_CHK   , MIS_INF  ,  10, 210,  74,  14, BN_RAD },
 { "edit rc"       , BN_BTN   , CMD_CFG  ,  12, 270,  68,  16, 0 },
 { "reload rc"     , BN_BTN   , CMD_RST  ,  12, 290,  68,  16, 0 },
+//3
+{ ""              , BN_RECT  , GRD_RCT  ,  90,  32+dwnAdj,  82, 208, BN_EXT },
+{ "3.texture"       , BN_STR   , GRD_HDR,  90,  32+dwnAdj,  82,  18, BN_EXT },
 
-{ ""              , BN_RECT  , GRD_RCT  ,  90,  32,  82, 208, BN_EXT },
-{ "texture"       , BN_STR   , GRD_HDR  ,  90,  32,  82,  18, BN_EXT },
+{ "solid"         , BN_CHK   , GRD_SOL  ,  90,  70+dwnAdj,  82,  14, BN_RAD|BN_GRP },
+{ "horizontal"    , BN_CHK   , GRD_HOR  ,  90,  86+dwnAdj,  82,  14, BN_RAD },
+{ "vertical"      , BN_CHK   , GRD_VER  ,  90, 102+dwnAdj,  82,  14, BN_RAD },
+{ "diagonal"      , BN_CHK   , GRD_DIA  ,  90, 118+dwnAdj,  82,  14, BN_RAD },
+{ "crossdiag."    , BN_CHK   , GRD_CDI  ,  90, 134+dwnAdj,  82,  14, BN_RAD },
+{ "pipecross"     , BN_CHK   , GRD_PIP  ,  90, 150+dwnAdj,  82,  14, BN_RAD },
+{ "elliptic"      , BN_CHK   , GRD_ELL  ,  90, 166+dwnAdj,  82,  14, BN_RAD },
+{ "rectangle"     , BN_CHK   , GRD_REC  ,  90, 182+dwnAdj,  82,  14, BN_RAD },
+{ "pyramid"       , BN_CHK   , GRD_PYR  ,  90, 198+dwnAdj,  82,  14, BN_RAD },
+{ "parentrel"     , BN_CHK   , GRD_PRR  ,  90,  54+dwnAdj,  82,  14, BN_RAD },
+{ "interlaced"    , BN_CHK   , GRD_INL  ,  90, 222+dwnAdj,  82,  14, 0 },
+//
+{ ""              , BN_RECT  , BEV_RCT  , 178,  32+dwnAdj,  74, 208, BN_EXT },
+{ "4.bevel"         , BN_STR   , BEV_HDR, 178,  32+dwnAdj,  74,  18, BN_EXT },
 
-{ "solid"         , BN_CHK   , GRD_SOL  ,  90,  70,  82,  14, BN_RAD|BN_GRP },
-{ "horizontal"    , BN_CHK   , GRD_HOR  ,  90,  86,  82,  14, BN_RAD },
-{ "vertical"      , BN_CHK   , GRD_VER  ,  90, 102,  82,  14, BN_RAD },
-{ "diagonal"      , BN_CHK   , GRD_DIA  ,  90, 118,  82,  14, BN_RAD },
-{ "crossdiag."    , BN_CHK   , GRD_CDI  ,  90, 134,  82,  14, BN_RAD },
-{ "pipecross"     , BN_CHK   , GRD_PIP  ,  90, 150,  82,  14, BN_RAD },
-{ "elliptic"      , BN_CHK   , GRD_ELL  ,  90, 166,  82,  14, BN_RAD },
-{ "rectangle"     , BN_CHK   , GRD_REC  ,  90, 182,  82,  14, BN_RAD },
-{ "pyramid"       , BN_CHK   , GRD_PYR  ,  90, 198,  82,  14, BN_RAD },
-{ "parentrel"     , BN_CHK   , GRD_PRR  ,  90,  54,  82,  14, BN_RAD },
-{ "interlaced"    , BN_CHK   , GRD_INL  ,  90, 222,  82,  14, 0 },
+{ "flat"          , BN_CHK   , BEV_FLA  , 178,  54+dwnAdj,  74,  14, BN_RAD|BN_GRP },
+{ "raised"        , BN_CHK   , BEV_RAI  , 178,  70+dwnAdj,  74,  14, BN_RAD },
+{ "sunken"        , BN_CHK   , BEV_SUN  , 178,  86+dwnAdj,  74,  14, BN_RAD },
+{ "bevel 2"       , BN_CHK   , BEV_P2   , 178, 106+dwnAdj,  74,  14, 0 },
+{ "border"        , BN_STR   , BOR_HDR  , 178, 200+dwnAdj,  74,  18, BN_EXT },
+{ "width"         , BN_UPDN  , BOR_WID  , 178, 222+dwnAdj,  74,  14, BN_16 },
+{ "margin"        , BN_STR   , MAR_HDR  , 178, 128+dwnAdj,  74,  18, BN_EXT },
+{ "frame"         , BN_UPDN  , MAR_WID1A, 178, 150+dwnAdj,  74,  14, BN_16 },
+{ "label"         , BN_UPDN  , MAR_WID1B, 178, 166+dwnAdj,  74,  14, BN_16 },
+{ "button"        , BN_UPDN  , MAR_WID1C, 178, 182+dwnAdj,  74,  14, BN_16 },
+{ "title"         , BN_UPDN  , MAR_WID2A, 178, 150+dwnAdj,  74,  14, BN_16 },
+{ "frame"         , BN_UPDN  , MAR_WID2B, 178, 166+dwnAdj,  74,  14, BN_16 },
+{ "active"        , BN_UPDN  , MAR_WID2C, 178, 182+dwnAdj,  74,  14, BN_16 },
+{ "title"         , BN_UPDN  , MAR_WID3A, 178, 150+dwnAdj,  74,  14, BN_16 },
+{ "label"         , BN_UPDN  , MAR_WID3B, 178, 166+dwnAdj,  74,  14, BN_16 },
+{ "button"        , BN_UPDN  , MAR_WID3C, 178, 182+dwnAdj,  74,  14, BN_16 },
+{ "frame"         , BN_UPDN  , MAR_WID4A, 178, 150+dwnAdj,  74,  14, BN_16 },
+{ "handle"        , BN_STR   , HAN_HDR  , 178, 128+dwnAdj,  74,  18, BN_EXT },
+{ "height"        , BN_UPDN  , HAN_SIZ  , 178, 150+dwnAdj,  74,  14, BN_16 },
+//
+{ ""              , BN_RECT  , COL_RCT  , 258, 152+dwnAdj,  74,  88, BN_EXT },
+{ "5.colors"        , BN_STR   , COL_HDR, 258, 152+dwnAdj,  74,  18, BN_EXT },
 
-{ ""              , BN_RECT  , BEV_RCT  , 178,  32,  74, 208, BN_EXT },
-{ "bevel"         , BN_STR   , BEV_HDR  , 178,  32,  74,  18, BN_EXT },
-
-{ "flat"          , BN_CHK   , BEV_FLA  , 178,  54,  74,  14, BN_RAD|BN_GRP },
-{ "raised"        , BN_CHK   , BEV_RAI  , 178,  70,  74,  14, BN_RAD },
-{ "sunken"        , BN_CHK   , BEV_SUN  , 178,  86,  74,  14, BN_RAD },
-{ "bevel 2"       , BN_CHK   , BEV_P2   , 178, 106,  74,  14, 0 },
-{ "border"        , BN_STR   , BOR_HDR  , 178, 200,  74,  18, BN_EXT },
-{ "width"         , BN_UPDN  , BOR_WID  , 178, 222,  74,  14, BN_16 },
-{ "margin"        , BN_STR   , MAR_HDR  , 178, 128,  74,  18, BN_EXT },
-{ "frame"         , BN_UPDN  , MAR_WID1A, 178, 150,  74,  14, BN_16 },
-{ "label"         , BN_UPDN  , MAR_WID1B, 178, 166,  74,  14, BN_16 },
-{ "button"        , BN_UPDN  , MAR_WID1C, 178, 182,  74,  14, BN_16 },
-{ "title"         , BN_UPDN  , MAR_WID2A, 178, 150,  74,  14, BN_16 },
-{ "frame"         , BN_UPDN  , MAR_WID2B, 178, 166,  74,  14, BN_16 },
-{ "active"        , BN_UPDN  , MAR_WID2C, 178, 182,  74,  14, BN_16 },
-{ "title"         , BN_UPDN  , MAR_WID3A, 178, 150,  74,  14, BN_16 },
-{ "label"         , BN_UPDN  , MAR_WID3B, 178, 166,  74,  14, BN_16 },
-{ "button"        , BN_UPDN  , MAR_WID3C, 178, 182,  74,  14, BN_16 },
-{ "frame"         , BN_UPDN  , MAR_WID4A, 178, 150,  74,  14, BN_16 },
-{ "handle"        , BN_STR   , HAN_HDR  , 178, 128,  74,  18, BN_EXT },
-{ "height"        , BN_UPDN  , HAN_SIZ  , 178, 150,  74,  14, BN_16 },
-
-{ ""              , BN_RECT  , COL_RCT  , 258, 152,  74,  88, BN_EXT },
-{ "colors"        , BN_STR   , COL_HDR  , 258, 152,  74,  18, BN_EXT },
-
-{ "color 1/2"     , BN_CHK   , COL_GRD  , 258, 174,  74,  14, BN_RAD|BN_GRP },
-{ "text"          , BN_CHK   , COL_TXT  , 258, 190,  74,  14, BN_RAD },
-{ "border"        , BN_CHK   , COL_BOR  , 258, 222,  74,  14, BN_RAD },
-{ "disabled"      , BN_CHK   , COL_DIS  , 258, 206,  74,  14, BN_RAD },
+{ "color 1/2"     , BN_CHK   , COL_GRD  , 258, 174+dwnAdj,  74,  14, BN_RAD|BN_GRP },
+{ "text"          , BN_CHK   , COL_TXT  , 258, 190+dwnAdj,  74,  14, BN_RAD },
+{ "border"        , BN_CHK   , COL_BOR  , 258, 222+dwnAdj,  74,  14, BN_RAD },
+{ "disabled"      , BN_CHK   , COL_DIS  , 258, 206+dwnAdj,  74,  14, BN_RAD },
 { ""              , BN_SLD   , SLD_R1   , 346,  16,  16, 276, 0 },
 { ""              , BN_SLD   , SLD_G1   , 370,  16,  16, 276, 0 },
 { ""              , BN_SLD   , SLD_B1   , 394,  16,  16, 276, 0 },
@@ -361,18 +361,18 @@ const struct button main_buttons[] = {
 { ""              , BN_COLOR , PAL_7    , 420, 202,  50,  22, 0 },
 { ""              , BN_COLOR , PAL_8    , 420, 250,  50,  22, 0 },
 { ""              , BN_COLOR , PAL_9    , 420, 226,  50,  22, 0 },
-
-{ ""              , BN_RECT  , FNT_RCT  ,  90, 246, 242,  62, BN_EXT },
-{ "toolbar font"  , BN_STR   , FNT_HDR  ,  90, 246, 242,  18, BN_EXT },
-{ ""              , BN_EDT   , FNT_NAM  ,  98, 268, 160,  18, 0 },
-{ "bold"          , BN_CHK   , FNT_BOL  , 264, 270,  36,  14, BN_CEN },
-{ "..."           , BN_BTN   , FNT_CHO  , 304, 269,  24,  16, 0 },
-{ "height"        , BN_UPDN  , FNT_HEI  ,  94, 290,  82,  14, 0 },
+										//	x	y		w	h -214
+{ ""              , BN_RECT  , FNT_RCT  ,  90, 32, 242,  62, BN_EXT },
+{ "toolbar font"  , BN_STR   , FNT_HDR  ,  90, 32, 242,  18, BN_EXT },
+{ ""              , BN_EDT   , FNT_NAM  ,  98, 54, 160,  18, 0 },
+{ "bold"          , BN_CHK   , FNT_BOL  , 264, 56,  36,  14, BN_CEN },
+{ "..."           , BN_BTN   , FNT_CHO  , 304, 55,  24,  16, 0 },
+{ "height"        , BN_UPDN  , FNT_HEI  ,  94, 76,  82,  14, 0 },
 //{ "fonts"         , BN_UPDN  , FNT_ART  , 258,  86,  74,  14, 0 },
 
-{ "left"          , BN_CHK   , FNT_LEF  , 190, 290,  38,  14, BN_CEN|BN_RAD|BN_GRP },
-{ "center"        , BN_CHK   , FNT_CEN  , 232, 290,  54,  14, BN_CEN|BN_RAD },
-{ "right"         , BN_CHK   , FNT_RIG  , 290, 290,  38,  14, BN_CEN|BN_RAD },
+{ "left"          , BN_CHK   , FNT_LEF  , 190, 76,  38,  14, BN_CEN|BN_RAD|BN_GRP },
+{ "center"        , BN_CHK   , FNT_CEN  , 232, 76,  54,  14, BN_CEN|BN_RAD },
+{ "right"         , BN_CHK   , FNT_RIG  , 290, 76,  38,  14, BN_CEN|BN_RAD },
 { "bullet"        , BN_STR   , BUL_HDR  ,  90,  32,  82,  18, BN_EXT },
 
 { "empty"         , BN_CHK   , BUL_EMP  ,  90,  54,  82,  14, BN_RAD|BN_GRP },
@@ -383,29 +383,29 @@ const struct button main_buttons[] = {
 
 { "left"          , BN_CHK   , BUL_LEF  ,  90, 150,  82,  14, BN_RAD|BN_GRP },
 { "right"         , BN_CHK   , BUL_RIG  ,  90, 166,  82,  14, BN_RAD },
+//
+{ ""              , BN_RECT  , OPT_RCT  , 258,  32+dwnAdj,  74,  72, BN_EXT },
+{ "7.option"        , BN_STR   , OPT_HDR, 258,  32+dwnAdj,  74,  18, BN_EXT },
+{ "*border"       , BN_CHK   , BOR_DEF  , 258,  54+dwnAdj,  74,  14, 0 },
+{ "*font"         , BN_BTN   , FNT_DEF  , 258,  70+dwnAdj,  74,  14, BN_EXT },
+{ "modula"        , BN_STR   , ROT_MHD  , 178, 168+dwnAdj,  74,  18, BN_EXT },
+{ "mod"           , BN_CHK   , ROT_MOD  , 178, 190+dwnAdj,  74,  14, 0 },
+{ "x"             , BN_UPDN  , ROT_MDX  , 178, 206+dwnAdj,  74,  14, 0 },
+{ "y"             , BN_UPDN  , ROT_MDY  , 178, 222+dwnAdj,  74,  14, 0 },
 
-{ ""              , BN_RECT  , OPT_RCT  , 258,  32,  74,  72, BN_EXT },
-{ "option"        , BN_STR   , OPT_HDR  , 258,  32,  74,  18, BN_EXT },
-{ "*border"       , BN_CHK   , BOR_DEF  , 258,  54,  74,  14, 0 },
-{ "*font"         , BN_BTN   , FNT_DEF  , 258,  70,  74,  14, BN_EXT },
-{ "modula"        , BN_STR   , ROT_MHD  , 178, 168,  74,  18, BN_EXT },
-{ "mod"           , BN_CHK   , ROT_MOD  , 178, 190,  74,  14, 0 },
-{ "x"             , BN_UPDN  , ROT_MDX  , 178, 206,  74,  14, 0 },
-{ "y"             , BN_UPDN  , ROT_MDY  , 178, 222,  74,  14, 0 },
+{ ""              , BN_RECT  , ROT_ORC  , 258,  32+dwnAdj,  74,  72, BN_EXT },
+{ "image"         , BN_STR   , ROT_OHD  , 258,  32+dwnAdj,  74,  18, BN_EXT },
+{ "scale"         , BN_UPDN  , ROT_SCL  , 258,  86+dwnAdj,  74,  14, 0 },
+{ "sat"           , BN_UPDN  , ROT_SAT  , 258,  54+dwnAdj,  74,  14, BN_255 },
+{ "hue"           , BN_UPDN  , ROT_HUE  , 258,  70+dwnAdj,  74,  14, BN_255 },
 
-{ ""              , BN_RECT  , ROT_ORC  , 258,  32,  74,  72, BN_EXT },
-{ "image"         , BN_STR   , ROT_OHD  , 258,  32,  74,  18, BN_EXT },
-{ "scale"         , BN_UPDN  , ROT_SCL  , 258,  86,  74,  14, 0 },
-{ "sat"           , BN_UPDN  , ROT_SAT  , 258,  54,  74,  14, BN_255 },
-{ "hue"           , BN_UPDN  , ROT_HUE  , 258,  70,  74,  14, BN_255 },
+{ ""              , BN_RECT  , ROT_IRC  ,  90, 32, 242,  62, BN_EXT },
+{ "image file"    , BN_STR   , ROT_IHD  ,  90, 32, 242,  18, BN_EXT },
 
-{ ""              , BN_RECT  , ROT_IRC  ,  90, 246, 242,  62, BN_EXT },
-{ "image file"    , BN_STR   , ROT_IHD  ,  90, 246, 242,  18, BN_EXT },
-
-{ "tile"          , BN_CHK   , ROT_TIL  , 186, 290,  42,  14, BN_CEN|BN_RAD|BN_GRP },
-{ "center"        , BN_CHK   , ROT_CEN  , 230, 290,  54,  14, BN_CEN|BN_RAD },
-{ "full"          , BN_CHK   , ROT_FUL  , 286, 290,  38,  14, BN_CEN|BN_RAD },
-{ ""              , BN_EDT   , ROT_IMG  ,  98, 266, 226,  18, 0 },
+{ "tile"          , BN_CHK   , ROT_TIL  , 186, 76,  42,  14, BN_CEN|BN_RAD|BN_GRP },
+{ "center"        , BN_CHK   , ROT_CEN  , 230, 76,  54,  14, BN_CEN|BN_RAD },
+{ "full"          , BN_CHK   , ROT_FUL  , 286, 76,  38,  14, BN_CEN|BN_RAD },
+{ ""              , BN_EDT   , ROT_IMG  ,  98, 52, 226,  18, 0 },
 
 { ""              , BN_RECT  , INF_RCT  , 106,  54, 430, 130, BN_EXT },
 { "style information", BN_STR   , INF_HDR  , 106,  54, 430,  18, BN_EXT },
@@ -458,7 +458,7 @@ void load_guistyle(struct dlg *dlg, const char *filename)
 
 int bbstylemaker_create(void)
 {
-    struct dlg *dlg = make_dlg(main_buttons, 560, 320);
+    struct dlg *dlg = make_dlg(main_buttons, 1120, 320);
     int xp, yp;
 
     xp = ReadInt(rcpath, "bbstylemaker.xpos", -1);
