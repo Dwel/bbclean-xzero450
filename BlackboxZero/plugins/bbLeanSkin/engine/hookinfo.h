@@ -76,6 +76,7 @@ struct sysmenu_info {
 };
 
 // ---------------------------------------------
+/*
 struct GradientItem
 {
     int bevelstyle;
@@ -89,7 +90,7 @@ struct GradientItem
     int borderWidth;
     COLORREF borderColor;
     int marginWidth;
-};
+};*/
 
 #define copy_GradientItem(p1,p2) \
     do { \
@@ -127,12 +128,12 @@ struct exclusion_info
 // ---------------------------------------------
 struct windowGradients
 {
-    GradientItem Title;
-    GradientItem Label;
-    GradientItem Handle;
-    GradientItem Grip;
-    GradientItem Button;
-    GradientItem ButtonP;
+    StyleItem Title;
+    StyleItem Label;
+    StyleItem Handle;
+    StyleItem Grip;
+    StyleItem Button;
+    StyleItem ButtonP;
     COLORREF FrameColor;
 };
 

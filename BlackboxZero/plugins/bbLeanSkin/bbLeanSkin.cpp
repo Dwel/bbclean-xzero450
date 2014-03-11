@@ -902,7 +902,7 @@ void readStyle(void)
     const short *s;
     short id, flags;
     int tfh, fontheight;
-    GradientItem *pG;
+    StyleItem *pG;
     windowGradients *wG;
 
     // init style reader (incase its built-in here)
@@ -1140,7 +1140,7 @@ void setTTC(int f)
     if (APPLY_3DC == f)
     {
         COLORREF C_CR[NCOLORS];
-        GradientItem *S1, *S2;
+        StyleItem *S1, *S2;
         S1 = S2 = &mSkin.F.Label;
 
         if (S1->parentRelative)

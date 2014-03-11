@@ -317,7 +317,7 @@ void DeleteBitmaps(WinInfo *WI)
     } while (--n);
 }
 
-void PutGradient(WinInfo *WI, HDC hdc, RECT *rc, GradientItem *pG)
+void PutGradient(WinInfo *WI, HDC hdc, RECT *rc, StyleItem *pG)
 {
     if (pG->parentRelative) {
         if (pG->borderWidth)
@@ -367,7 +367,7 @@ void PutGradient(WinInfo *WI, HDC hdc, RECT *rc, GradientItem *pG)
 
 //-----------------------------------------------------------------
 
-void DrawButton(WinInfo *WI, HDC hdc, RECT rc, int btn, int state, GradientItem *pG)
+void DrawButton(WinInfo *WI, HDC hdc, RECT rc, int btn, int state, StyleItem *pG)
 {
     int x, y, xa, ya, xe, ye;
     unsigned char *up;
@@ -455,7 +455,7 @@ void PaintAll(struct WinInfo* WI)
     RECT rc;
     HDC hdc, hdc_win;
     HGDIOBJ hbmpOld;
-    GradientItem *pG;
+    StyleItem *pG;
     windowGradients *wG;
 
     //dbg_printf("painting %x", WI->hwnd);
@@ -677,7 +677,7 @@ void PaintAll(struct WinInfo* WI)
         if (WI->S.BottomHeight > fw)
         {
             int gw = mSkin.gripWidth;
-            GradientItem *pG2;
+            StyleItem *pG2;
             pG = &wG->Handle;
             pG2 = &wG->Grip;
             int bw = imin(pG->borderWidth, pG2->borderWidth);
