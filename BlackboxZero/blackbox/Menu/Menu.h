@@ -28,6 +28,7 @@
 #include "bbshell.h"
 #include "../BBApi.h"
 #include "MenuMaker.h"
+#include "../DataTypes.h"
 
 struct MenuList { struct MenuList *next; class Menu *m; };
 
@@ -38,6 +39,7 @@ extern int g_menu_item_count;
 typedef bool (*MENUENUMPROC)(Menu *m, void *ud);
 
 class MenuItem;
+struct IconLoaderWorkItem;
 
 //=======================================
 class Menu
@@ -368,10 +370,8 @@ public:
     void DrawIcon(HDC hDC);
 //#endif
 private:
-    HANDLE iconLoaderMutex;
-    HANDLE iconLoaderThread;
-    void *iconLoaderParams;
-
+    struct IconLoaderWorkItem* m_iconLoaderWorkItem;
+    HANDLE                     m_iconLoaderThread;
 };
 
 //---------------------------------
@@ -456,6 +456,20 @@ struct MenuInfo
 };
 
 extern struct MenuInfo MenuInfo;
+
+struct IconLoaderWorkItem {
+    LPCITEMIDLIST pidl;
+    HICON icon;
+    int iconSize;
+    RECT iconRect;
+    int retries;
+    bool abort;
+
+    HWND m_hwnd;
+    HANDLE iconMutex;
+    //HANDLE dtorMutex;
+    HANDLE loaderLock;
+};
 
 //=======================================
 class SeparatorItem : public MenuItem

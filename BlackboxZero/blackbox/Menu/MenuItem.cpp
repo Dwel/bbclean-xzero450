@@ -36,36 +36,23 @@ MenuItem::MenuItem(const char* pszTitle)
 
     ++g_menu_item_count;
     
-    this->iconLoaderMutex = INVALID_HANDLE_VALUE;
-    this->iconLoaderThread = INVALID_HANDLE_VALUE;
-    this->iconLoaderParams = nullptr;
+    this->m_iconLoaderWorkItem = NULL;
 }
 
 MenuItem::~MenuItem()
 {
-    if(this->iconLoaderMutex != INVALID_HANDLE_VALUE) {
-        if(WaitForSingleObject(this->iconLoaderMutex, 100) != WAIT_OBJECT_0) {
-            // thread hangs for too long. exit the rough way
+    if(m_iconLoaderWorkItem) {
+        m_iconLoaderWorkItem->abort = true;
 
-            CloseHandle(this->iconLoaderMutex);
-            this->iconLoaderMutex = INVALID_HANDLE_VALUE;
+        WaitForSingleObject(m_iconLoaderThread, INFINITE);
+        CloseHandle(m_iconLoaderThread);
+        if(m_iconLoaderWorkItem->icon && m_iconLoaderWorkItem->icon != m_hIcon) {
+            DestroyIcon(m_iconLoaderWorkItem->icon);
         }
-    }
 
-    if(this->iconLoaderThread != INVALID_HANDLE_VALUE) {
-        TerminateThread(this->iconLoaderThread, 1);
-        CloseHandle(this->iconLoaderThread);
-    }
+        CloseHandle(m_iconLoaderWorkItem->iconMutex);
 
-    if(this->iconLoaderParams != nullptr) {
-        auto heap = GetProcessHeap();
-        HeapFree(heap, 0, this->iconLoaderParams);
-        //free(this->iconLoaderParams);
-    }
-
-    if(this->iconLoaderMutex != INVALID_HANDLE_VALUE) {
-        ReleaseMutex(this->iconLoaderMutex);
-        CloseHandle(this->iconLoaderMutex);
+        delete m_iconLoaderWorkItem;
     }
 
     UnlinkSubmenu();
@@ -76,11 +63,9 @@ MenuItem::~MenuItem()
     free_str(&m_pszRightCommand);
     delete_pidl_list(&m_pidl_list);
 
-//#ifdef BBOPT_MENUICONS
     free_str(&m_pszIcon);
     if (m_hIcon)
         DestroyIcon(m_hIcon);
-//#endif
 
     --g_menu_item_count;
 }
@@ -508,61 +493,36 @@ void SeparatorItem::Paint(HDC hDC)
 	}
 }
 
-//===========================================================================
-//#ifdef BBOPT_MENUICONS
-
 #include <shellapi.h>
 #include "../../plugins/bbPlugin/drawico.cpp"
 
-DWORD WINAPI ExtractIconAsync(LPVOID args);
-
-struct IconExtractionParams {
-    LPCITEMIDLIST pidl;
-    int iconSize;
-    HICON* iconOut;
-    unsigned int stage;
-    HANDLE mutex;
-    RECT r;
-    HWND menu_hwnd;
-};
-
 DWORD WINAPI ExtractIconAsync(LPVOID args) {
-    struct IconExtractionParams *pars = (IconExtractionParams*)args;
-    pars->stage = 0;
-    auto pidl = pars->pidl;
-    pars->stage++;
-    auto iconSize = pars->iconSize;
-    pars->stage++;
-    auto hIcon = pars->iconOut;
-    pars->stage++;
+    struct IconLoaderWorkItem* item = static_cast<struct IconLoaderWorkItem*>(args);
+    
+    SetEvent(item->loaderLock);
 
-    auto icon = sh_geticon(pars->pidl, pars->iconSize);
-    unsigned int retries = 100;
-    while(icon == nullptr && retries--) {
-        icon = sh_geticon(pars->pidl, pars->iconSize);
+    HICON icon = NULL;
+    while(!item->abort) {
+        icon = sh_geticon(item->pidl, item->iconSize);
+
+        if(icon || !item->retries)
+            break;
+
+        item->retries--;
         Sleep(50);
     }
 
-    if(icon == nullptr) {
-        pars->stage = 0xDEADBEEF;
+    if(item->abort) {
+        DestroyIcon(icon);
         return 2;
     }
 
-    pars->stage++;
+    WaitForSingleObject(item->iconMutex, INFINITE);
+    item->icon = icon;
+    ReleaseMutex(item->iconMutex);
 
-    WaitForSingleObject(pars->mutex, INFINITE);
-    pars->stage++;
-    *pars->iconOut = icon;
-    pars->stage++;
-    ReleaseMutex(pars->mutex);
-    pars->stage++;
+    InvalidateRect(item->m_hwnd, &(item->iconRect), FALSE);
 
-    WaitForSingleObject(pars->mutex, INFINITE);
-    pars->stage++;
-    InvalidateRect(pars->menu_hwnd, &pars->r, false);
-    pars->stage++;
-    ReleaseMutex(pars->mutex);
-    pars->stage = 0x1337BEEF;
     return 0;
 }
 
@@ -570,23 +530,13 @@ void MenuItem::DrawIcon(HDC hDC)
 {
     int size, px, py, d;
 
-    bool iconAvailable = false;
-
-    if(this->iconLoaderMutex != INVALID_HANDLE_VALUE) {
-        if(WaitForSingleObject(this->iconLoaderMutex, 100) == WAIT_OBJECT_0) {
-            TRY {
-                iconAvailable = (this->m_hIcon != nullptr);
-            } FINALLY {
-                ReleaseMutex(this->iconLoaderMutex);
-            }
-        } else {
-            iconAvailable = false;
-        }
-    } else {
-        iconAvailable = this->m_hIcon != nullptr;
+    if(!m_hIcon && m_iconLoaderWorkItem) {
+        WaitForSingleObject(m_iconLoaderWorkItem->iconMutex, INFINITE);
+        m_hIcon = m_iconLoaderWorkItem->icon;
+        ReleaseMutex(m_iconLoaderWorkItem->iconMutex);
     }
 
-    if(!iconAvailable && m_pszIcon) {
+    if(!m_hIcon && m_pszIcon) {
         char path[MAX_PATH];
         const char *p;
         int index;
@@ -600,68 +550,40 @@ void MenuItem::DrawIcon(HDC hDC)
         }
         unquote(path);
         ExtractIconEx(path, index, NULL, &m_hIcon, 1);
-
-        iconAvailable = m_hIcon != nullptr;
     }
 
-    if (!iconAvailable && m_pidl_list && this->iconLoaderParams == nullptr) {
-        auto procHeap = GetProcessHeap();
-        auto tPars = (struct IconExtractionParams*)HeapAlloc(procHeap, HEAP_ZERO_MEMORY, sizeof(struct IconExtractionParams));
-            //c_new(struct IconExtractionParams);
-        tPars->pidl = first_pidl(m_pidl_list);
+    if(!m_hIcon && m_pidl_list && !m_iconLoaderWorkItem) {
+        struct IconLoaderWorkItem* item = new struct IconLoaderWorkItem;
+        this->GetItemRect(&item->iconRect);
 
-        GetItemRect(&tPars->r);
-        tPars->iconSize = (Settings_menu.iconSize>16)?(32):(16);
-        tPars->iconOut = &m_hIcon;
-        tPars->mutex = CreateMutex(nullptr, FALSE, nullptr);
-        tPars->menu_hwnd = this->m_pMenu->m_hwnd;
-        tPars->stage = 0xFFFFFFFF;
+        item->icon = NULL;
+        item->abort = false;
+        item->iconSize = Settings_menu.iconSize;
+        item->loaderLock = CreateEvent(NULL, TRUE, FALSE, NULL);
+        item->iconMutex = CreateMutex(NULL, FALSE, NULL);
+        item->m_hwnd = this->m_pMenu->m_hwnd;
+        item->pidl = first_pidl(this->m_pidl_list);
+        item->retries = 10;
+        m_iconLoaderWorkItem = item;
 
-        this->iconLoaderParams = tPars;
-        this->iconLoaderMutex = tPars->mutex;
-        this->iconLoaderThread = CreateThread(nullptr, 0, ExtractIconAsync, tPars, 0, nullptr);
+        m_iconLoaderThread = CreateThread(NULL, 0, ExtractIconAsync, item, 0, NULL);
+        WaitForSingleObject(item->loaderLock, INFINITE);
+        CloseHandle(item->loaderLock);
     }
 
-    struct IconExtractionParams* tParsI;
-    DWORD exitCodeI;
-    BOOL res;
-
-    if(!iconAvailable && this->iconLoaderParams != nullptr) {
-        tParsI = (struct IconExtractionParams*)this->iconLoaderParams;
-        res = GetExitCodeThread(this->iconLoaderThread, &exitCodeI);
-
-        if(exitCodeI == STILL_ACTIVE) {
-            ResumeThread(this->iconLoaderThread);
-        } else if(exitCodeI == 2) {
-            //CloseHandle(this->iconLoaderThread);
-            //this->iconLoaderThread = CreateThread(nullptr, 0, ExtractIconAsync, tParsI, 0, nullptr);
-        }
-
-        //if(WaitForSingleObject(this->iconLoaderThread, 50) == WAIT_OBJECT_0) {
-        //    RECT r;
-        //    GetItemRect(&r);
-        //    ValidateRect(this->m_pMenu->m_hwnd, &r);
-        //    iconAvailable = (m_hIcon != nullptr);
-        //}
-    }
-
-    if(iconAvailable) {
-        size = MenuInfo.nIconSize;
-        d = (m_nHeight - size) / 2;
-        px = m_nLeft + d;
-        py = m_nTop + d;
-
-        DrawIconSatnHue(hDC,
-            px, py, m_hIcon,
-		    Settings_menu.iconSize, Settings_menu.iconSize, 0, /* BlackboxZero 1.4.2012 */
-            NULL, DI_NORMAL,
-		    false == m_bActive, Settings_menu.iconSaturation, Settings_menu.iconHue /* BlackboxZero 1.3.2012 */
-            );
+    if(!m_hIcon) {
         return;
     }
+
+    size = MenuInfo.nIconSize;
+    d = (m_nHeight - size) / 2;
+    px = m_nLeft + d;
+    py = m_nTop + d;
+
+    DrawIconSatnHue(hDC,
+        px, py, m_hIcon,
+		Settings_menu.iconSize, Settings_menu.iconSize, 0, /* BlackboxZero 1.4.2012 */
+        NULL, DI_NORMAL,
+		false == m_bActive, Settings_menu.iconSaturation, Settings_menu.iconHue /* BlackboxZero 1.3.2012 */
+        );
 }
-//#endif
-
-//===========================================================================
-
-

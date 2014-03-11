@@ -779,7 +779,7 @@ void ReadRCSettings() {
     FindRCFile(fpath, "fortune", hInstance);
 
     if(!FindRCFile(rcpath, "bb8ball", hInstance)) {
-        strcpy(rcpath, defaultpath);
+        //strcpy(rcpath, defaultpath);
         xpos = 10;
         ypos = 10;
         mxpos = ScreenWidth/2 - 100;

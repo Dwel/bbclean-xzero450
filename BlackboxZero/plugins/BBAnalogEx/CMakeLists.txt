@@ -11,7 +11,7 @@ add_library(BBAnalogEx SHARED ${BBAnalogEx_SOURCES} ${BBAnalogEx_RESOURCES})
 target_link_libraries(BBAnalogEx blackbox bblib bbPlugin)
 target_link_libraries(BBAnalogEx version comctl32 shlwapi comdlg32 winmm gdiplus msimg32)
 
-set_property(TARGET BBAnalogEx PROPERTY FOLDER "plugins/BBAnalogEx")
+set_property(TARGET BBAnalogEx PROPERTY FOLDER "plugins/bbAnalogEx")
 
 install(FILES readme.txt DESTINATION plugins/BBAnalogEx)
 install(TARGETS BBAnalogEx RUNTIME DESTINATION plugins/BBAnalogEx)

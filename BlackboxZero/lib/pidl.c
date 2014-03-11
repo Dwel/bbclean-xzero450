@@ -324,11 +324,14 @@ int sh_get_icon_and_name(LPCITEMIDLIST pID, HICON *pIcon, int iconsize, char *pN
         SHFILEINFOW shinfo;
         shinfo.szDisplayName[0] = 0;
         sysimgl = (HIMAGELIST)pSHGetFileInfoW((LPWSTR)pID, 0, &shinfo, sizeof shinfo, cbfileinfo);
+        
         if (sysimgl) {
             if (pName)
                 bbWC2MB(shinfo.szDisplayName, pName, NameSize);
+
             if (pIcon)
                 *pIcon = ImageList_GetIcon(sysimgl, shinfo.iIcon, ILD_NORMAL);
+
             return 1;
         }
     } else {
@@ -338,8 +341,10 @@ int sh_get_icon_and_name(LPCITEMIDLIST pID, HICON *pIcon, int iconsize, char *pN
         if (sysimgl) {
             if (pName)
                 strcpy_max(pName, shinfo.szDisplayName, NameSize);
+
             if (pIcon)
                 *pIcon = ImageList_GetIcon(sysimgl, shinfo.iIcon, ILD_NORMAL);
+
             return 1;
         }
     }

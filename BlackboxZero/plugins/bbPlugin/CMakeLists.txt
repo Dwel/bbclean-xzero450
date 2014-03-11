@@ -11,7 +11,14 @@ set(bbPlugin_SOURCES
   MessageBox.cpp
 )
 
-add_library(bbPlugin STATIC ${bbPlugin_SOURCES})
+SET(bbPlugin_HEADERS
+	bbPlugin.h
+	drawico.h
+	MessageBox.h
+	Tooltips.h
+)
+
+add_library(bbPlugin STATIC ${bbPlugin_SOURCES} ${bbPlugin_HEADERS})
 target_link_libraries(bbPlugin blackbox bblib)
 
 set_property(TARGET bbPlugin PROPERTY FOLDER "plugins/bbPlugin")

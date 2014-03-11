@@ -7,7 +7,25 @@ add_custom_command(TARGET bbversion_h COMMAND ${CMAKE_COMMAND}
          -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
          -P ${CMAKE_SOURCE_DIR}/build/version.cmake)
 
+SOURCE_GROUP("Source Files\\Menu" REGULAR_EXPRESSION "Menu/.*\\.cpp")
+SOURCE_GROUP("Header Files\\Menu" REGULAR_EXPRESSION "Menu/.*\\.h(pp)?")
+
+SOURCE_GROUP("Source Files\\PluginManager" REGULAR_EXPRESSION "PluginManager/.*\\.cpp")
+SOURCE_GROUP("Header Files\\PluginManager" REGULAR_EXPRESSION "PluginManager/.*\\.h(pp)?")
+
 set(blackbox_SOURCES
+	Menu/CommandItem.cpp
+	Menu/Contextmenu.cpp
+	Menu/Dragsource.cpp
+	Menu/Droptarget.cpp
+	Menu/FolderItem.cpp
+	Menu/Menu.cpp
+	Menu/MenuItem.cpp
+	Menu/MenuMaker.cpp
+	Menu/RecentItem.cpp
+	Menu/SpecialFolder.cpp
+	Menu/TitleItem.cpp
+	
 	BBApi.cpp
 	BBRoot.cpp
 	BBVWM.cpp
@@ -22,17 +40,6 @@ set(blackbox_SOURCES
 	Tray.cpp
 	Utils.cpp
 	Workspaces.cpp
-	Menu/CommandItem.cpp
-	Menu/Contextmenu.cpp
-	Menu/Dragsource.cpp
-	Menu/Droptarget.cpp
-	Menu/FolderItem.cpp
-	Menu/Menu.cpp
-	Menu/MenuItem.cpp
-	Menu/MenuMaker.cpp
-	Menu/RecentItem.cpp
-	Menu/SpecialFolder.cpp
-	Menu/TitleItem.cpp
 )
 
 set(PluginManager_SOURCES
@@ -48,6 +55,7 @@ set (blackbox_HEADERS
 	bbversion.h
 	BBVWM.h
 	BImage.h
+	DataTypes.h
 	Desk.h
 	MessageManager.h
 	Settings.h
@@ -68,8 +76,8 @@ set(PluginManager_HEADERS
 )
 
 if (NOT MINGW)
-  set(blackbox_SOURCES ${blackbox_SOURCES} PluginManager_SOURCES)
-  set(blackbox_HEADERS ${blackbox_HEADERS} PluginManager_HEADERS)
+  set(blackbox_SOURCES ${blackbox_SOURCES} ${PluginManager_SOURCES})
+  set(blackbox_HEADERS ${blackbox_HEADERS} ${PluginManager_HEADERS})
 endif (NOT MINGW)
 
 set(blackbox_RESOURCES resource.rc)

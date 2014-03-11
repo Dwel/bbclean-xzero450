@@ -28,46 +28,14 @@
 */
 #include <windows.h>
 #include <shlobj.h>
+#include "BB.h"
 
 #define IS_SLASH(c) ((c) == '\\' || (c) == '/')
 #define array_count(ary) (sizeof(ary) / sizeof(ary[0]))
 #define have_imp(pp) ((DWORD_PTR)pp > 1)
 #define NOT_XOBLITE strlen(BBVersion) != 7 && strlen(BBVersion) != 5
 
-OSVERSIONINFO osInfo;
 bool         usingNT;
-
-int imax(int a, int b)
-{
-    return a>b?a:b;
-}
-
-int imin(int a, int b)
-{
-    return a<b?a:b;
-}
-
-int iminmax(int a, int b, int c)
-{
-    if (a>c) a=c;
-    if (a<b) a=b;
-    return a;
-}
-
-char* stristr(const char *aa, const char *bb)
-{
-    const char *a, *b; int c, d;
-    do {
-        for (a = aa, b = bb;;++a, ++b) {
-            if (0 == (c = *b))
-                return (char*)aa;
-            if (0 != (d = *a^c)
-                && (d != 32 || (c |= 32) < 'a' || c > 'z'))
-                break;
-        }
-    } while (*aa++);
-    return NULL;
-}
 
 //===========================================================================
 // API: FileExists
@@ -188,15 +156,6 @@ int substr_icmp(const char *a, const char *b)
     return memicmp(a, b, strlen(b));
 }
 
-int get_string_index (const char *key, const char * const * string_array)
-{
-    int i; const char *s;
-    for (i=0; NULL != (s = *string_array); i++, string_array++)
-        if (0==stricmp(key, s))
-            return i;
-    return -1;
-}
-
 //===========================================================================
 // Function: get_substring_index
 // Purpose:  search for a start-string match in a string array
@@ -244,22 +203,6 @@ void draw_line_h(HDC hDC, int x1, int x2, int y, int w, COLORREF C)
     DeleteObject(SelectObject(hDC, oldPen));
 }
 
-//===========================================================================
-
-int load_imp(void *pp, const char *dll, const char *proc)
-{
-    if (0 == *(DWORD_PTR*)pp) {
-        HMODULE hm = GetModuleHandle(dll);
-        if (NULL == hm)
-            hm = LoadLibrary(dll);
-        if (hm)
-            *(FARPROC*)pp = GetProcAddress(hm, proc);
-        if (0 == *(DWORD_PTR*)pp)
-            *(DWORD_PTR*)pp = 1;
-    }
-    return have_imp(*(void**)pp);
-}
-
 int is_absolute_path(const char *path)
 {
     const char *p, *q; char c;
@@ -281,15 +224,6 @@ const char *file_basename(const char *path)
     int nLen = strlen(path);
     while (nLen && !IS_SLASH(path[nLen-1])) nLen--;
     return path + nLen;
-}
-
-char *file_extension(const char *name)
-{
-    char *e, *p = e = strchr(name = file_basename(name), 0);
-    while (p > name)
-        if (*--p == '.')
-            return p;
-    return e;
 }
 
 static DWORD (WINAPI *pGetLongPathName)(
@@ -319,46 +253,6 @@ char *get_path(char *pszPath, int nMaxLen, const char *file)
     GetModuleFileName(NULL, pszPath, nMaxLen);
     *(char*)file_basename(pszPath) = 0;
 	return strcat(pszPath, file);
-}
-
-//===========================================================================
-// Function: GetOSVersion - bb4win_mod
-// Purpose: Retrieves info about the current OS & bit version
-// In: None
-// Out: int = Returns an integer indicating the OS & bit version
-//===========================================================================
-
-int GetOSVersion(void)
-{
-    ZeroMemory(&osInfo, sizeof(osInfo));
-    osInfo.dwOSVersionInfoSize = sizeof(osInfo);
-    GetVersionEx(&osInfo);
-
-	//64-bit OS test, when running as 32-bit under WoW
-	BOOL bIs64BitOS= FALSE;
-	typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
-	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle("kernel32"),"IsWow64Process");
-	if (NULL != fnIsWow64Process)
-		fnIsWow64Process(GetCurrentProcess(), &bIs64BitOS);
-	/*usingx64 = bIs64BitOS;
-	//64-bit OS test, if compiled as native 64-bit. In case we ever need it.
-	if (!usingx64)
-		usingx64=(sizeof(int)!=sizeof(void*));*/
-
-    usingNT         = osInfo.dwPlatformId == VER_PLATFORM_WIN32_NT;
-
-    if (usingNT)
-		return ((osInfo.dwMajorVersion * 10) + osInfo.dwMinorVersion + (bIs64BitOS ? 5 : 0)); // NT 40; Win2kXP 50; Vista 60; etc.
-
-
-	if (osInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-    {
-        if (osInfo.dwMinorVersion >= 90)
-            return 30; // Windows ME
-        if (osInfo.dwMinorVersion >= 10)
-            return 20; // Windows 98
-    }
-	return 10; // Windows 95
 }
 
 //===========================================================================
@@ -479,19 +373,6 @@ COLORREF mixcolors(COLORREF c1, COLORREF c2, int f)
         (GetGValue(c1)*f+GetGValue(c2)*n)/255,
         (GetBValue(c1)*f+GetBValue(c2)*n)/255
         );
-}
-
-int get_fontheight(HFONT hFont)
-{
-    TEXTMETRIC TXM;
-    HDC hdc = CreateCompatibleDC(NULL);
-    HGDIOBJ other = SelectObject(hdc, hFont);
-    int ret = 12;
-    if (GetTextMetrics(hdc, &TXM))
-        ret = TXM.tmHeight - TXM.tmExternalLeading;/*-TXM.tmInternalLeading;*/
-    SelectObject(hdc, other);
-    DeleteDC(hdc);
-    return ret;
 }
 
 inline int tobyte(int v) {

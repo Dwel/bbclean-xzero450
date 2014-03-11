@@ -39,7 +39,7 @@ static FILETIME rc_filetime; // plugins.rc filetime
 // Forward decls
 static void applyPluginStates();
 static int loadPlugin(struct PluginList *q, HWND hSlit, char **errorMsg);
-static int unloadPlugin(struct PluginList *q, char **errorMsg);
+static int unloadPlugin(struct PluginList *q, char ** errorMsg);
 static void free_plugin(struct PluginList **q);
 static struct PluginList *parseConfigLine(const char *rcline);
 static bool write_plugins(void);
@@ -166,7 +166,7 @@ static struct PluginList *parseConfigLine(const char *rcline) {
 
 static void applyPluginState(struct PluginList *q)
 {
-    const char *errorMsg = "(Unknown error)";
+    char * errorMsg = "(Unknown error)";
 
     int error = 0;
     if (q->loaderInfo) {
