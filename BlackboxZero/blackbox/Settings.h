@@ -71,7 +71,7 @@ BBSETTING struct menu_setting {
     bool	onTop;
     bool	sticky;
     bool	pluginToggle;
-    bool	showBroams;
+    bool	showBroams; // not saved?
     bool	showHiddenFiles;
     bool	sortByExtension;
     bool	drawSeparators;
@@ -86,7 +86,7 @@ BBSETTING struct menu_setting {
 	int		spacing;
 	bool	bullet_enabled;
 	char	scrollerPosition[16];
-	int	 scrollHue;
+	int	    scrollHue;
 	char	separatorStyle[16];
 	bool	separatorFullWidth;
 	bool	separatorCompact;

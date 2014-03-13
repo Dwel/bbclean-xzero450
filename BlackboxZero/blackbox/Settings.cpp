@@ -1,23 +1,23 @@
 /* ==========================================================================
 
-  This file is part of the bbLean source code
-  Copyright (C) 2001-2003 The Blackbox for Windows Development Team
-  Copyright (C) 2004-2009 grischka
+This file is part of the bbLean source code
+Copyright (C) 2001-2003 The Blackbox for Windows Development Team
+Copyright (C) 2004-2009 grischka
 
-  http://bb4win.sourceforge.net/bblean
-  http://developer.berlios.de/projects/bblean
+http://bb4win.sourceforge.net/bblean
+http://developer.berlios.de/projects/bblean
 
-  bbLean is free software, released under the GNU General Public License
-  (GPL version 2). For details see:
+bbLean is free software, released under the GNU General Public License
+(GPL version 2). For details see:
 
-  http://www.fsf.org/licenses/gpl.html
+http://www.fsf.org/licenses/gpl.html
 
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-  for more details.
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details.
 
-  ========================================================================== */
+========================================================================== */
 
 #include "BB.h"
 #include "bbrc.h"
@@ -38,7 +38,7 @@ int screenNumber = 0;
 /* *** Do not change this line. *** */
 const int styleitem_size_assert = 1/(sizeof(StyleItem)==300?1:0);
 /* If you get an error here that means that BBApi.h was changed
-   in an incompatible way */
+in an incompatible way */
 
 //#define PARSEFONT_AFTER
 //===========================================================================
@@ -49,7 +49,7 @@ static int CALLBACK EnumFontFamProc(
     NEWTEXTMETRIC FAR *lpntm,   // pointer to physical-font data
     int FontType,               // type of font
     LPARAM lParam               // address of application-defined data
-   )
+    )
 {
     (*(int*)lParam)++;
     return 0;
@@ -69,9 +69,9 @@ int checkfont (const char *face)
 static int getweight (const char *p)
 {
     static const char * const fontweightstrings[] = {
-    "thin", "extralight", "light", "normal",
-    "medium", "demibold", "bold", "extrabold",
-    "heavy", "regular", "semibold", NULL
+        "thin", "extralight", "light", "normal",
+        "medium", "demibold", "bold", "extrabold",
+        "heavy", "regular", "semibold", NULL
     };
     int i = 1+get_string_index(p, fontweightstrings);
     if (i>=10) {
@@ -115,12 +115,12 @@ void parse_font(StyleItem *si, const char *font)
     if ('-' == font[0])
     {
         /* --------------------------------------------------------
-            parse linux font spec:
-                -foundry-family-weight-slant-setwidth-addstyle
-                -pixel-point-resx-resy-spacing-width-charset-encoding
+        parse linux font spec:
+        -foundry-family-weight-slant-setwidth-addstyle
+        -pixel-point-resx-resy-spacing-width-charset-encoding
 
-            slant: "-r-", "-i-", "-o-", "-ri-", "-ro-"
-           --------------------------------------------------------
+        slant: "-r-", "-i-", "-o-", "-ri-", "-ro-"
+        --------------------------------------------------------
         */
         enum {
             f_foundry, f_family, f_weight, f_slant, f_setwidth, f_addstyle,
@@ -143,9 +143,9 @@ void parse_font(StyleItem *si, const char *font)
             si->FontHeight = atoi(b);
         }
         else
-        if (is_digit(*(b = p[f_point]))) {// 'point'
-            si->FontHeight = atoi(b) / 10;
-        }
+            if (is_digit(*(b = p[f_point]))) {// 'point'
+                si->FontHeight = atoi(b) / 10;
+            }
     } else if (checkfont(font)) {
         // if the font exists, we take it as is
         strcpy(si->Font, font);
@@ -177,18 +177,18 @@ void parse_font(StyleItem *si, const char *font)
                 break;
             }
 
-    //dbg_printf("%s -> <%s> %d %d", font, si->Font, si->FontHeight, si->FontWeight);
-    if (dblcheck && 0 == checkfont(si->Font)) {
-        LOGFONT logFont;
-        SystemParametersInfo(SPI_GETICONTITLELOGFONT, 0, &logFont, 0);
-        strcpy(si->Font, logFont.lfFaceName);
-        //si->FontHeight = logFont.lfHeight;
-        {
-            HFONT hf = CreateFontIndirect(&logFont);
-            si->FontHeight = get_fontheight(hf);
-            DeleteObject(hf);
-        }
-    }
+            //dbg_printf("%s -> <%s> %d %d", font, si->Font, si->FontHeight, si->FontWeight);
+            if (dblcheck && 0 == checkfont(si->Font)) {
+                LOGFONT logFont;
+                SystemParametersInfo(SPI_GETICONTITLELOGFONT, 0, &logFont, 0);
+                strcpy(si->Font, logFont.lfFaceName);
+                //si->FontHeight = logFont.lfHeight;
+                {
+                    HFONT hf = CreateFontIndirect(&logFont);
+                    si->FontHeight = get_fontheight(hf);
+                    DeleteObject(hf);
+                }
+            }
 }
 
 //===========================================================================
@@ -266,10 +266,10 @@ void* StyleStructPtr(int sn_index, StyleStruct *pStyle)
     case SN_ISSTYLE070              : return &pStyle->is_070             ;
     case SN_SLIT                    : return &pStyle->Slit;
 
-	/* BlackboxZero 1.8.2012 */
-	case SN_MENUSEPMARGIN			: return &pStyle->MenuSepMargin;
-	case SN_MENUSEPCOLOR			: return &pStyle->MenuSepColor;
-	case SN_MENUSEPSHADOWCOLOR		: return &pStyle->MenuSepShadowColor;
+        /* BlackboxZero 1.8.2012 */
+    case SN_MENUSEPMARGIN            : return &pStyle->MenuSepMargin;
+    case SN_MENUSEPCOLOR            : return &pStyle->MenuSepColor;
+    case SN_MENUSEPSHADOWCOLOR        : return &pStyle->MenuSepShadowColor;
 
     default                         : return NULL;
     }
@@ -325,10 +325,10 @@ int Settings_ItemSize(int sn_index)
     case SN_ISSTYLE070              : return sizeof (bool);
     case SN_SLIT                    : return sizeof (StyleItem);
 
-		/* BlackboxZero 1.8.2012 */
-	case SN_MENUSEPMARGIN			: return sizeof (int);
-	case SN_MENUSEPCOLOR			: return sizeof (COLORREF);
-	case SN_MENUSEPSHADOWCOLOR		: return sizeof (COLORREF);
+        /* BlackboxZero 1.8.2012 */
+    case SN_MENUSEPMARGIN            : return sizeof (int);
+    case SN_MENUSEPCOLOR            : return sizeof (COLORREF);
+    case SN_MENUSEPSHADOWCOLOR        : return sizeof (COLORREF);
 
     default                         : return 0;
     }
@@ -411,65 +411,65 @@ enum other_defaults
 
 /* BlackboxZero 1.5.2012 - Added |V_OUTLINECOLOR|V_SHADOW where V_TXT  and |V_SPLIT where A_TEX*/
 static const struct items StyleItems[] = {
-// bb4nix 065 style props --->>
-{ C_INT, SN_BORDERWIDTH         , "borderWidth",           0, 1 },
-{ C_COL, SN_BORDERCOLOR         , "borderColor",           0, 0 },
-{ C_INT, SN_BEVELWIDTH          , "bevelWidth",            0, 1 },
-{ C_INT, SN_HANDLEHEIGHT        , "handleWidth",           0, 5 },
-// -------------------------->>
-// The window frame from 065 is ignored since they are mostly set to random values in bb4win styles.
-//{ C_INT, SN_FRAMEWIDTH            , "frameWidth",                SN_BORDERWIDTH, 0 },
-//{ C_COL, SN_WINFOCUS_FRAME_COLOR  , "window.frame.focusColor",   SN_BORDERCOLOR, 0 },
-//{ C_COL, SN_WINUNFOCUS_FRAME_COLOR, "window.frame.unfocusColor", SN_BORDERCOLOR, 0 },
-// --------------------------<<
-{ C_STR, SN_ROOTCOMMAND         , "rootCommand",            STR_EMPTY       , sizeof mStyle.rootCommand },
-{ C_STY, SN_TOOLBAR             , "toolbar",                SN_DEFITEM_1    , A_TEX|V_MAR|V_TXT|A_FNT|I_DEF|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
-{ C_STY, SN_TOOLBARLABEL        , "toolbar.label",          SN_DEFITEM_1    , A_TEX|V_MAR|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
-{ C_STY, SN_TOOLBARWINDOWLABEL  , "toolbar.windowLabel",    SN_DEFITEM_2    , A_TEX|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
-{ C_STY, SN_TOOLBARCLOCK        , "toolbar.clock",          SN_DEFITEM_1    , A_TEX|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
-{ C_STY, SN_TOOLBARBUTTON       , "toolbar.button",         SN_DEFITEM_2    , A_TEX|V_PIC|V_MAR|V_SPLIT },
-{ C_STY, SN_TOOLBARBUTTONP      , "toolbar.button.pressed", SN_DEFITEM_1    , A_TEX|V_PIC|V_SPLIT },
+    // bb4nix 065 style props --->>
+    { C_INT, SN_BORDERWIDTH         , "borderWidth",           0, 1 },
+    { C_COL, SN_BORDERCOLOR         , "borderColor",           0, 0 },
+    { C_INT, SN_BEVELWIDTH          , "bevelWidth",            0, 1 },
+    { C_INT, SN_HANDLEHEIGHT        , "handleWidth",           0, 5 },
+    // -------------------------->>
+    // The window frame from 065 is ignored since they are mostly set to random values in bb4win styles.
+    //{ C_INT, SN_FRAMEWIDTH            , "frameWidth",                SN_BORDERWIDTH, 0 },
+    //{ C_COL, SN_WINFOCUS_FRAME_COLOR  , "window.frame.focusColor",   SN_BORDERCOLOR, 0 },
+    //{ C_COL, SN_WINUNFOCUS_FRAME_COLOR, "window.frame.unfocusColor", SN_BORDERCOLOR, 0 },
+    // --------------------------<<
+    { C_STR, SN_ROOTCOMMAND         , "rootCommand",            STR_EMPTY       , sizeof mStyle.rootCommand },
+    { C_STY, SN_TOOLBAR             , "toolbar",                SN_DEFITEM_1    , A_TEX|V_MAR|V_TXT|A_FNT|I_DEF|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+    { C_STY, SN_TOOLBARLABEL        , "toolbar.label",          SN_DEFITEM_1    , A_TEX|V_MAR|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+    { C_STY, SN_TOOLBARWINDOWLABEL  , "toolbar.windowLabel",    SN_DEFITEM_2    , A_TEX|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+    { C_STY, SN_TOOLBARCLOCK        , "toolbar.clock",          SN_DEFITEM_1    , A_TEX|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+    { C_STY, SN_TOOLBARBUTTON       , "toolbar.button",         SN_DEFITEM_2    , A_TEX|V_PIC|V_MAR|V_SPLIT },
+    { C_STY, SN_TOOLBARBUTTONP      , "toolbar.button.pressed", SN_DEFITEM_1    , A_TEX|V_PIC|V_SPLIT },
 #ifndef BBSETTING_NOMENU
-{ C_STY, SN_MENUTITLE           , "menu.title",             SN_DEFITEM_2    , A_TEX|V_MAR|V_TXT|A_FNT|I_DEF|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
-{ C_STY, SN_MENUFRAME           , "menu.frame",             SN_DEFITEM_1    , A_TEX|V_MAR|V_TXT|V_PIC|A_FNT|V_DIS|I_DEF|I_BUL|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
-{ C_STY, SN_MENUHILITE          , "menu.active",            SN_DEFITEM_2    , A_TEX|V_TXT|V_PIC|V_MAR|I_ACT|I_BUL|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
-{ C_STR, SN_MENUBULLET          , "menu.bullet",            STR_TRIANGLE    , sizeof mStyle.menuBullet  },
-{ C_STR, SN_MENUBULLETPOS       , "menu.bullet.position",   STR_RIGHT       , sizeof mStyle.menuBulletPosition  },
+    { C_STY, SN_MENUTITLE           , "menu.title",             SN_DEFITEM_2    , A_TEX|V_MAR|V_TXT|A_FNT|I_DEF|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+    { C_STY, SN_MENUFRAME           , "menu.frame",             SN_DEFITEM_1    , A_TEX|V_MAR|V_TXT|V_PIC|A_FNT|V_DIS|I_DEF|I_BUL|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+    { C_STY, SN_MENUHILITE          , "menu.active",            SN_DEFITEM_2    , A_TEX|V_TXT|V_PIC|V_MAR|I_ACT|I_BUL|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+    { C_STR, SN_MENUBULLET          , "menu.bullet",            STR_TRIANGLE    , sizeof mStyle.menuBullet  },
+    { C_STR, SN_MENUBULLETPOS       , "menu.bullet.position",   STR_RIGHT       , sizeof mStyle.menuBulletPosition  },
 #endif
 #ifndef BBSETTING_NOWINDOW
-{ C_STY, SN_WINFOCUS_TITLE      , "window.title.focus",     SN_TOOLBAR      , A_TEX|I_DEF|V_SPLIT },
-{ C_STY, SN_WINFOCUS_LABEL      , "window.label.focus",     SN_TOOLBARWINDOWLABEL, A_TEX|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
-{ C_STY, SN_WINFOCUS_HANDLE     , "window.handle.focus",    SN_TOOLBAR      , A_TEX|I_DEF|V_SPLIT },
-{ C_STY, SN_WINFOCUS_GRIP       , "window.grip.focus",      SN_TOOLBARWINDOWLABEL, A_TEX|I_DEF|V_SPLIT },
-{ C_STY, SN_WINFOCUS_BUTTON     , "window.button.focus",    SN_TOOLBARBUTTON, A_TEX|V_PIC|V_SPLIT },
-{ C_STY, SN_WINFOCUS_BUTTONP    , "window.button.pressed",  SN_TOOLBARBUTTONP, A_TEX|V_PIC|V_SPLIT },
+    { C_STY, SN_WINFOCUS_TITLE      , "window.title.focus",     SN_TOOLBAR      , A_TEX|I_DEF|V_SPLIT },
+    { C_STY, SN_WINFOCUS_LABEL      , "window.label.focus",     SN_TOOLBARWINDOWLABEL, A_TEX|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+    { C_STY, SN_WINFOCUS_HANDLE     , "window.handle.focus",    SN_TOOLBAR      , A_TEX|I_DEF|V_SPLIT },
+    { C_STY, SN_WINFOCUS_GRIP       , "window.grip.focus",      SN_TOOLBARWINDOWLABEL, A_TEX|I_DEF|V_SPLIT },
+    { C_STY, SN_WINFOCUS_BUTTON     , "window.button.focus",    SN_TOOLBARBUTTON, A_TEX|V_PIC|V_SPLIT },
+    { C_STY, SN_WINFOCUS_BUTTONP    , "window.button.pressed",  SN_TOOLBARBUTTONP, A_TEX|V_PIC|V_SPLIT },
 
-{ C_STY, SN_WINUNFOCUS_TITLE    , "window.title.unfocus",   SN_TOOLBAR      , A_TEX|I_DEF|V_SPLIT },
-{ C_STY, SN_WINUNFOCUS_LABEL    , "window.label.unfocus",   SN_TOOLBAR      , A_TEX|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
-{ C_STY, SN_WINUNFOCUS_HANDLE   , "window.handle.unfocus",  SN_TOOLBAR      , A_TEX|I_DEF|V_SPLIT },
-{ C_STY, SN_WINUNFOCUS_GRIP     , "window.grip.unfocus",    SN_TOOLBARLABEL , A_TEX|I_DEF|V_SPLIT },
-{ C_STY, SN_WINUNFOCUS_BUTTON   , "window.button.unfocus",  SN_TOOLBARBUTTON, A_TEX|V_PIC|V_SPLIT },
-// -------------------------->>
-// new bb4nix 070 style props
-{ C_STY, SN_WINFOCUS_TITLE      , "window.title",           SN_TOOLBAR      , V_MAR|I_DEF },
-{ C_STY, SN_WINFOCUS_LABEL      , "window.label",           SN_TOOLBARLABEL , V_MAR },
-{ C_STY, SN_WINFOCUS_BUTTON     , "window.button",          SN_TOOLBARBUTTON, V_MAR },
+    { C_STY, SN_WINUNFOCUS_TITLE    , "window.title.unfocus",   SN_TOOLBAR      , A_TEX|I_DEF|V_SPLIT },
+    { C_STY, SN_WINUNFOCUS_LABEL    , "window.label.unfocus",   SN_TOOLBAR      , A_TEX|V_TXT|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+    { C_STY, SN_WINUNFOCUS_HANDLE   , "window.handle.unfocus",  SN_TOOLBAR      , A_TEX|I_DEF|V_SPLIT },
+    { C_STY, SN_WINUNFOCUS_GRIP     , "window.grip.unfocus",    SN_TOOLBARLABEL , A_TEX|I_DEF|V_SPLIT },
+    { C_STY, SN_WINUNFOCUS_BUTTON   , "window.button.unfocus",  SN_TOOLBARBUTTON, A_TEX|V_PIC|V_SPLIT },
+    // -------------------------->>
+    // new bb4nix 070 style props
+    { C_STY, SN_WINFOCUS_TITLE      , "window.title",           SN_TOOLBAR      , V_MAR|I_DEF },
+    { C_STY, SN_WINFOCUS_LABEL      , "window.label",           SN_TOOLBARLABEL , V_MAR },
+    { C_STY, SN_WINFOCUS_BUTTON     , "window.button",          SN_TOOLBARBUTTON, V_MAR },
 
-{ C_COL, SN_WINFOCUS_FRAME_COLOR, "window.frame.focus.borderColor",     SN_BORDERCOLOR },
-{ C_COL, SN_WINUNFOCUS_FRAME_COLOR, "window.frame.unfocus.borderColor", SN_BORDERCOLOR },
-{ C_INT, SN_FRAMEWIDTH          , "window.frame.borderWidth",           SN_BORDERWIDTH },
-{ C_INT, SN_HANDLEHEIGHT        , "window.handleHeight",                SN_HANDLEHEIGHT, 0 },
-// --------------------------<<
-// window.font:
-{ C_STY, SN_WINFOCUS_LABEL      , "window",                 SN_TOOLBAR      , A_FNT },
+    { C_COL, SN_WINFOCUS_FRAME_COLOR, "window.frame.focus.borderColor",     SN_BORDERCOLOR },
+    { C_COL, SN_WINUNFOCUS_FRAME_COLOR, "window.frame.unfocus.borderColor", SN_BORDERCOLOR },
+    { C_INT, SN_FRAMEWIDTH          , "window.frame.borderWidth",           SN_BORDERWIDTH },
+    { C_INT, SN_HANDLEHEIGHT        , "window.handleHeight",                SN_HANDLEHEIGHT, 0 },
+    // --------------------------<<
+    // window.font:
+    { C_STY, SN_WINFOCUS_LABEL      , "window",                 SN_TOOLBAR      , A_FNT },
 #endif
-{ C_STY, SN_SLIT                , "slit",                   SN_TOOLBAR      , A_TEX|V_MAR|I_DEF|V_SPLIT },
+    { C_STY, SN_SLIT                , "slit",                   SN_TOOLBAR      , A_TEX|V_MAR|I_DEF|V_SPLIT },
 
-/* BlackboxZero 1.8.2012 */
-{ C_INT, SN_MENUSEPMARGIN       , "menu.separator.margin",			0, 0 },
-{ C_COL, SN_MENUSEPCOLOR        , "menu.separator.color",			0, 0 },
-{ C_COL, SN_MENUSEPSHADOWCOLOR  , "menu.separator.shadowColor",		0, 0 },
-{ 0,0,NULL,0,0 }
+    /* BlackboxZero 1.8.2012 */
+    { C_INT, SN_MENUSEPMARGIN       , "menu.separator.margin",            0, 0 },
+    { C_COL, SN_MENUSEPCOLOR        , "menu.separator.color",            0, 0 },
+    { C_COL, SN_MENUSEPSHADOWCOLOR  , "menu.separator.shadowColor",        0, 0 },
+    { 0,0,NULL,0,0 }
 };
 
 //===========================================================================
@@ -496,30 +496,30 @@ static int read_style_item (
         const char *k, *o;
         int mode, f; /* BlackboxZero 1.5.2012 - Was short */
     } s_prop[] = {
-    // texture type
-    { ".appearance",      ""                , C_TEX , V_TEX },
-    // colors, from, to, text, pics
-    { ".color1",          ".color"          , C_CO1 , V_CO1 },
-    { ".color2",          ".colorTo"        , C_CO2 , V_CO2 },
-    { ".textColor",       NULL              , C_TXT , V_TXT },
-    { ".foregroundColor", ".picColor"       , C_PIC , V_PIC },
-    { ".disabledColor",   ".disableColor"   , C_DIS , V_DIS },
-    // font settings
-    { ".font",            NULL              , C_FON , V_FON },
-    { ".fontHeight",      NULL              , C_FHE , V_FHE },
-    { ".fontWeight",      NULL              , C_FWE , V_FWE },
-    { ".alignment",       ".justify"        , C_JUS , V_JUS },
-    // borders & margins - _new in BBNix 0.70
-    { ".borderWidth",     NULL              , C_BOW , V_BOW },
-    { ".borderColor",     NULL              , C_BOC , V_BOC },
-    { ".marginWidth",     NULL              , C_MAR , V_MAR },
-	/* BlackboxZero 1.4.2012 */
-	{ ".shadowX",			NULL			, C_SHAX , V_SHADOWX },
-	{ ".shadowY",			NULL			, C_SHAY , V_SHADOWY },
-	{ ".shadowColor",		NULL			, C_CO5 , V_SHADOWCOLOR },
-	{ ".outlineColor",		NULL			, C_CO6 , V_OUTLINECOLOR },
-    { ".color.splitTo", ".color1.splitTo"	, C_CO1ST , V_FROMSPLITTO },
-    { ".colorTo.splitTo", ".color2.splitTo" , C_CO2ST , V_TOSPLITTO },
+        // texture type
+        { ".appearance",      ""                , C_TEX , V_TEX },
+        // colors, from, to, text, pics
+        { ".color1",          ".color"          , C_CO1 , V_CO1 },
+        { ".color2",          ".colorTo"        , C_CO2 , V_CO2 },
+        { ".textColor",       NULL              , C_TXT , V_TXT },
+        { ".foregroundColor", ".picColor"       , C_PIC , V_PIC },
+        { ".disabledColor",   ".disableColor"   , C_DIS , V_DIS },
+        // font settings
+        { ".font",            NULL              , C_FON , V_FON },
+        { ".fontHeight",      NULL              , C_FHE , V_FHE },
+        { ".fontWeight",      NULL              , C_FWE , V_FWE },
+        { ".alignment",       ".justify"        , C_JUS , V_JUS },
+        // borders & margins - _new in BBNix 0.70
+        { ".borderWidth",     NULL              , C_BOW , V_BOW },
+        { ".borderColor",     NULL              , C_BOC , V_BOC },
+        { ".marginWidth",     NULL              , C_MAR , V_MAR },
+        /* BlackboxZero 1.4.2012 */
+        { ".shadowX",            NULL            , C_SHAX , V_SHADOWX },
+        { ".shadowY",            NULL            , C_SHAY , V_SHADOWY },
+        { ".shadowColor",        NULL            , C_CO5 , V_SHADOWCOLOR },
+        { ".outlineColor",        NULL            , C_CO6 , V_OUTLINECOLOR },
+        { ".color.splitTo", ".color1.splitTo"    , C_CO1ST , V_FROMSPLITTO },
+        { ".colorTo.splitTo", ".color2.splitTo" , C_CO2ST , V_TOSPLITTO },
 
     };
 
@@ -541,8 +541,8 @@ restart:
         if (cp->f & f)
         {
             if (C_CO1 == cp->mode
-             && si->type == B_SOLID
-             && false == si->interlaced)
+                && si->type == B_SOLID
+                && false == si->interlaced)
                 strcpy(lastword, ".backgroundColor");
             else
                 strcpy(lastword, cp->k);
@@ -555,7 +555,7 @@ restart:
             }
 
             switch (cp->mode) {
-            // --- textture ---
+                // --- textture ---
             case C_TEX:
                 if (p) {
                     ParseItem(p, si);
@@ -576,7 +576,7 @@ restart:
                 }
                 break;
 
-            // --- colors ---
+                // --- colors ---
             case C_CO1:
                 cr = ReadColorFromString(p);
                 if (CLR_INVALID == cr)
@@ -623,7 +623,7 @@ restart:
                 }
                 break;
 
-            // --- Border ---
+                // --- Border ---
             case C_BOC:
                 cr = ReadColorFromString(p);
                 if (CLR_INVALID == cr)
@@ -643,7 +643,7 @@ restart:
                 si->borderWidth = p ? atoi(p) : pStyle->borderWidth;
                 break;
 
-            // --- Font ---
+                // --- Font ---
             case C_FON: // fontFace
                 p = check_global_font(p, fullkey);
                 strcpy(si->Font, p ? p : si_def->Font);
@@ -662,45 +662,45 @@ restart:
 #endif
                 break;
 
-            // --- Alignment ---
+                // --- Alignment ---
             case C_JUS:
                 si->Justify = p ? ParseJustify(p) : si_def->Justify;
                 break;
 
-            // --- Margins ---
+                // --- Margins ---
             case C_MAR:
                 if (p) {
                     if (sn != SN_MENUHILITE || found_last_value() == 1) {
                         si->marginWidth = atoi(p);
                         break;
                     }
-				}
+                }
 
-			/* BlackboxZero 1.5.2012 */
-			case C_SHAX:
-				si->ShadowX = p ? atoi(p) : 0;
-				break;
+                /* BlackboxZero 1.5.2012 */
+            case C_SHAX:
+                si->ShadowX = p ? atoi(p) : 0;
+                break;
 
-			case C_SHAY:
-				si->ShadowY = p ? atoi(p) : 0;
-				break;
+            case C_SHAY:
+                si->ShadowY = p ? atoi(p) : 0;
+                break;
 
-			case C_CO5:
-				si->ShadowColor = ReadColorFromString(p);
-				break;
+            case C_CO5:
+                si->ShadowColor = ReadColorFromString(p);
+                break;
 
-			case C_CO6:
-				si->OutlineColor = ReadColorFromString(p);
-				break;
+            case C_CO6:
+                si->OutlineColor = ReadColorFromString(p);
+                break;
 
-			case C_CO1ST:
+            case C_CO1ST:
                 si->ColorSplitTo = ReadColorFromString(p);
                 break;
 
             case C_CO2ST:
                 si->ColorToSplitTo = ReadColorFromString(p);
                 break;
-			/* BlackboxZero 1.5.2012 */
+                /* BlackboxZero 1.5.2012 */
 
                 // --- default margins, a sensible issue ---
                 switch (sn) {
@@ -714,14 +714,14 @@ restart:
                     if (is_070)
                         si->marginWidth = 1;
                     else
-                    if (BEVEL_SUNKEN == si->bevelstyle
-                        || BEVEL2 == si->bevelposition)
-                        si->marginWidth = si->bevelposition;
-                    else
-                    if (pStyle->MenuHilite.borderWidth)
-                        si->marginWidth = 1;
-                    else
-                        si->marginWidth = 0;
+                        if (BEVEL_SUNKEN == si->bevelstyle
+                            || BEVEL2 == si->bevelposition)
+                            si->marginWidth = si->bevelposition;
+                        else
+                            if (pStyle->MenuHilite.borderWidth)
+                                si->marginWidth = 1;
+                            else
+                                si->marginWidth = 0;
                     break;
                 case SN_MENUHILITE:
                     if (is_070)
@@ -767,8 +767,8 @@ void ReadStyle(const char *style, StyleStruct *pStyle)
     bool valid_borderColor;
 
     valid_bevelWidth =
-    valid_borderWidth =
-    valid_borderColor = false;
+        valid_borderWidth =
+        valid_borderColor = false;
 
     memset(pStyle, 0, sizeof *pStyle);
     pStyle->bulletUnix = bu;
@@ -819,33 +819,33 @@ void ReadStyle(const char *style, StyleStruct *pStyle)
         set_translate_065(trans);
 
         if (p) switch (sn) {
-            case SN_BORDERWIDTH:
-                valid_borderWidth = true;
-                break;
-            case SN_BEVELWIDTH:
-                valid_bevelWidth = true;
-                break;
-            case SN_BORDERCOLOR:
-                valid_borderColor = true;
-                break;
+        case SN_BORDERWIDTH:
+            valid_borderWidth = true;
+            break;
+        case SN_BEVELWIDTH:
+            valid_bevelWidth = true;
+            break;
+        case SN_BORDERCOLOR:
+            valid_borderColor = true;
+            break;
         }
 
         switch (type) {
-            case C_INT:
-                *(int*)v = p ? atoi(p) : *(int*)p_default;
-                break;
+        case C_INT:
+            *(int*)v = p ? atoi(p) : *(int*)p_default;
+            break;
 
-            case C_STR:
-                maxlen = s->flags;
-                strcpy_max((char*)v, p ? p : (const char *)p_default, maxlen);
-                break;
+        case C_STR:
+            maxlen = s->flags;
+            strcpy_max((char*)v, p ? p : (const char *)p_default, maxlen);
+            break;
 
-            case C_COL:
-                cr = ReadColorFromString(p);
-                if (CLR_INVALID == cr)
-                    cr = *(COLORREF*)p_default;
-                *(COLORREF*)v = cr;
-                break;
+        case C_COL:
+            cr = ReadColorFromString(p);
+            if (CLR_INVALID == cr)
+                cr = *(COLORREF*)p_default;
+            *(COLORREF*)v = cr;
+            break;
         }
 
     } while ((++s)->sn);
@@ -865,13 +865,13 @@ void ReadStyle(const char *style, StyleStruct *pStyle)
         if (pStyle->ToolbarLabel.parentRelative)
             pStyle->Toolbar.TextColor = get_mixed_color(&pStyle->ToolbarLabel);
         else
-        if (pStyle->ToolbarClock.parentRelative)
-            pStyle->Toolbar.TextColor = get_mixed_color(&pStyle->ToolbarClock);
-        else
-        if (pStyle->ToolbarWindowLabel.parentRelative)
-            pStyle->Toolbar.TextColor = get_mixed_color(&pStyle->ToolbarWindowLabel);
-        else
-            pStyle->Toolbar.TextColor = get_mixed_color(&pStyle->ToolbarLabel);
+            if (pStyle->ToolbarClock.parentRelative)
+                pStyle->Toolbar.TextColor = get_mixed_color(&pStyle->ToolbarClock);
+            else
+                if (pStyle->ToolbarWindowLabel.parentRelative)
+                    pStyle->Toolbar.TextColor = get_mixed_color(&pStyle->ToolbarWindowLabel);
+                else
+                    pStyle->Toolbar.TextColor = get_mixed_color(&pStyle->ToolbarLabel);
     }
 
     if (0==(pStyle->ToolbarButtonPressed.validated & V_PIC))
@@ -904,7 +904,7 @@ void ReadStyle(const char *style, StyleStruct *pStyle)
     if (pStyle->is_070) {
         StyleItem *si;
         for (si = &pStyle->windowTitleFocus;
-             si <= &pStyle->windowButtonUnfocus; ++si)
+            si <= &pStyle->windowButtonUnfocus; ++si)
             if (0 == (si->validated & V_BOC)) {
                 if (si >= &pStyle->windowTitleUnfocus)
                     si->borderColor = pStyle->windowFrameUnfocusColor;
@@ -912,25 +912,25 @@ void ReadStyle(const char *style, StyleStruct *pStyle)
                     si->borderColor = pStyle->windowFrameFocusColor;
             }
 
-        // setup some default border/bevel to satisfy old plugins from new styles
-        if (false == valid_bevelWidth)
-            pStyle->bevelWidth = pStyle->Toolbar.marginWidth;
-        if (false == valid_borderWidth)
-            pStyle->borderWidth = pStyle->Toolbar.borderWidth;
-        if (false == valid_borderColor)
-            pStyle->borderColor = pStyle->Toolbar.borderColor;
+            // setup some default border/bevel to satisfy old plugins from new styles
+            if (false == valid_bevelWidth)
+                pStyle->bevelWidth = pStyle->Toolbar.marginWidth;
+            if (false == valid_borderWidth)
+                pStyle->borderWidth = pStyle->Toolbar.borderWidth;
+            if (false == valid_borderColor)
+                pStyle->borderColor = pStyle->Toolbar.borderColor;
     }
 
-	/* BlackboxZero 1.6.2012 */
-	// default SplitColor
-	ptr = StyleItems;
-	do {
+    /* BlackboxZero 1.6.2012 */
+    // default SplitColor
+    ptr = StyleItems;
+    do {
         const void *p_default;
-		//memset(pStyle, 0, sizeof *pStyle);
-		p_default = StyleStructPtr(ptr->sn_def, pStyle);
-		StyleItem* pSI = (StyleItem*)p_default;
+        //memset(pStyle, 0, sizeof *pStyle);
+        p_default = StyleStructPtr(ptr->sn_def, pStyle);
+        StyleItem* pSI = (StyleItem*)p_default;
         bool is_split = (pSI->type == B_SPLITVERTICAL) || (pSI->type == B_SPLITHORIZONTAL) 
-			|| (pSI->type == B_SPLIT_VERTICAL) || (pSI->type == B_SPLIT_HORIZONTAL);
+            || (pSI->type == B_SPLIT_VERTICAL) || (pSI->type == B_SPLIT_HORIZONTAL);
         if (ptr->flags & V_FROMSPLITTO){
             if(is_split && !(pSI->validated & V_FROMSPLITTO)){
                 unsigned int r = GetRValue(pSI->Color);
@@ -956,7 +956,7 @@ void ReadStyle(const char *style, StyleStruct *pStyle)
             }
         }
     } while ((++ptr)->sn_def);
-	/* BlackboxZero 1.6.2012 */
+    /* BlackboxZero 1.6.2012 */
 }
 
 //===========================================================================
@@ -996,50 +996,50 @@ struct rccfg { const char *key; char mode; const void *p_default; const void *pt
 
 static const struct rccfg extrc_cfg[] = {
 
-    { "blackbox.appearance.bullet.unix",       C_BOL, (void*)true,     &mStyle.bulletUnix },
-    { "blackbox.appearance.arrow.unix",        C_BOL, (void*)false,    &Settings_arrowUnix },
-    { "blackbox.appearance.cursor.usedefault", C_BOL, (void*)false,    &Settings_useDefCursor },
+    { "blackbox.appearance.bullet.unix",       C_BOL, (void*)true,          &mStyle.bulletUnix },
+    { "blackbox.appearance.arrow.unix",        C_BOL, (void*)false,         &Settings_arrowUnix },
+    { "blackbox.appearance.cursor.usedefault", C_BOL, (void*)false,         &Settings_useDefCursor },
 
-    { "blackbox.desktop.marginLeft",           C_INT, (void*)-1,       &Settings_desktopMargin.left },
-    { "blackbox.desktop.marginRight",          C_INT, (void*)-1,       &Settings_desktopMargin.right },
-    { "blackbox.desktop.marginTop",            C_INT, (void*)-1,       &Settings_desktopMargin.top },
-    { "blackbox.desktop.marginBottom",         C_INT, (void*)-1,       &Settings_desktopMargin.bottom },
+    { "blackbox.desktop.marginLeft",           C_INT, (void*)-1,            &Settings_desktopMargin.left },
+    { "blackbox.desktop.marginRight",          C_INT, (void*)-1,            &Settings_desktopMargin.right },
+    { "blackbox.desktop.marginTop",            C_INT, (void*)-1,            &Settings_desktopMargin.top },
+    { "blackbox.desktop.marginBottom",         C_INT, (void*)-1,            &Settings_desktopMargin.bottom },
 
-    { "blackbox.snap.toPlugins",               C_BOL, (void*)true,     &Settings_snapPlugins },
-    { "blackbox.snap.padding",                 C_INT, (void*)2,        &Settings_snapPadding },
-    { "blackbox.snap.threshold",               C_INT, (void*)7,        &Settings_snapThreshold },
+    { "blackbox.snap.toPlugins",               C_BOL, (void*)true,          &Settings_snapPlugins },
+    { "blackbox.snap.padding",                 C_INT, (void*)2,             &Settings_snapPadding },
+    { "blackbox.snap.threshold",               C_INT, (void*)7,             &Settings_snapThreshold },
 
-    { "blackbox.background.enabled",           C_BOL, (void*)true,     &Settings_enableBackground  },
-    { "blackbox.background.smartWallpaper",    C_BOL, (void*)true,     &Settings_smartWallpaper },
+    { "blackbox.background.enabled",           C_BOL, (void*)true,          &Settings_enableBackground  },
+    { "blackbox.background.smartWallpaper",    C_BOL, (void*)true,          &Settings_smartWallpaper },
 
-    { "blackbox.workspaces.followActive",      C_BOL, (void*)true,     &Settings_followActive },
-    { "blackbox.workspaces.altMethod",         C_BOL, (void*)true,    &Settings_altMethod },
-    { "blackbox.workspaces.styleXPFix",        C_BOL, (void*)false,    &Settings_styleXPFix },
+    { "blackbox.workspaces.followActive",      C_BOL, (void*)true,          &Settings_followActive },
+    { "blackbox.workspaces.altMethod",         C_BOL, (void*)true,          &Settings_altMethod },
+    { "blackbox.workspaces.styleXPFix",        C_BOL, (void*)false,         &Settings_styleXPFix },
 
-    { "blackbox.options.disableTray",          C_BOL, (void*)false,    &Settings_disableTray },
-    { "blackbox.options.disableDesk",          C_BOL, (void*)false,    &Settings_disableDesk },
-    { "blackbox.options.disableMargins",       C_BOL, (void*)false,    &Settings_disableMargins },
-    { "blackbox.options.disableVWM",           C_BOL, (void*)false,    &Settings_disableVWM },
-    { "blackbox.options.disableDDE",           C_BOL, (void*)false,    &Settings_disableDDE },
+    { "blackbox.options.disableTray",          C_BOL, (void*)false,         &Settings_disableTray },
+    { "blackbox.options.disableDesk",          C_BOL, (void*)false,         &Settings_disableDesk },
+    { "blackbox.options.disableMargins",       C_BOL, (void*)false,         &Settings_disableMargins },
+    { "blackbox.options.disableVWM",           C_BOL, (void*)false,         &Settings_disableVWM },
+    { "blackbox.options.disableDDE",           C_BOL, (void*)false,         &Settings_disableDDE },
 
-    { "blackbox.options.desktopHook",          C_BOL, (void*)false,    &Settings_desktopHook },
-    { "blackbox.options.hideExplorer",         C_BOL, (void*)true,     &Settings_hideExplorer  },
-    { "blackbox.options.hideTaskbar",          C_BOL, (void*)true,     &Settings_hideExplorerTray },
+    { "blackbox.options.desktopHook",          C_BOL, (void*)false,         &Settings_desktopHook },
+    { "blackbox.options.hideExplorer",         C_BOL, (void*)true,          &Settings_hideExplorer  },
+    { "blackbox.options.hideTaskbar",          C_BOL, (void*)true,          &Settings_hideExplorerTray },
 
-    { "blackbox.options.shellContextMenu",     C_BOL, (void*)false,    &Settings_shellContextMenu },
-    { "blackbox.options.UTF8Encoding",         C_BOL, (void*)false,    &Settings_UTF8Encoding },
-    { "blackbox.options.OldTray",              C_BOL, (void*)false,    &Settings_OldTray },
+    { "blackbox.options.shellContextMenu",     C_BOL, (void*)false,         &Settings_shellContextMenu },
+    { "blackbox.options.UTF8Encoding",         C_BOL, (void*)false,         &Settings_UTF8Encoding },
+    { "blackbox.options.OldTray",              C_BOL, (void*)false,         &Settings_OldTray },
 
-	/* BlackboxZero 1.7.2012 */
-    { "blackbox.menu.keepHilite:",              C_BOL, (void*)false,    &Settings_menuKeepHilite },
-	{ "blackbox.recent.menuFile:",              C_STR, (void*)"",       &Settings_recentMenu },
-    { "blackbox.recent.itemKeepSize:",          C_INT, (void*)3,        &Settings_recentItemKeepSize },
-    { "blackbox.recent.itemSortSize:",          C_INT, (void*)5,        &Settings_recentItemSortSize },
-    { "blackbox.recent.withBeginEnd:",          C_BOL, (void*)true,     &Settings_recentBeginEnd },
-	/* BlackboxZero 1.7.2012 */
+    /* BlackboxZero 1.7.2012 */
+    { "blackbox.menu.keepHilite:",              C_BOL, (void*)false,        &Settings_menuKeepHilite },
+    { "blackbox.recent.menuFile:",              C_STR, (void*)"",           &Settings_recentMenu },
+    { "blackbox.recent.itemKeepSize:",          C_INT, (void*)3,            &Settings_recentItemKeepSize },
+    { "blackbox.recent.itemSortSize:",          C_INT, (void*)5,            &Settings_recentItemSortSize },
+    { "blackbox.recent.withBeginEnd:",          C_BOL, (void*)true,         &Settings_recentBeginEnd },
+    /* BlackboxZero 1.7.2012 */
 
-    { "blackbox.global.fonts.enabled",         C_BOL, (void*)false,    &Settings_globalFonts },
-    { "blackbox.editor",                       C_STR, (void*)"notepad.exe", Settings_preferredEditor },
+    { "blackbox.global.fonts.enabled",         C_BOL, (void*)false,         &Settings_globalFonts },
+    { "blackbox.editor",                       C_STR, (void*)"notepad.exe",  Settings_preferredEditor },
 
     // --------------------------------
 
@@ -1048,55 +1048,61 @@ static const struct rccfg extrc_cfg[] = {
 
 //===========================================================================
 static const struct rccfg bbrc_cfg[] = {
-    { "#toolbar.enabled",          C_BOL, (void*)true,     &Settings_toolbar.enabled },
-    { "#toolbar.placement",        C_STR, (void*)"TopCenter", Settings_toolbar.placement },
-    { "#toolbar.widthPercent",     C_INT, (void*)66,       &Settings_toolbar.widthPercent },
-    { "#toolbar.onTop",            C_BOL, (void*)false,    &Settings_toolbar.onTop },
-    { "#toolbar.autoHide",         C_BOL, (void*)false,    &Settings_toolbar.autoHide },
-    { "#toolbar.pluginToggle",     C_BOL, (void*)true ,    &Settings_toolbar.pluginToggle },
-    { "#toolbar.alpha.enabled",    C_BOL, (void*)false,    &Settings_toolbar.alphaEnabled },
-    { "#toolbar.alpha.value",      C_INT, (void*)255,      &Settings_toolbar.alphaValue },
+    { "#toolbar.enabled",          C_BOL, (void*)true,          &Settings_toolbar.enabled },
+    { "#toolbar.placement",        C_STR, (void*)"TopCenter",    Settings_toolbar.placement },
+    { "#toolbar.widthPercent",     C_INT, (void*)66,            &Settings_toolbar.widthPercent },
+    { "#toolbar.onTop",            C_BOL, (void*)false,         &Settings_toolbar.onTop },
+    { "#toolbar.autoHide",         C_BOL, (void*)false,         &Settings_toolbar.autoHide },
+    { "#toolbar.pluginToggle",     C_BOL, (void*)true ,         &Settings_toolbar.pluginToggle },
+    { "#toolbar.alpha.enabled",    C_BOL, (void*)false,         &Settings_toolbar.alphaEnabled },
+    { "#toolbar.alpha.value",      C_INT, (void*)255,           &Settings_toolbar.alphaValue },
 
-    { ".menu.position.x",          C_INT, (void*)100,      &Settings_menu.pos.x },
-    { ".menu.position.y",          C_INT, (void*)100,      &Settings_menu.pos.y },
-	{ ".menu.minWidth",            C_INT, (void*)50,       &Settings_menu.minWidth },/* BlackboxZero 12.17.2011 */
-    { ".menu.maxWidth",            C_INT, (void*)240,      &Settings_menu.maxWidth },
-    { ".menu.popupDelay",          C_INT, (void*)80,       &Settings_menu.popupDelay },
-	{ ".menu.closeDelay",          C_INT, (void*)80,       &Settings_menu.closeDelay },/*BlackboxZero 1.3.2012 */
-    { ".menu.mouseWheelFactor",    C_INT, (void*)3,        &Settings_menu.mouseWheelFactor },
-    { ".menu.alpha.enabled",       C_BOL, (void*)false,    &Settings_menu.alphaEnabled },
-    { ".menu.alpha.value",         C_INT, (void*)255,      &Settings_menu.alphaValue },
-    { ".menu.icon.hue",			   C_INT, (void*)2,        &Settings_menu.iconHue },
-	{ ".menu.scrollButton.hue",    C_INT, (void*)2,       &Settings_menu.scrollHue },
-    { ".menu.onTop",               C_BOL, (void*)false,    &Settings_menu.onTop },
-    { ".menu.sticky",              C_BOL, (void*)true,     &Settings_menu.sticky },
-    { ".menu.snapWindow",          C_BOL, (void*)true,     &Settings_menu.snapWindow },
-    { ".menu.pluginToggle",        C_BOL, (void*)true,     &Settings_menu.pluginToggle },
-    { ".menu.openDirection",       C_STR, (void*)"right",  &Settings_menu.openDirection },
-    { ".menu.sortbyExtension",     C_BOL, (void*)false,    &Settings_menu.sortByExtension },
-    { ".menu.showHiddenFiles",     C_BOL, (void*)false,    &Settings_menu.showHiddenFiles },
-    { ".menu.drawSeparators",      C_BOL, (void*)true,     &Settings_menu.drawSeparators },
-    { ".menu.dropShadows",         C_BOL, (void*)false,    &Settings_menu.dropShadows },
-	
-	{ ".menu.bullet.enabled",      C_BOL, (void*)true,     &Settings_menu.bullet_enabled },
-	{ ".menu.icon.size",			C_INT, (void*)16,		&Settings_menu.iconSize },
-	{ ".menu.icon.saturation",		C_INT, (void*)255,		&Settings_menu.iconSaturation },
-	{ ".menu.icon.hue",				C_INT, (void*)0,		&Settings_menu.iconHue },
-	
-    { "#workspaces_wraparound",    C_BOL, (void*)true,      &Settings_workspaces_wraparound },
-    { "#workspaces",               C_INT, (void*)3,         &Settings_workspaces },
-    { "#workspacesX",              C_INT, (void*)3,         &Settings_workspacesX },
-    { "#workspacesY",              C_INT, (void*)1,         &Settings_workspacesY },
+    { ".menu.position.x",          C_INT, (void*)100,           &Settings_menu.pos.x },
+    { ".menu.position.y",          C_INT, (void*)100,           &Settings_menu.pos.y },
+    { ".menu.popupDelay",          C_INT, (void*)80,            &Settings_menu.popupDelay },
+    { ".menu.closeDelay",          C_INT, (void*)80,            &Settings_menu.closeDelay },/*BlackboxZero 1.3.2012 */
+    { ".menu.mouseWheelFactor",    C_INT, (void*)3,             &Settings_menu.mouseWheelFactor },
+    { ".menu.minWidth",            C_INT, (void*)50,            &Settings_menu.minWidth },/* BlackboxZero 12.17.2011 */
+    { ".menu.maxWidth",            C_INT, (void*)240,           &Settings_menu.maxWidth },
+    { ".menu.openDirection",       C_STR, (void*)"right",       &Settings_menu.openDirection },
+    { ".menu.onTop",               C_BOL, (void*)false,         &Settings_menu.onTop },
+    { ".menu.sticky",              C_BOL, (void*)true,          &Settings_menu.sticky },
+    { ".menu.pluginToggle",        C_BOL, (void*)true,          &Settings_menu.pluginToggle },
+    { ".menu.showBroams",          C_BOL, (void*)false,         &Settings_menu.showBroams },
+    { ".menu.showHiddenFiles",     C_BOL, (void*)false,         &Settings_menu.showHiddenFiles },
+    { ".menu.sortbyExtension",     C_BOL, (void*)false,         &Settings_menu.sortByExtension },
+    { ".menu.drawSeparators",      C_BOL, (void*)true,          &Settings_menu.drawSeparators },
+    { ".menu.snapWindow",          C_BOL, (void*)true,          &Settings_menu.snapWindow },
+    { ".menu.dropShadows",         C_BOL, (void*)false,         &Settings_menu.dropShadows },
+    { ".menu.alpha.enabled",       C_BOL, (void*)false,         &Settings_menu.alphaEnabled },
+    { ".menu.alpha.value",         C_INT, (void*)255,           &Settings_menu.alphaValue },
+
+    { ".menu.icon.size",           C_INT, (void*)16,            &Settings_menu.iconSize },
+    { ".menu.icon.saturation",     C_INT, (void*)255,           &Settings_menu.iconSaturation },
+    { ".menu.icon.hue",            C_INT, (void*)0,             &Settings_menu.iconHue },
+    { ".menu.spacing",             C_INT, (void*)0,             &Settings_menu.spacing },
+    { ".menu.bullet.enabled",      C_BOL, (void*)true,          &Settings_menu.bullet_enabled },
+    { ".menu.scroller.position",   C_STR, (void*)"right",       &Settings_menu.scrollerPosition }, 
+    { ".menu.scrollButton.hue",    C_INT, (void*)0,             &Settings_menu.scrollHue },
+
+    { ".menu.separator.style",     C_STR, (void*)"gradient",    &Settings_menu.separatorStyle },
+    { ".menu.separator.fullWidth", C_BOL, (void*)true,          &Settings_menu.separatorFullWidth },
+    { ".menu.separator.compact",   C_BOL, (void*)true,          &Settings_menu.separatorCompact },
+
+    { "#workspaces_wraparound",    C_BOL, (void*)true,          &Settings_workspaces_wraparound },
+    { "#workspaces",               C_INT, (void*)3,             &Settings_workspaces },
+    { "#workspacesX",              C_INT, (void*)3,             &Settings_workspacesX },
+    { "#workspacesY",              C_INT, (void*)1,             &Settings_workspacesY },
     { "#workspaceNames",           C_STR, (void*)"alpha,beta,gamma", &Settings_workspaceNames },
-    { "#strftimeFormat",           C_STR, (void*)"%I:%M %p", Settings_toolbar.strftimeFormat },
-    { "#fullMaximization",         C_BOL, (void*)false,    &Settings_fullMaximization },
+    { "#strftimeFormat",           C_STR, (void*)"%I:%M %p",     Settings_toolbar.strftimeFormat },
+    { "#fullMaximization",         C_BOL, (void*)false,         &Settings_fullMaximization },
     { "#focusModel",               C_STR, (void*)"ClickToFocus", Settings_focusModel },
 
-    { ".imageDither",              C_INT, (void*)0,		   &Settings_imageDither },
-    { ".force.font.Shadows:",	   C_BOL, (void*)false,    &Settings_globalShadows },
-    { ".outlineText:",			   C_BOL, (void*)false,    &Settings_outlineText },
-    { ".opaqueMove",               C_BOL, (void*)true,     &Settings_opaqueMove },
-    { ".autoRaiseDelay",           C_INT, (void*)250,      &Settings_autoRaiseDelay },
+    { ".imageDither",              C_INT, (void*)0,             &Settings_imageDither },
+    { ".force.font.Shadows:",      C_BOL, (void*)false,         &Settings_globalShadows },
+    { ".outlineText:",             C_BOL, (void*)false,         &Settings_outlineText },
+    { ".opaqueMove",               C_BOL, (void*)true,          &Settings_opaqueMove },
+    { ".autoRaiseDelay",           C_INT, (void*)250,           &Settings_autoRaiseDelay },
 
 
     /* *nix settings, not used here
@@ -1126,10 +1132,10 @@ static const char * makekey(char *buff, const struct rccfg *cp)
     if (k[0]=='.')
         sprintf(buff, "session%s", k);
     else
-    if (k[0]=='#')
-        sprintf(buff, "session.screen%d.%s", screenNumber, k+1);
-    else
-        return k;
+        if (k[0]=='#')
+            sprintf(buff, "session.screen%d.%s", screenNumber, k+1);
+        else
+            return k;
     return buff;
 }
 
@@ -1140,15 +1146,15 @@ static void Settings_ReadSettings(const char *bbrc, const struct rccfg *cp)
         const char *key = makekey(keystr, cp);
         switch (cp->mode)
         {
-            case C_INT:
-                *(int*)cp->ptr = ReadInt(bbrc, key, (int)(DWORD_PTR)cp->p_default);
-                break;
-            case C_BOL:
-                *(bool*)cp->ptr = ReadBool (bbrc, key, 0 != (int)(DWORD_PTR)cp->p_default);
-                break;
-            case C_STR:
-                strcpy((char*)cp->ptr, ReadString (bbrc, key, (char*)cp->p_default));
-                break;
+        case C_INT:
+            *(int*)cp->ptr = ReadInt(bbrc, key, (int)(DWORD_PTR)cp->p_default);
+            break;
+        case C_BOL:
+            *(bool*)cp->ptr = ReadBool (bbrc, key, 0 != (int)(DWORD_PTR)cp->p_default);
+            break;
+        case C_STR:
+            strcpy((char*)cp->ptr, ReadString (bbrc, key, (char*)cp->p_default));
+            break;
         }
     } while ((++cp)->key);
 }
@@ -1161,15 +1167,15 @@ static bool Settings_WriteSetting(const char *bbrc, const struct rccfg *cp, cons
         const char *key = makekey(keystr, cp);
         switch (cp->mode)
         {
-            case C_INT:
-                WriteInt (bbrc, key, *(int*) cp->ptr);
-                break;
-            case C_BOL:
-                WriteBool (bbrc, key, *(bool*) cp->ptr);
-                break;
-            case C_STR:
-                WriteString (bbrc, key, (char*) cp->ptr);
-                break;
+        case C_INT:
+            WriteInt (bbrc, key, *(int*) cp->ptr);
+            break;
+        case C_BOL:
+            WriteBool (bbrc, key, *(bool*) cp->ptr);
+            break;
+        case C_STR:
+            WriteString (bbrc, key, (char*) cp->ptr);
+            break;
         }
         if (v) return true;
     } while ((++cp)->key);
@@ -1183,8 +1189,8 @@ static bool Settings_WriteSetting(const char *bbrc, const struct rccfg *cp, cons
 void Settings_WriteRCSetting(const void *v)
 {
     Settings_WriteSetting(bbrcPath(NULL), bbrc_cfg, v)
-    ||
-    Settings_WriteSetting(extensionsrcPath(NULL), extrc_cfg, v);
+        ||
+        Settings_WriteSetting(extensionsrcPath(NULL), extrc_cfg, v);
 }
 
 void Settings_ReadRCSettings(void)

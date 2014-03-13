@@ -407,14 +407,19 @@ void MenuItem::Paint(HDC hDC)
 
 void SeparatorItem::Measure(HDC hDC, SIZE *size)
 {
-    if (Settings_menu.drawSeparators)
-        //size->cy = MenuInfo.separatorWidth + imax(MenuInfo.nItemHeight*2/5 & ~1, 2*mStyle.MenuFrame.marginWidth);
-		/* BlackboxZero 1.8.2012 */
-		size->cy = Settings_menu.separatorCompact?(5):(MenuInfo.separatorWidth + 2*mStyle.MenuFrame.marginWidth);
-    else
-        size->cy = MenuInfo.nItemHeight*3/5;
-
+    size->cy = 0;
     size->cx = 0;
+
+    if(!Settings_menu.drawSeparators) {
+        return;
+    }
+
+    if(Settings_menu.separatorCompact) {
+        size->cy = MenuInfo.nItemHeight * 2 / 5;
+        return;
+    }
+
+    size->cy = MenuInfo.nItemHeight * 4 / 5;
 }
 
 void SeparatorItem::Paint(HDC hDC)
@@ -429,6 +434,10 @@ void SeparatorItem::Paint(HDC hDC)
     y = (rect.top + rect.bottom - d) / 2;
     draw_line_h(hDC, rect.left, rect.right, y, d, MenuInfo.separatorColor);
 	** */
+
+    if(!Settings_menu.drawSeparators) {
+        return;
+    }
 
 	StyleItem *pSI = &mStyle.MenuFrame;
 	int x, y = m_nTop + m_nHeight / 2;
@@ -468,7 +477,7 @@ void SeparatorItem::Paint(HDC hDC)
 	}
 
 	//Draw Separator
-	if (0 == _stricmp(Settings_menu.separatorStyle,"gradient")) {
+    if (0 == _stricmp(Settings_menu.separatorStyle,"gradient")) {
 		for (x = 0; x <= dist; ++x) {
 			int pos, hue = x * 255 / dist;
 			pos = left + x;
