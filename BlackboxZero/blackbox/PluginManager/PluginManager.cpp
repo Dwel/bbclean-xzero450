@@ -379,21 +379,21 @@ static bool isPluginLoader(char *path) {
         return false;
 
     // HACK: this way of loading the dll is actually not recommended, but it is the cheapest way to work with the image
-    auto pll = LoadLibraryEx(path, NULL, DONT_RESOLVE_DLL_REFERENCES);
+    HMODULE pll = LoadLibraryEx(path, NULL, DONT_RESOLVE_DLL_REFERENCES);
 
-    if(pll == nullptr) {
+    if(pll == NULL) {
         return false;
     }
 
     // walking the headers, checking consistency as we go
-    auto dosHeader = (PIMAGE_DOS_HEADER)pll;
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)pll;
 
     if(dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
         FreeLibrary(pll);
         return false;
     }
 
-    auto ntHeader = (PIMAGE_NT_HEADERS)(dosHeader->e_lfanew + (SIZE_T)pll);
+    PIMAGE_NT_HEADERS ntHeader = (PIMAGE_NT_HEADERS)(dosHeader->e_lfanew + (SIZE_T)pll);
     if(ntHeader->Signature != IMAGE_NT_SIGNATURE) {
         FreeLibrary(pll);
         return false;
@@ -408,7 +408,7 @@ static bool isPluginLoader(char *path) {
         return false;
     }
 
-    auto optHeader = &ntHeader->OptionalHeader;
+    PIMAGE_OPTIONAL_HEADER optHeader = &ntHeader->OptionalHeader;
 
     if(optHeader->Magic != IMAGE_NT_OPTIONAL_HDR_MAGIC) {
         FreeLibrary(pll);
@@ -416,22 +416,22 @@ static bool isPluginLoader(char *path) {
     }
 
     // checking whether the module exports the functions which a pluginLoader must define
-    auto va = optHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    DWORD va = optHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
 
-    auto exportDir = (PIMAGE_EXPORT_DIRECTORY)(va + (SIZE_T)pll);
-    auto numberOfFunctions = exportDir->NumberOfNames;
-    auto names = (DWORD*)(exportDir->AddressOfNames + (SIZE_T)pll);
+    PIMAGE_EXPORT_DIRECTORY exportDir = (PIMAGE_EXPORT_DIRECTORY)(va + (SIZE_T)pll);
+    DWORD numberOfFunctions = exportDir->NumberOfNames;
+    DWORD* names = (DWORD*)(exportDir->AddressOfNames + (SIZE_T)pll);
 
-    auto numLoaderFunctions = 0;
-    for(auto j = 0; pluginLoaderFunctionNames[j]; j++)
+    DWORD numLoaderFunctions = 0;
+    for(DWORD j = 0; pluginLoaderFunctionNames[j]; j++)
         numLoaderFunctions++;
 
-    auto exportsFound = 0;
+    DWORD exportsFound = 0;
 
-    for(unsigned long i = 0; i < numberOfFunctions; i++) {
-        auto exportName = (char*)(*names + (SIZE_T)pll);
+    for(DWORD i = 0; i < numberOfFunctions; i++) {
+        char* exportName = (char*)(*names + (SIZE_T)pll);
 
-        for(int j=0; pluginLoaderFunctionNames[j]; j++) {
+        for(DWORD j=0; pluginLoaderFunctionNames[j]; j++) {
             if(!strcmp(exportName, pluginLoaderFunctionNames[j])) {
                 exportsFound++;
                 break;
@@ -454,8 +454,8 @@ static int loadPluginLoader(struct PluginList* plugin, char** errorMsg) {
     if (0 == FindRCFile(ppl_path, plugin->path, NULL))
         return error_plugin_dll_not_found;
 
-    auto r = SetErrorMode(0); // enable 'missing xxx.dll' system message
-    auto module = LoadLibrary(ppl_path);
+    UINT r = SetErrorMode(0); // enable 'missing xxx.dll' system message
+    HMODULE module = LoadLibrary(ppl_path);
     SetErrorMode(r);
 
     if(module == NULL) {

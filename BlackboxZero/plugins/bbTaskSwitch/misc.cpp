@@ -37,10 +37,10 @@ DECLARE(BOOL WINAPI, GetMonitorInfo, (HMONITOR, LPMONITORINFO))
 #endif
 
 typedef HMONITOR WINAPI MonitorFromWindow_f (HWND, DWORD);
-static HMONITOR (*pMonitorFromWindow) (HWND, DWORD);
+static HMONITOR (WINAPI *pMonitorFromWindow) (HWND, DWORD);
 
 typedef BOOL WINAPI GetMonitorInfo_f (HMONITOR, LPMONITORINFO);
-static BOOL (*pGetMonitorInfo) (HMONITOR, LPMONITORINFO);
+static BOOL (WINAPI *pGetMonitorInfo) (HMONITOR, LPMONITORINFO);
 
 
 
