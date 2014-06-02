@@ -1,6 +1,6 @@
 if(USE_LOGGING EQUAL 1)
-  add_subdirectory(flogging)
-  add_subdirectory(flogging/trace_client)
+  add_subdirectory(DbgToolkit)
+  add_subdirectory(DbgToolkit/trace_client)
 endif(USE_LOGGING EQUAL 1)
 add_subdirectory(logging)
 

@@ -2,15 +2,15 @@ cmake_minimum_required (VERSION 2.8)
 project (logging)
 
 if(USE_LOGGING EQUAL 1)
-  message ("Logging enabled, using Flogging...")
-	find_package (Flogging REQUIRED)
+  message ("Logging enabled, using DbgToolkit...")
+	find_package (DbgToolkit REQUIRED)
 	find_package (Threads)
 
 	message ("\tCurrent src dir: ${CMAKE_CURRENT_SOURCE_DIR}")
-	message ("\tFlogging includes: ${FLOGGING_INCLUDE_DIRS}")
-	message ("\tFlogging srcs: ${FLOGGING_SOURCE_DIRS}")
+	message ("\tDbgToolkit includes: ${DBGTOOLKIT_INCLUDE_DIRS}")
+	message ("\tDbgToolkit srcs: ${DBGTOOLKIT_SOURCE_DIRS}")
 
-  add_library (logging STATIC "${FLOGGING_SOURCE_DIRS}/trace_client/trace.cpp")
+  add_library (logging STATIC "${DBGTOOLKIT_SOURCE_DIRS}/trace_client/trace.cpp")
 
 else(USE_LOGGING EQUAL 1)
   message ("Logging NOT enabled, using dummy.")
