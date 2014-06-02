@@ -11,9 +11,9 @@ SET(BB8Ball_HEADERS
 	Resource.h
 )
 
-set(BB8Ball_RESOURCES 
-	Resource.rc
-)
+#set(BB8Ball_RESOURCES 
+#	Resource.rc
+#)
 
 #readme.txt
 #Mortar.ico
