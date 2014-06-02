@@ -1,0 +1,3 @@
+[submodule "DbgToolkit"]
+	path = BlackboxZero/3rd_party/DbgToolkit
+	url = https://github.com/mojmir-svoboda/DbgToolkit.git
