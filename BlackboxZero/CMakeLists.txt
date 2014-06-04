@@ -4,15 +4,15 @@ cmake_minimum_required(VERSION 2.8.9)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 # use this for develoment, if you do not pass it from command line:
-#set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
-#set(USE_LOGGING 1)
+set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
+set(USE_LOGGING 1)
 
 # possibly enable c++11 for gcc
 #if (MINGW)
 #  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
 #endif (MINGW)
 
-include_directories (3rd_party/flogging)
+include_directories (3rd_party/DbgToolkit)
 include_directories (3rd_party/logging)
 include_directories (.)
 

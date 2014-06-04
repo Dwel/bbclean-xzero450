@@ -638,7 +638,7 @@ void Menu::menu_set_pos(HWND after, UINT flags)
     if (m_bOnTop || false == m_bPinned) {
         if (m_pChild) // keep it behind the child menu anyway
             after = m_pChild->m_hwnd;
-        else if (m_bOnTop || bbactive || NULL == m_pParent)
+        else if (m_bOnTop || g_bbactive || NULL == m_pParent)
             after = HWND_TOPMOST;
     }
     SetWindowPos(m_hwnd, after, m_xpos, m_ypos, m_width, m_height,
@@ -654,7 +654,7 @@ void Menu::SetZPos(void)
 // set menu on top of the z-order
 void Menu::bring_ontop(bool force_active)
 {
-    if (bbactive) {
+    if (g_bbactive) {
         set_focus();
     } else if (force_active) {
         ForceForegroundWindow(m_hwnd);

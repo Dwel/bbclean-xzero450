@@ -366,7 +366,7 @@ Menu *CfgMenuMaker(const char *title, const char *defbroam, const struct cfgmenu
             }
 
             disabled = (v == &Settings_styleXPFix && Settings_altMethod)
-                    || (v == &Settings_menu.dropShadows && false == usingXP)
+                    || (v == &Settings_menu.dropShadows && false == g_usingXP)
                     ;
             pItem = MakeMenuItem(pMenu, item_text, cmd, checked && false == disabled);
         }

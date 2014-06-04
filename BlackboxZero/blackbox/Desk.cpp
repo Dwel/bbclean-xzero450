@@ -74,7 +74,7 @@ void Desk_Init(void)
     if (Settings_desktopHook)
     {
         if (load_imp(&pSetHooks, deskhook_dll, "SetHooks"))
-            pSetHooks(BBhwnd, underExplorer);
+            pSetHooks(BBhwnd, g_underExplorer);
         else
             BBMessageBox(MB_OK, NLS2("$Error_DesktopHook$",
                 "Error: %s not found!"), deskhook_dll);
@@ -175,7 +175,7 @@ void Desk_new_background(const char *p)
     if (hDesktopWnd)
         Desk_SetPosition();
     strcpy(Root.command, p);
-    if (usingVista && 0 == *p)
+    if (g_usingVista && 0 == *p)
         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, NULL, SPIF_SENDCHANGE);
 }
 

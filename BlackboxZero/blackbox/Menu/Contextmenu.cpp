@@ -250,7 +250,7 @@ void ContextMenu::Copymenu (HMENU hm)
     for (c = GetMenuItemCount(hm),n = 0; n < c; n++)
     {
         memset(&MII, 0, sizeof MII);
-        if (usingXP)
+        if (g_usingXP)
             MII.cbSize = sizeof MII;
         else
             MII.cbSize = MENUITEMINFO_SIZE_0400; // to make this work on win95
@@ -261,7 +261,7 @@ void ContextMenu::Copymenu (HMENU hm)
 
         text_string[0] = 0;
         if (0 == (MII.fType & MFT_OWNERDRAW)) {
-            if (usingNT
+            if (g_usingNT
              && load_imp(&pGetMenuStringW, "user32.dll", "GetMenuStringW")) {
                 WCHAR wstr[128];
                 pGetMenuStringW(hm, n, wstr, array_count(wstr), MF_BYPOSITION);
@@ -277,7 +277,7 @@ void ContextMenu::Copymenu (HMENU hm)
         if (MII.hSubMenu)
         {
             wc->HandleMenuMsg(WM_INITMENUPOPUP, (WPARAM)MII.hSubMenu, MAKELPARAM(n, FALSE));
-            if (usingWin7)
+            if (g_usingWin7)
                 BBSleep(10);
             CM = new ContextMenu(text_string, wc, MII.hSubMenu, 0);
 

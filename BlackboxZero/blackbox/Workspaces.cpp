@@ -166,7 +166,7 @@ void Workspaces_Reconfigure(void)
 bool Workspaces_GetScreenMetrics(void)
 {
     int x, y, w, h;
-    if (multimon) {
+    if (g_multimon) {
         x = GetSystemMetrics(SM_XVIRTUALSCREEN);
         y = GetSystemMetrics(SM_YVIRTUALSCREEN);
         w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -611,7 +611,7 @@ void SwitchToBBWnd (void)
 {
     ForceForegroundWindow(BBhwnd);
     // sometimes the shell notification doesnt seem to work correctly:
-    PostMessage(BBhwnd, WM_ShellHook, HSHELL_WINDOWACTIVATED, 0);
+    PostMessage(BBhwnd, g_WM_ShellHook, HSHELL_WINDOWACTIVATED, 0);
 }
 
 //===========================================================================

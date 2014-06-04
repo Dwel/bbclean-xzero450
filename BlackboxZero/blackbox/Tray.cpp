@@ -284,13 +284,13 @@ ST int forward_tray_message(systemTrayNode *p, UINT message, systemTrayIconPos *
             tray_notify(p, WM_RBUTTONUP);
 
         } else if (message == WM_LBUTTONUP) {
-            if (usingWin7)
+            if (g_usingWin7)
                 tray_notify(p, WM_LBUTTONDOWN);
             tray_notify(p, WM_LBUTTONUP);
             tray_notify(p, NIN_SELECT);
 
         } else if (message == WM_LBUTTONDOWN) {
-            if (!usingWin7)
+            if (!g_usingWin7)
                 tray_notify(p, WM_LBUTTONDOWN);
         } else {
             tray_notify(p, message);
@@ -952,7 +952,7 @@ ST DWORD WINAPI SSO_Thread(void *pv)
 
     BBSleep(1000);
 
-    if (usingVista)
+    if (g_usingVista)
         sso_load("stobject", "{35CEC8A3-2BE6-11D2-8773-92E220524153}");
     else
     if (ERROR_SUCCESS == RegOpenKeyEx(hk0, key, 0, KEY_READ, &hk1)) {
@@ -1092,7 +1092,7 @@ void Tray_Init(void)
     tray_on_top = false;
     Tray_SetEncoding();
 
-    if (underExplorer) {
+    if (g_underExplorer) {
         if (load_imp(&trayHookDll_EntryFunc, "trayhook.dll", "EntryFunc")) {
             // the trayhook will redirect messages from the real
             // "Shell_TrayWnd" to our window
@@ -1130,7 +1130,7 @@ void Tray_Init(void)
             TrayClockClass);
     }
 
-    if (false == underExplorer)
+    if (false == g_underExplorer)
         LoadShellServiceObjects();
     broadcast_tbcreated();
 }
@@ -1146,7 +1146,7 @@ void Tray_Exit(void)
         if (false == use_hook) {
             UnregisterClass(TrayNotifyClass, hMainInstance);
             UnregisterClass(TrayClockClass, hMainInstance);
-            if (underExplorer)
+            if (g_underExplorer)
                 broadcast_tbcreated();
         }
     }

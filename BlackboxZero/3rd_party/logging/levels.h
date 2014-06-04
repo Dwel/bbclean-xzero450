@@ -8,8 +8,8 @@ namespace trace {
 		e_Error,
 		e_Warning,
 		e_Info,
-		e_Detail,
 		e_Debug,
+		e_Verbose,
 
 		e_max_trace_level	/// last item of enum
 	};

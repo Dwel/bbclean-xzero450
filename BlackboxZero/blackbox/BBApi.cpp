@@ -739,7 +739,7 @@ ST void get_mon_rect(HMONITOR hMon, RECT *s, RECT *w)
 HMONITOR GetMonitorRect(void *from, RECT *r, int flags)
 {
     HMONITOR hMon = NULL;
-    if (multimon && from)
+    if (g_multimon && from)
         switch (flags & ~GETMON_WORKAREA) {
         case GETMON_FROM_WINDOW:
             hMon = pMonitorFromWindow((HWND)from, MONITOR_DEFAULTTONEAREST);
@@ -812,7 +812,7 @@ void SetDesktopMargin(HWND hwnd, int location, int margin)
             }
             p->location = location;
             p->margin = margin;
-            if (multimon)
+            if (g_multimon)
                 p->hmon = pMonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
         } else {
             if (p)
@@ -895,7 +895,7 @@ void update_screen_areas(struct dt_margins *dt_margins)
     si.ppScr = &si.pScr;
     si.index = 0;
 
-    if (multimon)
+    if (g_multimon)
         pEnumDisplayMonitors(NULL, NULL, fnEnumMonProc, (LPARAM)&si);
     else
         fnEnumMonProc(NULL, NULL, NULL, (LPARAM)&si);

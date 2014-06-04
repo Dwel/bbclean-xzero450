@@ -8,7 +8,7 @@
 #   define TRACE_STATIC
 # endif
 
-# include <3rd_party/flogging/trace_client/trace.h>
+# include <3rd_party/DbgToolkit/trace_client/trace.h>
 
 #else
 // no tracing at all

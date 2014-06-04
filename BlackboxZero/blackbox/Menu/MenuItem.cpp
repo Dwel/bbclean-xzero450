@@ -219,7 +219,7 @@ void MenuItem::Active(int active)
     if (active == 1)
         m_pMenu->set_timer(true, true);
 
-    if (m_pMenu->m_MenuID == MENU_ID_STRING && bbactive) {
+    if (m_pMenu->m_MenuID == MENU_ID_STRING && g_bbactive) {
         if (m_ItemID == MENUITEM_ID_STR)
             SetFocus(m_pMenu->m_hwndChild);
         else

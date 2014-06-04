@@ -419,7 +419,7 @@ int LoadFolder(
     if (0 == ef_open(pIDFolder, &ef))
         return 0;
 
-    if (usingVista && is_controls(pIDFolder))
+    if (g_usingVista && is_controls(pIDFolder))
         options |= LF_norecurse;
 
     r = 1; // folder exists

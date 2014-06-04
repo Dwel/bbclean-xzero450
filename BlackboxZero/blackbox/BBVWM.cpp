@@ -80,7 +80,7 @@ winlist* vwm_add_window(HWND hwnd)
         threadid = GetWindowThreadProcessId(hwnd, NULL);
 
         // exclude blackbox menu drop shadows
-        if (usingXP && is_shadow(hwnd, ex_style, threadid))
+        if (g_usingXP && is_shadow(hwnd, ex_style, threadid))
             return NULL;
 
         wl = c_new(winlist);

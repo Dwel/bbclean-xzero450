@@ -52,7 +52,7 @@ int BBMessageBox(int flg, const char *fmt, ...)
 #else
 
     MessageBeep(0);
-    if (usingNT
+    if (g_usingNT
      && load_imp(&pMessageBoxIndirectW, "user32.dll", "MessageBoxIndirectW")) {
         MSGBOXPARAMSW mp;
         int lc = 1+strlen(caption);
@@ -108,7 +108,7 @@ BOOL BBRegisterClass (const char *classname, WNDPROC wndproc, int flags)
         wc.hCursor = LoadCursor(NULL, IDC_ARROW);
         wc.style |= CS_DBLCLKS;
     }
-    if ((flags & BBCS_DROPSHADOW) && usingXP)
+    if ((flags & BBCS_DROPSHADOW) && g_usingXP)
         wc.style |= CS_DROPSHADOW;
     if (flags & BBCS_EXTRA)
         wc.cbWndExtra = sizeof(void*);
@@ -174,7 +174,7 @@ void dbg_printf (const char *fmt, ...)
 
 void get_window_text(HWND hwnd, char *buffer, int size)
 {
-    if (usingNT) {
+    if (g_usingNT) {
         WCHAR wbuf[1000];
         wbuf[0] = 0;
         GetWindowTextW(hwnd, wbuf, size);
@@ -302,7 +302,7 @@ int DrawTextUTF8(HDC hDC, const char *s, int nCount, RECT *p, unsigned format)
     n = MultiByteToWideChar(CP_UTF8, 0, s, nCount, wstr, array_count(wstr));
     if (n) --n;
 
-    if (usingNT)
+    if (g_usingNT)
         return DrawTextW(hDC, wstr, n, p, format);
 
     GetTextExtentPoint32W(hDC, wstr, n, &size);
@@ -651,7 +651,7 @@ void bbDrawPix(HDC hDC, RECT *rc, COLORREF color, int pic)
 
     pv = pmi->bits + pmi->vector[pic];
 
-    if (!usingXP || usingVista)
+    if (!g_usingXP || g_usingVista)
         oldPen = SelectObject(hDC, CreatePen(PS_SOLID, 1, color));
 
     for (y = y0; 0 != (c = *pv); ++pv) {
@@ -707,9 +707,9 @@ int GetOSVersion(void)
 	if (!usingx64)
 		usingx64=(sizeof(int)!=sizeof(void*));*/
 
-    usingNT         = osInfo.dwPlatformId == VER_PLATFORM_WIN32_NT;
+    g_usingNT         = osInfo.dwPlatformId == VER_PLATFORM_WIN32_NT;
 
-    if (usingNT)
+    if (g_usingNT)
 		return ((osInfo.dwMajorVersion * 10) + osInfo.dwMinorVersion + (bIs64BitOS ? 5 : 0)); // NT 40; Win2kXP 50; Vista 60; etc.
 
 
