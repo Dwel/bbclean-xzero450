@@ -1,4 +1,7 @@
 DRY(CTX_Default  	, (1 <<  0))
-DRY(CTX_BBCore    , (1 <<  1))
+DRY(CTX_BBCore		, (1 <<  1))
 DRY(CTX_Plugin  	, (1 <<  2))
-
+DRY(CTX_Startup  	, (1 <<  3))
+DRY(CTX_Tray	  	, (1 <<  4))
+DRY(CTX_Shutdown	, (1 <<  5))
+DRY(CTX_Gradients	, (1 <<  6))

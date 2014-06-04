@@ -1566,7 +1566,6 @@ bool get_opt_command (char * opt_cmd, const char * cmd)
 }
 
 //===========================================================================
-
 bool exec_script (const char * broam)
 {
 	TRACE_SCOPE_MSG(trace::e_Debug, trace::CTX_BBCore, "broam = %s", broam);
@@ -1620,18 +1619,14 @@ bool exec_broam (const char * broam)
 	return false;
 
 broam_error:
-	BBMessageBox(MB_OK,
-		NLS2("$Error_UnknownBroam$",
-			"Error: Unknown Broadcast Message:\n%s"), broam);
+	BBMessageBox(MB_OK, NLS2("$Error_UnknownBroam$", "Error: Unknown Broadcast Message:\n%s"), broam);
+	TRACE_MSG(trace::e_Error, trace::CTX_BBCore, "Error: Unknown Broadcast Message: %s", broam);
 	return false;
 }
 
 //===========================================================================
-//
 // ShutdownWindows stuff....
-//
 //===========================================================================
-
 static const char * const shutdn_cmds_display[] =
 {
 	NLS0("shut down"),
@@ -1644,8 +1639,9 @@ static const char * const shutdn_cmds_display[] =
 	NLS0("switch user")
 };
 
-DWORD WINAPI ShutdownThread(void *mode)
+DWORD WINAPI ShutdownThread (void * mode)
 {
+	TRACE_SCOPE(trace::e_Info, trace::CTX_BBCore);
 	switch ((DWORD_PTR)mode)
 	{
 		case BBSD_SHUTDOWN:
@@ -1659,7 +1655,8 @@ DWORD WINAPI ShutdownThread(void *mode)
 			break;
 
 		case BBSD_LOGOFF:
-			if (ExitWindowsEx(EWX_LOGOFF, 0)) {
+			if (ExitWindowsEx(EWX_LOGOFF, 0))
+			{
 				if (false == g_usingNT)
 					PostMessage(BBhwnd, WM_QUIT, 0, 0);
 				return 0;
@@ -1669,10 +1666,9 @@ DWORD WINAPI ShutdownThread(void *mode)
 	return 0;
 }
 
-int ShutdownWindows(int mode, int no_msg)
+int ShutdownWindows (int mode, int no_msg)
 {
-	DWORD tid;
-
+	TRACE_SCOPE(trace::e_Info, trace::CTX_BBCore);
 	switch (mode)
 	{
 		case BBSD_SHUTDOWN	:
@@ -1701,11 +1697,17 @@ int ShutdownWindows(int mode, int no_msg)
 			return 1;
 
 		case BBSD_EXITWIN: // Standard Windows shutdown menu
-			if (have_imp(pMSWinShutdown)) {
-				if (g_usingVista) {
-					return ((BOOL(WINAPI*)(HWND, int))pMSWinShutdown)(BBhwnd, 0);
-				} else {
-					return ((BOOL(WINAPI*)(HWND))pMSWinShutdown)(BBhwnd);
+			if (have_imp(pMSWinShutdown))
+			{
+				if (g_usingVista)
+				{
+					//@ W U NO WORK?! FIXME
+					//return static_cast<BOOL(WINAPI *) (HWND, int)>(pMSWinShutdown)(BBhwnd, 0);
+					return ((BOOL(WINAPI *) (HWND, int))pMSWinShutdown)(BBhwnd, 0);
+				}
+				else
+				{
+					return static_cast<BOOL(WINAPI *) (HWND)>(pMSWinShutdown)(BBhwnd);
 				}
 			}
 			return 0;
@@ -1717,13 +1719,14 @@ int ShutdownWindows(int mode, int no_msg)
 			break;
 
 		default:
-			if (g_usingNT) {
-				HANDLE hToken;
+			if (g_usingNT)
+			{
 				// bool success = false;
 				// Under WinNT/2k/XP we need to adjust privileges to be able to
 				// shutdown/reboot/hibernate/suspend...
-				if (OpenProcessToken(GetCurrentProcess(),
-					TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+				HANDLE hToken;
+				if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+				{
 					TOKEN_PRIVILEGES tkp;
 					// Get the LUID for the shutdown privilege...
 					LookupPrivilegeValue(NULL, SE_SHUTDOWN_NAME, &tkp.Privileges[0].Luid);
@@ -1738,7 +1741,8 @@ int ShutdownWindows(int mode, int no_msg)
 			break;
 	}
 
-	switch (mode) {
+	switch (mode)
+	{
 		case BBSD_SUSPEND:
 			if (SetSystemPowerState(TRUE, FALSE))
 				return 1;
@@ -1751,6 +1755,7 @@ int ShutdownWindows(int mode, int no_msg)
 	}
 
 	Workspaces_GatherWindows();
+	DWORD tid;
 	CloseHandle(CreateThread(NULL, 0, ShutdownThread, (LPVOID)mode, 0, &tid));
 	return 1;
 }
@@ -1766,35 +1771,34 @@ int ShutdownWindows(int mode, int no_msg)
 #define RE_WAIT 2
 #define RE_CHCK 4
 
-static int exec_startup(const char *line, int flags)
+static int exec_startup (const char * line, int flags)
 {
+	TRACE_SCOPE(trace::e_Info, trace::CTX_BBCore);
 	int r = BBExecute_string(line, flags|RUN_WINDIR|RUN_NOERRORS/*|RUN_NOSUBST*/);
 	log_printf((LOG_STARTUP, "\t\tRun (%s): %s", r?"ok":"failed", line));
 	return r;
 }
 
-bool RunEntriesIn (HKEY root_key, const char* subpath, UINT flags)
+bool RunEntriesIn (HKEY root_key, const char * subpath, UINT flags)
 {
+	TRACE_SCOPE(trace::e_Info, trace::CTX_BBCore);
 	char path[MAX_PATH];
-	HKEY hk1;
-	int f, index;
-
 	sprintf(path, "Software\\Microsoft\\Windows\\CurrentVersion\\%s", subpath);
-	log_printf((LOG_STARTUP, "\tfrom registry: %s\\%s",
-		HKEY_LOCAL_MACHINE==root_key?"HKLM":"HKCU",path));
+	log_printf((LOG_STARTUP, "\tfrom registry: %s\\%s", HKEY_LOCAL_MACHINE==root_key?"HKLM":"HKCU",path));
 
-	f = (flags & RE_ONCE) ? KEY_READ|KEY_WRITE : KEY_READ;
+	int const f = (flags & RE_ONCE) ? KEY_READ|KEY_WRITE : KEY_READ;
+	HKEY hk1;
 	if (ERROR_SUCCESS != RegOpenKeyEx(root_key, path, 0, f, &hk1))
 		return false;
 
-	for (index = 0; ;) {
+	for (int index = 0; ;)
+	{
 		char szValueName[MAX_PATH];
 		char szData[MAX_PATH];
-		DWORD cbValueName, cbData, dwDataType;
 
-		cbValueName = sizeof szValueName;
-		cbData = sizeof szData;
-
+		DWORD cbValueName = sizeof(szValueName);
+		DWORD cbData = sizeof(szData);
+		DWORD dwDataType;
 		if (ERROR_SUCCESS != RegEnumValue(hk1, index, szValueName, &cbValueName,
 				0, &dwDataType, (LPBYTE) szData, &cbData))
 			break;
@@ -1802,27 +1806,23 @@ bool RunEntriesIn (HKEY root_key, const char* subpath, UINT flags)
 		if (0 == (flags & RE_CHCK))
 			exec_startup(szData, (flags & RE_WAIT) ? RUN_WAIT : 0);
 
-		if (flags & RE_ONCE) {
+		if (flags & RE_ONCE)
 			if (ERROR_SUCCESS == RegDeleteValue(hk1, szValueName))
 				continue;
-		}
 		++index;
 	}
 	RegCloseKey(hk1);
 	return true;
 }
 
-void RunFolderContents(const char* szParams)
+void RunFolderContents (const char * szParams)
 {
-	WIN32_FIND_DATA findData;
-	HANDLE hSearch;
 	char szPath[MAX_PATH];
-	int x;
-
-	x = strlen(strcpy(szPath, szParams));
+	int x = strlen(strcpy(szPath, szParams));
 	strcpy(szPath + x++, "\\*");
 
-	hSearch = FindFirstFile(szPath, &findData);
+	WIN32_FIND_DATA findData;
+	HANDLE hSearch = FindFirstFile(szPath, &findData);
 	if (hSearch == INVALID_HANDLE_VALUE)
 		return;
 
@@ -1842,15 +1842,15 @@ void RunFolderContents(const char* szParams)
 	FindClose(hSearch);
 }
 
-DWORD WINAPI RunStartupThread (void *pv)
+DWORD WINAPI RunStartupThread (void * pv)
 {
-	static const short startuptable[] = {
-		0x0018, //CSIDL_COMMON_STARTUP,
-		// 0x001e, //CSIDL_COMMON_ALTSTARTUP,
-		0x0007, //CSIDL_STARTUP,
-		// 0x001d  //CSIDL_ALTSTARTUP
+	TRACE_SCOPE(trace::e_Info, trace::CTX_BBCore);
+	short const startuptable[] = {
+		0x0018,		//CSIDL_COMMON_STARTUP,
+		// 0x001e,	//CSIDL_COMMON_ALTSTARTUP,
+		0x0007,		//CSIDL_STARTUP,
+		// 0x001d	//CSIDL_ALTSTARTUP
 	};
-	int i;
 
 	log_printf((LOG_STARTUP, "Startup: running startup items:"));
 	if (RunEntriesIn (HKEY_LOCAL_MACHINE, "RunOnceEx", RE_CHCK)) {
@@ -1860,7 +1860,8 @@ DWORD WINAPI RunStartupThread (void *pv)
 	RunEntriesIn (HKEY_LOCAL_MACHINE, "RunOnce", RE_ONCE|RE_WAIT);
 	RunEntriesIn (HKEY_LOCAL_MACHINE, "Run", 0);
 	RunEntriesIn (HKEY_CURRENT_USER, "Run", 0);
-	for (i = 0; i < array_count(startuptable); ++i) {
+	for (int i = 0; i < array_count(startuptable); ++i)
+	{
 		char folder[MAX_PATH];
 		folder[0] = 0;
 		if (sh_getfolderpath(folder, startuptable[i]) && folder[0])
@@ -1875,6 +1876,7 @@ DWORD WINAPI RunStartupThread (void *pv)
 
 void RunStartupStuff ()
 {
+	TRACE_SCOPE(trace::e_Info, trace::CTX_BBCore);
 	DWORD threadid;
 	CloseHandle(CreateThread(NULL, 0, RunStartupThread, NULL, 0, &threadid));
 }
@@ -1883,6 +1885,7 @@ void RunStartupStuff ()
 
 bool StartupHasBeenRun ()
 {
+	TRACE_SCOPE(trace::e_Info, trace::CTX_BBCore);
 	HANDLE hToken;
 	TOKEN_STATISTICS tStats;
 	DWORD dwOutSize;
@@ -1938,6 +1941,7 @@ end_0:
 
 void show_run_dlg ()
 {
+	TRACE_SCOPE(trace::e_Info, trace::CTX_BBCore);
 	POINT pt;
 	RECT m;
 	HWND hwnd;
@@ -1971,60 +1975,50 @@ void show_run_dlg ()
 // In: None
 // Out: const char* = Formatted Version String
 //===========================================================================
-
-const char* GetBBVersion ()
-{
-	return BBAPPVERSION;
-}
+const char * GetBBVersion () { return BBAPPVERSION; }
 
 //===========================================================================
 // API: GetBBWnd
 // Purpose: Returns the handle to the main Blackbox window
 //===========================================================================
-
-HWND GetBBWnd ()
-{
-	return BBhwnd;
-}
+HWND GetBBWnd () { return BBhwnd; }
 
 //===========================================================================
 // API: GetUnderExplorer
 //===========================================================================
-
-bool GetUnderExplorer ()
-{
-	return g_underExplorer;
-}
+bool GetUnderExplorer () { return g_underExplorer; }
 
 //===========================================================================
 // API: GetOSInfo
 //===========================================================================
-
 LPCSTR GetOSInfo ()
 {
-	static char osinfo_buf[32];
-	const char *s;
 	OSVERSIONINFO osInfo;
-
 	memset(&osInfo, 0, sizeof(osInfo));
 	osInfo.dwOSVersionInfoSize = sizeof(osInfo);
 	GetVersionEx(&osInfo);
 
-	if (osInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) {
+	const char * s = 0;
+	if (osInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
+	{
 		if (osInfo.dwMinorVersion >= 90)
 			s = "ME";
 		else if (osInfo.dwMinorVersion >= 10)
 			s = "98";
 		else
 			s = "95";
-	} else if (osInfo.dwMajorVersion == 5) {
+	}
+	else if (osInfo.dwMajorVersion == 5)
+	{
 		if (osInfo.dwMinorVersion >= 1)
 			s = "XP";
 		else
 			s = "2000";
-	} else {
-		s = "NT";
 	}
+	else
+		s = "NT";
+
+	static char osinfo_buf[32];
 	sprintf(osinfo_buf, "Windows %s", s);
 	return osinfo_buf;
 }
@@ -2034,7 +2028,7 @@ LPCSTR GetOSInfo ()
 // Purpose: Copies the path of the Blackbox executable to the specified buffer
 //===========================================================================
 
-char* WINAPI GetBlackboxPath(char* pszPath, int nMaxLen)
+char * WINAPI GetBlackboxPath (char * pszPath, int nMaxLen)
 {
 	GetModuleFileName(NULL, pszPath, nMaxLen);
 	if (have_imp(pGetLongPathName))
@@ -2046,16 +2040,13 @@ char* WINAPI GetBlackboxPath(char* pszPath, int nMaxLen)
 //===========================================================================
 // API: GetBlackboxEditor
 //===========================================================================
-
-void GetBlackboxEditor(char* editor)
+void GetBlackboxEditor (char * editor)
 {
 	replace_shellfolders(editor, Settings_preferredEditor, true);
 }
 
 //===========================================================================
-
 //===========================================================================
-
 static void reset_rcpaths ()
 {
 	defaultrc_path[0] = 0;
@@ -2066,17 +2057,16 @@ static void reset_rcpaths ()
 	stylerc_path[0] = 0;
 }
 
-static const char* bbPath(const char* new_name, char* path, const char* default_name)
+static const char * bbPath (const char * new_name, char * path, const char * default_name)
 {
 	if (new_name)
 		FindRCFile(path, new_name, NULL);
-	else
-	if (0 == path[0] && default_name)
+	else if (0 == path[0] && default_name)
 		FindRCFile(path, default_name, hMainInstance);
 	return path;
 }
 
-const char *defaultrcPath ()
+const char * defaultrcPath ()
 {
 	return defaultrc_path[0] ? defaultrc_path : NULL;
 }
@@ -2084,51 +2074,44 @@ const char *defaultrcPath ()
 //===========================================================================
 // API: bbrcPath
 //===========================================================================
-
-const char* bbrcPath(const char* other)
+const char * bbrcPath (const char * other)
 {
-	return bbPath (other, blackboxrc_path, "blackbox");
+	return bbPath(other, blackboxrc_path, "blackbox");
 }
 
 //===========================================================================
 // API: extensionsrcPath
 // Purpose: Returns the handle to the extensionsrc file that is being used
 //===========================================================================
-
-const char* extensionsrcPath(const char* other)
+const char * extensionsrcPath (const char * other)
 {
-	return bbPath (other, extensionsrc_path, "extensions");
+	return bbPath(other, extensionsrc_path, "extensions");
 }
 
 //===========================================================================
 // API: plugrcPath
 // Purpose: Returns the handle to the plugins rc file that is being used
 //===========================================================================
-
-const char* plugrcPath(const char* other)
+const char * plugrcPath (const char * other)
 {
-	return bbPath (other, pluginrc_path, "plugins");
+	return bbPath(other, pluginrc_path, "plugins");
 }
 
 //===========================================================================
 // API: menuPath
 // Purpose: Returns the handle to the menu file that is being used
 //===========================================================================
-
-const char* menuPath(const char* other)
+const char * menuPath (const char * other)
 {
-	return bbPath (other, menurc_path, "menu");
+	return bbPath(other, menurc_path, "menu");
 }
 
 //===========================================================================
 // API: stylePath
 // Purpose: Returns the handle to the style file that is being used
 //===========================================================================
-
-const char* stylePath(const char* other)
+const char * stylePath (const char * other)
 {
-	return bbPath (other, stylerc_path, NULL);
+	return bbPath(other, stylerc_path, NULL);
 }
-
-//===========================================================================
 

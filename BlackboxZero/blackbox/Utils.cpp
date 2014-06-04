@@ -212,37 +212,37 @@ void get_window_icon(HWND hwnd, HICON *picon)
 
 void _log_printf(int flag, const char *fmt, ...)
 {
-    static bool log_first;
-    char log_path[MAX_PATH];
-    FILE *fp;
-    va_list arg;
-    char date[32];
-    char time[16];
+	static bool log_first;
+	char log_path[MAX_PATH];
+	FILE *fp;
+	va_list arg;
+	char date[32];
+	char time[16];
 
-    if (flag && 0 == (flag & Settings_LogFlag))
-        return;
+	if (flag && 0 == (flag & Settings_LogFlag))
+		return;
 
-    fp = fopen(set_my_path(NULL, log_path, "blackbox.log"), "a");
+	fp = fopen(set_my_path(NULL, log_path, "blackbox.log"), "a");
 
-    if (NULL == fp)
-        return;
+	if (NULL == fp)
+		return;
 
-    if (false == log_first) {
-        _strdate(date);
-        _strtime(time);
-        fprintf(fp, "\nStarting Log %s %s\n", date, time);
-        log_first = true;
-    }
+	if (false == log_first) {
+		_strdate(date);
+		_strtime(time);
+		fprintf(fp, "\nStarting Log %s %s\n", date, time);
+		log_first = true;
+	}
 
-    if ('\n' != *fmt) {
-        _strtime(time);
-        fprintf(fp, "%s  ", time);
-    }
+	if ('\n' != *fmt) {
+		_strtime(time);
+		fprintf(fp, "%s  ", time);
+	}
 
-    va_start(arg, fmt);
-    vfprintf(fp, fmt, arg);
-    fprintf(fp, "\n");
-    fclose(fp);
+	va_start(arg, fmt);
+	vfprintf(fp, fmt, arg);
+	fprintf(fp, "\n");
+	fclose(fp);
 }
 
 //===========================================================================
