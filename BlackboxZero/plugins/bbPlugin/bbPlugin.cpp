@@ -37,23 +37,37 @@
 #define _THIS_ PI,
 #endif
 
+int parse_bb_version (char const * ver_str, size_t offset)
+{
+    int BBVersion = 0;
+    int a = 0, b = 0, c = 0;
+    if (sscanf(ver_str + offset, "%d.%d.%d", &a, &b, &c) >= 2)
+        BBVersion = a*1000 + b*10 + c;
+    else
+        BBVersion = 2;
+    return BBVersion;
+
+}
+
 int BBP_bbversion(void)
 {
-    const char *bbv;
     static int BBVersion = -1;
-    if (-1 == BBVersion) {
+    if (-1 == BBVersion)
+    {
         BBVersion = 0;
-        bbv = GetBBVersion();
-        if (0 == memcmp(bbv, "bbLean", 6)) {
-            int a, b, c = 0;
-            if (sscanf(bbv+7, "%d.%d.%d", &a, &b, &c) >= 2)
-                BBVersion = a*1000+b*10+c;
-            else
-                BBVersion = 2;
-        }
-        else if (0 == memcmp(bbv, "bb", 2)) {
+        char const * bbv = GetBBVersion();
+
+        char const bbLean[] = "bbLean";
+        size_t const bbLean_len = sizeof(bbLean);
+        char const bbZero[] = "BlackboxZero";
+        size_t const bbZero_len = sizeof(bbZero);
+
+        if (0 == memcmp(bbv, bbLean, bbLean_len - 1))
+            BBVersion = parse_bb_version(bbv, bbLean_len);
+        else if (0 == memcmp(bbv, "bb", 2))
             BBVersion = 1;
-        }
+        else if (0 == memcmp(bbv, bbZero, bbZero_len - 1))
+            BBVersion = parse_bb_version(bbv, bbZero_len);
     }
     return BBVersion;
 }

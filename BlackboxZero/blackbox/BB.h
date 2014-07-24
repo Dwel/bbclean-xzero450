@@ -98,8 +98,8 @@ extern char defaultrc_path[];
 #define BBAPPNAME "bbTiny"
 #define BBAPPVERSION "bbLean "BBLEAN_VERSION" (Tiny)"
 #else
-#define BBAPPNAME "BlackboxZero(Beta)"
-#define BBAPPVERSION "BlackboxZero(Beta) "BBLEAN_VERSION
+#define BBAPPNAME "BlackboxZero"
+#define BBAPPVERSION "BlackboxZero "BBLEAN_VERSION
 #endif
 
 /* Blackbox window timers */
