@@ -6,6 +6,8 @@ set(bbInterface_SOURCES
 	AgentType_CompoundText.cpp
 	AgentType_Graph.cpp
 	AgentType_Mixer.cpp
+	AgentType_Mixer_XP.cpp
+	AgentType_Mixer_Vista.cpp
 	AgentType_Run.cpp
 	AgentType_StaticText.cpp
 	AgentType_SwitchedState.cpp
@@ -37,7 +39,6 @@ set(bbInterface_RESOURCES bbinterface.rc)
 include_directories(${CMAKE_SOURCE_DIR}/blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin)
-include_directories(${CMAKE_SOURCE_DIR}/3rd_party/iTunesCOMWindowsSDK)
 add_library(bbInterface SHARED ${bbInterface_SOURCES})
 target_link_libraries(bbInterface blackbox bblib bbPlugin)
 target_link_libraries(bbInterface version comctl32 gdiplus winmm msimg32)
