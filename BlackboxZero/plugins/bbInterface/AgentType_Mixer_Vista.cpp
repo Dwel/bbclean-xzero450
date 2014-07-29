@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
+#include <Functiondiscoverykeys_devpkey.h>
 #include "AgentMaster.h"
 #include "Definitions.h"
 #include "MenuMaster.h"
@@ -212,6 +213,10 @@ void agenttype_mixer_notifytype_vista (int notifytype, void *messagedata)
 }
 
 /////////////////////////////////////////////
+
+const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
+const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
+
 bool AgentType_Mixer_Vista::Init ()
 {
 	IMMDeviceEnumerator * deviceEnumerator = NULL;
@@ -236,6 +241,80 @@ bool AgentType_Mixer_Vista::Init ()
 	}
 	return false;
 }
+
+/*
+#define SAFE_RELEASE(punk)  if ((punk) != NULL)  { (punk)->Release(); (punk) = NULL; }
+// Convert an UTF8 string to a wide Unicode String
+int utf8_encode (LPWSTR * wstr, char * buff, size_t buff_sz)
+{
+	const size_t w_size = wcslen(wstr);
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, w_size, NULL, 0, NULL, NULL);
+	if (size_needed > buff_sz)
+		size_needed = buff_sz;
+    WideCharToMultiByte(CP_UTF8, 0, wstr, w_size, buff, size_needed, NULL, NULL);
+    return size_needed;
+}
+
+void agenttype_mixer_menu_devices (Menu *menu, control *c, char *action, char *agentname, int format)
+{
+	IMMDeviceEnumerator * pEnumerator = NULL;
+	IMMDeviceCollection * pCollection = NULL;
+	IMMDevice * pEndpoint = NULL;
+
+	if (S_OK == CoCreateInstance(CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void**)&pEnumerator))
+	{
+		if (S_OK == pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection))
+		{
+			UINT  count = 0;
+			if (S_OK ==  pCollection->GetCount(&count))
+			{
+				if (count == 0)
+				{
+					printf("No endpoints found.\n");
+				}
+
+				// Each loop prints the name of an endpoint device.
+				for (ULONG i = 0; i < count; i++)
+				{
+					if (S_OK != pCollection->Item(i, &pEndpoint))
+						continue;
+
+					LPWSTR pwszID = NULL;
+					if (S_OK != pEndpoint->GetId(&pwszID))
+						continue;
+
+					IPropertyStore * pProps = NULL;
+					if (S_OK == pEndpoint->OpenPropertyStore(STGM_READ, &pProps))
+					{
+						PROPVARIANT varName;
+						PropVariantInit(&varName);
+						if (S_OK == pProps->GetValue(PKEY_Device_FriendlyName, &varName))
+						{
+							Menu *submenu;
+							submenu = make_menu(varName.pwszVal, c);
+							//agenttype_mixer_menu_destlines(submenu, c, action, agentname, format, device, mixer_handle, mixer_capabilities);
+							make_submenu_item(menu, varName.pwszVal, submenu);
+
+							// Print endpoint friendly name and endpoint ID.
+							//printf("Endpoint %d: \"%S\" (%S)\n", i, varName.pwszVal, pwszID);
+						}
+					}
+
+					CoTaskMemFree(pwszID);
+					pwszID = NULL;
+					PropVariantClear(&varName);
+					SAFE_RELEASE(pProps)
+					SAFE_RELEASE(pEndpoint)
+				}
+			}
+		}
+	}
+	SAFE_RELEASE(pEnumerator)
+	SAFE_RELEASE(pCollection)
+	return;
+}
+#undef SAFE_RELEASE
+*/
 
 float AgentType_Mixer_Vista::GetVolume () const
 {
@@ -277,5 +356,6 @@ void AgentType_Mixer_Vista::SetMute (bool m) const
 {
 
 }
+
 
 
