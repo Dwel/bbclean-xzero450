@@ -3,6 +3,7 @@
 #include <endpointvolume.h>
 #include <Functiondiscoverykeys_devpkey.h>
 #include "AgentMaster.h"
+#include "ControlMaster.h"
 #include "Definitions.h"
 #include "MenuMaster.h"
 #include "BBApi.h"
@@ -11,7 +12,6 @@
 
 //@TODO: place defaultDevice endpoint as first
 //@TODO: use bb unicode routines
-//@TODO: callback from endpoint device
 //@TODO: get mute (bool) working
 
 int agenttype_mixer_startup_vista ()
@@ -56,10 +56,14 @@ int agenttype_mixer_shutdown_vista ()
 	return 0;
 }
 
+class CVolumeNotification;
+
 struct AgentType_Mixer_Vista
 {
 	AgentType_Mixer_Vista (char const * device)
 		: m_endpoint(0)
+		, m_agent(0)
+		, m_callback(0)
 		, m_value_double(0.0)
 		, m_value_bool(false)
 	{
@@ -69,6 +73,7 @@ struct AgentType_Mixer_Vista
 	}
 
 	bool Init ();
+	bool MkCallback ();
 	void Destroy ();
 
 	float GetVolume () const;
@@ -79,6 +84,8 @@ struct AgentType_Mixer_Vista
 
 	char m_device[1024];
 	IAudioEndpointVolume * m_endpoint;
+	agent * m_agent;
+	CVolumeNotification * m_callback;
 	double m_value_double;
 	bool m_value_bool;
 	char m_value_text[32];
@@ -91,6 +98,7 @@ int agenttype_mixer_create_vista (agent * a, char * parameterstring)
 	AgentType_Mixer_Vista * details = new AgentType_Mixer_Vista(parameterstring);
 	if (details->Init())
 	{
+		details->m_agent = a;
 		a->agentdetails = static_cast<void *>(details);
 	}
 	else
@@ -231,6 +239,55 @@ namespace {
 	}
 }
 
+class CVolumeNotification : public IAudioEndpointVolumeCallback
+{
+	LONG m_RefCount;
+	AgentType_Mixer_Vista & m_details;
+
+	~CVolumeNotification () { }
+public:
+	CVolumeNotification (AgentType_Mixer_Vista & details) : m_RefCount(1), m_details(details) { }
+
+	STDMETHODIMP_(ULONG) AddRef () { return InterlockedIncrement(&m_RefCount); }
+	STDMETHODIMP_(ULONG) Release ()
+	{
+		LONG ref = InterlockedDecrement(&m_RefCount);
+		if (ref == 0)
+			delete this;
+		return ref;
+	}
+	STDMETHODIMP QueryInterface (REFIID IID, void ** ReturnValue)
+	{
+		if (IID == IID_IUnknown || IID== __uuidof(IAudioEndpointVolumeCallback))
+		{
+			*ReturnValue = static_cast<IUnknown*>(this);
+			AddRef();
+			return S_OK;
+		}
+		*ReturnValue = NULL;
+		return E_NOINTERFACE;
+	}
+
+	STDMETHODIMP OnNotify (PAUDIO_VOLUME_NOTIFICATION_DATA NotificationData)
+	{
+		//@TODO: check if OnNotify called from SetVolume?
+		control_notify(m_details.m_agent->controlptr, NOTIFY_NEEDUPDATE, NULL);
+		return S_OK;
+	}
+};
+
+bool AgentType_Mixer_Vista::MkCallback ()
+{
+	m_callback = new CVolumeNotification(*this);
+	if (S_OK == m_endpoint->RegisterControlChangeNotify(m_callback))
+	{
+		return true;
+	}
+	m_callback->Release();
+	m_callback = NULL;
+	return false;
+}
+
 bool AgentType_Mixer_Vista::Init ()
 {
 	IMMDeviceEnumerator * deviceEnumerator = NULL;
@@ -248,6 +305,7 @@ bool AgentType_Mixer_Vista::Init ()
 				device->Release();
 				device = NULL;
 				m_endpoint = endpointVolume;
+				MkCallback();
 				return true;
 			}
 		}
@@ -265,6 +323,7 @@ bool AgentType_Mixer_Vista::Init ()
 				defaultDevice->Release();
 				defaultDevice = NULL;
 				m_endpoint = endpointVolume;
+				MkCallback();
 				return true;
 			}
 		}
@@ -340,6 +399,7 @@ void agenttype_mixer_menu_devices_vista (Menu *menu, control *c, char *action, c
 	SAFE_RELEASE(pCollection)
 	return;
 }
+
 #undef SAFE_RELEASE
 
 float AgentType_Mixer_Vista::GetVolume () const
@@ -362,6 +422,12 @@ void AgentType_Mixer_Vista::Destroy ()
 {
 	if (m_endpoint)
 	{
+		if (m_callback)
+		{
+			m_endpoint->UnregisterControlChangeNotify(m_callback); 
+			m_callback->Release();
+			m_callback = NULL;
+		}
 		m_endpoint->Release();
 		m_endpoint = NULL;
 	}
