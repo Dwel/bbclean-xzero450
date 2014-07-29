@@ -5,10 +5,9 @@
 #include "AgentMaster.h"
 #include "Definitions.h"
 #include "MenuMaster.h"
-#include "BBApi.h" // only for cfg, @TODO: remove if not needed
-#include "ConfigMaster.h" // cfg
+#include "BBApi.h"
+#include "ConfigMaster.h"
 #include "AgentType_Mixer_Vista.h"
-
 
 int agenttype_mixer_startup_vista ()
 {
@@ -29,7 +28,6 @@ int agenttype_mixer_startup_vista ()
 		&agenttype_mixer_notifytype_vista
 		);
 
-	//Register this type with the ControlMaster
 	agent_registertype(
 		"Mixer",                            //Friendly name of agent type
 		"MixerBool",                        //Name of agent type
@@ -44,7 +42,6 @@ int agenttype_mixer_startup_vista ()
 		&agenttype_mixer_menu_context_vista,
 		&agenttype_mixer_notifytype_vista
 		);
-
 	return 0;
 }
 
@@ -56,14 +53,15 @@ int agenttype_mixer_shutdown_vista ()
 
 struct AgentType_Mixer_Vista
 {
-	AgentType_Mixer_Vista (long (& values)[3])
-		: m_device(values[0])
-		, m_line(values[1])
-		, m_control(values[2])
-		, m_endpoint(0)
+	AgentType_Mixer_Vista (char const * device)
+		: m_endpoint(0)
 		, m_value_double(0.0)
 		, m_value_bool(false)
-	{ }
+	{
+		size_t const n = strlen(device);
+		strncpy(m_device, device, n);
+		m_device[n] = 0;
+	}
 
 	bool Init ();
 	void Destroy ();
@@ -74,39 +72,18 @@ struct AgentType_Mixer_Vista
 	bool GetMute () const;
 	void SetMute (bool m) const;
 
-	long m_device;
-	long m_line;
-	long m_control;
-	
+	char m_device[1024];
 	IAudioEndpointVolume * m_endpoint;
 	double m_value_double;
 	bool m_value_bool;
 	char m_value_text[32];
 };
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//agenttype_mixer_create
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int agenttype_mixer_create_vista (agent * a, char * parameterstring)
 {
 	bool errorflag = false; //If there's an error
 
-	//Check for error conditions
-	if (strlen(parameterstring) >= 30) return false;
-	//Break up the parts
-	char mixertoken1[30], mixertoken2[30], mixertoken3[30], mixertoken4[30];
-	char * mixer_tokenptrs[4] = {mixertoken1, mixertoken2, mixertoken3, mixertoken4};
-	int tokensfound = BBTokenize(parameterstring, mixer_tokenptrs, 4, NULL);
-	//Three tokens exactly required
-	if (tokensfound != 3) return 1;
-
-	long values[3];
-	//Make sure they are all valid integers
-	for (int i = 0; i < 3; i++)
-		if (!config_set_long(mixer_tokenptrs[i], &values[i]))
-			return 1;
-
-	AgentType_Mixer_Vista * details = new AgentType_Mixer_Vista(values);
+	AgentType_Mixer_Vista * details = new AgentType_Mixer_Vista(parameterstring);
 	if (details->Init())
 	{
 		a->agentdetails = static_cast<void *>(details);
@@ -144,7 +121,7 @@ void agenttype_mixer_notify_vista (agent *a, int notifytype, void *messagedata)
 {
 	if (a->agentdetails)
 	{
-		AgentType_Mixer_Vista * details = static_cast<AgentType_Mixer_Vista *>(a->agentdetails);
+		AgentType_Mixer_Vista * const details = static_cast<AgentType_Mixer_Vista *>(a->agentdetails);
 
 		switch (notifytype)
 		{
@@ -160,8 +137,8 @@ void agenttype_mixer_notify_vista (agent *a, int notifytype, void *messagedata)
 			}
 			case NOTIFY_SAVE_AGENT:
 			{
-				char temp[30];
-				sprintf(temp, "%d %d %d", (int)details->m_device, (int)details->m_line, (int)details->m_control);
+				char temp[1024];
+				sprintf(temp, "%s", details->m_device);
 				config_write(config_get_control_setagent_c(a->controlptr, a->agentaction, a->agenttypeptr->agenttypename, temp));
 				break;
 			}
@@ -195,12 +172,14 @@ void * agenttype_mixer_getdata_vista (agent *a, int datatype)
 	return NULL;
 }
 
+void agenttype_mixer_menu_devices_vista (Menu *menu, control *c, char *action, char *agentname, int format);
 void agenttype_mixerscale_menu_set_vista (Menu *m, control *c, agent *a,  char *action, int controlformat)
 {
+	agenttype_mixer_menu_devices_vista(m, c, action, "MixerScale", CONTROL_FORMAT_SCALE);
 }
-
 void agenttype_mixerbool_menu_set_vista (Menu *m, control *c, agent *a,  char *action, int controlformat)
 {
+	agenttype_mixer_menu_devices_vista(m, c, action, "MixerBool", CONTROL_FORMAT_BOOL);
 }
 
 void agenttype_mixer_menu_context_vista (Menu *m, agent *a)
@@ -212,18 +191,64 @@ void agenttype_mixer_notifytype_vista (int notifytype, void *messagedata)
 {
 }
 
-/////////////////////////////////////////////
-
+///////////////////////////////////////////////////////////////////////////////
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
+namespace {
+	//@TODO: i found bbWC2MB in Tray.cpp .. use these ones if suitable
+	// Convert an UTF8 string to a wide Unicode String
+	int utf8_encode (wchar_t const * wstr, char * buff, size_t buff_sz)
+	{
+		size_t const w_size = wcslen(wstr);
+		int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, w_size, NULL, 0, NULL, NULL);
+		if (size_needed > buff_sz)
+			size_needed = buff_sz;
+		int const n = WideCharToMultiByte(CP_UTF8, 0, wstr, w_size, buff, size_needed, NULL, NULL);
+		if (n == buff_sz)
+			buff[n - 1] = NULL;
+		else
+			buff[n] = NULL;
+		return size_needed;
+	}
+	// Convert an UTF8 string to a wide Unicode String
+	int utf8_decode (char const * str, wchar_t * buff, size_t buff_sz)
+	{
+		size_t const size = strlen(str);
+		int size_needed = MultiByteToWideChar(CP_UTF8, 0, str, size, NULL, 0);
+		if (size_needed > buff_sz)
+			size_needed = buff_sz;
+		int const n = MultiByteToWideChar(CP_UTF8, 0, str, size, buff, size_needed);
+		if (n == buff_sz)
+			buff[n - 1] = NULL;
+		else
+			buff[n] = NULL;
+		return size_needed;
+	}
+}
 
 bool AgentType_Mixer_Vista::Init ()
 {
 	IMMDeviceEnumerator * deviceEnumerator = NULL;
-	if (S_OK == CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (LPVOID *)&deviceEnumerator))
+	if (S_OK == CoCreateInstance(CLSID_MMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, IID_IMMDeviceEnumerator, (LPVOID *)&deviceEnumerator))
 	{
-		IMMDevice * defaultDevice = NULL;
+		// find device from config
+		wchar_t tmp[1024];
+		utf8_decode(m_device, tmp, 1024);
+		IMMDevice * device = 0;
+		if (S_OK == deviceEnumerator->GetDevice(tmp, &device))
+		{
+			IAudioEndpointVolume * endpointVolume = NULL;
+			if (S_OK == device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_INPROC_SERVER, NULL, (LPVOID *)&endpointVolume))
+			{
+				device->Release();
+				device = NULL;
+				m_endpoint = endpointVolume;
+				return true;
+			}
+		}
 
+		// fallback to default
+		IMMDevice * defaultDevice = NULL;
 		if (S_OK == deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &defaultDevice))
 		{
 			deviceEnumerator->Release();
@@ -242,20 +267,12 @@ bool AgentType_Mixer_Vista::Init ()
 	return false;
 }
 
-/*
+//@TODO: remove
 #define SAFE_RELEASE(punk)  if ((punk) != NULL)  { (punk)->Release(); (punk) = NULL; }
-// Convert an UTF8 string to a wide Unicode String
-int utf8_encode (LPWSTR * wstr, char * buff, size_t buff_sz)
-{
-	const size_t w_size = wcslen(wstr);
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, w_size, NULL, 0, NULL, NULL);
-	if (size_needed > buff_sz)
-		size_needed = buff_sz;
-    WideCharToMultiByte(CP_UTF8, 0, wstr, w_size, buff, size_needed, NULL, NULL);
-    return size_needed;
-}
+extern const char * mixer_name_scale;
+extern const char * mixer_name_bool;
 
-void agenttype_mixer_menu_devices (Menu *menu, control *c, char *action, char *agentname, int format)
+void agenttype_mixer_menu_devices_vista (Menu *menu, control *c, char *action, char *agentname, int format)
 {
 	IMMDeviceEnumerator * pEnumerator = NULL;
 	IMMDeviceCollection * pCollection = NULL;
@@ -268,12 +285,6 @@ void agenttype_mixer_menu_devices (Menu *menu, control *c, char *action, char *a
 			UINT  count = 0;
 			if (S_OK ==  pCollection->GetCount(&count))
 			{
-				if (count == 0)
-				{
-					printf("No endpoints found.\n");
-				}
-
-				// Each loop prints the name of an endpoint device.
 				for (ULONG i = 0; i < count; i++)
 				{
 					if (S_OK != pCollection->Item(i, &pEndpoint))
@@ -283,6 +294,9 @@ void agenttype_mixer_menu_devices (Menu *menu, control *c, char *action, char *a
 					if (S_OK != pEndpoint->GetId(&pwszID))
 						continue;
 
+					char id_tmp[1024];
+					utf8_encode(pwszID, id_tmp, 1024);
+
 					IPropertyStore * pProps = NULL;
 					if (S_OK == pEndpoint->OpenPropertyStore(STGM_READ, &pProps))
 					{
@@ -290,19 +304,27 @@ void agenttype_mixer_menu_devices (Menu *menu, control *c, char *action, char *a
 						PropVariantInit(&varName);
 						if (S_OK == pProps->GetValue(PKEY_Device_FriendlyName, &varName))
 						{
-							Menu *submenu;
-							submenu = make_menu(varName.pwszVal, c);
-							//agenttype_mixer_menu_destlines(submenu, c, action, agentname, format, device, mixer_handle, mixer_capabilities);
-							make_submenu_item(menu, varName.pwszVal, submenu);
+							char tmp[1024];
+							utf8_encode(varName.pwszVal, tmp, 1024);
 
-							// Print endpoint friendly name and endpoint ID.
-							//printf("Endpoint %d: \"%S\" (%S)\n", i, varName.pwszVal, pwszID);
+							const char * type = 0;
+							if (format == CONTROL_FORMAT_SCALE)
+								type = mixer_name_scale;
+							else if (format == CONTROL_FORMAT_BOOL)
+								type = mixer_name_bool;
+
+							char text_item[256];
+							char text_params[256];
+							sprintf(text_item, "%s", tmp);
+							sprintf(text_params, "%s", id_tmp);
+							make_menuitem_cmd(menu, text_item, config_getfull_control_setagent_c(c, action, type, text_params));
+
+							PropVariantClear(&varName);
 						}
 					}
 
 					CoTaskMemFree(pwszID);
 					pwszID = NULL;
-					PropVariantClear(&varName);
 					SAFE_RELEASE(pProps)
 					SAFE_RELEASE(pEndpoint)
 				}
@@ -314,7 +336,6 @@ void agenttype_mixer_menu_devices (Menu *menu, control *c, char *action, char *a
 	return;
 }
 #undef SAFE_RELEASE
-*/
 
 float AgentType_Mixer_Vista::GetVolume () const
 {
@@ -341,7 +362,6 @@ void AgentType_Mixer_Vista::Destroy ()
 	}
 }
 
-
 bool AgentType_Mixer_Vista::GetMute () const
 {
 	BOOL mute = 0;
@@ -354,8 +374,7 @@ bool AgentType_Mixer_Vista::GetMute () const
 
 void AgentType_Mixer_Vista::SetMute (bool m) const
 {
-
+	if (m_endpoint)
+		m_endpoint->SetMute(m, NULL);
 }
-
-
 
