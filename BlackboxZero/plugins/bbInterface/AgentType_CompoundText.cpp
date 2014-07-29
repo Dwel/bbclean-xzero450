@@ -18,6 +18,7 @@
 #include "Definitions.h"
 #include "ConfigMaster.h"
 #include "MenuMaster.h"
+#include "ControlMaster.h"
 
 //Local variables
 const int agenttype_compoundtext_subagentcount = AGENTTYPE_COMPOUNDTEXT_MAXAGENTS;

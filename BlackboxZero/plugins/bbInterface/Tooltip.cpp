@@ -1,38 +1,21 @@
-/* Tooltip */
-
 #include "BBApi.h"
 #include "Definitions.h"
 #include "PluginMaster.h"
+#include "WindowMaster.h"
 #include "Tooltip.h"
 
-
 #define NUMBER_OF(array) (sizeof((array)) / sizeof((array)[0]))
-
-
-
 
 static HWND tooltip_window = NULL;
 bool tooltip_enabled = true;
 
-
-
-
-static void
-notice(const char* message)
+void notice (const char * message)
 {
 	if (!plugin_suppresserrors)
 		BBMessageBox(NULL, message, szAppName, MB_OK | MB_SYSTEMMODAL);
 }
 
-
-
-
-
-
-
-
-int
-tooltip_startup(void)
+int tooltip_startup ()
 {
 	tooltip_window = CreateWindowEx( WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
 	                            TOOLTIPS_CLASS,
@@ -53,20 +36,14 @@ tooltip_startup(void)
 }
 
 
-int
-tooltip_shutdown(void)
+int tooltip_shutdown ()
 {
 	if (tooltip_window != NULL)
 		DestroyWindow(tooltip_window);
-
 	return 0;
 }
 
-
-
-
-int
-tooltip_add(HWND hwnd)
+int tooltip_add (HWND hwnd)
 {
 	TOOLINFO ti;
 
@@ -85,13 +62,10 @@ tooltip_add(HWND hwnd)
 		notice("Failed to add a control into tooltip");
 		return !0;
 	}
-
 	return 0;
 }
 
-
-int
-tooltip_del(HWND hwnd)
+int tooltip_del (HWND hwnd)
 {
 	TOOLINFO ti;
 
@@ -102,15 +76,10 @@ tooltip_del(HWND hwnd)
 	ti.hwnd = hwnd;
 	ti.uId = (UINT_PTR)hwnd;
 	SendMessage(tooltip_window, TTM_DELTOOL, 0, (LPARAM)&ti);
-
 	return 0;
 }
 
-
-
-
-void
-tooltip_update(NMTTDISPINFO* di, control* c)
+void tooltip_update (NMTTDISPINFO* di, control* c)
 {
 	if ((c == NULL) || (!tooltip_enabled))
 		return;
@@ -127,7 +96,5 @@ tooltip_update(NMTTDISPINFO* di, control* c)
 	}
 }
 
+#undef NUMBER_OF
 
-
-
-/* __END__ */

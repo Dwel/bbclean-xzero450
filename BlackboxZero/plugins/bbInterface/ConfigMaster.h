@@ -1,21 +1,9 @@
-/*===================================================
-
-	CONFIG MASTER HEADERS
-
-===================================================*/
-
-//Multiple definition prevention
-#ifndef BBInterface_ConfigMaster_h
-#define BBInterface_ConfigMaster_h
-
-//Includes
-#include "AgentMaster.h"
-#include "ControlMaster.h"
+#pragma once
 #include "Definitions.h"
-#include "ModuleMaster.h"
-
 //Only needed because variables store themselves directly in a listnode.
 #include "ListMaster.h"
+
+struct controltype; struct module; struct control;
 
 //Global variables
 extern char *config_path_plugin;
@@ -166,7 +154,3 @@ char *config_getfull_control_assigntomodule(control *c, module *m);
 char *config_getfull_control_detachfrommodule(control *c);
 char *config_getfull_variable_set_static_s(module *m, listnode *ln);
 
-
-
-#endif
-/*=================================================*/
