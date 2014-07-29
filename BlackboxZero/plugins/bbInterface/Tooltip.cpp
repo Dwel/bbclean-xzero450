@@ -2,6 +2,7 @@
 #include "Definitions.h"
 #include "PluginMaster.h"
 #include "WindowMaster.h"
+#include "ControlMaster.h"
 #include "Tooltip.h"
 
 #define NUMBER_OF(array) (sizeof((array)) / sizeof((array)[0]))

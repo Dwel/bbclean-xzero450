@@ -18,6 +18,7 @@
 #include "StyleMaster.h"
 #include "MenuMaster.h"
 #include "ConfigMaster.h"
+#include "ControlMaster.h"
 #include "SnapWindow.h"
 #include "Tooltip.h"
 

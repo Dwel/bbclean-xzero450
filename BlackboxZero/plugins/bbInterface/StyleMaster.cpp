@@ -15,6 +15,7 @@
 
 //Includes
 #include "PluginMaster.h"
+#include "ControlMaster.h"
 
 const char * szStyleNames[STYLE_COUNT + 1] = {"Toolbar", "Inset", "Flat", "Sunken", "None", NULL};
 // do a full changeable style property listing, with the property types in a separate list
