@@ -27,6 +27,8 @@
 
 MenuItem::MenuItem(const char* pszTitle)
 {
+
+	// FUJ!!!!!!!!!!
     memset(&next, 0, sizeof *this - sizeof(void*));
 
     m_Justify   = MENUITEM_STANDARD_JUSTIFY;

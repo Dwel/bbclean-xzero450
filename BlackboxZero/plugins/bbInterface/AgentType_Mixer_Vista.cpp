@@ -9,6 +9,11 @@
 #include "ConfigMaster.h"
 #include "AgentType_Mixer_Vista.h"
 
+//@TODO: place defaultDevice endpoint as first
+//@TODO: use bb unicode routines
+//@TODO: callback from endpoint device
+//@TODO: get mute (bool) working
+
 int agenttype_mixer_startup_vista ()
 {
 	CoInitialize(NULL);
