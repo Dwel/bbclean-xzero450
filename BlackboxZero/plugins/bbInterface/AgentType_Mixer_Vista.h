@@ -1,5 +1,7 @@
 #pragma once
 
+class Menu; struct agent; struct control;
+
 int     agenttype_mixer_startup_vista ();
 int     agenttype_mixer_shutdown_vista ();
 int     agenttype_mixer_create_vista (agent *a, char *parameterstring);
@@ -11,5 +13,4 @@ void    agenttype_mixerscale_menu_set_vista (Menu *m, control *c, agent *a,  cha
 void    agenttype_mixerbool_menu_set_vista (Menu *m, control *c, agent *a,  char *action, int controlformat);
 void    agenttype_mixer_menu_context_vista (Menu *m, agent *a);
 void    agenttype_mixer_notifytype_vista (int notifytype, void *messagedata);
-
 
