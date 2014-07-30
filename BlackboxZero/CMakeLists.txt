@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION 2.8.9)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 # use this for develoment, if you do not pass it from command line:
-set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
-set(USE_LOGGING 1)
+#set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
+#set(USE_LOGGING 1)
 
 # possibly enable c++11 for gcc
 #if (MINGW)
