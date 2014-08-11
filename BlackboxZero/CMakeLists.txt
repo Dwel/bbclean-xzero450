@@ -4,8 +4,16 @@ cmake_minimum_required(VERSION 2.8.9)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 # use this for develoment, if you do not pass it from command line:
-set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
-set(USE_LOGGING 1)
+# development build means:
+#  - logging enabled
+#  - overriden install path
+#  - not overwriting config .rc files (for most annoying ones so far)
+#set(DEVEL_BUILD 1)
+
+if(DEVEL_BUILD EQUAL 1)
+  set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
+  set(USE_LOGGING 1)
+endif(DEVEL_BUILD EQUAL 1)
 
 # possibly enable c++11 for gcc
 #if (MINGW)
@@ -29,6 +37,7 @@ message("bb generator=${CMAKE_GENERATOR}")
 message("bb install path=${CMAKE_INSTALL_PREFIX}")
 
 include(build/compiler.cmake)
+include(build/install_if_absent.cmake)
 include(ExternalProject)
 
 # detect 32 / 64bit environment
@@ -158,14 +167,6 @@ add_subdirectory(tools/bbstylemaker)
 add_subdirectory(tools/bbnote)
 
 # installation
-function(install_if_absent)
-	foreach(f ${ARGN})
-		if(NOT EXISTS \"${CMAKE_INSTALL_PREFIX}/${f}\")
-			install(FILES ${f} DESTINATION .)
-		endif()
-	endforeach()
-endfunction()
-
 set(main_CONFIGS
   config/menu.rc 
   config/blackbox.rc
@@ -175,8 +176,12 @@ set(main_CONFIGS
   config/stickywindows.ini
 )
 
-install_if_absent(${main_CONFIGS})
-install(DIRECTORY styles backgrounds DESTINATION .)
+if(NOT DEVEL_BUILD EQUAL 1)
+  # install config files
+  install_if_absent(${main_CONFIGS})
+  # install styles etc
+  install(DIRECTORY styles backgrounds DESTINATION .)
+endif(NOT DEVEL_BUILD EQUAL 1)
 
 # not used (yet).. from old makefiles
 set (CLEAN_FILES

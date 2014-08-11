@@ -28,7 +28,4 @@ set_property(TARGET BB8Ball PROPERTY FOLDER "plugins/bb8ball")
 
 #install(FILES changes.txt DESTINATION plugins/BB8Ball)
 install(TARGETS BB8Ball RUNTIME DESTINATION plugins/BB8Ball)
-#if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/BB8Ball/${BB8Ball_RESOURCES}")
-#	install(FILES ${BB8Ball_RESOURCES} DESTINATION plugins/BB8Ball)
-#endif()
 
