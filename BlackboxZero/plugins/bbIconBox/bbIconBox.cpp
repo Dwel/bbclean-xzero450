@@ -1927,11 +1927,7 @@ int beginPluginEx(HINSTANCE hPluginInstance, HWND hSlit)
     }
 
     BBhwnd = GetBBWnd();
-    const char *bbv = GetBBVersion();
-    if (0 == _memicmp(bbv, "bblean", 6)) BBVersion = BBVERSION_LEAN;
-    else
-    if (0 == _memicmp(bbv, "bb", 2)) BBVersion = BBVERSION_XOB;
-    else BBVersion = BBVERSION_09X;
+	BBVersion = BBP_bbversion();
 
     g_hSlit = hSlit;
     g_hInstance = hPluginInstance;

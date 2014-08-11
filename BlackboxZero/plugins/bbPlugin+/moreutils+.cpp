@@ -405,12 +405,6 @@ char* make_full_path(HINSTANCE h, char *buffer, const char *filename)
 }
 
 /*----------------------------------------------------------------------------*/
-void *memset(void *d, int c, unsigned l)
-{
-	char *p = (char *)d;
-	while (l) *p++ = c, --l;
-	return d;
-}
 
 bool get_style(const char *style, StyleItem *si, const char *key)
 {

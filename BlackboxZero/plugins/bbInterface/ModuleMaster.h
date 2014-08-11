@@ -1,26 +1,11 @@
-/*===================================================
+#pragma once
 
-	MODULE MASTER HEADERS
+struct list; struct listnode;
 
-===================================================*/
-// Important: modules can no longer depend on an external control list - there is NO such thing anymore.
-
-//Multiple definition prevention
-#ifndef BBInterface_ModuleMaster_h
-#define BBInterface_ModuleMaster_h
-
-//Includes
-#include "WindowMaster.h"
-#include "AgentMaster.h"
-
-//Definitions
 #define MODULE_ACTION_ONLOAD 0
 #define MODULE_ACTION_ONUNLOAD 1
-
 #define MODULE_ACTION_COUNT 2
 
-
-//Define these structures
 struct module
 {
 	//Info fields - the first one is necessary.
@@ -64,6 +49,3 @@ module* module_get(char* key);
 
 
 extern list *modulelist;
-
-#endif
-/*=================================================*/

@@ -19,8 +19,10 @@
 #include "AgentMaster.h"
 #include "Definitions.h"
 #include "ConfigMaster.h"
+#include "ControlMaster.h"
 #include "MenuMaster.h"
 #include "ListMaster.h"
+#include "WindowMaster.h"
 
 #define array_count(ary) (sizeof(ary) / sizeof(ary[0]))
 

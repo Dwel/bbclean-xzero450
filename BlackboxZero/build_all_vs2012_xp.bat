@@ -1,6 +1,7 @@
 rem this file is intended for usage from cmd.exe or from explorer (clicking on it)
 @echo off
 
+pushd %~dp0
 set PATH=C:\Program Files (x86)\CMake 2.8\bin;%PATH%
 
 echo 32b xp...
@@ -37,3 +38,4 @@ goto NOPAUSE
 pause
 
 :NOPAUSE
+popd
