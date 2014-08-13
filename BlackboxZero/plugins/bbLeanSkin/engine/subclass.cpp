@@ -357,7 +357,8 @@ void PutGradient(WinInfo *WI, HDC hdc, RECT *rc, StyleItem *pG)
 
         other = SelectObject(WI->buf, bmp);
 
-        copy_GradientItem(&si, pG);
+        StyleItem si;
+        si = *pG; // makes a copy of StyleItem into si
         MakeStyleGradient(WI->buf, &r, &si, true);
     }
 

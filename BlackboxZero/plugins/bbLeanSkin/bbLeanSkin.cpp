@@ -932,8 +932,8 @@ void readStyle(void)
             continue;
         }
 
-        StyleItem *pSI = (StyleItem*)p;
-        copy_GradientItem(pG, pSI);
+        StyleItem * pSI = static_cast<StyleItem *>(p);
+        *pG = *pSI; // makes a copy of StyleItem at pSI into pG
 
         if (0 == (flags & CANBEPR))
             pG->parentRelative = false;

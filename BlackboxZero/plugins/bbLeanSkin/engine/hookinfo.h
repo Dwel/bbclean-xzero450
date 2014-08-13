@@ -78,38 +78,6 @@ struct sysmenu_info {
 };
 
 // ---------------------------------------------
-/*
-struct GradientItem
-{
-    int bevelstyle;
-    int bevelposition;
-    int type;
-    bool parentRelative;
-    bool interlaced;
-    COLORREF Color;
-    COLORREF ColorTo;
-    COLORREF TextColor;
-    int borderWidth;
-    COLORREF borderColor;
-    int marginWidth;
-};*/
-
-#define copy_GradientItem(p1,p2) \
-    do { \
-        (p1)->bevelstyle = (p2)->bevelstyle; \
-        (p1)->bevelposition = (p2)->bevelposition; \
-        (p1)->type = (p2)->type; \
-        (p1)->parentRelative = (p2)->parentRelative; \
-        (p1)->interlaced = (p2)->interlaced; \
-        (p1)->Color = (p2)->Color; \
-        (p1)->ColorTo = (p2)->ColorTo; \
-        (p1)->TextColor = (p2)->TextColor; \
-        (p1)->borderWidth = (p2)->borderWidth; \
-        (p1)->borderColor = (p2)->borderColor; \
-        (p1)->marginWidth = (p2)->marginWidth; \
-    } while (0)
-
-// ---------------------------------------------
 struct exclusion_item
 {
     unsigned char flen, clen, option;
