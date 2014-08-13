@@ -136,6 +136,7 @@ else(EXISTS ${CMAKE_SOURCE_DIR}/bbversion.h)
 
 	# FIXME: fill BBLEAN_NUMVERSION corectly (used for blackbox/resource.rc)
 	file(APPEND bbversion.h "#define BBLEAN_NUMVERSION 1,17,2\n")
+	file(APPEND ${CMAKE_SOURCE_DIR}/build.ver "${PROJECT_VERSION}\n")
 	message("bb version : ${PROJECT_VERSION}")
 
 endif(EXISTS ${CMAKE_SOURCE_DIR}/bbversion.h)
