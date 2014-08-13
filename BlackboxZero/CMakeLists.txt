@@ -11,7 +11,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 #set(DEVEL_BUILD 1)
 
 if(DEVEL_BUILD EQUAL 1)
-  set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
+  set(CMAKE_INSTALL_PREFIX "c:/bbZero_devel")
   set(USE_LOGGING 1)
 else(DEVEL_BUILD EQUAL 1)
   set(DEVEL_BUILD 0)
