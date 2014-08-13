@@ -339,7 +339,6 @@ void PutGradient(WinInfo *WI, HDC hdc, RECT *rc, StyleItem *pG)
         other = SelectObject(WI->buf, bmp);
 
     } else {
-        StyleItem si;
         RECT r;
 
         r.left = r.top = 0;
