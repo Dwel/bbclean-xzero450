@@ -168,14 +168,14 @@ SkipXP32_2:
   StrCmp $OptCorePlugins 0 SkipXP32_3
   DetailPrint "XP 32 bit Optional Core Plugins"
 
-  SetOutPath $INSTDIR\plugins\bbAnalog
-	File /r "vs_xp_32\plugins\bbAnalog\"
+  #SetOutPath $INSTDIR\plugins\bbAnalog
+	#File /r "vs_xp_32\plugins\bbAnalog\"
   SetOutPath $INSTDIR\plugins\bbColor3dc
 	File /r "vs_xp_32\plugins\bbColor3dc\"
   SetOutPath $INSTDIR\plugins\bbIconBox
 	File /r "vs_xp_32\plugins\bbIconBox\"
-  SetOutPath $INSTDIR\plugins\bbInterface
-	File /r "vs_xp_32\plugins\bbInterface\"
+  #SetOutPath $INSTDIR\plugins\bbInterface
+	#File /r "vs_xp_32\plugins\bbInterface\"
   SetOutPath $INSTDIR\plugins\bbKeys
 	File /r "vs_xp_32\plugins\bbKeys\"
   SetOutPath $INSTDIR\plugins\bbLeanBar
@@ -285,14 +285,14 @@ SkipXP64_2:
   StrCmp $OptCorePlugins 0 SkipXP64_3
   DetailPrint "XP 64 bit Optional Core Plugins"
 
-  SetOutPath $INSTDIR\plugins\bbAnalog
-	File /r "vs_xp_64\plugins\bbAnalog\"
+  #SetOutPath $INSTDIR\plugins\bbAnalog
+	#File /r "vs_xp_64\plugins\bbAnalog\"
   SetOutPath $INSTDIR\plugins\bbColor3dc
 	File /r "vs_xp_64\plugins\bbColor3dc\"
   SetOutPath $INSTDIR\plugins\bbIconBox
 	File /r "vs_xp_64\plugins\bbIconBox\"
-  SetOutPath $INSTDIR\plugins\bbInterface
-	File /r "vs_xp_64\plugins\bbInterface\"
+  #SetOutPath $INSTDIR\plugins\bbInterface
+	#File /r "vs_xp_64\plugins\bbInterface\"
   SetOutPath $INSTDIR\plugins\bbKeys
 	File /r "vs_xp_64\plugins\bbKeys\"
   SetOutPath $INSTDIR\plugins\bbLeanBar
@@ -404,14 +404,14 @@ SkipVista32_2:
   StrCmp $OptCorePlugins 0 SkipVista32_3
   DetailPrint "Vista 32 bit Optional Core Plugins"
 
-  SetOutPath $INSTDIR\plugins\bbAnalog
-	File /r "vs_vista_32\plugins\bbAnalog\"
+  #SetOutPath $INSTDIR\plugins\bbAnalog
+	#File /r "vs_vista_32\plugins\bbAnalog\"
   SetOutPath $INSTDIR\plugins\bbColor3dc
 	File /r "vs_vista_32\plugins\bbColor3dc\"
   SetOutPath $INSTDIR\plugins\bbIconBox
 	File /r "vs_vista_32\plugins\bbIconBox\"
-  SetOutPath $INSTDIR\plugins\bbInterface
-	File /r "vs_vista_32\plugins\bbInterface\"
+  #SetOutPath $INSTDIR\plugins\bbInterface
+	#File /r "vs_vista_32\plugins\bbInterface\"
   SetOutPath $INSTDIR\plugins\bbKeys
 	File /r "vs_vista_32\plugins\bbKeys\"
   SetOutPath $INSTDIR\plugins\bbLeanBar
@@ -523,14 +523,14 @@ SkipVista64_2:
   StrCmp $OptCorePlugins 0 SkipVista64_3
   DetailPrint "Vista 64 bit Optional Core Plugins"
 
-  SetOutPath $INSTDIR\plugins\bbAnalog
-	File /r "vs_vista_64\plugins\bbAnalog\"
+  #SetOutPath $INSTDIR\plugins\bbAnalog
+	#File /r "vs_vista_64\plugins\bbAnalog\"
   SetOutPath $INSTDIR\plugins\bbColor3dc
 	File /r "vs_vista_64\plugins\bbColor3dc\"
   SetOutPath $INSTDIR\plugins\bbIconBox
 	File /r "vs_vista_64\plugins\bbIconBox\"
-  SetOutPath $INSTDIR\plugins\bbInterface
-	File /r "vs_vista_64\plugins\bbInterface\"
+  #SetOutPath $INSTDIR\plugins\bbInterface
+	#File /r "vs_vista_64\plugins\bbInterface\"
   SetOutPath $INSTDIR\plugins\bbKeys
 	File /r "vs_vista_64\plugins\bbKeys\"
   SetOutPath $INSTDIR\plugins\bbLeanBar

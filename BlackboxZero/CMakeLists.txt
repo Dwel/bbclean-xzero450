@@ -13,6 +13,8 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 if(DEVEL_BUILD EQUAL 1)
   set(CMAKE_INSTALL_PREFIX "c:/bbLean_devel")
   set(USE_LOGGING 1)
+else(DEVEL_BUILD EQUAL 1)
+  set(DEVEL_BUILD 0)
 endif(DEVEL_BUILD EQUAL 1)
 
 # possibly enable c++11 for gcc
@@ -175,12 +177,12 @@ set(main_CONFIGS
   config/stickywindows.ini
 )
 
-if(NOT DEVEL_BUILD EQUAL 1)
+if(DEVEL_BUILD EQUAL 0)
   # install config files
-  install_if_absent(${main_CONFIGS})
+  install_if_absent(. ${main_CONFIGS})
   # install styles etc
   install(DIRECTORY styles backgrounds DESTINATION .)
-endif(NOT DEVEL_BUILD EQUAL 1)
+endif(DEVEL_BUILD EQUAL 0)
 
 # not used (yet).. from old makefiles
 set (CLEAN_FILES
