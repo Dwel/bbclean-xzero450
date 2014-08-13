@@ -30,7 +30,7 @@
         [submenu] (About)
             [aboutstyle] (About Style)
             [aboutplugins] (About Plugins)
-            [about] (About bbLean)
+            [about] (About bbZero)
             [end]
         [submenu] (Edit)
             [editstyle] (Current Style)

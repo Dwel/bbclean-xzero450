@@ -315,7 +315,7 @@ void terminate_welcomescreen ()
 void bb_about ()
 {
 	BBMessageBox(MB_OK,
-	BBAPPVERSION" - Copyright 2003-2009 grischka\n%s",
+	BBAPPVERSION"\n Copyright 2003-2009 grischka\n%s",
 	NLS2("$About_Blackbox$",
 		"Based stylistically on the Blackbox window manager"
 		"\nfor the Linux X Window System by Brad Hughes"
@@ -323,16 +323,17 @@ void bb_about ()
 		"\nSwitches:"
 		"\n-help		   \tShow this text"
 		"\n-install		   \tInstall Blackbox as default shell"
-		"\n-uninstall	   \tReset Explorer as default shell"
+		"\n-uninstall		   \tReset Explorer as default shell"
 		"\n-nostartup	   \tDo not run startup programs"
 		"\n-toggle		  \tToggle between \'nostartup\' and \'quit\'"
 		"\n-rc <path>	   \tSpecify alternate blackbox.rc path"
-		"\n-exec <@broam>  \tSend broadcast message to running shell"
+		"\n-exec <@broam>	  \tSend broadcast message to running shell"
 		"\n"
 		"\nFor more information visit:"
-		"\nhttp://bb4win.sourceforge.net/bblean/"
-		"\nhttp://bb4win.org/"
-		"\n- #bb4win on irc.freenode.net"
+		"\n\thttp://blackbox4windows.com"
+		"\n\t#bb4win on irc.freenode.net"
+		"\nSources from:"
+		"\n\thttps://github.com/xzero450/bbclean-xzero450"
 		));
 }
 
