@@ -21,6 +21,8 @@
 #include "ConfigMaster.h"
 #include "MenuMaster.h"
 #include "ListMaster.h"
+#include "WindowMaster.h"
+#include "ControlMaster.h"
 
 #define array_count(ary) (sizeof(ary) / sizeof(ary[0]))
 

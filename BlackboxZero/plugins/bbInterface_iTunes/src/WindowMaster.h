@@ -1,22 +1,6 @@
-/*===================================================
+#pragma once
 
-	WINDOW MASTER HEADERS
-
-===================================================*/
-
-//Multiple definition prevention
-#ifndef BBInterface_WindowMaster_h
-#define BBInterface_WindowMaster_h
-
-//Pre-defined structures
-struct window;
-
-//Includes
-#include "ControlMaster.h"
-#include "MenuMaster.h"
-
-//Cirular dependency. Whoah. This surely needs some redesign.
-struct module;
+struct module; class Menu; struct agent; struct control; struct window; struct StyleItem;
 
 //Define these structures
 struct window
@@ -137,5 +121,3 @@ extern char szWPistransparent   [];
 extern char szWPistoggledwithplugins    [];
 extern char szWPisonallworkspaces   [];
 
-#endif
-/*=================================================*/

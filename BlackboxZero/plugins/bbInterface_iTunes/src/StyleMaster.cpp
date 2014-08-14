@@ -1,21 +1,12 @@
-/*===================================================
-
-	STYLE MASTER CODE
-
-===================================================*/
-
-// Global Include
 #include "BBApi.h"
-#include "../../BBPLugin/BBPlugin.h"
+# include "../../BBPLugin/BBPlugin.h"
 #ifdef _MSC_VER
-#pragma comment(lib, "msimg32.lib")
+# pragma comment(lib, "msimg32.lib")
 #endif
 
-//Parent Include
 #include "StyleMaster.h"
-
-//Includes
 #include "PluginMaster.h"
+#include "ControlMaster.h"
 
 const char * szStyleNames[STYLE_COUNT + 1] = {"Toolbar", "Inset", "Flat", "Sunken", "Label", "Clock", "Button", "PressedButton", "None", NULL};
 // do a full changeable style property listing, with the property types in a separate list

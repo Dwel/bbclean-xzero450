@@ -18,6 +18,7 @@
 #include "Definitions.h"
 #include "ConfigMaster.h"
 #include "MenuMaster.h"
+#include "ControlMaster.h"
 
 //Variables
 const char* agenttype_statictext_commons[] = {

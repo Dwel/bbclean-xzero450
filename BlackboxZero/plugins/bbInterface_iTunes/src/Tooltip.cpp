@@ -3,6 +3,8 @@
 #include "BBApi.h"
 #include "Definitions.h"
 #include "PluginMaster.h"
+#include "WindowMaster.h"
+#include "ControlMaster.h"
 #include "Tooltip.h"
 
 

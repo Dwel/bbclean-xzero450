@@ -18,6 +18,7 @@
 #include "WindowMaster.h"
 #include "ListMaster.h"
 #include "ConfigMaster.h"
+#include "ControlMaster.h"
 #include "MenuMaster.h"
 
 //Local variables

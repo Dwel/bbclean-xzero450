@@ -35,6 +35,7 @@
 #include "AgentMaster.h"
 #include "Definitions.h"
 #include "ConfigMaster.h"
+#include "ControlMaster.h"
 #include "MenuMaster.h"
 #include "ListMaster.h"
 

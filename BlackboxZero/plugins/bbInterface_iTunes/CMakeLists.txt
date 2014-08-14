@@ -10,6 +10,8 @@ set(bbInterface_iTunes_SOURCES
 	./src/AgentType_Graph.cpp
 	./src/AgentType_iTunes.cpp
 	./src/AgentType_Mixer.cpp
+	./src/AgentType_Mixer_XP.cpp
+	./src/AgentType_Mixer_Vista.cpp
 	./src/AgentType_NetworkMonitor.cpp
 	./src/AgentType_Run.cpp
 	./src/AgentType_StaticText.cpp
@@ -47,7 +49,8 @@ include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin)
 include_directories(${CMAKE_SOURCE_DIR}/3rd_party/iTunesCOMWindowsSDK)
 add_library(bbInterface_iTunes SHARED ${bbInterface_iTunes_SOURCES})
 target_link_libraries(bbInterface_iTunes blackbox bblib bbPlugin)
-target_link_libraries(bbInterface_iTunes version gdiplus comsuppw iphlpapi comctl32 iTunesCOMWindowsSDK)
+target_link_libraries(bbInterface_iTunes version gdiplus comsuppw iphlpapi comctl32 winmm)
+target_link_libraries(bbInterface_iTunes iTunesCOMWindowsSDK)
 
 set_property(TARGET bbInterface_iTunes PROPERTY FOLDER "plugins/bbInterface_iTunes")
 
