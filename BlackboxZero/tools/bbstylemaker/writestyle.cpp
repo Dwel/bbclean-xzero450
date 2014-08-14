@@ -866,7 +866,12 @@ static void write_style_item (const char * style, StyleStruct *pStyle, StyleItem
                         } else {
                         // ---------------------------
                         if (t != B_SOLID)
-                            addstr(&tp, get_styleprop(1)[1+get_styleprop(1)[1+t].val].key, 1);
+                        {
+                            styleprop const & prop = get_styleprop(1)[1 + t];
+                            int offset = prop.val;
+                            char const * key = prop.key;
+                            addstr(&tp, key, 1);
+                        }
 
                         if (si->interlaced)
                             addstr(&tp, "interlaced", 1);

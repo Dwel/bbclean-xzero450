@@ -992,23 +992,24 @@ int read_next_line(FILE *fp, char* szBuffer, unsigned dwLength)
 // parse a given string and assigns settings to a StyleItem class
 
 ST const struct styleprop styleprop_1[] = {
- {"splithorizontal" ,B_SPLITHORIZONTAL  }, // "horizontal" is match .*horizontal
- {"blockhorizontal",B_BLOCKHORIZONTAL },
- {"mirrorhorizontal",B_MIRRORHORIZONTAL },
- {"wavehorizontal",B_WAVEHORIZONTAL },
- {"splitvertical"   ,B_SPLITVERTICAL    }, // "vertical" is match .*vertical
- {"blockvertical",B_BLOCKVERTICAL   },
- {"mirrorvertical"  ,B_MIRRORVERTICAL   },
- {"solid"        ,B_SOLID           },
- {"wavevertical" ,B_WAVEVERTICAL    },
- {"vertical"     ,B_VERTICAL        },
- {"crossdiagonal",B_CROSSDIAGONAL   },
- {"diagonal"     ,B_DIAGONAL        },
- {"pipecross"    ,B_PIPECROSS       },
- {"elliptic"     ,B_ELLIPTIC        },
- {"rectangle"    ,B_RECTANGLE       },
- {"pyramid"      ,B_PYRAMID         },
- {NULL           ,-1                }
+  {"solid"        ,B_SOLID           },
+  {"horizontal"   ,B_HORIZONTAL      },
+  {"vertical"     ,B_VERTICAL        },
+  {"crossdiagonal",B_CROSSDIAGONAL   },
+  {"diagonal"     ,B_DIAGONAL        },
+  {"pipecross"    ,B_PIPECROSS       },
+  {"elliptic"     ,B_ELLIPTIC        },
+  {"rectangle"    ,B_RECTANGLE       },
+  {"pyramid"      ,B_PYRAMID         },
+  {"wavevertical" ,B_WAVEVERTICAL    },
+  {"splithorizontal" ,B_SPLITHORIZONTAL  }, // "horizontal" is match .*horizontal
+  {"blockhorizontal",B_BLOCKHORIZONTAL },
+  {"mirrorhorizontal",B_MIRRORHORIZONTAL },
+  {"wavehorizontal",B_WAVEHORIZONTAL },
+  {"splitvertical"   ,B_SPLITVERTICAL    }, // "vertical" is match .*vertical
+  {"blockvertical",B_BLOCKVERTICAL   },
+  {"mirrorvertical"  ,B_MIRRORVERTICAL   },
+  {NULL           ,-1                }
  };
 
 ST const struct styleprop styleprop_2[] = {
