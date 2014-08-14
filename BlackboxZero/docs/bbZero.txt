@@ -1,5 +1,5 @@
 ****************************************************************************
-bbLean
+bbZero
 ******
 
  "A new Blackbox for Windows generation..."
@@ -867,6 +867,18 @@ Now uses simple searchpaths instead of wildcards. See bsetroot.rc
 ****************************************************************************
 Changes
 =======
+
+?? ??? 2014 - bbZero 1.17.2-x
+.........................
+- mainly bugfixing release
+- build system overhaul (using cmake)
+- (32b, 64b) builds for (XP, Vista)
+- new installer (using nsis)
+- lot of plugins from around internet
+
+?? ??? 2013 - bbLean 1.17.1
+.........................
+- Jonathan "XZero450" added more elaborated gradients
 
 08 Dec 2009 - bbLean 1.17.1
 .........................
