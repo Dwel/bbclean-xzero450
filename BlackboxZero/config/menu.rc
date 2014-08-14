@@ -1,10 +1,10 @@
 # -----------------------------------------------------------------
-# bblean 1.17 - MENU FILE
+# bbZero 1.17.x - MENU FILE
 # -----------------------------------------------------------------
 
 # Available menu commands are listed in the documentation.
 
-[begin] (bbLean)
+[begin] (bbZero)
     [path] (Start) {STARTMENU|COMMON_STARTMENU}
     [path] (Desktop) {DESKTOPDIRECTORY|COMMON_DESKTOPDIRECTORY}
     [path] (Quick) {APPDATA\Microsoft\Internet Explorer\Quick Launch}
@@ -50,7 +50,7 @@
         [restart] (Restart)
         [exit]  (Quit)
         [end]
-    [submenu] (Goodbye)
+    [submenu] (Off)
         [lockworkstation] (Lock)
         [logoff] (Logoff)
         [suspend] (Standby)
