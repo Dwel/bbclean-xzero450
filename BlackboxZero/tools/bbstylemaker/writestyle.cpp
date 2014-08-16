@@ -767,6 +767,18 @@ int make_fontstring(StyleItem *si, char *out)
     }
 }
 
+int find_in_propitem (styleprop const * props, int value)
+{
+    int i = 0;
+    while (props[i].key != NULL)
+    {
+        if (props[i].val == value)
+            return static_cast<int>(i);
+        ++i;
+    }
+    return -1;
+}
+
 
 //===========================================================================
 static void write_style_item (const char * style, StyleStruct *pStyle, StyleItem *si, const char *key, int v, int sn)
@@ -813,7 +825,6 @@ static void write_style_item (const char * style, StyleStruct *pStyle, StyleItem
     const struct s_prop *cp = s_prop_070;
     char fullkey[80];
     char tex[100];
-    int l, t, u;
     char *tp;
 
     if (false == pStyle->is_070) {
@@ -822,9 +833,10 @@ static void write_style_item (const char * style, StyleStruct *pStyle, StyleItem
             key = "menu.hilite";
     }
 
-    l = strlen(key);
+    int l = strlen(key);
     memcpy(fullkey, key, l);
-    do {
+    do
+    {
         if (cp->v & v)
         {
             strcpy(fullkey + l, cp->k);
@@ -839,38 +851,41 @@ static void write_style_item (const char * style, StyleStruct *pStyle, StyleItem
                     addstr(&tp, "parentrelative", 0);
                 } else {
                     // bevelstyle
-                    t = si->bevelstyle;
-                    u = si->bevelposition;
-                    if (u == 0 || t > 2)
-                        t = 0;
-                    addstr(&tp, get_styleprop(2)[t].key, 0);
-                    if (t && u >= BEVEL2 && u <= BEVEL2+1) {
-                        addstr(&tp, get_styleprop(3)[u-1].key, 1);
+                    int bevelstyle = si->bevelstyle;
+                    int bevelpos = si->bevelposition;
+                    if (bevelpos == 0 || bevelstyle > 2)
+                        bevelstyle = 0;
+                    addstr(&tp, get_styleprop(2)[bevelstyle].key, 0);
+                    if (bevelstyle && bevelpos >= BEVEL2 && bevelpos <= BEVEL2+1) {
+                        addstr(&tp, get_styleprop(3)[bevelpos-1].key, 1);
                     }
 
                     // texture
-                    t = si->type;
-                    if (t > 7)
-                        t = B_SOLID;
+                    int const t = si->type;
 
-
-                    for (u = 0; u < 2; ++u) {
-
-                        if (u == (int)pStyle->is_070) {
-                        // ---------------------------
-                        if (t == B_SOLID)
-                            addstr(&tp, "solid", 1);
+                    for (int u = 0; u < 2; ++u)
+                    {
+                        if (u == (int)pStyle->is_070)
+                        {
+                            if (t == B_SOLID)
+                                addstr(&tp, "solid", 1);
+                            else
+                                addstr(&tp, "gradient", 1);
+                        }
                         else
-                            addstr(&tp, "gradient", 1);
-                        // ---------------------------
-                        } else {
-                        // ---------------------------
-                        if (t != B_SOLID)
-                            addstr(&tp, get_styleprop(1)[1+get_styleprop(1)[1+t].val].key, 1);
+                        {
+                            // ---------------------------
+                            int idx = find_in_propitem(get_styleprop(1), t);
+                            if (idx >= 0)
+                            {
+                                styleprop const & prop = get_styleprop(1)[idx];
+                                char const * key = prop.key;
 
-                        if (si->interlaced)
-                            addstr(&tp, "interlaced", 1);
-                        // ---------------------------
+                                addstr(&tp, prop.key, 1);
+                            }
+
+                            if (si->interlaced)
+                                addstr(&tp, "interlaced", 1);
                         }
                     }
                 }
@@ -934,6 +949,7 @@ static void write_style_item (const char * style, StyleStruct *pStyle, StyleItem
 
             // --- Font ---
             case C_FON:
+            {
                 if (0 == useWildcards)
                 {
                     const char *p = ReadString(style, fullkey, "");
@@ -950,7 +966,7 @@ static void write_style_item (const char * style, StyleStruct *pStyle, StyleItem
                     }
                 }
 
-                t = make_fontstring(si, tex);
+                int const t = make_fontstring(si, tex);
                 WriteString(style, fullkey, tex);
 
                 if (1 == t) {
@@ -966,7 +982,7 @@ static void write_style_item (const char * style, StyleStruct *pStyle, StyleItem
                     }
                 }
                 break;
-
+            }
             // --- Alignment ---
             case C_JUS:
                 WriteString(style, fullkey,
