@@ -18,10 +18,7 @@
 */
 /* ------------------------------------------------------------------------- */
 /* read7write rc files with cache */
-
-#ifndef _BBRC_H_
-#define _BBRC_H_
-
+#pragma once
 #include "bblib.h"
 
 #ifdef __cplusplus
@@ -92,16 +89,6 @@ BBLIB_EXPORT int rename_setting(const char* path, const char* szKey, const char*
 BBLIB_EXPORT int delete_setting(LPCSTR path, LPCSTR szKey);
 
 /* ------------------------------------------------------------------------- */
-/* parse a StyleItem */
-
-struct StyleItem;
-
-BBLIB_EXPORT void parse_item(LPCSTR szItem, struct StyleItem *item);
-BBLIB_EXPORT int findtex(const char *p, int prop);
-struct styleprop{ const char *key; int val; };
-BBLIB_EXPORT const struct styleprop *get_styleprop(int prop);
-
-/* ------------------------------------------------------------------------- */
 /* only used in bbstylemaker */
 
 BBLIB_EXPORT int scan_component(const char **p);
@@ -119,4 +106,4 @@ BBLIB_EXPORT void make_style065(struct fil_list *fl);
 }
 #endif
 
-#endif
+

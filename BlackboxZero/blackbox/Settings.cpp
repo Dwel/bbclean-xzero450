@@ -929,8 +929,7 @@ void ReadStyle(const char *style, StyleStruct *pStyle)
         //memset(pStyle, 0, sizeof *pStyle);
         p_default = StyleStructPtr(ptr->sn_def, pStyle);
         StyleItem* pSI = (StyleItem*)p_default;
-        bool is_split = (pSI->type == B_SPLITVERTICAL) || (pSI->type == B_SPLITHORIZONTAL) 
-            || (pSI->type == B_SPLIT_VERTICAL) || (pSI->type == B_SPLIT_HORIZONTAL);
+        bool is_split = (pSI->type == B_SPLITVERTICAL) || (pSI->type == B_SPLITHORIZONTAL);
         if (ptr->flags & V_FROMSPLITTO){
             if(is_split && !(pSI->validated & V_FROMSPLITTO)){
                 unsigned int r = GetRValue(pSI->Color);

@@ -11,6 +11,7 @@ set(bblib_SOURCES
 	paths.c
 	pidl.c
 	strings.c
+	styleprops.c
 	tinylist.c
 	tokenize.c
 	winutils.c

@@ -20,6 +20,7 @@
 #include "BBApi.h"
 #include "BImage.h"
 #include "bbrc.h"
+#include "styleprops.h"
 
 #define ST static
 
