@@ -22,6 +22,7 @@
 #include "BBApi.h"
 #include "bbroot.h"
 #include "bbrc.h"
+#include "styleprops.h"
 
 #define ST static
 
