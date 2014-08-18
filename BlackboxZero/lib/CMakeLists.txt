@@ -2,6 +2,7 @@ set(BBLIB_STATIC true)
 
 set(bblib_SOURCES
 	bbrc.c
+	styleprops.c
 	bbroot.c
 	bools.c
 	colors.c
@@ -11,7 +12,6 @@ set(bblib_SOURCES
 	paths.c
 	pidl.c
 	strings.c
-	styleprops.c
 	tinylist.c
 	tokenize.c
 	winutils.c

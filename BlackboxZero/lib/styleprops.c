@@ -63,18 +63,47 @@ int findtex(const char *p, int prop)
     while ((++s)->key);
     return s->val;
 }
+int find_exact (const char * p, int prop)
+{
+    const struct styleprop * s = get_styleprop(prop);
+    do
+        if (strcmp(p, s->key) == 0)
+            break;
+    while ((++s)->key);
+    return s->val;
+}
 
 void parse_item(LPCSTR szItem, StyleItem *item)
 {
-    char buf[256]; int t;
+    char buf[256];
+    char * ptr = &buf[0];
+    int t = -1;
+    char option[256];
+    bool found = false;
     _strlwr(strcpy(buf, szItem));
     t = item->parentRelative = NULL != strstr(buf, "parentrelative");
     if (t) {
         item->type = item->bevelstyle = item->bevelposition = item->interlaced = 0;
         return;
     }
-    t = findtex(buf, 1);
-    item->type = (-1 != t) ? t : strstr(buf, "gradient") ? B_DIAGONAL : B_SOLID;
+
+    while (NextToken(option, &ptr, NULL))
+    {
+        int gt = -1;
+        if (strlen(option) == 0)
+            break;
+        gt = find_exact(option, 1);
+        if (gt != -1)
+        {
+          found = true;
+          item->type = gt; 
+          break;
+        }
+    }
+    if (!found)
+    {
+      item->type = strstr(buf, "gradient") ? B_DIAGONAL : B_SOLID;
+    }
 
     t = findtex(buf, 2);
     item->bevelstyle = (-1 != t) ? t : BEVEL_RAISED;
