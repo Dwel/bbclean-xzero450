@@ -18,7 +18,6 @@ plugins\bbLeanSkin\bbLeanSkin.dll
 plugins\bbSlit\bbSlit.dll
 
 # - bb interface plugin(s)
-!plugins\bbInterface\bbInterface.dll
 !plugins\bbInterface_iTunes\bbInterface_iTunes.dll
 
 !plugins\SystemBarEx\SystemBarEx.dll
@@ -27,7 +26,7 @@ plugins\bbSlit\bbSlit.dll
 [sep]
 
 # - Plugins in the slit
-& plugins\bbAnalog\bbAnalog.dll
+& plugins\BBAnalogEx\BBAnalogEx.dll
 & plugins\bbIconBox\bbIconBox.dll
 plugins\bbColor3dc\bbColor3dc.dll
 
@@ -39,7 +38,6 @@ plugins\bbColor3dc\bbColor3dc.dll
 ! plugins\bbRecycleBin\bbRecycleBin.dll
 ! plugins\bbWorkspaceWheel\bbWorkspaceWheel.dll
 ! plugins\BBRSS\BBRSS.dll
-! plugins\BBAnalogEx\BBAnalogEx.dll
 ! plugins\bbCalendar\bbCalendar.dll
 ! plugins\BBDigitalEx\BBDigitalEx.dll
 ! plugins\BBMagnify\BBMagnify.dll

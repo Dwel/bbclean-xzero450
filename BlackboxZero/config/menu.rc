@@ -4,7 +4,7 @@
 
 # Available menu commands are listed in the documentation.
 
-[begin] (bbZero)
+[begin] (BlackBox)
     [path] (Start) {STARTMENU|COMMON_STARTMENU}
     [path] (Desktop) {DESKTOPDIRECTORY|COMMON_DESKTOPDIRECTORY}
     [path] (Quick) {APPDATA\Microsoft\Internet Explorer\Quick Launch}
@@ -30,7 +30,7 @@
         [submenu] (About)
             [aboutstyle] (About Style)
             [aboutplugins] (About Plugins)
-            [about] (About bbZero)
+            [about] (About BlackBox)
             [end]
         [submenu] (Edit)
             [editstyle] (Current Style)
