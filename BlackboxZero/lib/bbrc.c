@@ -708,7 +708,7 @@ struct fil_list *read_file(const char *filename)
 {
     struct lin_list **slp, *sl;
     struct fil_list **flp, *fl;
-    char *buf, *p, *d, *s, *t, c, hashname[MAX_PATH], buff[MAX_KEYWORD_LENGTH];
+    char *buf, *p, *d, *s, *t, *hilite, c, hashname[MAX_PATH], buff[MAX_KEYWORD_LENGTH];
     unsigned h;
     int k, is_OB, is_070;
 
@@ -777,6 +777,13 @@ comment:
 			else 
 			if (k && false == is_070)
 				translate_new(buff, sizeof buff, &s, &k, 1);
+
+            // mojmir: i have no idea how did i break that shit... so this is a hotfix
+            // the thing is that filelist has menu.hilite items from file,
+            // while the read_style reads menu.active.
+            if (is_070)
+                if (NULL != (hilite = strstr(s, "hilite")))
+                    memcpy(hilite, "active", 6);
 
             sl = make_line(fl, s, d);
         }
