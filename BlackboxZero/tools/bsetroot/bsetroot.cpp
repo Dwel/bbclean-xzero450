@@ -424,39 +424,6 @@ void Modula(HIMG Img, int mx, int my, COLORREF fg)
 // API: ParseItem
 // Purpose: parses a given string and assigns settings to a StyleItem class
 
-const struct styleprop styleprop_1[] = {
- {"solid"        ,B_SOLID           },
- {"horizontal"   ,B_HORIZONTAL      },
- {"vertical"     ,B_VERTICAL        },
- {"crossdiagonal",B_CROSSDIAGONAL   },
- {"diagonal"     ,B_DIAGONAL        },
- {"pipecross"    ,B_PIPECROSS       },
- {"elliptic"     ,B_ELLIPTIC        },
- {"rectangle"    ,B_RECTANGLE       },
- {"pyramid"      ,B_PYRAMID         },
- {NULL           ,-1                }
- };
-
-const struct styleprop styleprop_2[] = {
- {"flat"        ,BEVEL_FLAT      },
- {"raised"      ,BEVEL_RAISED    },
- {"sunken"      ,BEVEL_SUNKEN    },
- {NULL          ,-1              }
- };
-
-const struct styleprop styleprop_3[] = {
- {"bevel1"      ,BEVEL1  },
- {"bevel2"      ,BEVEL2  },
- {"bevel3"      ,BEVEL2+1},
- {NULL          ,-1      }
- };
-
-int findtex(const char *p, const struct styleprop *s)
-{
-    do if (strstr(p, s->key)) break; while ((++s)->key);
-    return s->val;
-}
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // alter display properties
 

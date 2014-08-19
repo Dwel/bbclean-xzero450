@@ -254,7 +254,7 @@ const struct button main_buttons[] = {
 { "slit"          , BN_CHK   , SEC_SLI  ,  10, 118,  74,  14, BN_RAD },
 { "other"         , BN_CHK   , SEC_MIS  ,  10, 134,  74,  14, BN_RAD },
 //2
-{ ""              , BN_RECT  , ITM_RCT  ,  10, 172,  74, 136, BN_EXT },
+{ ""              , BN_RECT  , ITM_RCT  ,  10, 172,  74, 256, BN_EXT },
 { "2.item"          , BN_STR   , ITM_HDR  ,  10, 172,  74,  18, BN_EXT },
 
 { "frame"         , BN_CHK   , TOO_BAC  ,  10, 194,  74,  14, BN_RAD|BN_GRP },
@@ -286,22 +286,31 @@ const struct button main_buttons[] = {
 { "edit rc"       , BN_BTN   , CMD_CFG  ,  12, 270,  68,  16, 0 },
 { "reload rc"     , BN_BTN   , CMD_RST  ,  12, 290,  68,  16, 0 },
 //3
-{ ""              , BN_RECT  , GRD_RCT  ,  90,  32+dwnAdj,  82, 208, BN_EXT },
+{ ""              , BN_RECT  , GRD_RCT  ,  90,  32+dwnAdj,  82, 328, BN_EXT },
 { "3.texture"       , BN_STR   , GRD_HDR,  90,  32+dwnAdj,  82,  18, BN_EXT },
 
+{ "parentrel"     , BN_CHK   , GRD_PRR  ,  90,  54+dwnAdj,  82,  14, BN_RAD },
 { "solid"         , BN_CHK   , GRD_SOL  ,  90,  70+dwnAdj,  82,  14, BN_RAD|BN_GRP },
 { "horizontal"    , BN_CHK   , GRD_HOR  ,  90,  86+dwnAdj,  82,  14, BN_RAD },
-{ "vertical"      , BN_CHK   , GRD_VER  ,  90, 102+dwnAdj,  82,  14, BN_RAD },
-{ "diagonal"      , BN_CHK   , GRD_DIA  ,  90, 118+dwnAdj,  82,  14, BN_RAD },
-{ "crossdiag."    , BN_CHK   , GRD_CDI  ,  90, 134+dwnAdj,  82,  14, BN_RAD },
-{ "pipecross"     , BN_CHK   , GRD_PIP  ,  90, 150+dwnAdj,  82,  14, BN_RAD },
-{ "elliptic"      , BN_CHK   , GRD_ELL  ,  90, 166+dwnAdj,  82,  14, BN_RAD },
-{ "rectangle"     , BN_CHK   , GRD_REC  ,  90, 182+dwnAdj,  82,  14, BN_RAD },
-{ "pyramid"       , BN_CHK   , GRD_PYR  ,  90, 198+dwnAdj,  82,  14, BN_RAD },
-{ "parentrel"     , BN_CHK   , GRD_PRR  ,  90,  54+dwnAdj,  82,  14, BN_RAD },
-{ "interlaced"    , BN_CHK   , GRD_INL  ,  90, 222+dwnAdj,  82,  14, 0 },
+{ "splithorizontal"    , BN_CHK   , GRD_SH  ,  90,  102+dwnAdj,  82,  14, BN_RAD },
+{ "blockhorizontal"    , BN_CHK   , GRD_BH  ,  90,  118 +dwnAdj,  82,  14, BN_RAD },
+{ "mirrorhorizontal"    , BN_CHK   , GRD_MH  ,  90,  134 +dwnAdj,  82,  14, BN_RAD },
+{ "wavehorizontal"    , BN_CHK   , GRD_WH  ,  90,  150 +dwnAdj,  82,  14, BN_RAD },
+{ "vertical"      , BN_CHK   , GRD_VER  ,  90, 166+dwnAdj,  82,  14, BN_RAD },
+{ "splitvertical"      , BN_CHK   , GRD_SV  ,  90, 182+dwnAdj,  82,  14, BN_RAD },
+{ "blockvertical"      , BN_CHK   , GRD_BV  ,  90, 198+dwnAdj,  82,  14, BN_RAD },
+{ "mirrorvertical"      , BN_CHK   , GRD_MV  ,  90, 214+dwnAdj,  82,  14, BN_RAD },
+{ "wavevertical"      , BN_CHK   , GRD_WV  ,  90, 230+dwnAdj,  82,  14, BN_RAD },
+{ "diagonal"      , BN_CHK   , GRD_DIA  ,  90, 246+dwnAdj,  82,  14, BN_RAD },
+{ "crossdiagonal"    , BN_CHK   , GRD_CDI  ,  90, 262+dwnAdj,  82,  14, BN_RAD },
+{ "pipecross"     , BN_CHK   , GRD_PIP  ,  90, 278+dwnAdj,  82,  14, BN_RAD },
+{ "elliptic"      , BN_CHK   , GRD_ELL  ,  90, 294+dwnAdj,  82,  14, BN_RAD },
+{ "rectangle"     , BN_CHK   , GRD_REC  ,  90, 310+dwnAdj,  82,  14, BN_RAD },
+{ "pyramid"       , BN_CHK   , GRD_PYR  ,  90, 326+dwnAdj,  82,  14, BN_RAD },
+{ "interlaced"    , BN_CHK   , GRD_INL  ,  90, 342+dwnAdj,  82,  14, 0 },
+
 //
-{ ""              , BN_RECT  , BEV_RCT  , 178,  32+dwnAdj,  74, 208, BN_EXT },
+{ ""              , BN_RECT  , BEV_RCT  , 178,  32+dwnAdj,  74, 328, BN_EXT },
 { "4.bevel"         , BN_STR   , BEV_HDR, 178,  32+dwnAdj,  74,  18, BN_EXT },
 
 { "flat"          , BN_CHK   , BEV_FLA  , 178,  54+dwnAdj,  74,  14, BN_RAD|BN_GRP },
@@ -458,7 +467,7 @@ void load_guistyle(struct dlg *dlg, const char *filename)
 
 int bbstylemaker_create(void)
 {
-    struct dlg *dlg = make_dlg(main_buttons, 1120, 320);
+    struct dlg *dlg = make_dlg(main_buttons, 560, 440);
     int xp, yp;
 
     xp = ReadInt(rcpath, "bbstylemaker.xpos", -1);
@@ -1664,6 +1673,35 @@ const char *font_string(void)
     }
 }
 
+// sigh. corresponds to GRD_types and propitems in styles and.. and...
+int const g_grad_types[] = { 
+                      B_SOLID,
+                      B_HORIZONTAL,
+                      B_SPLITHORIZONTAL,
+                      B_BLOCKHORIZONTAL,
+                      B_MIRRORHORIZONTAL,
+                      B_WAVEHORIZONTAL,
+                      B_VERTICAL,
+                      B_SPLITVERTICAL,
+                      B_BLOCKVERTICAL,
+                      B_MIRRORVERTICAL,
+                      B_WAVEVERTICAL,
+                      B_DIAGONAL,
+                      B_CROSSDIAGONAL,
+                      B_PIPECROSS,
+                      B_ELLIPTIC,
+                      B_RECTANGLE,
+                      B_PYRAMID
+                  };
+
+int find_in_grad_types (int value)
+{
+    for (size_t i = 0; i < sizeof(g_grad_types) / sizeof(*g_grad_types); ++i)
+        if (g_grad_types[i] == value)
+            return static_cast<int>(i);
+    return -1;
+}
+
 /*----------------------------------------------------------------------------*/
 void configure_interface(struct dlg *dlg)
 {
@@ -1862,10 +1900,14 @@ void configure_interface(struct dlg *dlg)
         enable_section(dlg, GRD_SOL, GRD_PYR, f_grad);
         enable_button(dlg, GRD_INL, f_gradtypes);
         enable_button(dlg, GRD_PRR, can_pr);
-        check_radio(dlg,
-            is_pr ? GRD_PRR
-            : P0->type == B_SOLID ? GRD_SOL
-            : P0->type + GRD_HOR );
+        if (is_pr)
+            check_radio(dlg, GRD_PRR);
+        else
+        {
+            int const n = find_in_grad_types(P0->type);
+            if (n >=0)
+                check_radio(dlg, n + GRD_SOL);
+        }
         check_button(dlg, GRD_INL, P0->interlaced);
     } else {
     // menu bullets
@@ -2510,21 +2552,32 @@ LRESULT CALLBACK main_dlg_proc (struct dlg *dlg, HWND hwnd, UINT msg, WPARAM wPa
         // -------------------------------------------------------
         case GRD_SOL:
         case GRD_HOR:
+        case GRD_SH:
+        case GRD_BH:
+        case GRD_MH:
+        case GRD_WH:
         case GRD_VER:
+        case GRD_SV:
+        case GRD_BV:
+        case GRD_MV:
+        case GRD_WV:
         case GRD_DIA:
         case GRD_CDI:
         case GRD_PIP:
         case GRD_ELL:
         case GRD_REC:
         case GRD_PYR:
-            f-=GRD_HOR;
-            if (f < 0) f = B_SOLID;
-            P0->type = f;
+        {
+            int const idx = f - GRD_SOL;
+            if (idx < 0 || idx >= sizeof(g_grad_types)/sizeof(*g_grad_types))
+              P0->type = B_SOLID;
+            else
+              P0->type = g_grad_types[idx];
             P0->parentRelative = 0;
             redraw_gui(dlg);
             configure_interface(dlg);
             break;
-
+        }
         // -------------------------------------------------------
         case GRD_PRR:
             P0->parentRelative = true;

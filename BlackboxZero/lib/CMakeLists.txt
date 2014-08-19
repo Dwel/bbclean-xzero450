@@ -2,6 +2,7 @@ set(BBLIB_STATIC true)
 
 set(bblib_SOURCES
 	bbrc.c
+	styleprops.c
 	bbroot.c
 	bools.c
 	colors.c

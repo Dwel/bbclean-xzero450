@@ -608,13 +608,11 @@ struct bimage *bimage_create(int width, int height,  StyleItem *si)
 			table_fn_wave(bi, bi->xtab, (width & 1)?((width+1)/2):(width/2), false, si->Color, si->ColorTo);
 			break;
 
-		case B_MIRROR_HORIZONTAL:
 		case B_MIRRORHORIZONTAL:
 			table_fn_mirror(bi, bi->xtab, width, false);
             break;
 
 		case B_SPLITHORIZONTAL:
-		case B_SPLIT_HORIZONTAL:
 			table_fn_split(bi, bi->xtab, width, si->ColorSplitTo, si->Color, si->ColorTo, si->ColorToSplitTo, false);
             break;
 
@@ -632,12 +630,10 @@ struct bimage *bimage_create(int width, int height,  StyleItem *si)
 			break;
 		
 		case B_MIRRORVERTICAL:
-		case B_MIRROR_VERTICAL:
 			table_fn_mirror(bi, bi->ytab, height, true);
 			break;
 
 		case B_SPLITVERTICAL:
-		case B_SPLIT_VERTICAL:
 			// Vertical gradient. Color1 | Color2
 			table_fn_split(bi, bi->ytab, height, si->ColorSplitTo, si->Color, si->ColorTo, si->ColorToSplitTo, true);
 			break;
@@ -683,10 +679,8 @@ struct bimage *bimage_create(int width, int height,  StyleItem *si)
 		//Horizontal specific
 		case B_WAVEHORIZONTAL:
 		case B_BLOCKHORIZONTAL:
-		case B_MIRROR_HORIZONTAL:
 		case B_MIRRORHORIZONTAL:
 		case B_SPLITHORIZONTAL:
-		case B_SPLIT_HORIZONTAL:
         case B_HORIZONTAL:
             // draw 2 lines, to cover the 'interlaced' case
             y = 0;
@@ -719,9 +713,7 @@ struct bimage *bimage_create(int width, int height,  StyleItem *si)
 		case B_BLOCKVERTICAL:
 		case B_WAVEVERTICAL:
 		case B_MIRRORVERTICAL:
-		case B_MIRROR_VERTICAL:
 		case B_SPLITVERTICAL:
-		case B_SPLIT_VERTICAL:
         case B_VERTICAL:
             // draw 1 column
             y = 0;
@@ -986,12 +978,10 @@ void MakeGradientEx(HDC hDC, RECT rect, int type, COLORREF colour_from, COLORREF
 
 		switch (type) {
 			case B_SPLITVERTICAL:
-			case B_SPLIT_VERTICAL:
 				is_vertical = is_split = true;
 				break;
 				
 			case B_SPLITHORIZONTAL:
-			case B_SPLIT_HORIZONTAL:
 				is_horizontal = is_split = true;
 				break;	
 		}

@@ -708,7 +708,7 @@ struct fil_list *read_file(const char *filename)
 {
     struct lin_list **slp, *sl;
     struct fil_list **flp, *fl;
-    char *buf, *p, *d, *s, *t, c, hashname[MAX_PATH], buff[MAX_KEYWORD_LENGTH];
+    char *buf, *p, *d, *s, *t, *hilite, c, hashname[MAX_PATH], buff[MAX_KEYWORD_LENGTH];
     unsigned h;
     int k, is_OB, is_070;
 
@@ -777,6 +777,13 @@ comment:
 			else 
 			if (k && false == is_070)
 				translate_new(buff, sizeof buff, &s, &k, 1);
+
+            // mojmir: i have no idea how did i break that shit... so this is a hotfix
+            // the thing is that filelist has menu.hilite items from file,
+            // while the read_style reads menu.active.
+            if (is_070)
+                if (NULL != (hilite = strstr(s, "hilite")))
+                    memcpy(hilite, "active", 6);
 
             sl = make_line(fl, s, d);
         }
@@ -987,84 +994,5 @@ int read_next_line(FILE *fp, char* szBuffer, unsigned dwLength)
     szBuffer[0] = 0;
     return false;
 }
-
-/* ------------------------------------------------------------------------- */
-// parse a given string and assigns settings to a StyleItem class
-
-ST const struct styleprop styleprop_1[] = {
- {"splithorizontal" ,B_SPLITHORIZONTAL  }, // "horizontal" is match .*horizontal
- {"blockhorizontal",B_BLOCKHORIZONTAL },
- {"mirrorhorizontal",B_MIRRORHORIZONTAL },
- {"wavehorizontal",B_WAVEHORIZONTAL },
- {"splitvertical"   ,B_SPLITVERTICAL    }, // "vertical" is match .*vertical
- {"blockvertical",B_BLOCKVERTICAL   },
- {"mirrorvertical"  ,B_MIRRORVERTICAL   },
- {"solid"        ,B_SOLID           },
- {"wavevertical" ,B_WAVEVERTICAL    },
- {"vertical"     ,B_VERTICAL        },
- {"crossdiagonal",B_CROSSDIAGONAL   },
- {"diagonal"     ,B_DIAGONAL        },
- {"pipecross"    ,B_PIPECROSS       },
- {"elliptic"     ,B_ELLIPTIC        },
- {"rectangle"    ,B_RECTANGLE       },
- {"pyramid"      ,B_PYRAMID         },
- {NULL           ,-1                }
- };
-
-ST const struct styleprop styleprop_2[] = {
- {"flat"        ,BEVEL_FLAT     },
- {"raised"      ,BEVEL_RAISED   },
- {"sunken"      ,BEVEL_SUNKEN   },
- {NULL          ,-1             }
- };
-
-ST const struct styleprop styleprop_3[] = {
- {"bevel1"      ,BEVEL1 },
- {"bevel2"      ,BEVEL2 },
- {"bevel3"      ,BEVEL2+1 },
- {NULL          ,-1     }
- };
-
-
-const struct styleprop *get_styleprop(int n)
-{
-    switch (n) {
-        case 1: return styleprop_1;
-        case 2: return styleprop_2;
-        case 3: return styleprop_3;
-        default : return NULL;
-    }
-}
-
-int findtex(const char *p, int prop)
-{
-    const struct styleprop *s = get_styleprop(prop);
-    do
-        if (strstr(p, s->key))
-            break;
-    while ((++s)->key);
-    return s->val;
-}
-
-void parse_item(LPCSTR szItem, StyleItem *item)
-{
-    char buf[256]; int t;
-    _strlwr(strcpy(buf, szItem));
-    t = item->parentRelative = NULL != strstr(buf, "parentrelative");
-    if (t) {
-        item->type = item->bevelstyle = item->bevelposition = item->interlaced = 0;
-        return;
-    }
-    t = findtex(buf, 1);
-    item->type = (-1 != t) ? t : strstr(buf, "gradient") ? B_DIAGONAL : B_SOLID;
-
-    t = findtex(buf, 2);
-    item->bevelstyle = (-1 != t) ? t : BEVEL_RAISED;
-
-    t = BEVEL_FLAT == item->bevelstyle ? 0 : findtex(buf, 3);
-    item->bevelposition = (-1 != t) ? t : BEVEL1;
-
-    item->interlaced = NULL!=strstr(buf, "interlaced");
-}   
 
 /* ------------------------------------------------------------------------- */

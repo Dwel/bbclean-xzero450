@@ -23,6 +23,7 @@
 #include "Settings.h"
 #include "bbshell.h"
 #include "bbrc.h"
+#include "styleprops.h"
 #include <tlhelp32.h>
 
 #define ST static

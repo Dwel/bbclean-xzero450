@@ -20,6 +20,7 @@
  ============================================================================
 */
 #include "bbstylemaker.h"
+#include "styleprops.h"
 
 int bsetroot_parse(NStyleStruct *pss, const char *command)
 {
@@ -116,17 +117,26 @@ void make_bsetroot_string(NStyleStruct *pss, char *out, int all)
 
     } else if (t >= 0) {
 
+		// tady asi taky!
+
         if (B_SOLID == t)
             c2 = c1, t = B_HORIZONTAL;
 
-        x += sprintf(out+x, " -gradient %s%s%s%sgradient -from %s -to %s",
-            i ? "interlaced":"",
-            bs ? get_styleprop(2)[bs].key : "",
-            bs && bp > BEVEL1 ? "bevel2" : "",
-            get_styleprop(1)[1+get_styleprop(1)[1+t].val].key,
-            rgb_string(b1, c1),
-            rgb_string(b2, c2)
-            );
+		int idx = find_in_propitem(get_styleprop(1), t);
+		if (idx >= 0)
+		{
+			styleprop const & prop = get_styleprop(1)[idx];
+			char const * key = prop.key;
+
+			x += sprintf(out+x, " -gradient %s%s%s%sgradient -from %s -to %s",
+				i ? "interlaced":"",
+				bs ? get_styleprop(2)[bs].key : "",
+				bs && bp > BEVEL1 ? "bevel2" : "",
+				prop.key,
+				rgb_string(b1, c1),
+				rgb_string(b2, c2)
+				);
+		}
 
         if (r->mod)
             x += sprintf(out+x, " -mod %d %d -fg %s",

@@ -767,19 +767,6 @@ int make_fontstring(StyleItem *si, char *out)
     }
 }
 
-int find_in_propitem (styleprop const * props, int value)
-{
-    int i = 0;
-    while (props[i].key != NULL)
-    {
-        if (props[i].val == value)
-            return static_cast<int>(i);
-        ++i;
-    }
-    return -1;
-}
-
-
 //===========================================================================
 static void write_style_item (const char * style, StyleStruct *pStyle, StyleItem *si, const char *key, int v, int sn)
 {

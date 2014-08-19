@@ -65,12 +65,20 @@
     TOKEN(CMD_CFG)
     TOKEN(CMD_RST)
 
-    // -------------------------- gradient / bevel select
+
     TOKEN(GRD_RCT)
     TOKEN(GRD_HDR)
     TOKEN(GRD_SOL)
     TOKEN(GRD_HOR)
+    TOKEN(GRD_SH)
+    TOKEN(GRD_BH)
+    TOKEN(GRD_MH)
+    TOKEN(GRD_WH)
     TOKEN(GRD_VER)
+    TOKEN(GRD_SV)
+    TOKEN(GRD_BV)
+    TOKEN(GRD_MV)
+    TOKEN(GRD_WV)
     TOKEN(GRD_DIA)
     TOKEN(GRD_CDI)
     TOKEN(GRD_PIP)

@@ -19,6 +19,7 @@
 
  ============================================================================
 */
+#include "styleprops.h"
 
 // API: ReadValue
 const char* ReadValue(const char* path, const char* szKey, long *ptr)
