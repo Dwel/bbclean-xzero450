@@ -18,8 +18,7 @@
   for more details.
 
  ============================================================================
-*/ // bbSlit.cpp
-
+*/
 #include "BBApi.h"
 #include "bblib.h"
 #include "bbversion.h"
@@ -35,7 +34,7 @@ const char szInfoLink     [] = "http://bb4win.sourceforge.net/bblean";
 const char szInfoEmail    [] = "grischka@users.sourceforge.net";
 const char szCopyright    [] = "2006-2009";
 
-DLL_EXPORT LPCSTR pluginInfo(int field)
+DLL_EXPORT LPCSTR pluginInfo (int field)
 {
     switch (field)
     {
@@ -51,22 +50,19 @@ DLL_EXPORT LPCSTR pluginInfo(int field)
 }
 
 //=============================================================================
-
 StyleItem m_style;
-int padding;
-int margin;
-int bblean_version;
-void getStyleSettings();
+int padding = 0;
+int margin = 0;
+int bblean_version = -1;
+plugin_info * g_PI = 0;
 
-struct plugin_info *g_PI;
+void getStyleSettings ();
 
 //===========================================================================
-// structures
-
 struct PluginInfo
 {
     // the next window, or NULL
-    struct PluginInfo *next;
+    PluginInfo * next;
     HWND hwnd;
     bool visible;
 
@@ -85,11 +81,11 @@ struct PluginInfo
 
 struct ModuleInfo
 {
-    struct ModuleInfo *next;
+    ModuleInfo * next;
     HMODULE hMO;
-    int (*beginSlitPlugin)(HINSTANCE hMainInstance, HWND hBBSlit);
-    int (*beginPluginEx)(HINSTANCE hMainInstance, HWND hBBSlit);
-    int (*endPlugin)(HINSTANCE hMainInstance);
+    int (*beginSlitPlugin) (HINSTANCE hMainInstance, HWND hBBSlit);
+    int (*beginPluginEx) (HINSTANCE hMainInstance, HWND hBBSlit);
+    int (*endPlugin) (HINSTANCE hMainInstance);
 
     char name[100];
     char args[100];
@@ -114,18 +110,18 @@ struct slit_info : plugin_info
     int baseWidth;
     bool setMargin;
 
-    slit_info()
+    slit_info ()
     {
         BBP_clear(this, FIRST_ITEM);
         this->next = g_PI;
         g_PI = this;
     }
 
-    ~slit_info()
+    ~slit_info ()
     {
         unloadPlugins();
         BBP_Exit_Plugin(this);
-        struct plugin_info **pp;
+        plugin_info * * pp = 0;
         for (pp = &g_PI; *pp; pp = &(*pp)->next)
         {
             if (this == *pp) {
@@ -135,23 +131,23 @@ struct slit_info : plugin_info
         }
     }
 
-    void about_box()
+    void about_box ()
     {
         BBP_messagebox(this, MB_OK, "%s - © %s %s\n", szVersion, szCopyright, szInfoEmail);
     }
 
-    void process_broam(const char *temp, int f);
-    LRESULT wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *ret);
+    void process_broam (const char * temp, int f);
+    LRESULT wnd_proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *ret);
 
-    void calculate_frame(void);
-    void position_windows(void);
+    void calculate_frame ();
+    void position_windows ();
 
-    void getRCSettings(void);
+    void getRCSettings ();
     void show_menu (bool popit);
 
-    void loadPlugins(FILE *fp);
-    void unloadPlugins(void);
-    void pos_changed(void);
+    void loadPlugins (FILE *fp);
+    void unloadPlugins ();
+    void pos_changed ();
 };
 
 //===========================================================================
@@ -159,7 +155,7 @@ DLL_EXPORT int beginPlugin(HINSTANCE hPluginInstance)
 //DLL_EXPORT int beginPluginEx(HINSTANCE hPluginInstance, HWND hSlit)
 {
 
-    const char *bbv;
+    const char * bbv = 0;
     int a,b,c;
     bbv = GetBBVersion();
     c = 0;
@@ -168,12 +164,13 @@ DLL_EXPORT int beginPlugin(HINSTANCE hPluginInstance)
 
     // dbg_printf("bblean_version %d", bblean_version);
 
-    struct plugin_info *p;
-    int n_inst;
+    plugin_info * p = 0;
+    int n_inst = 0;
 
-    for (p = g_PI, n_inst = 0; p; p = p->next, ++n_inst);
+    for (p = g_PI, n_inst = 0; p; p = p->next, ++n_inst)
+        ;
 
-    struct slit_info *PI = new slit_info();
+    slit_info * PI = new slit_info();
     PI->n_inst = n_inst;
     sprintf(PI->m_szInstName, n_inst ? "%s.%d":"%s", szAppName, 1+n_inst);
 
@@ -205,7 +202,6 @@ DLL_EXPORT int beginPlugin(HINSTANCE hPluginInstance)
     }
     else
     {
-
         PI->loadPlugins(NULL);
         PI->calculate_frame();
     }
@@ -213,13 +209,17 @@ DLL_EXPORT int beginPlugin(HINSTANCE hPluginInstance)
 }
 
 
-DLL_EXPORT void endPlugin(HINSTANCE hPluginInstance)
+DLL_EXPORT void endPlugin (HINSTANCE hPluginInstance)
 {
-    if (g_PI) delete g_PI;
+    if (g_PI)
+    {
+        delete g_PI;
+        g_PI = NULL;
+    }
 }
 
 //=============================================================================
-void pdbg (HWND window, char *msg)
+void pdbg (HWND window, char * msg)
 {
     char buffer[256];
     GetClassName(window, buffer, 256);
@@ -229,11 +229,10 @@ void pdbg (HWND window, char *msg)
 //=============================================================================
 void slit_info::show_menu (bool pop)
 {
-    n_menu *sub, *menu;
-
-    menu = n_makemenu(m_szInstName);
+    n_menu * menu = n_makemenu(m_szInstName);
     BBP_n_placementmenu(this, menu);
-    sub = n_submenu(menu, "Configuration");
+
+    n_menu * sub = n_submenu(menu, "Configuration");
     BBP_n_insertmenu(this, sub);
     if (false == this->inSlit) {
         n_menuitem_nop(sub, NULL);
@@ -241,7 +240,7 @@ void slit_info::show_menu (bool pop)
     }
     n_menuitem_nop(menu, NULL);
 
-    const char *a1, *a3, *b;
+    const char *a1 = 0, *a3 = 0, *b = 0;
     if (this->orient_vertical)
         a1 = "Left", a3 = "Right", b = "Base Width";
     else
@@ -279,11 +278,12 @@ void slit_info::show_menu (bool pop)
 }
 
 //=============================================================================
-bool get_style(StyleItem *si, const char *key)
+bool get_style (StyleItem * si, const char * key)
 {
-    const char *s, *p;
-    COLORREF c; int w;
-    char fullkey[80], *r;
+    const char *s = 0, *p = 0;
+    COLORREF c;
+    int w = 0;
+    char fullkey[128], *r = 0;
 
     memset(si, 0, sizeof *si);
     r = strchr(strcpy(fullkey, key), 0);
@@ -351,10 +351,10 @@ bool get_style(StyleItem *si, const char *key)
     return true;
 }
 
-void getStyleSettings()
+void getStyleSettings ()
 {
-    StyleItem si, *S;
-    S = NULL;
+    StyleItem si;
+    StyleItem * S = 0;
 
     if (bblean_version >= 1170)
         S = (StyleItem*)GetSettingPtr(SN_SLIT);
@@ -372,7 +372,7 @@ void getStyleSettings()
 }
 
 //=============================================================================
-void slit_info::getRCSettings()
+void slit_info::getRCSettings ()
 {
     this->place = POS_CenterRight; /* default placement */
     BBP_read_window_modes(this, szAppName);
@@ -384,7 +384,7 @@ void slit_info::getRCSettings()
 }
 
 //=============================================================================
-void slit_info::process_broam(const char *temp, int f)
+void slit_info::process_broam (const char *temp, int f)
 {
     if (f & BBP_BROAM_HANDLED)
     {
@@ -437,11 +437,14 @@ bool get_size(PluginInfo *p)
 }
 
 //=============================================================================
-void slit_info::position_windows(void)
+void slit_info::position_windows ()
 {
-    PluginInfo *p; int n; HDWP dwp;
+    PluginInfo * p = 0;
+    int n = 0;
+    HDWP dwp;
 
-    for (n = 0, p = m_pInfo; p; p = p->next, ++n);
+    for (n = 0, p = m_pInfo; p; p = p->next, ++n)
+        ;
     dwp = BeginDeferWindowPos(n);
 
     for (p = m_pInfo; p; p = p->next) {
@@ -449,59 +452,60 @@ void slit_info::position_windows(void)
             dwp,
             p->hwnd, NULL,
             p->xpos, p->ypos, p->width, p->height,
-            SWP_NOACTIVATE
-            | SWP_NOZORDER
-            | SWP_NOSIZE
+            SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE
             );
     }
     EndDeferWindowPos(dwp);
 }
 
 //=============================================================================
-
-LRESULT slit_info::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *ret)
+LRESULT slit_info::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT * ret)
 {
     static unsigned int msgs[] = { BB_REDRAWGUI, 0 };
-    PluginInfo *p, **pp;
+    PluginInfo * p = 0;
+    PluginInfo * * pp = 0;
 
     if (ret)
         return *ret;
 
     switch(message)
     {
-        //=============================================
-
         case WM_CREATE:
+        {
             SendMessage(GetBBWnd(), BB_REGISTERMESSAGE, (WPARAM)hwnd, (LPARAM)msgs);
             break;
-
+        }
         case WM_DESTROY:
+        {
             SendMessage(GetBBWnd(), BB_UNREGISTERMESSAGE, (WPARAM)hwnd, (LPARAM)msgs);
             if (this->bufbmp)
                 DeleteObject(this->bufbmp), this->bufbmp = NULL;
             SetDesktopMargin(hwnd, 0, 0);
-            for (pp = &this->m_pInfo; NULL != (p = *pp); *pp = p->next, m_free(p));
+            for (pp = &this->m_pInfo; NULL != (p = *pp); *pp = p->next, m_free(p))
+                ;
             break;
-
+        }
         //=============================================
-
         case SLIT_ADD:
+        {
             //pdbg ((HWND) lParam, "add");
-            for (pp = &this->m_pInfo; NULL != (p = *pp); pp = &p->next);
-            *pp = p = (PluginInfo*)m_alloc(sizeof(struct PluginInfo));
+            for (pp = &this->m_pInfo; NULL != (p = *pp); pp = &p->next)
+                ;
+            *pp = p = static_cast<PluginInfo *>(m_alloc(sizeof(PluginInfo)));
             memset(p, 0, sizeof *p);
             /* if (!IsBadStringPtr((const char*)wParam, 80))
                 ... */
             p->hwnd = (HWND)lParam;
-            SetWindowLong(p->hwnd, GWL_STYLE,
-                (GetWindowLong(p->hwnd, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+            SetWindowLong(p->hwnd, GWL_STYLE, (GetWindowLong(p->hwnd, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
             SetParent(p->hwnd, hwnd);
             SetTimer(hwnd, 2, 20, NULL);
             break;
-
+        }
         case SLIT_REMOVE:
+        {
             //pdbg ((HWND) lParam, "remove");
-            for (pp = &this->m_pInfo; NULL != (p = *pp) && p->hwnd != (HWND)lParam; pp = &p->next);
+            for (pp = &this->m_pInfo; NULL != (p = *pp) && p->hwnd != (HWND)lParam; pp = &p->next)
+                ;
             if (p) {
                 if (IsWindow(p->hwnd)) {
                     SetParent(p->hwnd, NULL);
@@ -514,40 +518,48 @@ LRESULT slit_info::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
             SetTimer(hwnd, 2, 20, NULL);
             this->suspend_autohide = 0;
             break;
-
+        }
         case SLIT_UPDATE:
+        {
             //pdbg ((HWND) lParam, "update");
             SetTimer(hwnd, 2, 20, NULL);
             break;
-
+        }
         case WM_TIMER:
+        {
             if (2 == wParam) {
                 KillTimer(hwnd, wParam);
                 this->calculate_frame();
             }
             break;
-
+        }
         //=============================================
         // support bbStyleMaker under bbLean 1.16
         case WM_COPYDATA:
             return BBReceiveData(hwnd, lParam, NULL);
 
         case BB_SETSTYLESTRUCT:
+        {
             if (SN_SLIT == wParam)
                 memcpy(&m_style, (void*)lParam, sizeof m_style);
             break;
-
+        }
         case BB_REDRAWGUI:
+        {
             if (wParam & BBRG_SLIT)
             {
-                int m = margin;
-                int p = padding;
+                int const m = margin;
+                int const p = padding;
                 if (this->bufbmp)
-                    DeleteObject(this->bufbmp), this->bufbmp = NULL;
+                {
+                    DeleteObject(this->bufbmp);
+                    this->bufbmp = NULL;
+                }
 
-                if (bblean_version >= 1170) {
+                if (bblean_version >= 1170)
                     getStyleSettings();
-                } else {
+                else
+                {
                     // Workaround under bbLean 1.16
                     padding = m_style.marginWidth;
                     margin = m_style.marginWidth + m_style.borderWidth;
@@ -559,17 +571,17 @@ LRESULT slit_info::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
                     InvalidateRect(hwnd, NULL, FALSE);
             }
             break;
-
+        }
         case BB_RECONFIGURE:
+        {
             if (this->bufbmp)
                 DeleteObject(this->bufbmp), this->bufbmp = NULL;
             getStyleSettings();
             this->getRCSettings();
             SetTimer(hwnd, 2, 20, NULL);
             break;
-
+        }
         //=============================================
-
         case WM_PAINT:
         {
             PAINTSTRUCT ps;
@@ -599,11 +611,8 @@ LRESULT slit_info::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
             EndPaint(hwnd, &ps);
             break;
         }
-
         //=============================================
-
-        // Right mouse button clicked?
-        case WM_RBUTTONUP:
+        case WM_RBUTTONUP: // Right mouse button clicked?
             this->show_menu (true);
             break;
 
@@ -611,7 +620,7 @@ LRESULT slit_info::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
             BBP_set_autoHide(this, false == this->autoHide);
             this->show_menu (false);
             break;
-    
+
         //=============================================
         default:
             return DefWindowProc(hwnd, message, wParam, lParam);
@@ -631,7 +640,7 @@ void slit_info::loadPlugins(FILE *fp)
     sprintf(rc_key, "%s.plugin:", this->rc_key);
     for (;;)
     {
-        const char *plug_path;
+        const char * plug_path = 0;
         char line[MAX_PATH];
         if (fp)
         {
@@ -640,7 +649,8 @@ void slit_info::loadPlugins(FILE *fp)
             if (line[0] != '&')
                 continue;
             plug_path = line;
-            while (' ' == *++plug_path);
+            while (' ' == *++plug_path)
+                ;
         }
         else
         {
@@ -651,22 +661,22 @@ void slit_info::loadPlugins(FILE *fp)
 
         //dbg_printf("%d loading %s", L, plug_path);
 
-        ModuleInfo *m = (ModuleInfo*)m_alloc(sizeof(struct ModuleInfo));
+        ModuleInfo * m = static_cast<ModuleInfo *>(m_alloc(sizeof(ModuleInfo)));
         memset(m, 0, sizeof *m);
 
-        const char *name = plug_path;
-        const char *p1 = strrchr (plug_path, '\\');
-        const char *p2 = strrchr (plug_path, '/');
+        const char * name = plug_path;
+        const char * p1 = strrchr(plug_path, '\\');
+        const char * p2 = strrchr(plug_path, '/');
         if (p2 > p1) p1 = p2;
         if (p1) name = p1 + 1;
 
         strcpy(m->name, name);
 
-        char *p3 = strrchr(m->name, '.');
+        char * p3 = strrchr(m->name, '.');
         if (p3) *p3 = 0;
         m->args[0] = 0;
 
-        const char *errormsg = NULL;
+        const char * errormsg = NULL;
         HMODULE hMO = LoadLibrary(plug_path);
 
         if (NULL == hMO) {
@@ -716,35 +726,33 @@ void slit_info::loadPlugins(FILE *fp)
         if (hMO)
             FreeLibrary(hMO);
         m_free(m);
+        m = 0;
 
         BBP_messagebox(this, MB_OK, "%s\n%s", plug_path, errormsg);
     }
 }
 
-//============================================================================
 #endif
-//============================================================================
 
-void slit_info::unloadPlugins(void)
+void slit_info::unloadPlugins ()
 {
-    ModuleInfo *m;
-    for (m = m_pMO; m; m = m->next) {
+    ModuleInfo * m = 0;
+    for (m = m_pMO; m; m = m->next)
+    {
         m->endPlugin(m->hMO);
         FreeLibrary(m->hMO);
-
     }
-    while (m_pMO) {
+    while (m_pMO)
+    {
         m = m_pMO ->next;
         m_free(m_pMO);
         m_pMO = m;
     }
 }
 
-//=============================================================================
-void slit_info::pos_changed(void)
+void slit_info::pos_changed ()
 {
-    int pos, margin;
-    pos = margin = 0;
+    int pos = 0, margin = 0;
     if (this->setMargin && false == this->autoHide && this->is_visible)
     {
         switch (place)
@@ -773,19 +781,23 @@ void slit_info::pos_changed(void)
 
             case POS_Top            :
             case POS_TopCenter      :
-            case_POS_Top            : pos = BB_DM_TOP; margin = height;
+            case_POS_Top            :
+                pos = BB_DM_TOP; margin = height;
                 break;
             case POS_Bottom         :
             case POS_BottomCenter   :
-            case_POS_Bottom         : pos = BB_DM_BOTTOM; margin = height;
+            case_POS_Bottom         :
+                pos = BB_DM_BOTTOM; margin = height;
                 break;
             case POS_Left           :
             case POS_CenterLeft     :
-            case_POS_Left           : pos = BB_DM_LEFT; margin = width;
+            case_POS_Left           :
+                pos = BB_DM_LEFT; margin = width;
                 break;
             case POS_Right          :
             case POS_CenterRight    :
-            case_POS_Right          : pos = BB_DM_RIGHT; margin = width;
+            case_POS_Right          :
+                pos = BB_DM_RIGHT; margin = width;
                 break;
         }
         if (margin && false == this->alwaysOnTop)
@@ -793,10 +805,7 @@ void slit_info::pos_changed(void)
     }
 
     SetDesktopMargin(this->hwnd, pos, margin);
-
 }
-
-//=============================================================================
 
 //=============================================================================
 
@@ -825,11 +834,12 @@ struct nobjs {
 
 //=============================================================================
 // standard order algorithm, based on related code in BBSlit by Tres'ni
-
-void reorder_standard (struct nobjs *pv, struct options *o)
+void reorder_standard (nobjs * pv, options * o)
 {
-    int w, h, n; struct obj *p;
-    for (p = pv->p, n = w = h = 0; n < pv->n; ++n, ++p) {
+    int w = 0, h = 0, n = 0;
+    obj * p = 0;
+    for (p = pv->p; n < pv->n; ++n, ++p)
+    {
         p->x = 0;
         p->y = h;
         w = imax(w, p->w);
@@ -838,10 +848,12 @@ void reorder_standard (struct nobjs *pv, struct options *o)
 
     if (o->alignment != ALN_LEFT)
         for (p = pv->p, n = 0; n < pv->n; ++n, ++p)
+        {
             if (o->alignment == ALN_RIGHT)
                 p->x = (w - p->w);
             else
                 p->x = (w - p->w) / 2;
+        }
 }
 
 //=============================================================================
@@ -849,14 +861,15 @@ void reorder_standard (struct nobjs *pv, struct options *o)
 //=============================================================================
 /* As Fit - algorithm */
 
-void reorder_fit (struct nobjs *pv, struct options *o);
+void reorder_fit (nobjs * pv, options * o);
 
 struct vi { int n; int i[1]; };
 
-void vi_insert(struct vi *vi, int x)
+void vi_insert (vi * vi, int x)
 {
-    int m, n, *i;
-    for (m = vi->n, i = vi->i, n = 0; n < m; ++n) {
+    int m = 0, n = 0, *i = 0;
+    for (m = vi->n, i = vi->i; n < m; ++n)
+    {
         if (i[n] < x)
             continue;
         if (i[n] == x)
@@ -867,36 +880,37 @@ void vi_insert(struct vi *vi, int x)
     i[n] = x, ++vi->n;
 }
 
-bool overlap(struct obj *l, struct obj *p, int pad)
+bool overlap (obj * l, obj * p, int pad)
 {
-    int ox, oy;
-    oy = imin(l->y + l->h, p->y + p->h) - imax(l->y, p->y);
+    int oy = imin(l->y + l->h, p->y + p->h) - imax(l->y, p->y);
     if (oy <= -pad)
         return false;
-    ox = imin(l->x + l->w, p->x + p->w) - imax(l->x, p->x);
+    int ox = imin(l->x + l->w, p->x + p->w) - imax(l->x, p->x);
     if (ox <= -pad)
         return false;
     return true;
 }
 
-bool overlap_any(struct nobjs *pv, struct obj *p, int pad)
+bool overlap_any (nobjs * pv, obj * p, int pad)
 {
-    int n, m; struct obj *l;
-    for (l = pv->p, m = pv->n, n = 0; n < m; ++n, ++l)
+    int n = 0, m = 0;
+    obj * l = 0;
+    for (l = pv->p, m = pv->n; n < m; ++n, ++l)
         if (overlap(l, p, pad))
             return true;
     return false;
 }
 
-int right_next(struct nobjs *pv, struct obj *p, int x_right, int pad)
+int right_next (nobjs * pv, obj * p, int x_right, int pad)
 {
-    int n, m, oy; struct obj *l;
+    int n = 0, m = 0;
+    obj * l = 0;
     for (l = pv->p, m = pv->n, n = 0; n < m; ++n, ++l) {
         if (l == p)
             continue;
         if (l->x < p->x + p->w)
             continue;
-        oy = imin(l->y + l->h, p->y + p->h) - imax(l->y, p->y);
+        int const oy = imin(l->y + l->h, p->y + p->h) - imax(l->y, p->y);
         if (oy <= -pad)
             continue;
         x_right = imin(x_right, l->x - pad);
@@ -904,11 +918,10 @@ int right_next(struct nobjs *pv, struct obj *p, int x_right, int pad)
     return x_right;
 }
 
-void reorder_fit (struct nobjs *pv, struct options *o)
+void reorder_fit (nobjs * pv, options * o)
 {
-    struct obj *p;
-    int n, m, b0, w0, h0;
-    struct vi *vx, *vy;
+    obj * p = 0;
+    int n = 0, m = 0, b0 = 0, w0 = 0, h0 = 0;
 
     m = pv->n;
 
@@ -918,17 +931,18 @@ void reorder_fit (struct nobjs *pv, struct options *o)
         b0 = imax(b0, p->w);
 
     /* allocate scratch buffers */
-    vx = (struct vi *)m_alloc(sizeof *vx + m * sizeof vx->i);
-    vy = (struct vi *)m_alloc(sizeof *vy + m * sizeof vy->i);
+    vi * vx = (struct vi *)m_alloc(sizeof(*vx) + m * sizeof(vx->i));
+    vi * vy = (struct vi *)m_alloc(sizeof(*vy) + m * sizeof(vy->i));
     vx->n = vy->n = 1; /* start with one edge each */
     vx->i[0] = vy->i[0] = 0; /* at x,y:0,0 */
 
     for (p = pv->p, w0 = h0 = n = 0; (pv->n = n) < m; ++p, ++n)
     {
-        int xn, yn;
-        yn = 0;
+        int xn = 0;
+        int yn = 0;
         do {
-            p->y = vy->i[yn]; xn = 0;
+            p->y = vy->i[yn];
+            xn = 0;
             do {
                 p->x = vx->i[xn];
                 if (p->x + p->w > b0) /* beyond max width, forget it */
@@ -977,15 +991,16 @@ void reorder_fit (struct nobjs *pv, struct options *o)
 //=============================================================================
 
 //=============================================================================
-void slit_info::calculate_frame(void)
+void slit_info::calculate_frame ()
 {
-    PluginInfo *pi, **pp;
-    int w0, h0, n, x, y;
+    PluginInfo *pi = 0;
+    PluginInfo * * pp = 0;
+    int x, y;
 
     if (false == this->is_visible)
         return;
 
-    n = 0;
+    int n = 0;
     for (pp = &m_pInfo; NULL != (pi = *pp); ) {
         if (get_size(pi)) {
             if (pi->visible)
@@ -997,27 +1012,29 @@ void slit_info::calculate_frame(void)
         }
     }
 
-    w0 = h0 = 0;
-    if (0 == n) {
-
+    int w0 = 0;
+    int h0 = 0;
+    if (0 == n)
+    {
         if (this->n_inst)
             w0 = h0 = 24;
-
-    } else {
-
+    }
+    else
+    {
         //DWORD t0 = GetTickCount(); for (int tc = 0; tc < 1000; ++tc) {
 
-        struct options o;
-        struct nobjs *pv;
-        struct obj *p;
-        int vertical = this->orient_vertical;
+        options o;
+        nobjs *pv = 0;
+        obj * p = 0;
+        int const vertical = this->orient_vertical;
 
-        pv = (struct nobjs*)m_alloc(sizeof *pv + (n-1) * sizeof pv->p);
+        pv = static_cast<nobjs *>(m_alloc(sizeof(*pv) + (n-1) * sizeof(pv->p)));
         pv->n = n;
 
         /* Fill in the nobjs */
         p = pv->p;
-        for (pi = m_pInfo; pi; pi = pi->next) {
+        for (pi = m_pInfo; pi; pi = pi->next)
+        {
             if (false == pi->visible)
                 continue;
             p->x = p->y = p->f = 0;
@@ -1075,3 +1092,4 @@ void slit_info::calculate_frame(void)
 }
 
 //=============================================================================
+
