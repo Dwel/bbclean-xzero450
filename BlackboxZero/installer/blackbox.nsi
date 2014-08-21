@@ -192,6 +192,8 @@ SkipXP32_3:
 
   SetOutPath $INSTDIR\plugins\bbAnalogExMod
 	File /r "vs_xp_32\plugins\bbAnalogExMod\"
+  SetOutPath $INSTDIR\plugins\bbAnalog
+	File /r "vs_xp_32\plugins\bbAnalog\"
   SetOutPath $INSTDIR\plugins\bbCalendar
 	File /r "vs_xp_32\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
@@ -309,6 +311,8 @@ SkipXP64_3:
 
   SetOutPath $INSTDIR\plugins\bbAnalogExMod
 	File /r "vs_xp_64\plugins\bbAnalogExMod\"
+  SetOutPath $INSTDIR\plugins\bbAnalog
+	File /r "vs_xp_64\plugins\bbAnalog\"
   SetOutPath $INSTDIR\plugins\bbCalendar
 	File /r "vs_xp_64\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
@@ -428,6 +432,8 @@ SkipVista32_3:
 
   SetOutPath $INSTDIR\plugins\bbAnalogExMod
 	File /r "vs_vista_32\plugins\bbAnalogExMod\"
+  SetOutPath $INSTDIR\plugins\bbAnalog
+	File /r "vs_vista_32\plugins\bbAnalog\"
   SetOutPath $INSTDIR\plugins\bbCalendar
 	File /r "vs_vista_32\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
@@ -547,6 +553,8 @@ SkipVista64_3:
 
   SetOutPath $INSTDIR\plugins\bbAnalogExMod
 	File /r "vs_vista_64\plugins\bbAnalogExMod\"
+  SetOutPath $INSTDIR\plugins\bbAnalog
+	File /r "vs_vista_64\plugins\bbAnalog\"
   SetOutPath $INSTDIR\plugins\bbCalendar
 	File /r "vs_vista_64\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
