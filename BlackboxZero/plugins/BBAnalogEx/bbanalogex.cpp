@@ -27,21 +27,158 @@ For additional license information, please read the included license
 
 ============================================================================
 */
-
 #include "bbanalogex.h"
 #include "resource.h"
 
 LPSTR szAppName = "BBAnalogEx";		// The name of our window class, etc.
-LPSTR szVersion = "BBAnalogEx v1.5";	// Used in MessageBox titlebars
+LPSTR szVersion = "BBAnalogEx v1.6";	// Used in MessageBox titlebars
 
-LPSTR szInfoVersion = "1.5";
+LPSTR szInfoVersion = "1.6";
 LPSTR szInfoAuthor = "Theo";
-LPSTR szInfoRelDate = "2004-08-04";
-LPSTR szInfoLink = "theo.host.sk";
+LPSTR szInfoRelDate = "2014-08-04";
+LPSTR szInfoLink = "http://blackbox4windows.com";
 LPSTR szInfoEmail = "theo.devil@gmx.net";
 
-//===========================================================================
+#ifndef WS_EX_LAYERED
+# define WS_EX_LAYERED	0x00080000
+# define LWA_COLORKEY	0x00000001
+# define LWA_ALPHA		0x00000002
+#endif 
 
+#include <windows.h>
+#include <playsoundapi.h>
+#include <commdlg.h>
+#include <shlwapi.h>
+#include <cmath>
+#include <ctime>
+#include "BBApi.h"
+#include "MessageBox.h"
+
+#define IDT_TIMER 1
+#define IDT_ALARMTIMER 2
+#define IDT_MTIMER 3
+
+//gdiplus things
+#include <gdiplus.h>
+using namespace Gdiplus;
+GdiplusStartupInput g_gdiplusStartupInput;
+ULONG_PTR g_gdiplusToken;
+
+//OS info storage
+DWORD      dwId = 0;
+DWORD      dwMajorVer = 0;
+DWORD      dwMinorVer = 0;
+double	PI = 3.14159265359;
+
+//RECT rec;
+bool anti = true;
+//temp storage
+static char szTemp[MAX_LINE_LENGTH];
+static char dszTemp[MAX_LINE_LENGTH];
+
+//window instances
+HINSTANCE hInstance;
+HWND hwndBBAnalogEx, hwndBlackbox;
+bool inSlit = false;	//Are we loaded in the slit? (default of no)
+HWND hSlit;				//The Window Handle to the Slit (for if we are loaded)
+
+// Blackbox messages we want to "subscribe" to:
+// BB_RECONFIGURE -> Sent when changing style and on reconfigure
+// BB_BROADCAST -> Broadcast message (bro@m)
+int msgs[] = {BB_RECONFIGURE, BB_BROADCAST, 0};
+
+//file path storage
+char rcpath[MAX_PATH];
+char stylepath[MAX_PATH];
+char alarmpath[MAX_PATH];
+
+char alarm[MAX_PATH];
+char htime[10];
+
+//char clockformat[256];
+//char drawclock[256];
+
+//start up positioning
+int ScreenWidth = 0;
+int ScreenHeight = 0;
+
+//.rc file settings
+bool show = true;
+int xpos = 0, ypos = 0;
+int width = 100, height = 100;
+
+int smal = 10;
+int day = 0, month = 0, year = 0;
+int second = 0, minute = 0, hour = 0, rhour = 0;
+time_t systemTime;
+tm *localTime = 0;
+
+int swidth = 0, mwidth = 0, hwidth = 0, cwidth = 0;
+int slength = 0, mlength = 0, hlength = 0;
+bool drawCircle = false;
+bool wantInSlit = false;
+bool alwaysOnTop = false;
+bool snapWindow = false;
+bool pluginToggle = false;
+bool transparency = false;
+bool fullTrans = false;	
+bool drawBorder = false;
+bool showSeconds = true;
+int alpha = 0;
+bool noBitmap = false;
+char windowStyle[24];
+char bitmapFile[MAX_PATH];
+char overBitmapFile[MAX_PATH];
+//int ratio;
+bool alarms = false;
+DWORD drawMode = 0;
+int quadrant = 0;
+int quad = 0;
+int hquad = 0;
+int dday = 0;
+//----------------------
+//small clocks
+int scx[10];
+int scy[10];
+int scr[10];
+int scs[10];
+COLORREF scch[10];
+COLORREF sccm[10];
+COLORREF sccs[10];
+int scdiff[10];
+int sccount = 0;
+
+////////////////////////
+
+//style setting storage
+COLORREF backColor, backColor2;
+COLORREF backColorTo, backColorTo2;
+COLORREF fontColor;
+char fontFace[256];
+int fontSize = 13;
+
+StyleItem * myStyleItem = 0;
+StyleItem * myStyleItem2 = 0;
+int bevelWidth;
+int borderWidth;
+COLORREF borderColor, helpcolor;
+COLORREF scolor, mcolor, hcolor, ccolor;
+bool acolor = false;
+//menu items
+Menu *myMenu, *windowStyleSubmenu, *configSubmenu, *settingsSubmenu, *otherSubmenu, *bitmapSubmenu, *styleSubmenu, *browseSubmenu;
+Menu *generalConfigSubmenu, *handSubmenu, *modeSubmenu, *colorSubmenu, *smallclockSubmenu;
+
+//gets OS version
+int WINAPI _GetPlatformId (DWORD *pdwId, DWORD *pdwMajorVer, DWORD *pdwMinorVer);
+//window process
+LRESULT CALLBACK WndProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+//special function for alpha transparency
+//so there you just use BBSLWA like normal SLWA
+//(c)grischka
+BOOL WINAPI BBSetLayeredWindowAttributes (HWND hwnd, COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
+
+
+//===========================================================================
 int beginPlugin(HINSTANCE hPluginInstance)
 {
 	WNDCLASS wc;
@@ -67,11 +204,12 @@ int beginPlugin(HINSTANCE hPluginInstance)
 		return 1;
 	}
 
-	// Get plugin and style settings...
-	ReadRCSettings();
-	//	executeAlarm();
-	if(!hSlit) inSlit = false;
-	else inSlit = wantInSlit;
+	ReadRCSettings();// Get plugin and style settings...
+	if(!hSlit)
+		inSlit = false;
+	else
+		inSlit = wantInSlit;
+
 	//initialize the plugin before getting style settings
 	InitBBAnalogEx();
 	GetStyleSettings();
@@ -98,9 +236,8 @@ int beginPlugin(HINSTANCE hPluginInstance)
 		return 1;
 	}
 
-	//Start the plugin timer
-	mySetTimer();
-	if(inSlit && hSlit)// Yes, so Let's let BBSlit know.
+	mySetTimer(); //Start the plugin timer
+	if (inSlit && hSlit)// Yes, so Let's let BBSlit know.
 		SendMessage(hSlit, SLIT_ADD, NULL, (LPARAM)hwndBBAnalogEx);
 	else inSlit = false;
 
@@ -116,11 +253,9 @@ int beginPlugin(HINSTANCE hPluginInstance)
 	SetWindowLongPtr(hwndBBAnalogEx, GWLP_USERDATA, magicDWord);
 #endif
 
-	// Make the window AlwaysOnTop?
-	if(alwaysOnTop) SetWindowPos(hwndBBAnalogEx, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-	// Show the window and force it to update...
-	ShowWindow(hwndBBAnalogEx, SW_SHOW);
-
+	if (alwaysOnTop)  // Make the window AlwaysOnTop?
+		SetWindowPos(hwndBBAnalogEx, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+	ShowWindow(hwndBBAnalogEx, SW_SHOW); // Show the window and force it to update...
 	InvalidateRect(hwndBBAnalogEx, NULL, true);
 
 	return 0;
@@ -130,26 +265,21 @@ int beginPlugin(HINSTANCE hPluginInstance)
 //This function is used once in beginPlugin and in @BBAnalogExReloadSettings def. found in WndProc.
 //Do not initialize objects here.  Deal with them in beginPlugin and endPlugin
 
-void InitBBAnalogEx()
+void InitBBAnalogEx ()
 {
-
-	//Get Platform type
 	dwId = 0;
 	dwMajorVer = 0;
 	dwMinorVer = 0;
-
-	//Get Platform type
-	_GetPlatformId (&dwId, &dwMajorVer, &dwMinorVer);
+	_GetPlatformId(&dwId, &dwMajorVer, &dwMinorVer); //Get Platform type
 
 	//get screen dimensions
 	ScreenWidth = GetSystemMetrics(SM_CXSCREEN);
 	ScreenHeight = GetSystemMetrics(SM_CYSCREEN);
-
 }
 
 //===========================================================================
 
-void endPlugin(HINSTANCE hPluginInstance)
+void endPlugin (HINSTANCE hPluginInstance)
 {
 	// Release our timer resources
 	KillTimer(hwndBBAnalogEx, IDT_TIMER);
@@ -158,17 +288,27 @@ void endPlugin(HINSTANCE hPluginInstance)
 	//shutdown the gdi+ engine
 	GdiplusShutdown(g_gdiplusToken);
 
-	//	KillTimer(hwndBBAnalogEx, IDT_ALARMTIMER);
 	// Write the current plugin settings to the config file...
 	WriteRCSettings();
 	// Delete used StyleItems...
-	if (myStyleItem) delete myStyleItem;
-	if (myStyleItem2) delete myStyleItem2;
-	// Delete the main plugin menu if it exists (PLEASE NOTE that this takes care of submenus as well!)
-	if (myMenu){ DelMenu(myMenu); myMenu = NULL;}
+	if (myStyleItem)
+	{
+		delete myStyleItem;
+		myStyleItem = 0;
+	}
+	if (myStyleItem2)
+	{
+		delete myStyleItem2;
+		myStyleItem2 = 0;
+	}
+	if (myMenu)
+	{
+		// Delete the main plugin menu if it exists (PLEASE NOTE that this takes care of submenus as well!)
+		DelMenu(myMenu);
+		myMenu = NULL;
+	}
+
 	// Unregister Blackbox messages...
-
-
 	SendMessage(hwndBlackbox, BB_UNREGISTERMESSAGE, (WPARAM)hwndBBAnalogEx, (LPARAM)msgs);
 	if(inSlit && hSlit)
 		SendMessage(hSlit, SLIT_REMOVE, NULL, (LPARAM)hwndBBAnalogEx);
@@ -184,35 +324,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{		
-		// Window update process...
+	// Window update process...
 	case WM_PAINT:
 		{
 			// Create buffer hdc's, bitmaps etc.
-			PAINTSTRUCT ps;  RECT r;
+			PAINTSTRUCT ps;
+			HDC hdc_scrn = BeginPaint(hwnd, &ps); //get screen buffer
 
-			//get screen buffer
-			HDC hdc_scrn = BeginPaint(hwnd, &ps);
-
-			//retrieve the coordinates of the window's client area.
-			GetClientRect(hwnd, &r);
+			RECT r;
+			GetClientRect(hwnd, &r); //retrieve the coordinates of the window's client area.
 
 			//to prevent flicker of the display, we draw to memory first,
 			//then put it on screen in one single operation. This is like this:
 
 			//first get a new 'device context'
 			HDC hdc = CreateCompatibleDC(NULL);
-
-
 			HBITMAP bufbmp = CreateCompatibleBitmap(hdc_scrn, r.right, r.bottom);
 			SelectObject(hdc, bufbmp);
 
-
-			if(drawBorder)
+			if (drawBorder)
 			{
 				//Make background gradient
 				if ((!(fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4)))||(inSlit))
 				{
-
 					MakeGradient(hdc, r, myStyleItem->type,
 						backColor, backColorTo,
 						myStyleItem->interlaced,
@@ -229,50 +363,38 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				r.right = (r.right - (bevelWidth + borderWidth));
 			}
 
-
 			SetBkMode(hdc, TRANSPARENT);
 
-
-
 			// if fultrans the whole backgorund is painted pink
-
-			if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
+			if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT) && (dwMajorVer > 4))
 			{
-				HBRUSH hbOrig, hBrush;
-				GetClientRect(hwnd, &rec);
-				hBrush = CreateSolidBrush(0xFF00FF);
-				hbOrig = (HBRUSH)SelectObject(hdc, hBrush);
+				//GetClientRect(hwnd, &rec); // mojmir: seems redundant
+				HBRUSH hBrush = CreateSolidBrush(0xFF00FF);
+				HBRUSH hbOrig = (HBRUSH)SelectObject(hdc, hBrush);
 				Rectangle(hdc, r.left-1, r.top-1, r.right+1, r.bottom+1);
 				DeleteObject(hBrush);
 				DeleteObject(hbOrig);
 			}
 
 			// if a bitmap path is found the bitmap is painter
-
-			if (!strcmp(bitmapFile,".none")==0) 
+			if (!strcmp(bitmapFile,".none") == 0) 
 			{
 
-				HANDLE image;
-				image = LoadImage(NULL, bitmapFile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-
+				HANDLE image = LoadImage(NULL, bitmapFile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 				HDC hdcMem = CreateCompatibleDC(hdc);
-
 				HBITMAP old = (HBITMAP) SelectObject(hdcMem, image);
 				BITMAP bitmap;
 				GetObject(image, sizeof(BITMAP), &bitmap);
-
 
 				TransparentBlt(hdc, r.left, r.top, r.right - r.left, r.bottom - r.top, hdcMem, 0, 0, bitmap.bmWidth, bitmap.bmHeight, 0xff00ff);
 				SelectObject(hdcMem, old);
 				DeleteObject(old);
 				DeleteObject(image);
 				DeleteDC(hdcMem);
-
 			}
+			/// mojmir: this is fucking confusing and bad bad style.. i'll leave it like this and deal with this shit later:
 			else 
-
 				// the second background is painted
-
 				if ((!(fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4)))||(inSlit))
 				{
 
@@ -283,8 +405,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						myStyleItem2->bevelposition,
 						bevelWidth, borderColor, 0); 
 				}
-
-
 
 				/*	r.left +=3;
 				r.right -=3;
@@ -305,68 +425,35 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SelectObject(hdc, otherfont);
 				SetTextColor(hdc,fontColor);
 
+				Graphics * graphics = new Graphics(hdc);
+				Pen * pen = new Pen(Color(255,GetRValue(fontColor), GetGValue(fontColor), GetBValue(fontColor)),2);
+				SolidBrush * br = new SolidBrush(Color(255,GetRValue(fontColor), GetGValue(fontColor), GetBValue(fontColor)));
+				SolidBrush * nr = new SolidBrush(Color(160,GetRValue(fontColor), GetGValue(fontColor), GetBValue(fontColor)));
 
-				Graphics *graphics;
+				if (anti)
+					graphics->SetSmoothingMode(SmoothingModeAntiAlias);
 
-
-				Pen *pen;
-				SolidBrush *br;
-				SolidBrush *nr;
-
-				graphics = new Graphics(hdc);
-				pen = new Pen(Color(255,GetRValue(fontColor), GetGValue(fontColor), GetBValue(fontColor)),2);
-				br = new SolidBrush(Color(255,GetRValue(fontColor), GetGValue(fontColor), GetBValue(fontColor)));
-				nr = new SolidBrush(Color(160,GetRValue(fontColor), GetGValue(fontColor), GetBValue(fontColor)));
-
-				if (anti) graphics->SetSmoothingMode(SmoothingModeAntiAlias);
-
-				/*	if (!strcmp(bitmapFile,".none")==0) 
-				{	Image *image;
-
-				image->FromFile(bitmapFile);
-
-				graphics->DrawImage(image,0,0,image->GetWidth(),image->GetHeight());
-
-				delete image;
-				}*/
-				int cntX,cntY,radius;
-				double theta;
-
-				cntX = (r.right - r.left)/2 + r.left;
-				cntY = (r.bottom - r.top)/2 + r.top;
-
-				radius = ((r.right - r.left)>(r.bottom - r.top)) ? ((r.bottom - r.top)/2 - 2):((r.right - r.left)/2 - 2);
-				theta = 0;
-
-				/*			pen->SetColor(Color(255,0,0));
-				pen->SetWidth(5);
-				graphics->DrawArc(pen, r.left+10,r.top+10,r.right-r.left-20,r.bottom-r.top-20,270,second*360/60);
-				pen->SetColor(Color(255,0,255));
-				graphics->DrawArc(pen, r.left,r.top,r.right-r.left,r.bottom-r.top,270,hour*360/12);
-				pen->SetColor(Color(255,255,0));
-				graphics->DrawArc(pen, r.left+5,r.top+5,r.right-r.left-10,r.bottom-r.top-10,270,minute*360/60);
-
-
-				*/
+				int cntX = (r.right - r.left)/2 + r.left;
+				int cntY = (r.bottom - r.top)/2 + r.top;
+				int radius = ((r.right - r.left)>(r.bottom - r.top)) ? ((r.bottom - r.top)/2 - 2) : ((r.right - r.left)/2 - 2);
+				double theta = 0;
 
 				//draw small clock
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(ccolor), GetGValue(ccolor), GetBValue(ccolor)));
+				if (!acolor)
+					pen->SetColor(Color(255,GetRValue(ccolor), GetGValue(ccolor), GetBValue(ccolor)));
 
-				for (int i=0;i<sccount;i++)
+				for (int i = 0; i < sccount; ++i)
 				{
-					int sscr,sscx,sscy,sscs,diff;
-					COLORREF sscch,ssccm,ssccs;
+					int sscr = scr[i];
+					int sscx = scx[i];
+					int sscy = scy[i];
+					int sscs = scs[i];
+					COLORREF sscch = scch[i];
+					COLORREF ssccm = sccm[i];
+					COLORREF ssccs = sccs[i];
+					int diff = scdiff[i];
 
-					sscr = scr[i];
-					sscx = scx[i];
-					sscy = scy[i];
-					sscs = scs[i];
-					sscch  = scch[i];
-					ssccm  = sccm[i];
-					ssccs  = sccs[i];
-					diff = scdiff[i];
-
-					if ((div(sscs,100000).rem >= 10000)&&(quadrant>0))
+					if ((div(sscs,100000).rem >= 10000) && (quadrant>0))
 					{
 						nr->SetColor(Color(160,GetRValue(ccolor), GetGValue(ccolor), GetBValue(ccolor)));
 
@@ -392,26 +479,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						SetTextColor(hdc, sscch);
 						DrawText(hdc,szTemp,-1,&text,DT_VCENTER|DT_CENTER|DT_SINGLELINE);
 					}
-					else{
-						/*	for(theta = 0; theta < 2 * PI; theta = theta + (PI / 6))
-						{
-						//	if(!(theta == 0 || theta == PI / 2 || theta == PI || theta == (3 * PI) / 2))
-						{
-						pen->SetWidth(1);
-						graphics->DrawLine(pen,
-						(float)(sscx + ((sscr - 3) * cos(theta))),
-						(float)(sscy - ((sscr - 3) * sin(theta))),
-						(float)(sscx + ((sscr - 1) * cos(theta))),
-						(float)(sscy - ((sscr - 1) * sin(theta))));
-						}
-						}
-						*/
+					else
+					{
 						pen->SetWidth(2.0);
 
 						if (div(sscs,100).rem >= 10)
 						{
-
-							//	if (!acolor) 
 							pen->SetColor(Color(255,GetRValue(ssccm), GetGValue(ssccm), GetBValue(ssccm)));
 
 							theta = (15 - minute) * (PI / 30);
@@ -419,13 +492,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 								(float)(sscy - (1.5 * sin(theta))),
 								(float)(sscx + ((sscr * mlength / 100) * cos(theta))),
 								(float)(sscy - ((sscr * mlength / 100) * sin(theta))));
-
 						}
 
 						if (div(sscs,1000).rem >= 100)
 						{
-							//	pen->SetWidth((float)hwidth);
-							//	if (!acolor) 	pen->SetColor(Color(255,GetRValue(hcolor), GetGValue(hcolor), GetBValue(hcolor)));
 							pen->SetColor(Color(255,GetRValue(sscch), GetGValue(sscch), GetBValue(sscch)));
 
 							theta = (3 - (hour+diff)-(minute/60.0)) * (PI / 6);
@@ -453,15 +523,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 									(float)(sscy - ((sscr * slength / 100) * sin(theta))));
 							}
 
-							//	graphics->DrawEllipse(pen, (float)(sscx + ((sscr * (slength-20) / 100) * cos(theta)) - 1.5), (float)(sscy - ((sscr * (slength-20) / 100) * sin(theta)) - 1.5), (float)3, (float)3);
-
 							pen->SetColor(Color(255,GetRValue(fontColor), GetGValue(fontColor), GetBValue(fontColor)));
 						}
 						//	pen->SetWidth((float)hwidth);
-						if (!acolor) 	pen->SetColor(Color(255,GetRValue(hcolor), GetGValue(hcolor), GetBValue(hcolor)));
+						if (!acolor)
+							pen->SetColor(Color(255,GetRValue(hcolor), GetGValue(hcolor), GetBValue(hcolor)));
 						graphics->DrawEllipse(pen, (float)(sscx - 2), (float)(sscy - 2), (float)4, (float)4);
 						//	pen->SetWidth((float)cwidth);
-						if (!acolor) 	pen->SetColor(Color(255,GetRValue(ccolor), GetGValue(ccolor), GetBValue(ccolor)));
+						if (!acolor)
+							pen->SetColor(Color(255,GetRValue(ccolor), GetGValue(ccolor), GetBValue(ccolor)));
 						//	if (drawCircle) graphics->DrawEllipse(pen, (float)r.left, (float)r.top, (float)(r.right - r.left), (float)(r.bottom - r.top));
 
 						//	DrawText(hdc,"XII",-1,&r,DT_TOP|DT_CENTER|DT_SINGLELINE);
@@ -469,185 +539,68 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						//	DrawText(hdc,"IX",-1,&r,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
 						//	DrawText(hdc,"VI",-1,&r,DT_BOTTOM|DT_CENTER|DT_SINGLELINE);
 					}
-
 				} //small clocks
 
 
-
-				/*
-				if (drawMode == 0) {
-				for(theta = 0; theta < 2 * PI; theta = theta + (PI / 6))
+				if (quad > 0)
 				{
-				if(!(theta == 0 || theta == PI / 2 || theta == PI || theta == (3 * PI) / 2))
-				{
-				pen->SetWidth(1);
-				graphics->DrawLine(pen,
-				(float)(cntX + ((radius - 3) * cos(theta))),
-				(float)(cntY - ((radius - 3) * sin(theta))),
-				(float)(cntX + ((radius - 1) * cos(theta))),
-				(float)(cntY - ((radius - 1) * sin(theta))));
-				}
-				}
-
-				pen->SetWidth((float)mwidth);
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(mcolor), GetGValue(mcolor), GetBValue(mcolor)));
-				theta = (15 - minute) * (PI / 30);
-				graphics->DrawLine(pen, (float)(cntX + (1.5 * cos(theta))),
-				(float)(cntY - (1.5 * sin(theta))),
-				(float)(cntX + ((radius * mlength / 100) * cos(theta))),
-				(float)(cntY - ((radius * mlength / 100) * sin(theta))));
-
-
-				pen->SetWidth((float)hwidth);
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(hcolor), GetGValue(hcolor), GetBValue(hcolor)));
-				theta = ((3 - hour)-(minute/60.0)) * (PI / 6);
-				graphics->DrawLine(pen, (float)(cntX + (1.5 * cos(theta))),
-				(float)(cntY - (1.5 * sin(theta))),
-				(float)(cntX + ((radius * hlength / 100) * cos(theta))),
-				(float)(cntY - ((radius * hlength / 100) * sin(theta))));
-
-				if (showSeconds)
-				{
-				pen->SetWidth((float)swidth);
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(scolor), GetGValue(scolor), GetBValue(scolor)));
-				theta = (15 - second) * (PI / 30);
-				graphics->DrawLine(pen, (float)(cntX - ((radius * .25) * cos(theta))),
-				(float)(cntY + ((radius * .25) * sin(theta))),
-				(float)(cntX + ((radius * slength / 100) * cos(theta))),
-				(float)(cntY - ((radius * slength / 100) * sin(theta))));
-
-				graphics->DrawEllipse(pen, (float)(cntX + ((radius * (slength-20) / 100) * cos(theta)) - 1.5), (float)(cntY - ((radius * (slength-20) / 100) * sin(theta)) - 1.5), (float)3, (float)3);
-
-				pen->SetColor(Color(255,GetRValue(fontColor), GetGValue(fontColor), GetBValue(fontColor)));
-				}
-				pen->SetWidth((float)hwidth);
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(hcolor), GetGValue(hcolor), GetBValue(hcolor)));
-				graphics->DrawEllipse(pen, (float)(cntX - 2), (float)(cntY - 2), (float)4, (float)4);
-				pen->SetWidth((float)cwidth);
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(ccolor), GetGValue(ccolor), GetBValue(ccolor)));
-				if (drawCircle) graphics->DrawEllipse(pen, (float)r.left, (float)r.top, (float)(r.right - r.left), (float)(r.bottom - r.top));
-
-				DrawText(hdc,"XII",-1,&r,DT_TOP|DT_CENTER|DT_SINGLELINE);
-				DrawText(hdc,"III",-1,&r,DT_RIGHT|DT_VCENTER|DT_SINGLELINE);
-				DrawText(hdc,"IX",-1,&r,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-				DrawText(hdc,"VI",-1,&r,DT_BOTTOM|DT_CENTER|DT_SINGLELINE);
-
-				}else if (drawMode == 1){
-
-
-
-				pen->SetWidth((float)mwidth);
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(mcolor), GetGValue(mcolor), GetBValue(mcolor)));
-				theta = (15 - minute) * (PI / 30);
-				graphics->DrawLine(pen, (float)(cntX + (radius * hlength/100 * cos(theta))),
-				(float)(cntY - (radius * hlength/100 * sin(theta))),
-				(float)(cntX + ((radius * mlength/100) * cos(theta))),
-				(float)(cntY - ((radius * mlength/100) * sin(theta))));
-
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(hcolor), GetGValue(hcolor), GetBValue(hcolor)));
-				pen->SetWidth((float)hwidth);
-				theta = (3 - hour) * (PI / 6);
-				graphics->DrawLine(pen, (float)(cntX + (radius *0.025 * cos(theta))),
-				(float)(cntY - (radius * 0.025 * sin(theta))),
-				(float)(cntX + ((radius * hlength/100) * cos(theta))),
-				(float)(cntY - ((radius * hlength/100) * sin(theta))));
-
-				if (showSeconds)
-				{
-				pen->SetWidth((float)swidth);
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(scolor), GetGValue(scolor), GetBValue(scolor)));
-				theta = (15 - second) * (PI / 30);
-				graphics->DrawLine(pen, (float)(cntX + ((radius * mlength/100) * cos(theta))),
-				(float)(cntY - ((radius * mlength/100) * sin(theta))),
-				(float)(cntX + ((radius * slength/100) * cos(theta))),
-				(float)(cntY - ((radius * slength/100) * sin(theta))));
-
-				pen->SetColor(Color(255,GetRValue(fontColor), GetGValue(fontColor), GetBValue(fontColor)));
-
-
-				if (drawCircle){
-				pen->SetWidth((float)cwidth);
-
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(ccolor), GetGValue(ccolor), GetBValue(ccolor)));
-				graphics->DrawEllipse(pen, (float)(cntX - (radius * mlength/100)), (float)(cntY - (radius * mlength/100)), (float)(radius*mlength/50), (float)(radius*mlength/50));
-				graphics->DrawEllipse(pen, (float)(cntX - (radius * hlength/100)), (float)(cntY - (radius * hlength/100)), (float)(radius*hlength/50), (float)(radius*hlength/50));
-				graphics->DrawEllipse(pen, (float)(cntX - (radius * slength/100)), (float)(cntY - (radius * slength/100)), (float)(radius*slength/50), (float)(radius*slength/50));
-				}
-				}
-				pen->SetWidth((float)hwidth);
-				if (!acolor) 	pen->SetColor(Color(255,GetRValue(hcolor), GetGValue(hcolor), GetBValue(hcolor)));
-				graphics->DrawEllipse(pen, (float)(cntX - 2), (float)(cntY - 2), (float)4, (float)4);
-
-				}
-				*/
-
-				if (quad>0) {
 					nr->SetColor(Color(160,GetRValue(ccolor), GetGValue(ccolor), GetBValue(ccolor)));
-
 					graphics->FillPie(nr,0,0,width,height,(float)(hquad-1)*30-90,30);
-
 				}
 
 				delete nr;
+				nr = 0;
 				delete br;
+				br = 0;
 				delete pen;
+				pen = 0;
 				delete graphics;
-
-
+				graphics = 0;
 
 				DeleteObject(otherfont);
 
 				if (!strcmp(overBitmapFile,".none")==0) 
 				{
-
-					HANDLE image;
-					image = LoadImage(NULL, overBitmapFile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-
+					HANDLE image = LoadImage(NULL, overBitmapFile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 					HDC hdcMem = CreateCompatibleDC(hdc);
-
 					HBITMAP old = (HBITMAP) SelectObject(hdcMem, image);
 					BITMAP bitmap;
 					GetObject(image, sizeof(BITMAP), &bitmap);
-
 
 					TransparentBlt(hdc, r.left, r.top, r.right - r.left, r.bottom - r.top, hdcMem, 0, 0, bitmap.bmWidth, bitmap.bmHeight, 0x000000);
 					SelectObject(hdcMem, old);
 					DeleteObject(old);
 					DeleteObject(image);
 					DeleteDC(hdcMem);
-
 				}
-				//Paint to the screen
-				BitBlt(hdc_scrn, 0, 0, width, height, hdc, 0, 0, SRCCOPY);
-
+				
+				BitBlt(hdc_scrn, 0, 0, width, height, hdc, 0, 0, SRCCOPY); //Paint to the screen
 
 				// Remember to delete all objects!
-
 				SelectObject(hdc, bufbmp); //mortar: select just incase it is no longer in the context
 				DeleteDC(hdc);         //gdi: first delete the dc
 				DeleteObject(bufbmp);  //gdi: now the bmp is free
 
 				//takes care of hdc_scrn
 				EndPaint(hwnd, &ps);
-
 				return 0;
 		}
 		break;
 
-		// ==========
-
-		// If Blackbox sends a reconfigure message, load the new style settings and update the window...
+	// If Blackbox sends a reconfigure message, load the new style settings and update the window...
 	case BB_RECONFIGURE:
 		{
-			if(myMenu){ DelMenu(myMenu); myMenu = NULL;}
+			if (myMenu)
+			{
+				DelMenu(myMenu);
+				myMenu = NULL;
+			}
 			GetStyleSettings();
 			InvalidateRect(hwndBBAnalogEx, NULL, true);
 		}
 		break;
 
-		// ==========
-
-		// Broadcast messages (bro@m -> the bang killah! :D <vbg>)
+	// Broadcast messages (bro@m -> the bang killah! :D <vbg>)
 	case BB_BROADCAST:
 		{
 			strcpy(szTemp, (LPCSTR)lParam);
@@ -665,19 +618,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else if (!_stricmp(szTemp, "@BBAnalogExAbout"))
 			{
-				sprintf(szTemp, "%s\n\n%s ©2004 %s\n\n%s",
-					szVersion, szInfoAuthor, szInfoEmail, szInfoLink);
+				sprintf(szTemp, "%s\n\n%s ©2004 %s\n\n%s", szVersion, szInfoAuthor, szInfoEmail, szInfoLink);
 
 				CMessageBox box(hwndBlackbox,				// hWnd
 					_T(szTemp),					// Text
 					_T(szAppName),				// Caption
 					MB_OK | MB_SETFOREGROUND);	// type
 
-
-
 				box.SetIcon(IDI_ICON1, hInstance);
 				box.DoModal();
-
 			}
 			else if (!_stricmp(szTemp, "@BBAnalogExPluginToggle"))
 			{
@@ -689,8 +638,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// Always on top...
 				alwaysOnTop = !alwaysOnTop;
 
-				if (alwaysOnTop && !inSlit) SetWindowPos(hwndBBAnalogEx, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-				else SetWindowPos(hwndBBAnalogEx, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+				if (alwaysOnTop && !inSlit)
+					SetWindowPos(hwndBBAnalogEx, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+				else
+					SetWindowPos(hwndBBAnalogEx, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 			}
 			else if (!_stricmp(szTemp, "@BBAnalogExSlit"))
 			{
@@ -698,7 +649,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				wantInSlit = !wantInSlit;
 
 				inSlit = wantInSlit;
-				if(wantInSlit && hSlit)
+				if (wantInSlit && hSlit)
 					SendMessage(hSlit, SLIT_ADD, NULL, (LPARAM)hwndBBAnalogEx);
 				else if(!wantInSlit && hSlit)
 					SendMessage(hSlit, SLIT_REMOVE, NULL, (LPARAM)hwndBBAnalogEx);
@@ -717,14 +668,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				transparency = !transparency;
 				setStatus();
 			}
-
 			else if (!_stricmp(szTemp, "@BBAnalogExFullTrans"))
 			{
 				// Set the transparent bacground attribut to the window
 				fullTrans = !fullTrans;
 				setStatus();
 			}
-
 			else if (!_stricmp(szTemp, "@BBAnalogExSnapToEdge"))
 			{
 				// Set the snapWindow attributes to the window
@@ -826,31 +775,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else if (!_stricmp(szTemp, "@BBAnalogExReloadSettings"))
 			{
+				//remove from slit before resetting window attributes
+				if(inSlit && hSlit)
+					SendMessage(hSlit, SLIT_REMOVE, NULL, (LPARAM)hwndBBAnalogEx);
 
-				{
-					//remove from slit before resetting window attributes
-					if(inSlit && hSlit)
-						SendMessage(hSlit, SLIT_REMOVE, NULL, (LPARAM)hwndBBAnalogEx);
+				//Re-initialize
+				ReadRCSettings();
+				InitBBAnalogEx();
+				inSlit = wantInSlit;
+				GetStyleSettings();
 
-					//Re-initialize
-					ReadRCSettings();
-					InitBBAnalogEx();
-					inSlit = wantInSlit;
-					GetStyleSettings();
+				setStatus();
 
-					setStatus();
+				//set window on top is alwaysontop: is true
+				if ( alwaysOnTop) SetWindowPos( hwndBBAnalogEx, HWND_TOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
+				else SetWindowPos( hwndBBAnalogEx, HWND_NOTOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
 
-					//set window on top is alwaysontop: is true
-					if ( alwaysOnTop) SetWindowPos( hwndBBAnalogEx, HWND_TOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
-					else SetWindowPos( hwndBBAnalogEx, HWND_NOTOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
+				if (inSlit && hSlit)
+					SendMessage(hSlit, SLIT_ADD, NULL, (LPARAM)hwndBBAnalogEx);
+				else inSlit = false;
 
-					if(inSlit && hSlit)
-						SendMessage(hSlit, SLIT_ADD, NULL, (LPARAM)hwndBBAnalogEx);
-					else inSlit = false;
-
-					//update window
-					InvalidateRect(hwndBBAnalogEx, NULL, true);
-				}
+				//update window
+				InvalidateRect(hwndBBAnalogEx, NULL, true);
 			}
 			else if (!_stricmp(szTemp, "@BBAnalogExSaveSettings"))
 			{
@@ -904,8 +850,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{ //changing the clock size
 				width = atoi(szTemp + 17);
 
-				if ( alwaysOnTop) SetWindowPos( hwndBBAnalogEx, HWND_TOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
-				else SetWindowPos( hwndBBAnalogEx, HWND_NOTOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
+				if (alwaysOnTop)
+					SetWindowPos(hwndBBAnalogEx, HWND_TOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
+				else
+					SetWindowPos(hwndBBAnalogEx, HWND_NOTOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
 
 				InvalidateRect(hwndBBAnalogEx, NULL, true);
 			}
@@ -913,8 +861,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{ //changing the clock size
 				height = atoi(szTemp + 18);
 
-				if ( alwaysOnTop) SetWindowPos( hwndBBAnalogEx, HWND_TOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
-				else SetWindowPos( hwndBBAnalogEx, HWND_NOTOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
+				if (alwaysOnTop)
+					SetWindowPos(hwndBBAnalogEx, HWND_TOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
+				else
+					SetWindowPos(hwndBBAnalogEx, HWND_NOTOPMOST, xpos, ypos, width, height, SWP_NOACTIVATE);
 
 				InvalidateRect(hwndBBAnalogEx, NULL, true);
 			}
@@ -922,7 +872,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				alpha = atoi(szTemp + 25);
 
-				if (transparency) setStatus();					
+				if (transparency)
+					setStatus();					
 				InvalidateRect(hwndBBAnalogEx, NULL, true);
 			}
 			else if (!_strnicmp(szTemp, "@BBAnalogExSLength", 17))
@@ -964,7 +915,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			else if (!_strnicmp(szTemp, "@BBAnalogExNC", 13))
 			{
 				sccount = atoi(szTemp + 13);
-
 				InvalidateRect(hwndBBAnalogEx, NULL, true);
 			}
 
@@ -989,7 +939,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				num[2]=0;
 				strcpy(szTemp,szTemp + 2);
 				scy[atoi(num)] = atoi(szTemp);
-				//scy[0] = atoi(szTemp + 14);
 				InvalidateRect(hwndBBAnalogEx, NULL, true);
 			}
 			else if (!_strnicmp(szTemp, "@BBAnalogExscradius", 19))
@@ -1001,9 +950,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				
 				strcpy(szTemp,szTemp + 2);
 				scr[atoi(num)] = atoi(szTemp);
-				//scy[0] = atoi(szTemp + 14);
-
-				//	scr[0] = atoi(szTemp + 19);
 				InvalidateRect(hwndBBAnalogEx, NULL, true);
 			}
 			else if (!_strnicmp(szTemp, "@BBAnalogExscdiff", 17))
@@ -1011,21 +957,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				char num[3] = {0, 0, 0};
 
 				strncpy(num, szTemp+17, 2);
-
-				//strcpy(szTemp,szTemp + 17);
-				//strncpy(num,szTemp,2);
-
-				//strcpy(szTemp,szTemp + 2);
 				scdiff[atoi(num)] = atoi(szTemp+2);
-				//scy[0] = atoi(szTemp + 14);
-
-				//	scr[0] = atoi(szTemp + 19);
 				InvalidateRect(hwndBBAnalogEx, NULL, true);
 			}
-
 			else if (!_strnicmp(szTemp, "@BBAnalogExSetBitmap", 20))
 			{
-
 				strcpy(bitmapFile,szTemp + 22);
 				noBitmap = false;
 				InvalidateRect(hwndBBAnalogEx, NULL, true);
@@ -1058,9 +994,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			InvalidateRect(hwndBBAnalogEx, NULL, true);
 			}
-			*/	else if (!_stricmp(szTemp, "@BBAnalogExLoadBitmap"))
+			*/
+			else if (!_stricmp(szTemp, "@BBAnalogExLoadBitmap"))
 			{
-
 				OPENFILENAME ofn;       // common dialog box structure
 
 				// Initialize OPENFILENAME
@@ -1079,13 +1015,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 				if (GetOpenFileName(&ofn)) 
-
 					InvalidateRect(hwndBBAnalogEx, NULL, true);
-
 			}
 			else if (!_stricmp(szTemp, "@BBAnalogExLoadOBitmap"))
 			{
-
 				OPENFILENAME ofn;       // common dialog box structure
 
 				// Initialize OPENFILENAME
@@ -1104,15 +1037,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 				if (GetOpenFileName(&ofn)) 
-
 					InvalidateRect(hwndBBAnalogEx, NULL, true);
-
 			}
-
 		}
 		break;
-
-		// ==========
 
 	case WM_WINDOWPOSCHANGING:
 		{
@@ -1125,9 +1053,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
-		// ==========
-
-		// Save window position if it changes...
+	// Save window position if it changes...
 	case WM_WINDOWPOSCHANGED:
 		{
 			WINDOWPOS* windowpos = (WINDOWPOS*)lParam;
@@ -1136,29 +1062,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
-		// ==========
-
 	case WM_DISPLAYCHANGE:
 		{
-			if(!inSlit || !hSlit)
+			if (!inSlit || !hSlit)
 			{
 				// IntelliMove(tm)... <g>
 				// (c) 2003 qwilk
 				//should make this a function so it can be used on startup in case resolution changed since
 				//the last time blackbox was used.
-				int relx, rely;
 				int oldscreenwidth = ScreenWidth;
 				int oldscreenheight = ScreenHeight;
 				ScreenWidth = GetSystemMetrics(SM_CXSCREEN);
 				ScreenHeight = GetSystemMetrics(SM_CYSCREEN);
 				if (xpos > oldscreenwidth / 2)
 				{
-					relx = oldscreenwidth - xpos;
+					int const relx = oldscreenwidth - xpos;
 					xpos = ScreenWidth - relx;
 				}
 				if (ypos > oldscreenheight / 2)
 				{
-					rely = oldscreenheight - ypos;
+					int const rely = oldscreenheight - ypos;
 					ypos = ScreenHeight - rely;
 				}
 				MoveWindow(hwndBBAnalogEx, xpos, ypos, width, height, true);
@@ -1166,8 +1089,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
-		// ==========
-		// Allow window to move if the cntrl key is not pressed...
+	// Allow window to move if the cntrl key is not pressed...
 	case WM_NCHITTEST:
 		{
 			if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
@@ -1200,20 +1122,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		*/	
 		// ==========
 
-		// Right mouse button clicked?
+	// Right mouse button clicked?
 	case WM_NCRBUTTONUP:
-		{	
-			// show the menu...
-			createMenu();
-		}
+		createMenu();// show the menu...
 		break;
-		//-------------------------------------------------
 
 	case WM_LBUTTONUP: 
 		{
 			if (quadrant > 0)
-			{quadrant = 0;}
-			else{
+			{
+				quadrant = 0;
+			}
+			else
+			{
 				//open control panel with:  control timedate.cpl,system,0
 				//BBExecute(GetDesktopWindow(), NULL, "control", "timedate.cpl,system,0", NULL, SW_SHOWNORMAL, false);
 				quad=2;
@@ -1224,31 +1145,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				poss.x -= windowRect.left;
 				poss.y -= windowRect.top;
 
-
-				//	POINT poss;
-				//	GetCursorPos(&poss);
-				double alpha;
-				int sx,sy;
-				double pom;
-
-				sx = width/2;
-				sy = height/2;
-
-
-				pom = sqrt((double)(((poss.x-sx)*(poss.x-sx))+((poss.y-sy)*(poss.y-sy))));
-
-				alpha = acos(abs(poss.y-sy)/pom);
-
-
+				int sx = width/2;
+				int sy = height/2;
+				double pom = sqrt((double)(((poss.x-sx)*(poss.x-sx))+((poss.y-sy)*(poss.y-sy))));
+				double alpha = acos(abs(poss.y-sy)/pom);
 				quadrant = (int)(alpha/(PI/6))+1; 
 
-
-				if ((poss.x>sx) && (poss.y>sy)) quadrant = abs(quadrant-4)+3;
-				if ((poss.x<sx) && (poss.y>sy)) quadrant = quadrant+6;
-				if ((poss.x<sx) && (poss.y<sy)) quadrant = abs(quadrant-4)+9;
+				if ((poss.x > sx) && (poss.y > sy)) quadrant = abs(quadrant-4)+3;
+				if ((poss.x < sx) && (poss.y > sy)) quadrant = quadrant+6;
+				if ((poss.x < sx) && (poss.y < sy)) quadrant = abs(quadrant-4)+9;
 				hquad = quadrant;
-				//itoa((quadrant),szTemp,10);
-				//MessageBox(hwndBlackbox, szTemp, szAppName, MB_OK | MB_ICONERROR | MB_TOPMOST);
 
 				SetTimer(hwndBBAnalogEx,		// handle to main window 
 					IDT_ALARMTIMER,			// timer identifier 
@@ -1261,18 +1167,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					(TIMERPROC) NULL);	// no timer callback 
 			}
 			InvalidateRect(hwndBBAnalogEx, NULL, true);
-
-
 		}
 		break;
-
-		// ==========
 
 	case WM_TIMER:
 		{
 			switch (wParam)
 			{
-			case IDT_TIMER:
+				case IDT_TIMER:
 				{
 					//redraw the window
 					//	show = !show;
@@ -1283,7 +1185,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				} break;
 
-			case IDT_ALARMTIMER:
+				case IDT_ALARMTIMER:
 				{
 					//redraw the window
 					//show = !show;
@@ -1295,7 +1197,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					InvalidateRect(hwndBBAnalogEx, NULL, false);
 				} break; 
 
-			case IDT_MTIMER:
+				case IDT_MTIMER:
 				{
 					//redraw the window
 					//show = !show;
@@ -1307,13 +1209,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		break;
-
-		/*	case WM_MOUSEMOVE:
-		{
-		InvalidateRect(hwndBBAnalogEx, NULL, false);
-		}break;
-		*/
-		// ==========
 
 	default:
 		return DefWindowProc(hwnd,message,wParam,lParam);
@@ -1345,8 +1240,6 @@ void GetStyleSettings()
 	if (myStyleItem) delete myStyleItem;
 	myStyleItem = new StyleItem;
 	ParseItem(tempstyle, myStyleItem);
-
-
 
 	if(StrStrI(windowStyle, "label") != NULL  && strlen(windowStyle) < 6)
 	{
@@ -1522,22 +1415,23 @@ void GetStyleSettings()
 
 //===========================================================================
 
-void ReadRCSettings()
+void ReadRCSettings ()
 {
 	char temp[MAX_LINE_LENGTH], path[MAX_LINE_LENGTH], defaultpath[MAX_LINE_LENGTH];
-	int nLen;
 
 	// First we look for the config file in the same folder as the plugin...
 	GetModuleFileName(hInstance, rcpath, sizeof(rcpath));
-	nLen = strlen(rcpath) - 1;
-	while (nLen >0 && rcpath[nLen] != '\\') nLen--;
+	int nLen = strlen(rcpath) - 1;
+	while (nLen >0 && rcpath[nLen] != '\\')
+		nLen--;
 	rcpath[nLen + 1] = 0;
 	strcpy(temp, rcpath);
 	strcpy(path, rcpath);
 	strcpy(alarmpath, rcpath);
 
 	strcat(alarmpath,"alarms.rc");
-	if (!FileExists(alarmpath)) createAlarmFile();
+	if (!FileExists(alarmpath))
+		createAlarmFile();
 
 	strcat(temp, "bbanalogex.rc");
 	strcat(path, "bbanalogexrc");
@@ -1608,21 +1502,20 @@ void ReadRCSettings()
 	//	if ((text_pos<0) ||(text_pos>4)) text_pos = 0; 
 
 	alpha = ReadInt(rcpath, "bbanalogex.alpha:", 160);
-	if(alpha > 255) alpha = 255;
+	if (alpha > 255) alpha = 255;
 
-	if(ReadString(rcpath, "bbanalogex.inSlit:", NULL) == NULL) wantInSlit = true;
-	else wantInSlit = ReadBool(rcpath, "bbanalogex.inSlit:", true);
+	if (ReadString(rcpath, "bbanalogex.inSlit:", NULL) == NULL)
+		wantInSlit = true;
+	else
+		wantInSlit = ReadBool(rcpath, "bbanalogex.inSlit:", true);
 
 	alwaysOnTop = ReadBool(rcpath, "bbanalogex.alwaysOnTop:", true);
-
 	drawBorder = ReadBool(rcpath, "bbanalogex.drawBorder:", true);
 	drawMode = ReadInt(rcpath, "bbanalogex.drawMode:", 0);
 	drawCircle = ReadBool(rcpath, "bbanalogex.draw.circle:", true);
 	anti = ReadBool(rcpath, "bbanalogex.anti.alias:", false);
 	showSeconds = ReadBool(rcpath, "bbanalogex.show.seconds:", true);
 	alarms = ReadBool(rcpath, "bbanalogex.enabled.alarms:", false);
-	//	if (magStart) mag = true;
-
 	snapWindow = ReadBool(rcpath, "bbanalogex.snapWindow:", true);
 	transparency = ReadBool(rcpath, "bbanalogex.transparency:", false);
 	fullTrans = ReadBool(rcpath, "bbanalogex.fullTrans:", false);
@@ -1630,17 +1523,14 @@ void ReadRCSettings()
 	alwaysOnTop = ReadBool(rcpath, "bbanalogex.alwaysontop:", true);
 	pluginToggle = ReadBool(rcpath, "bbanalogex.pluginToggle:", false);
 	strcpy(windowStyle, ReadString(rcpath, "bbanalogex.windowStyle:", "windowlabel"));
-	if(((StrStrI(windowStyle, "label") == NULL) || ((StrStrI(windowStyle, "label") != NULL) && (strlen(windowStyle) > 5))) 
-		&& (StrStrI(windowStyle, "windowlabel") == NULL) && (StrStrI(windowStyle, "clock") == NULL)  && (StrStrI(windowStyle, "button") == NULL)  && (StrStrI(windowStyle, "buttonpr") == NULL)  && (StrStrI(windowStyle, "toolbar") == NULL)) 
+	if (((StrStrI(windowStyle, "label") == NULL) || ((StrStrI(windowStyle, "label") != NULL) && (strlen(windowStyle) > 5))) 
+			&& (StrStrI(windowStyle, "windowlabel") == NULL) && (StrStrI(windowStyle, "clock") == NULL)  && (StrStrI(windowStyle, "button") == NULL)  && (StrStrI(windowStyle, "buttonpr") == NULL)  && (StrStrI(windowStyle, "toolbar") == NULL)) 
 		strcpy(windowStyle, "windowLabel");
 
 	strcpy(bitmapFile, ReadString(rcpath, "bbanalogex.bitmapFile:", ".none"));
-	//	if (strcmp(bitmapFile,".none")==0) noBitmap = true; else noBitmap = false; 
-
 	strcpy(overBitmapFile, ReadString(rcpath, "bbanalogex.overBitmapFile:", ".none"));
-	//	if (strcmp(bitmapFile,".none")==0) noBitmap = true; else noBitmap = false; 
 
-	int widths;
+	int widths = 0;
 	widths = ReadInt(rcpath, "bbanalogex.hands.width:", 1111);
 	hwidth = div(widths,1000).quot;
 	widths -= hwidth*1000;
@@ -1661,7 +1551,7 @@ void ReadRCSettings()
 
 	sccount = ReadInt(rcpath, "bbanalogex.sc.count:", 0);
 
-	for (int i=0;i<sccount;i++)
+	for (int i = 0; i < sccount; ++i)
 	{
 		sprintf(szTemp, "bbanalogex.sc%d.x:", i);
 		scx[i] = ReadInt(rcpath, szTemp, 50);
@@ -1680,17 +1570,14 @@ void ReadRCSettings()
 		sprintf(szTemp, "bbanalogex.sc%d.cs:", i);
 		sccs[i] = ReadColor(rcpath, szTemp,"0xffffff");
 	}
-
 	//	strcpy(clockformat, ReadString(rcpath, "bbanalogex.clockformat:", "%d %a %#H:%M"));
-
 }
+
 //---------------------------------------------------------------------------
-void createAlarmFile()
+void createAlarmFile ()
 {
 	static char szTemp[MAX_LINE_LENGTH];
-	//	static char temp[8];
 	DWORD retLength = 0;
-
 	HANDLE file = CreateFile(alarmpath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (file)
 	{
@@ -1718,10 +1605,8 @@ void createAlarmFile()
 	CloseHandle(file);
 }
 
-void WriteRCSettings()
+void WriteRCSettings ()
 {
-
-
 	static char szTemp[MAX_LINE_LENGTH];
 	static char temp[8];
 
@@ -1869,46 +1754,28 @@ void WriteRCSettings()
 			sprintf(szTemp, "bbanalogex.sc%d.cs: #%.2x%.2x%.2x\r\n",i, GetRValue(sccs[i]),GetGValue(sccs[i]),GetBValue(sccs[i]));
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		}
-
-
 	}
 	CloseHandle(file);
-
-
-
-
-
 }
 
 //===========================================================================
 
 //Plugin info for later BB4win support
-LPCSTR pluginInfo(int field)
+LPCSTR pluginInfo (int field)
 {
 	// pluginInfo is used by Blackbox for Windows to fetch information about
 	// a particular plugin. At the moment this information is simply displayed
 	// in an "About loaded plugins" MessageBox, but later on this will be
 	// expanded into a more advanced plugin handling system. Stay tuned! :)
-
 	switch (field)
 	{
-	case 1:
-		return szAppName; // Plugin name
-	case 2:
-		return szInfoVersion; // Plugin version
-	case 3:
-		return szInfoAuthor; // Author
-	case 4:
-		return szInfoRelDate; // Release date, preferably in yyyy-mm-dd format
-	case 5:
-		return szInfoLink; // Link to author's website
-	case 6:
-		return szInfoEmail; // Author's email
-
-		// ==========
-
-	default:
-		return szVersion; // Fallback: Plugin name + version, e.g. "MyPlugin 1.0"
+		case 1: return szAppName; // Plugin name
+		case 2: return szInfoVersion; // Plugin version
+		case 3: return szInfoAuthor; // Author
+		case 4: return szInfoRelDate; // Release date, preferably in yyyy-mm-dd format
+		case 5: return szInfoLink; // Link to author's website
+		case 6: return szInfoEmail; // Author's email
+		default: return szVersion; // Fallback: Plugin name + version, e.g. "MyPlugin 1.0"
 	}
 }
 
@@ -1916,14 +1783,17 @@ LPCSTR pluginInfo(int field)
 
 //so there you just use BBSLWA like normal SLWA
 //(c)grischka
-BOOL WINAPI BBSetLayeredWindowAttributes(HWND hwnd, COLORREF crKey, BYTE bAlpha, DWORD dwFlags)
+BOOL WINAPI BBSetLayeredWindowAttributes (HWND hwnd, COLORREF crKey, BYTE bAlpha, DWORD dwFlags)
 {
-	static BOOL (WINAPI *pSLWA)(HWND, COLORREF, BYTE, DWORD);
+	static BOOL (WINAPI *pSLWA) (HWND, COLORREF, BYTE, DWORD);
 	static unsigned int f=0;
-	for (;;) {
-		if (2==f)   return pSLWA(hwnd, crKey, bAlpha, dwFlags);
+	for (;;)
+	{
+		if (2 == f)
+			return pSLWA(hwnd, crKey, bAlpha, dwFlags);
 		// if it's not there, just do nothing and report success
-		if (f)      return TRUE;
+		if (f)
+			return TRUE;
 		*(FARPROC*)&pSLWA = GetProcAddress(GetModuleHandle("USER32"), "SetLayeredWindowAttributes");
 		f = pSLWA ? 2 : 1;
 	}
@@ -1932,7 +1802,7 @@ BOOL WINAPI BBSetLayeredWindowAttributes(HWND hwnd, COLORREF crKey, BYTE bAlpha,
 //===========================================================================
 
 //check for OS version
-int WINAPI _GetPlatformId(DWORD *pdwId, DWORD *pdwMajorVer, DWORD *pdwMinorVer)
+int WINAPI _GetPlatformId (DWORD *pdwId, DWORD *pdwMajorVer, DWORD *pdwMinorVer)
 {
 	OSVERSIONINFO  osvinfo;
 	ZeroMemory(&osvinfo, sizeof(osvinfo));
@@ -1946,60 +1816,53 @@ int WINAPI _GetPlatformId(DWORD *pdwId, DWORD *pdwMajorVer, DWORD *pdwMinorVer)
 
 //===========================================================================
 
-
 void mySetTimer()
 {
-
 	//Start the 0.50 second plugin timer
 	SetTimer(hwndBBAnalogEx,		// handle to main window 
 		IDT_TIMER,			// timer identifier 
 		1000,				// second interval 
 		(TIMERPROC) NULL);	// no timer callback 
-
-
-
 }
 
 
 //===========================================================================
 
-int beginSlitPlugin(HINSTANCE hMainInstance, HWND hBBSlit)
+int beginSlitPlugin (HINSTANCE hMainInstance, HWND hBBSlit)
 {
-	/* Since we were loaded in the slit we need to remember the Slit
-	* HWND and make sure we remember that we are in the slit ;)
-	*/
+	// Since we were loaded in the slit we need to remember the Slit HWND and make sure we remember that we are in the slit ;)
 	inSlit = true;
 	hSlit = hBBSlit;
-
-	// Start the plugin like normal now..
-	return beginPlugin(hMainInstance);
+	return beginPlugin(hMainInstance);// Start the plugin like normal now..
 }
 
 
 //--------------------------------------------------------------------
-//sets the transparency and the full transparent status
-void setStatus()
+// sets the transparency and the full transparent status
+void setStatus ()
 {
-
-	if(!inSlit)
+	if (!inSlit)
 	{
 		if (transparency && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 		{
 			if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 			{
+				// mojmir: WIN64!
 				SetWindowLong(hwndBBAnalogEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 				BBSetLayeredWindowAttributes(hwndBBAnalogEx, 0xFF00FF, (unsigned char)alpha, LWA_COLORKEY|LWA_ALPHA);
 			}
 			else
 			{
+				// mojmir: WIN64!
 				SetWindowLong(hwndBBAnalogEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 				BBSetLayeredWindowAttributes(hwndBBAnalogEx, NULL, (unsigned char)alpha, LWA_ALPHA);
 			}
 		}
-		else if ((!transparency) && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
+		else if (!transparency && (dwId == VER_PLATFORM_WIN32_NT) && (dwMajorVer > 4))
 		{
-			if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
+			if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT) && (dwMajorVer > 4))
 			{
+				// mojmir: WIN64!
 				SetWindowLong(hwndBBAnalogEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 				BBSetLayeredWindowAttributes(hwndBBAnalogEx, 0xFF00FF, (unsigned char)alpha, LWA_COLORKEY);
 			}
@@ -2008,29 +1871,30 @@ void setStatus()
 		}
 
 	}
-	else if((transparency)||(fullTrans)) SetWindowLong(hwndBBAnalogEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+	else if (transparency || fullTrans)
+		SetWindowLong(hwndBBAnalogEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
 	InvalidateRect(hwndBBAnalogEx, NULL, false);		
 }
 
-
-void getCurrentDate()
+void getCurrentDate ()
 {
-
 	time(&systemTime);
 	localTime = localtime(&systemTime);
 	second	= localTime->tm_sec;
 	minute	= localTime->tm_min;
-	hour		= localTime->tm_hour;
+	hour	= localTime->tm_hour;
 
 	dday = localTime->tm_mday;
-	if(hour > 12) hour -= 12;
-	if(hour == 0) hour = 12;
 
+	// mojmir: modular arithmetics
+	if (hour > 12)
+		hour -= 12;
+	if (hour == 0)
+		hour = 12;
 }
 
-
-void executeAlarm()
+void executeAlarm ()
 {
 	sprintf(htime,"%.2d.%.2d:",rhour,minute);
 
@@ -2039,24 +1903,22 @@ void executeAlarm()
 	if (alarm[0] == '@')
 		SendMessage(hwndBlackbox, BB_BROADCAST, 0, (LPARAM)alarm);
 
-
 	sprintf(htime,"%.2d.NN:",rhour);
-
 	strcpy(alarm, ReadString(alarmpath, htime, "n"));
 
 	if (alarm[0] == '@')
 		SendMessage(hwndBlackbox, BB_BROADCAST, 0, (LPARAM)alarm);
-
 }
 
-void createMenu()
+void createMenu ()
 {
-	//	bool tempBool = false;
-
-	if(myMenu){ DelMenu(myMenu); myMenu = NULL;}
+	if (myMenu)
+	{
+		DelMenu(myMenu);
+		myMenu = NULL;
+	}
 
 	//Now we define all menus and submenus
-
 	otherSubmenu = MakeMenu("Other");
 
 	MakeMenuItem(otherSubmenu, "Draw Border", "@BBAnalogExDrawBorder", drawBorder);
@@ -2082,9 +1944,6 @@ void createMenu()
 	sprintf(szTemp, "#%.2x%.2x%.2x", GetRValue(ccolor),GetGValue(ccolor),GetBValue(ccolor));
 	MakeMenuItemString(colorSubmenu, "Circle Color", "@BBAnalogExCColor", szTemp);
 
-
-
-
 	windowStyleSubmenu = MakeMenu("Style");
 	MakeMenuItem(windowStyleSubmenu, "toolbar:", "@BBAnalogExStyleToolbar", (StrStrI(windowStyle, "toolbar") != NULL));
 	MakeMenuItem(windowStyleSubmenu, "toolbar.button:", "@BBAnalogExStyleButton", (StrStrI(windowStyle, "buttonnp") != NULL));
@@ -2097,24 +1956,23 @@ void createMenu()
 
 
 	generalConfigSubmenu = MakeMenu("General");
-	if(hSlit) MakeMenuItem(generalConfigSubmenu, "In Slit", "@BBAnalogExSlit", wantInSlit);
+	if (hSlit)
+		MakeMenuItem(generalConfigSubmenu, "In Slit", "@BBAnalogExSlit", wantInSlit);
 	MakeMenuItem(generalConfigSubmenu, "Toggle with Plugins", "@BBAnalogExPluginToggle", pluginToggle);
 	MakeMenuItem(generalConfigSubmenu, "Always on top", "@BBAnalogExOnTop", alwaysOnTop);
-	if ((dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
+	if ((dwId == VER_PLATFORM_WIN32_NT) && (dwMajorVer > 4))
 		MakeMenuItem(generalConfigSubmenu, "Transparency", "@BBAnalogExTransparent", transparency);
-	if ((dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
+	if ((dwId == VER_PLATFORM_WIN32_NT) && (dwMajorVer > 4))
 		MakeMenuItemInt(generalConfigSubmenu, "Set Transparency", "@BBAnalogExSetTransparent",alpha,0,255);
-	if ((dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
+	if ((dwId == VER_PLATFORM_WIN32_NT) && (dwMajorVer > 4))
 		MakeMenuItem(generalConfigSubmenu, "Transparent Background", "@BBAnalogExFullTrans", fullTrans);
 	MakeMenuItem(generalConfigSubmenu, "Snap Window To Edge", "@BBAnalogExSnapToEdge", snapWindow);
 
 	//	browseSubmenu = MakeMenu("Browse");
-
 	bitmapSubmenu = MakeMenu("Bitmap");
-	//			MakeSubmenu(bitmapSubmenu, browseSubmenu, "Bitmap");
+	// MakeSubmenu(bitmapSubmenu, browseSubmenu, "Bitmap");
 	MakeMenuItem(bitmapSubmenu, "Browse...", "@BBAnalogExLoadBitmap", false);
 	MakeMenuItem(bitmapSubmenu, "Nothing", "@BBAnalogExNoBitmap", (strcmp(bitmapFile,".none")==0));
-
 
 	//	MakeSubmenu(bitmapSubmenu, browseSubmenu, "OverlayBitmap");
 	MakeMenuItem(bitmapSubmenu, "Browse...", "@BBAnalogExLoadOBitmap", false);
@@ -2156,7 +2014,7 @@ void createMenu()
 		MakeMenuItemInt(smallclockSubmenu, "Difference", szTemp, scdiff[i], 0,23);
 	}
 	//attach defined menus together
-	myMenu = MakeMenu("BBAnalogEx 1.5");
+	myMenu = MakeMenu("BBAnalogEx 1.6");
 
 	MakeSubmenu(configSubmenu, modeSubmenu, "Draw Mode");
 	MakeSubmenu(configSubmenu, handSubmenu, "Hands");
@@ -2173,5 +2031,3 @@ void createMenu()
 	ShowMenu(myMenu);
 }
 
-
-// the end ....
