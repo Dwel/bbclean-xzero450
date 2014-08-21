@@ -111,7 +111,7 @@ if( buildbits EQUAL 64 )
 endif( buildbits EQUAL 64 )
 
 add_subdirectory(plugins/bbSlit)
-add_subdirectory(plugins/bbAnalogEx)
+add_subdirectory(plugins/bbAnalogExMod)
 add_subdirectory(plugins/BBCalendar)
 add_subdirectory(plugins/BB8Ball)
 add_subdirectory(plugins/BBDigitalEx)

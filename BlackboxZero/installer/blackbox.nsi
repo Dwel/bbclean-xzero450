@@ -190,8 +190,8 @@ SkipXP32_3:
   StrCmp $OptPlugins 0 SkipXP32_4
   DetailPrint "XP 32 bit Optional Plugins 1"
 
-  SetOutPath $INSTDIR\plugins\BBAnalogEx
-	File /r "vs_xp_32\plugins\BBAnalogEx\"
+  SetOutPath $INSTDIR\plugins\bbAnalogExMod
+	File /r "vs_xp_32\plugins\bbAnalogExMod\"
   SetOutPath $INSTDIR\plugins\bbCalendar
 	File /r "vs_xp_32\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
@@ -307,8 +307,8 @@ SkipXP64_3:
   StrCmp $OptPlugins 0 SkipXP64_4
   DetailPrint "XP 64 bit Optional Plugins 1"
 
-  SetOutPath $INSTDIR\plugins\BBAnalogEx
-	File /r "vs_xp_64\plugins\BBAnalogEx\"
+  SetOutPath $INSTDIR\plugins\bbAnalogExMod
+	File /r "vs_xp_64\plugins\bbAnalogExMod\"
   SetOutPath $INSTDIR\plugins\bbCalendar
 	File /r "vs_xp_64\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
@@ -426,8 +426,8 @@ SkipVista32_3:
   StrCmp $OptPlugins 0 SkipVista32_4
   DetailPrint "Vista 32 bit Optional Plugins 1"
 
-  SetOutPath $INSTDIR\plugins\BBAnalogEx
-	File /r "vs_vista_32\plugins\BBAnalogEx\"
+  SetOutPath $INSTDIR\plugins\bbAnalogExMod
+	File /r "vs_vista_32\plugins\bbAnalogExMod\"
   SetOutPath $INSTDIR\plugins\bbCalendar
 	File /r "vs_vista_32\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
@@ -545,8 +545,8 @@ SkipVista64_3:
   StrCmp $OptPlugins 0 SkipVista64_4
   DetailPrint "Vista 64 bit Optional Plugins 1"
 
-  SetOutPath $INSTDIR\plugins\BBAnalogEx
-	File /r "vs_vista_64\plugins\BBAnalogEx\"
+  SetOutPath $INSTDIR\plugins\bbAnalogExMod
+	File /r "vs_vista_64\plugins\bbAnalogExMod\"
   SetOutPath $INSTDIR\plugins\bbCalendar
 	File /r "vs_vista_64\plugins\bbCalendar\"
   SetOutPath $INSTDIR\plugins\BBDigitalEx
