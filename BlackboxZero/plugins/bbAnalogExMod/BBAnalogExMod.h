@@ -13,8 +13,9 @@
 
  ============================================================================
 */
+#pragma once
 
-#ifdef _MSC_VER
+/*#ifdef _MSC_VER
   #ifdef BBOPT_STACKDUMP
     #define TRY if (1)
     #define EXCEPT if(0)
@@ -29,30 +30,26 @@
   #define strupr _strupr
 #else
   #undef BBOPT_STACKDUMP
-#endif
+#endif*/
 
-
-#ifndef __BBANALOGEXMOD_H
-#define __BBANALOGEXMOD_H
-
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
-#endif
+//#ifndef _WIN32_WINNT
+//# define _WIN32_WINNT 0x0501
+//#endif
 
 #ifndef magicDWord
-#define magicDWord		0x49474541
+#   define magicDWord		0x49474541
 #endif
 
-#ifndef ULONG_PTR
-#define ULONG_PTR DWORD
-#endif
+//#ifndef ULONG_PTR
+//#define ULONG_PTR DWORD
+//#endif
 
-#ifndef WS_EX_LAYERED
-#define WS_EX_LAYERED	0x00080000
-#define LWA_COLORKEY	0x00000001
-#define LWA_ALPHA		0x00000002
-#endif // ndef WS_EX_LAYERED
-#pragma warning(disable : 4996)
+//#ifndef WS_EX_LAYERED
+//#define WS_EX_LAYERED	0x00080000
+//#define LWA_COLORKEY	0x00000001
+//#define LWA_ALPHA		0x00000002
+//#endif // ndef WS_EX_LAYERED
+//#pragma warning(disable : 4996)
 
 #include <windows.h>
 #include <math.h>
@@ -61,16 +58,6 @@
 #include <GdiPlus.h>
 #include <Shlwapi.h>
 #include "BBApi.h"
-
-#pragma comment (lib, "gdi32.lib")
-#pragma comment (lib, "user32.lib")
-#pragma comment (lib, "shell32.lib")
-#pragma comment (lib, "comdlg32.lib")
-#pragma comment (lib, "winmm.lib")
-#pragma comment (lib, "shlwapi.lib")
-#pragma comment (lib, "gdiPlus.lib")
-#pragma comment (lib, "Blackbox.lib")
-//#include "StdAfx.h"
 
 #define IDT_TIMER 1
 //typedef unsigned __int64 ULONG_PTR;
@@ -262,24 +249,24 @@ void ShowMyMenu(bool popup);
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //Plugin functions
-void GetStyleSettings();
-void ReadRCSettings();
-void WriteRCSettings();
-void InitBBAnalog();
-void getCurrentTime();
+void GetStyleSettings ();
+void ReadRCSettings ();
+void WriteRCSettings ();
+void InitBBAnalog ();
+void getCurrentTime ();
 //void getCurrentDate();
-void mySetTimer(int mode);
-void readSetAlarmTime();
-void myPlayWav(char * alarmFile);
-void setRegion();   //sets the regions
-void drawDigiPart(int x, int y, bool dir);   //draws one part of the number in the digi clock
-void drawNumber(int number, int x, int y);	//draws the number in the digi clock
-void setStatus();
-void SetWindowModes();
+void mySetTimer (int mode);
+void readSetAlarmTime ();
+void myPlayWav (char * alarmFile);
+void setRegion ();   //sets the regions
+void drawDigiPart (int x, int y, bool dir);   //draws one part of the number in the digi clock
+void drawNumber (int number, int x, int y);	//draws the number in the digi clock
+void setStatus ();
+void SetWindowModes ();
 
 char imagePath[MAX_PATH];
 
-void OnDropFiles(HDROP);
+void OnDropFiles (HDROP);
 HDROP hDrop;
 
 bool setAttr;
@@ -295,8 +282,3 @@ extern "C"
 	__declspec(dllexport) int beginSlitPlugin(HINSTANCE hMainInstance, HWND hBBSlit);
 }
 
-//===========================================================================
-
-#endif
-
-// the end ....
