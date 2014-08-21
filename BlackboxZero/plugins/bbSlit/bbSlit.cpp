@@ -155,12 +155,7 @@ DLL_EXPORT int beginPlugin(HINSTANCE hPluginInstance)
 //DLL_EXPORT int beginPluginEx(HINSTANCE hPluginInstance, HWND hSlit)
 {
 
-    const char * bbv = 0;
-    int a,b,c;
-    bbv = GetBBVersion();
-    c = 0;
-    bblean_version = sscanf(bbv, "bbLean %d.%d.%d", &a, &b, &c)
-        >= 2 ? a*1000+b*10+c : 0;
+    bblean_version = BBP_bbversion();
 
     // dbg_printf("bblean_version %d", bblean_version);
 
