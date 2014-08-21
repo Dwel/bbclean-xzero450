@@ -40,9 +40,6 @@ void mySetTimer ();
 void setStatus ();
 void createMenu ();
 void getCurrentDate ();
-//void drawPart(HDC &hdc, int x, int y, int length, bool dir);
-//void drawNumber(HDC &hdc, int number, int x, int y, int vlength, int hlength);
-//void drawClock(HDC &hdc, RECT r, int mode);
 void executeAlarm ();
 void createAlarmFile ();
 
