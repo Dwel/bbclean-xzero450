@@ -126,7 +126,7 @@ add_subdirectory(plugins/bbColor3dc)
 add_subdirectory(plugins/bbWorkspaceWheel)
 add_subdirectory(plugins/bbPlugin+)
 add_subdirectory(plugins/bbLeanBar+)
-add_subdirectory(plugins/BBPager)
+add_subdirectory(plugins/bbPager)
 add_subdirectory(plugins/BBStyle)
 add_subdirectory(plugins/bbRecycleBin)
 #add_subdirectory(plugins/bbInterface)    # disabled, Pete says bbInterface_iTunes is better

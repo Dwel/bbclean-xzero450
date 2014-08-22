@@ -212,8 +212,8 @@ SkipXP32_3:
 	File /r "vs_xp_32\plugins\bbLeanBar+\"
   SetOutPath $INSTDIR\plugins\BBMagnify
 	File /r "vs_xp_32\plugins\BBMagnify\"
-  SetOutPath $INSTDIR\plugins\BBPager
-	File /r "vs_xp_32\plugins\BBPager\"
+  SetOutPath $INSTDIR\plugins\bbPager
+	File /r "vs_xp_32\plugins\bbPager\"
   SetOutPath $INSTDIR\plugins\bbRecycleBin
 	File /r "vs_xp_32\plugins\bbRecycleBin\"
   SetOutPath $INSTDIR\plugins\BBRSS
@@ -331,8 +331,8 @@ SkipXP64_3:
 	File /r "vs_xp_64\plugins\bbLeanBar+\"
   SetOutPath $INSTDIR\plugins\BBMagnify
 	File /r "vs_xp_64\plugins\BBMagnify\"
-  SetOutPath $INSTDIR\plugins\BBPager
-	File /r "vs_xp_64\plugins\BBPager\"
+  SetOutPath $INSTDIR\plugins\bbPager
+	File /r "vs_xp_64\plugins\bbPager\"
   SetOutPath $INSTDIR\plugins\bbRecycleBin
 	File /r "vs_xp_64\plugins\bbRecycleBin\"
   SetOutPath $INSTDIR\plugins\BBRSS
@@ -452,8 +452,8 @@ SkipVista32_3:
 	File /r "vs_vista_32\plugins\bbLeanBar+\"
   SetOutPath $INSTDIR\plugins\BBMagnify
 	File /r "vs_vista_32\plugins\BBMagnify\"
-  SetOutPath $INSTDIR\plugins\BBPager
-	File /r "vs_vista_32\plugins\BBPager\"
+  SetOutPath $INSTDIR\plugins\bbPager
+	File /r "vs_vista_32\plugins\bbPager\"
   SetOutPath $INSTDIR\plugins\bbRecycleBin
 	File /r "vs_vista_32\plugins\bbRecycleBin\"
   SetOutPath $INSTDIR\plugins\BBRSS
@@ -573,8 +573,8 @@ SkipVista64_3:
 	File /r "vs_vista_64\plugins\bbLeanBar+\"
   SetOutPath $INSTDIR\plugins\BBMagnify
 	File /r "vs_vista_64\plugins\BBMagnify\"
-  SetOutPath $INSTDIR\plugins\BBPager
-	File /r "vs_vista_64\plugins\BBPager\"
+  SetOutPath $INSTDIR\plugins\bbPager
+	File /r "vs_vista_64\plugins\bbPager\"
   SetOutPath $INSTDIR\plugins\bbRecycleBin
 	File /r "vs_vista_64\plugins\bbRecycleBin\"
   SetOutPath $INSTDIR\plugins\BBRSS
