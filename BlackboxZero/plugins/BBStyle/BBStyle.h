@@ -1,9 +1,11 @@
 /*
  ============================================================================
- Blackbox for Windows: Plugin SDK example
+ Blackbox for Windows: bbStyle plugin
  ============================================================================
- Copyright © 2001-2003 The Blackbox for Windows Development Team
- http://desktopian.org/bb/ - #bb4win on irc.freenode.net
+ Copyright © 2003-2009 nc-17@ratednc-17.com
+ Copyright © 2007-2009 The Blackbox for Windows Development Team
+ http://www.ratednc-17.com
+ http://bb4win.sourceforge.net
  ============================================================================
 
   Blackbox for Windows is free software, released under the
@@ -23,204 +25,202 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
   GNU General Public License for more details.
 
-  For additional license information, please read the included license.html
+  For additional license information, please read the included bbStyle.html
 
  ============================================================================
 */
 
-#ifndef __EXAMPLE_H
-#define __EXAMPLE_H
+#ifndef __BBSTYLE_H
+#define __BBSTYLE_H
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
 #endif
 
-#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
-
-#include <windows.h> // BlackboxZero 1.14.2012
 #include "BBApi.h"
-#include "resource.h"
+#include "../bbPlugin/moreutils.cpp"
+#include <string>
 #include <time.h>
 #include <vector>
-#include <string>
-//#include <aggressiveoptimize.h>
+
+#ifndef VALID_TEXTCOLOR
+#define VALID_TEXTCOLOR     (1<<3)  // TextColor
+#endif
 
 using namespace std;
 
 //===========================================================================
+/* compiler specifics */
 
-const long magicDWord = 0x49474541; // BlackboxZero 1.14.2012
-
-HINSTANCE hInstance;
-HWND hwndPlugin, hwndBlackbox;
-
-// Blackbox messages we want to "subscribe" to:
-// BB_RECONFIGURE -> Sent when changing style and on reconfigure
-// BB_BROADCAST -> Broadcast message (bro@m)
-
-/**
-BlackboxZero 1.14.2012
-**/
-#ifndef BB_MINIMIZE
-#define BB_MINIMIZE BB_WINDOWMINIMIZE
+// non-Visual Studio
+#ifndef _MSC_VER
+// Positioning
+#define TME_NONCLIENT   0x00000010
 #endif
-/** **/
 
-int msgs[] = 
-{BB_RECONFIGURE, BB_BROADCAST, /*BB_LISTDESKTOPS,*/ BB_WORKSPACE, BB_BRINGTOFRONT, BB_MINIMIZE, 0};
+// Visual Studio
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+//pre processor commands to link the needed libraries.  Nice little list ;).
+//You may comment out these lines and add them to your project settings.
+//#pragma comment(lib, "Kernel32.lib")
+#pragma comment(lib, "user32.lib")
+#pragma comment(lib, "gdi32.lib")
+#pragma comment(lib, "../bbMien/Blackbox.lib")
+#pragma comment(lib, "../bbUtils/bbUtils.lib")
+#endif
 
-int xpos, ypos, xpos2, ypos2;
-int width, height;
+// ----------------------------------
+// Global vars
+HINSTANCE hInstance;
+HWND BBhwnd;
+HWND hSlit_present;
+
+// Compatibility
+bool is_xoblite;
+bool dcFile;
+
 int vScreenWidth, vScreenHeight, vScreenLeft, vScreenTop;
 int vScreenRight, vScreenBottom;
 int screenWidth, screenHeight, screenLeft, screenTop;
 int screenRight, screenBottom;
-bool alwaysOnTop;
-bool snapWindow, snapWindowOld;
 
-// Toolbar inherited styling
-bool inheritToolbar;
-RECT tRect;
-ToolbarInfo tbInfo;
-int styleBevelWidth;
-
-bool hideWindow;
-
-//char windowText[MAX_LINE_LENGTH];
-bool transparency;
-int transparencyAlpha;
-
-bool usingWin2kXP;
-
-struct FRAME
-{
-	COLORREF color;
-	COLORREF colorTo;
-	COLORREF borderColor;
-
-	int bevelWidth;
-	int borderWidth;
-
-	bool drawBorder;
-
-	StyleItem *style;
-};
-
-struct BUTTON
-{
-	COLORREF color;
-	COLORREF colorTo;
-	COLORREF fontColor;
-
-	char fontFace[256];
-	
-	int fontSize;
-	int fontWeight;
-
-	StyleItem *style;
-};
-
-struct BUTTONDN
-{
-	COLORREF color;
-	COLORREF colorTo;
-	COLORREF fontColor;
-
-	StyleItem *style;
-};
-
-// Drawing stuff
-struct FRAME frame;
-struct BUTTON button;
-struct BUTTONDN buttonPressed;
-
-// Mouse buttons
-bool rightButtonDown = false, rightButtonDownNC = false;
-bool middleButtonDown = false, middleButtonDownNC = false;
 bool leftButtonDown = false;
-bool inButton = false;
-RECT buttonRect;
 
-// Styling stuff
-//int num = 0, random = 0;
-char styleToSet[4096];
-bool noStyleTwice;
-
-// Timer
-int changeTime = 300000;
-bool timer = true;
-
-bool changeOnStart = false;
-
-// Different wallpapers on each workspace
-typedef vector<string> StringVector;
-//StringVector workspaceRootCommand;
-
-//bool rootCommands;
-
-//int currentDesktop, oldDesk;
-//char styleRootCommand[MAX_LINE_LENGTH];
-
-// Positioning
-//bool bleft = false, bright = false, btop = false, bbottom = false;
-
-// File paths
+// receives the path to "bbStyle.rc"
 char rcpath[MAX_PATH];
 char stylepath[MAX_PATH];
-char listPath[4096];
+char listPath[MAX_PATH];
 
+typedef vector<string> StringVector;
 StringVector styleList;
 
-bool badPath = false;
+// ----------------------------------
+// Style info
 
-// Menus
-Menu *BBStyleMenu, *BBStyleWindowSubMenu, *BBStyleStyleSubMenu, *BBStyleConfigSubMenu;
+struct STYLE_INFO
+{
+	StyleItem Frame;
+	StyleItem Button;
+	StyleItem Pressed;
 
-// Slit items
-bool inSlit = false;	//Are we loaded in the slit? (default of no)
-bool useSlit = false;	//Are we set to load in the slit from the RC?
-HWND hSlit;				//The Window Handle to the Slit (for if we are loaded)
+	int frameWidth;
+	
+};
 
-//===========================================================================
+// ----------------------------------
+// Position
+struct POSITION
+{
+	int X;
+	int Y;
+	int side;
+	int snap;
+
+	bool shown;
+	bool fullScreen;
+	char placement[16];
+	HMONITOR hMon;
+	RECT mon_rect;
+	
+};
+
+// ----------------------------------
+// 3dc info
+struct DC_INFO
+{
+	bool Menus;
+	bool Selected;
+	bool Tooltips;
+	bool Highlights;
+	bool Titles;
+	
+};
+
+// ----------------------------------
+// Plugin window properties
+struct PLUGIN_PROPERTIES
+{
+	// settings
+	int width, height, hideWidth;
+
+	bool useSlit;
+	bool onTop;
+	bool snapWindow;
+	bool toggle;
+	bool shown;
+
+	// transparency
+	bool usingWin2kPlus;
+	int  alpha;
+
+	// our plugin window
+	HWND hwnd;
+
+	// current state variables
+	bool is_moving;
+
+	// the Slit window, if we are in it.
+	HWND hSlit;
+
+	// GDI objects
+	HBITMAP bufbmp;
+	HFONT hFont;
+
+	// the text
+	char windowText[MAX_PATH];
+
+	// Styling stuff
+	bool changeOnStart;
+	bool timerOn;
+	bool showStyleInfo;
+	int  changeTime;
+	bool chance;
+	unsigned short count;
+
+	char styleToSet[MAX_PATH];
+	char localPath[MAX_PATH];
+	char stylePath[MAX_PATH];
+	
+};
+
+struct STYLE_INFO style_info;
+struct POSITION position;
+struct PLUGIN_PROPERTIES plugin;
+struct DC_INFO dc_info;
+
+// ----------------------------------
+// some function prototypes
+void drawPlugin();
+void getStyleSettings(void);
+void getRCSettings(void);
+void displayMenu(bool popup);
+void invalidate_window(void);
+void set_window_modes(void);
+void setPosition();
+void updateMonitorInfo();
+void setStyle(void);
+char getTitleText(bool Text);
+char *set_stylePath();
+void initList(char *path, bool init);
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-void GetStyleSettings();
-void InitRC();
-void ReadRCSettings();
-void WriteRCSettings();
+// ----------------------------------
+// helpers to handle commands  from the menu
 
-void UpdateMonitorInfo();
-
-void InitList(char *path, bool init);
-void NewStyle(bool seed);
-void SetStyle();
-
-void TrackMouse();
-bool ClickMouse();
-
-void DisplayMenu();
-
-void ChangeRoot();
-void GetRCRootCommands();
-
-void ToggleSlit();
-
-BOOL WINAPI BBSetLayeredWindowAttributes(HWND hwnd, COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
-
-//===========================================================================
-
-extern "C"
+struct broamprop { const char *key; int mode; void *val; };
+const struct broamprop *check_item(const char *key, const broamprop *prop);
+void eval_menu_cmd(int mode, void *pValue, const char *sub_message);
+enum eval_menu_cmd_modes
 {
-	__declspec(dllexport) int beginPlugin(HINSTANCE hMainInstance);
-	__declspec(dllexport) void endPlugin(HINSTANCE hMainInstance);
-	__declspec(dllexport) LPCSTR pluginInfo(int field);
-
-	// This is the function BBSlit uses to load your plugin into the Slit
-	__declspec(dllexport) int beginSlitPlugin(HINSTANCE hMainInstance, HWND hBBSlit);
-	__declspec(dllexport) int beginPluginEx(HINSTANCE hMainInstance, HWND hBBSlit);  
-}
-
-//===========================================================================
+	M_BOL = 1,
+	M_INT = 2,
+	M_STR = 3,
+};
+// forward declarations
+extern const struct broamprop always_broams[];
+extern const struct broamprop nonSlit_broams[];
+extern const struct broamprop position_broams[];
 
 #endif
