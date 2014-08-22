@@ -1563,7 +1563,8 @@ void OnDropFiles(HDROP h_Drop) {
 void GetStyleSettings()
 {
 	bool nix = false;
-	char style[MAX_PATH]; char temp[32]; 
+	char style[MAX_PATH];
+	char temp[256];
 	strcpy(style, stylePath());
 	strcpy(temp, ReadString(style, "toolbar.appearance:", (char *)"no"));
 	if (strlen(temp) != 2) nix = true;
