@@ -73,6 +73,7 @@ typedef struct StyleStruct
     bool metricsUnix;
     bool is_070;
     bool menuTitleLabel;
+    bool nix;
 
     StyleItem Slit;
 

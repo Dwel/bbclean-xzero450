@@ -270,6 +270,7 @@ void* StyleStructPtr(int sn_index, StyleStruct *pStyle)
     case SN_MENUSEPMARGIN            : return &pStyle->MenuSepMargin;
     case SN_MENUSEPCOLOR            : return &pStyle->MenuSepColor;
     case SN_MENUSEPSHADOWCOLOR        : return &pStyle->MenuSepShadowColor;
+    case SN_NEWMETRICS                : return &pStyle->nix;
 
     default                         : return NULL;
     }
