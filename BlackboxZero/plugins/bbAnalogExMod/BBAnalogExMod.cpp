@@ -1590,7 +1590,7 @@ void GetStyleSettings()
 
 void ReadRCSettings()
 {
-	char temp[MAX_PATH], path[MAX_PATH], defaultpath[MAX_PATH];
+	char temp[MAX_PATH], oldstylepath[MAX_PATH];
 	int nLen;
 	magicHourFreq = false;
 		
@@ -1600,12 +1600,16 @@ void ReadRCSettings()
 	while (nLen >0 && rcpath[nLen] != '\\') nLen--;
 	rcpath[nLen + 1] = 0;
 	strcpy(temp, rcpath);
-	strcpy(path, rcpath);
+	strcpy(oldstylepath, rcpath);
 	strcat(temp, "bbanalogexmod.rc");
-	strcat(path, "bbanalogexmodrc");
+	strcat(oldstylepath, "bbanalogexmodrc");
 	// ...checking the two possible filenames bbanalog.rc and bbanalogrc ...
-	if (FileExists(temp)) strcpy(rcpath, temp);
-	else if (FileExists(path)) strcpy(rcpath, path);
+	if (FileExists(temp))
+		strcpy(rcpath, temp);
+	else if (FileExists(oldstylepath))
+		strcpy(rcpath, oldstylepath);
+	else
+		strcpy(rcpath, temp); // default path if no file exists
 	// If a config file was found we read the plugin settings from the file...
 	//Always checking non-bool values to make sure they are the right format
 	xpos = ReadInt(rcpath, "bbanalogexmod.x:", 10);
