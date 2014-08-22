@@ -2,10 +2,8 @@
  ============================================================================
  Blackbox for Windows: BBStyle plugin
  ============================================================================
- Copyright © 2002-2009 nc-17@ratednc-17.com
- Copyright © 2007-2009 The Blackbox for Windows Development Team
- http://www.ratednc-17.com
- http://bb4win.sourceforge.net
+ Copyright © 2002-2003 nc-17@ratednc-17.com
+ http://desktopian.org/bb/ - #bb4win on irc.freenode.net
  ============================================================================
 
   Blackbox for Windows is free software, released under the
@@ -28,1155 +26,1334 @@
   For additional license information, please read the included license.html
 
  ============================================================================
+*/
 
-  In the case of bbStyle, "TheDevTeam"
-  includes (in alphabetical order): grischka, unkamunka.
+#include "BBStyle.h"
 
- --------------------------------------------------------------------------------*/
-#include "bbStyle.h"
+// This is a must have!  The is how BBSlit knows how big it needs to be!
+#define SLIT_ADD		11001
+#define SLIT_REMOVE		11002
+#define SLIT_UPDATE		11003
 
-// ----------------------------------
-//Some global variables containing our plugin info
-const char szVersion []    = "bbStyle 4.0";  
-const char szAppName []    = "bbStyle"; // The name of our window class
-const char szInfoVersion [] = "4.0";
-const char szInfoAuthor []  = "NC-17|TheDevTeam";
-const char szInfoRelDate [] = "2009-06-01";
-const char szInfoLink []    = "http://bb4win.sourceforge.net/";
-const char szInfoEmail []   = "irc://irc.freenode.net/bb4win";
-const char szInfoUpdateURL []= "http://www.lostinthebox.com/viewforum.php?t=2941";
+LPSTR szAppName = "BBStyle";			// The name of our window class, etc.
+LPSTR szVersion = "BBStyle 0.3b4";		// Used in MessageBox titlebars
 
-const char szCopyright []  = "2001-2009 nc-17@ratednc-17.com";
-const char broam_prefix [] = "@bbStyle.";
+LPSTR szInfoVersion = "0.3b4";
+LPSTR szInfoAuthor = "NC-17";
+LPSTR szInfoRelDate = "2005-11-20";
+LPSTR szInfoLink = "http://www.ratednc-17.com/";
+LPSTR szInfoEmail = "nc-17@ratednc-17.com";
 
-//====================
-// ----------------------------------
-// Interface declaration
+//===========================================================================
 
-extern "C"
+int beginSlitPlugin(HINSTANCE hMainInstance, HWND hBBSlit)
 {
-	// The startup interface
-	// beginPlugin does not call endPlugin if beginPlugin fails, or returns 1.
-	DLL_EXPORT int beginPlugin(HINSTANCE hPluginInstance);
-	DLL_EXPORT int beginPluginEx(HINSTANCE hPluginInstance, HWND hSlit)
+	/* Since we were loaded in the slit we need to remember the Slit
+	 * HWND and make sure we remember that we are in the slit ;)
+	 */
+	inSlit = true;
+	hSlit = hBBSlit;
+
+	// Start the plugin like normal now..
+	return beginPlugin(hMainInstance);
+}
+
+int beginPluginEx(HINSTANCE hPluginInstance, HWND hwndBBSlit) 
+{  
+	return beginSlitPlugin(hPluginInstance, hwndBBSlit); 
+} 
+
+//===========================================================================
+
+int beginPlugin(HINSTANCE hPluginInstance)
+{
+	WNDCLASS wc;
+	hwndBlackbox = GetBBWnd();
+	hInstance = hPluginInstance;
+
+	// Register the window class...
+	ZeroMemory(&wc,sizeof(wc));
+	wc.lpfnWndProc = WndProc;			// our window procedure
+	wc.hInstance = hPluginInstance;		// hInstance of .dll
+	wc.lpszClassName = szAppName;		// our window class name
+	if (!RegisterClass(&wc)) 
 	{
-		// ---------------------------------------------------
-		// grab some global information
+		MessageBox(hwndBlackbox, "Error registering window class", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
+		return 1;
+	}
 
-		BBhwnd          = GetBBWnd();
-		hInstance       = hPluginInstance;
-		hSlit_present   = hSlit;
+	// Get plugin and style settings...
 
-		// Always do window/plugin creation stuff before setting window attributes.
-		// Don't forget to "UnregisterClass(szAppName, hInstance)" or any other succesfully
-		// loaded resources on a bail out (return 1).
-		// i.e. below code --  "if (!hwndPlugin)".
+	InitRC();
+	ReadRCSettings();
+	GetStyleSettings();
 
-		WNDCLASSEX wcl;
-		// ---------------------------------------------------
-		// register the window class
-		ZeroMemory(&wcl, sizeof wcl);
+	inSlit = useSlit;
 
-		wcl.cbSize			= sizeof(WNDCLASSEX);
-		wcl.style            = CS_DBLCLKS;
-		wcl.lpfnWndProc      = WndProc;      // window procedure
-		wcl.hInstance        = hInstance;    // hInstance of .dll
-		wcl.hCursor          = LoadCursor(NULL, IDC_ARROW);
-		wcl.lpszClassName    = szAppName;    // window class name
+	if (inheritToolbar)
+	{
+		//tbInfo.height = height = width = button.fontSize + 2 + (2 * styleBevelWidth) + (2 * frame.borderWidth);
+		GetClientRect(FindWindow("Toolbar", 0), &tRect);
+		tbInfo.height = height = width = tRect.bottom - tRect.top;
+		frame.bevelWidth = styleBevelWidth;
+		GetClientRect(FindWindow("Toolbar", 0), &tRect);
+		tbInfo.height = height = width = tRect.bottom - tRect.top;
+		frame.bevelWidth = styleBevelWidth;
+		//GetStyleSettings();
+	}
 
-		if (!RegisterClassEx(&wcl))
+	// Create the window...
+	hwndPlugin = CreateWindowEx(
+						WS_EX_TOOLWINDOW,								// window style
+						szAppName,										// our window class name
+						NULL,											// NULL -> does not show up in task manager!
+						WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,	// window parameters
+						xpos,											// x position
+						ypos,											// y position
+						width,											// window width
+						height,											// window height
+						NULL,											// parent window
+						NULL,											// no menu
+						hPluginInstance,								// hInstance of .dll
+						NULL);
+	if (!hwndPlugin)
+	{						   
+		MessageBox(0, "Error creating window", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
+		return 1;
+	}
+
+	if (!hSlit)
+		hSlit = FindWindow("BBSlit", "");
+
+	if (inSlit && hSlit)		// Are we in the Slit?
+	{
+		if (snapWindow) snapWindowOld = true;
+		else snapWindowOld = false;
+		snapWindow = false;
+		SendMessage(hSlit, SLIT_ADD, NULL, (LPARAM)hwndPlugin);
+		
+		/* A window can not be a WS_POPUP and WS_CHILD so remove POPUP and add CHILD
+		 * IF you decide to allow yourself to be unloaded from the slit, then you would
+		 * do the oppisite, remove CHILD and add POPUP
+		 */
+		SetWindowLong(hwndPlugin, GWL_STYLE, (GetWindowLong(hwndPlugin, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+
+		// Make your parent window BBSlit
+		SetParent(hwndPlugin, hSlit);
+	}
+	else
+	{
+		useSlit = inSlit = false;
+	}
+
+	// Transparency is only supported under Windows 2000/XP...
+	OSVERSIONINFO osInfo;
+	ZeroMemory(&osInfo, sizeof(osInfo));
+	osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+	GetVersionEx(&osInfo);
+
+	if (osInfo.dwPlatformId == VER_PLATFORM_WIN32_NT && osInfo.dwMajorVersion == 5) 
+		usingWin2kXP = true;
+	else 
+		usingWin2kXP = false;
+
+	if (usingWin2kXP)
+	{
+		if (transparency && !inSlit)
 		{
-			MessageBox(BBhwnd,
-				"Error registering window class", szVersion,
-				MB_OK | MB_ICONERROR | MB_TOPMOST);
+			SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+			BBSetLayeredWindowAttributes(hwndPlugin, NULL, (unsigned char)transparencyAlpha, LWA_ALPHA);
+			//BBSetLayeredWindowAttributes(hwndPlugin, NULL, (unsigned char)"160", LWA_ALPHA);
+		}
+	}
+
+	// Register to receive Blackbox messages...
+	SendMessage(hwndBlackbox, BB_REGISTERMESSAGE, (WPARAM)hwndPlugin, (LPARAM)msgs);
+
+/**
+BlackboxZero 1.14.2012
+**/
+#ifndef GWL_USERDATA
+#define GWL_USERDATA (-21)
+#endif
+
+	// Set magicDWord to make the window sticky (same magicDWord that is used by LiteStep)...
+	SetWindowLong(hwndPlugin, GWL_USERDATA, magicDWord);
+	// Make the window AlwaysOnTop?
+	if (alwaysOnTop) SetWindowPos(hwndPlugin, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+	// Show the window and force it to update...
+	
+	if (hideWindow)
+	{
+		ShowWindow(hwndPlugin, SW_HIDE);
+	}
+	else
+	{
+		ShowWindow(hwndPlugin, SW_SHOW);
+		InvalidateRect(hwndPlugin, NULL, true);
+	}
+
+	if (badPath)
+	{
+		GetBlackboxPath(listPath, sizeof(listPath));
+		strcat(listPath, "styles\\*");
+		char temp[4096];
+		strcpy(temp, "The original style path in the bbstyle.rc file was invalid.\n\nThe default path will now be used...\n\nPath: ");
+		strcat(temp, listPath);
+		MessageBox(hwndBlackbox, temp, szVersion, MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+		WriteRCSettings();
+		badPath = false;
+		//endPlugin(hInstance);
+		//return 0;
+	}
+
+	// populate style list
+	InitList(listPath, true);	
+
+	// Time in milliseconds to redraw window (or whatever defined in WM_TIMER)
+	//int UpdateInterval = changeTime;
+	if (timer)
+	{
+		if (!SetTimer(hwndPlugin, 1, changeTime, (TIMERPROC)NULL))
+		{
+			MessageBox(0, "Error creating update timer", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
+			//Log("Could not create Toolbar update timer", NULL);
+			timer = false;
 			return 1;
 		}
-
-		// ---------------------------------------------------
-		// Zero out variables, read configuration and style
-
-		ZeroMemory(&style_info,sizeof(style_info));
-		ZeroMemory(&position,sizeof(position));
-		ZeroMemory(&plugin, sizeof plugin);
-		plugin.shown = true;
-
-		getRCSettings();
-		getStyleSettings();
-
-		// ---------------------------------------------------
-		// create the window
-		plugin.hwnd = CreateWindowEx(
-			WS_EX_TOOLWINDOW,   // window style
-			szAppName,          // window class name
-			NULL,               // window caption: NULL -> does not show up in task manager!
-			WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, // window style
-			position.X,            // x position
-			position.Y,            // y position
-			plugin.width,           // window width
-			plugin.height,          // window height
-			NULL,               // parent window
-			NULL,               // no window menu
-			hInstance,          // hInstance of .dll
-			NULL                // creation data
-			);
-
-		if (!plugin.hwnd)
-		{
-			MessageBox(0, "Error creating window", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
-			UnregisterClass(szAppName, hInstance);
-			//unload any other previously loaded resources here.
-			//--->
-			return 1;
-		}
-
-		// ---------------------------------------------------
-		//Wooh, done with all the initialization safety checks.
-		//You may continue as normal.  ;)
-
-		// Order matters here
-		const char *bbv = GetBBVersion();
-		is_xoblite = 0 == (_memicmp(bbv, "bb", 2) + strlen(bbv) - 3);
-		
-		// Transparency is only supported under Windows 2000/XP...
-		plugin.usingWin2kPlus = GetOSVersion() >= 50;
-
-		// ---------------------------------------------------
-		// set window location and properties
-		setPosition();
-		set_window_modes();
-		// Show the window and force it to update...
-		if (plugin.shown)
-			ShowWindow(plugin.hwnd, SW_SHOWNA);
-
-		// changeOnStart?
-		if (plugin.changeOnStart)
-			setStyle();
-
-		// check the clock status - use uneven # of seconds
-		if (plugin.timerOn)
-			SetTimer(plugin.hwnd, 1, plugin.changeTime*59000, (TIMERPROC)NULL);
-		
-		return 0;
 	}
-	// on unload...
-	// only end plugin stuff that would have been done if the the begin did not fail
-	DLL_EXPORT void endPlugin(HINSTANCE hPluginInstance)
+
+	if (changeOnStart)	// if random style on startup, grab a style and set it
 	{
-		// Get out of the Slit, in case we are...
-		if (plugin.hSlit) SendMessage(plugin.hSlit, SLIT_REMOVE, 0, (LPARAM)plugin.hwnd);
-
-		// Destroy the window...
-		DestroyWindow(plugin.hwnd);
-
-		// clean up HBITMAP object
-		if (plugin.bufbmp) DeleteObject(plugin.bufbmp);
-
-		// clean up HFONT object
-		if (plugin.hFont) DeleteObject(plugin.hFont);
-
-		// Unregister window class...
-		UnregisterClass(szAppName, hPluginInstance);
+		NewStyle(true);
+		SetStyle();
 	}
+
+	/*oldDesk = currentDesktop = 254;
+	SendMessage(hwndBlackbox, BB_LISTDESKTOPS, (WPARAM)hwndPlugin, 0);*/
+
+	return 0;
+}
+
+//===========================================================================
+
+void endPlugin(HINSTANCE hPluginInstance)
+{
+	//if (timer) 
+	KillTimer(hwndPlugin, 1);
+	// Write the current plugin settings to the config file...
+	//WriteRCSettings();
+
+	// Delete used StyleItems...
+	if (frame.style) delete frame.style;
+	if (button.style) delete button.style;
+	if (buttonPressed.style) delete buttonPressed.style;
+
+	// Delete the main plugin menu if it exists (PLEASE NOTE that this takes care of submenus as well!)
+	if (BBStyleMenu) DelMenu(BBStyleMenu);
+
+	// remove from slit
+	if (inSlit)
+		SendMessage(hSlit, SLIT_REMOVE, NULL, (LPARAM)hwndPlugin);
+
+	// Unregister Blackbox messages...
+	SendMessage(hwndBlackbox, BB_UNREGISTERMESSAGE, (WPARAM)hwndPlugin, (LPARAM)msgs);
+
+	//workspaceRootCommand.clear();
+	styleList.clear();
+
+	// Destroy our window...
+	DestroyWindow(hwndPlugin);
+
+	// Unregister window class...
+	UnregisterClass(szAppName, hPluginInstance);
+}
+
+//===========================================================================
+
+LPCSTR pluginInfo(int field)
+{
 	// pluginInfo is used by Blackbox for Windows to fetch information about
 	// a particular plugin. At the moment this information is simply displayed
 	// in an "About loaded plugins" MessageBox, but later on this will be
 	// expanded into a more advanced plugin handling system. Stay tuned! :)
-	DLL_EXPORT LPCSTR pluginInfo(int field)
+
+	switch (field)
 	{
-		LPCSTR infostr[9] =
-		{
-			szVersion       , // Fallback: Plugin name + version, e.g. "MyPlugin 1.0"
-			szAppName       , // Plugin name
-			szInfoVersion   , // Plugin version
-			szInfoAuthor    , // Author
-			szInfoRelDate   , // Release date, preferably in yyyy-mm-dd format
-			szInfoLink      , // Link to author's website
-			szInfoEmail     , // Author's email
-			(LPCSTR)("@bbStyle.about"  //Display message box about the plugin	
-			"@bbStyle.useSlit"  //Toggle whether plugin is in slit
-			"@bbStyle.changeOnStart"  //Toggle whether a random style is set on startup
-			"@bbStyle.stylePath"  //Set the default root Style path of your choice
-			"@bbStyle.showStyleInfo"  //Toggle whether whether stayle names are displayed
-			"@bbStyle.random"  //Select a random style and apply it
-			"@bbStyle.togglePlugins"  //Standard BB bro@m to show|hide all plugins
-			"@bbStyle.timerOn"  //Toggle the use of the timer for changing styles
-			"@bbStyle.onTop"  //Toggle window always on top
-			"@bbStyle.loadDocs"  //Load the documentation
-			"@bbStyle.editRC") , // Broams
-			szInfoUpdateURL  // Link to update page
+		case 1:
+			return szAppName; // Plugin name
+		case 2:
+			return szInfoVersion; // Plugin version
+		case 3:
+			return szInfoAuthor; // Author
+		case 4:
+			return szInfoRelDate; // Release date, preferably in yyyy-mm-dd format
+		case 5:
+			return szInfoLink; // Link to author's website
+		case 6:
+			return szInfoEmail; // Author's email
 
-			// ==========
-		};
-		return (field >= 0 && field < 9) ? infostr[field] : infostr[0];
+		// ==========
+
+		default:
+			return szVersion; // Fallback: Plugin name + version, e.g. "MyPlugin 1.0"
 	}
-};
-
-//===========================================================================
-void about_box(void)
-{
-		char buffer[MAX_PATH];
-		sprintf(buffer,
-			"%s - A style changer for Blackbox for Windows"
-			"\n"
-			"\n© %s"
-			"\n"
-			"\n%s"
-			"\n%s"
-			, szVersion, szCopyright, szInfoLink, szInfoEmail
-			);
-		message_box(MB_OK, buffer);
 }
 
 //===========================================================================
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static int msgs[] = { BB_RECONFIGURE, BB_BROADCAST, 0};
-	char path[MAX_PATH];
-
 	switch (message)
-	{
-		case WM_CREATE:
-		{
-			// Register to receive these messages
-			SendMessage(BBhwnd, BB_REGISTERMESSAGE, (WPARAM)hwnd, (LPARAM)msgs);
-			// Make the window appear on all workspaces
-			MakeSticky(hwnd);
-		}
-		break;
-
-		case WM_DESTROY:
-		{
-			RemoveSticky(hwnd);
-			// Unregister Blackbox messages...
-			SendMessage(BBhwnd, BB_UNREGISTERMESSAGE, (WPARAM)hwnd, (LPARAM)msgs);
-			styleList.clear();
-		}
-		break;
-
-		// ----------------------------------------------------------
+	{		
 		// Window update process...
-		// Painting with a cached double-buffer.
-
 		case WM_PAINT:
 		{
-			drawPlugin();
+			// Create buffer hdc's, bitmaps etc.
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint(hwnd, &ps);
+			HDC buf = CreateCompatibleDC(NULL);
+			HBITMAP bufbmp = CreateCompatibleBitmap(hdc, width, height);
+			//HBITMAP oldbuf = (HBITMAP)SelectObject(buf, bufbmp);
+			HGDIOBJ oldbmp = SelectObject(buf, bufbmp);
+			RECT r;
+
+			GetClientRect(hwnd, &r);
+
+			// Paint background according to the current style...
+			MakeGradient(buf, r, frame.style->type, frame.color, frame.colorTo, frame.style->interlaced, frame.style->bevelstyle, frame.style->bevelposition, frame.bevelWidth, frame.borderColor, frame.borderWidth);
+
+			int mod;
+			
+			if (inheritToolbar) mod = 1;
+			else mod = 0;
+
+			r.top = r.top + (frame.bevelWidth + frame.borderWidth) + mod;
+			r.left = r.left + (frame.bevelWidth + frame.borderWidth) + mod;
+			r.right = r.right - (frame.bevelWidth + frame.borderWidth) - mod;
+			r.bottom = r.bottom - (frame.bevelWidth + frame.borderWidth) - mod;
+
+			buttonRect = r;
+
+			HFONT font = CreateFont(button.fontSize, 0, 0, 0, button.fontWeight, false, false, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, button.fontFace);
+			//SelectObject(buf, font);
+			HGDIOBJ oldfont = SelectObject(buf, font);
+			SetBkMode(buf, TRANSPARENT);			
+
+			if (leftButtonDown)
+			{
+				if (!buttonPressed.style->parentRelative)
+				{				
+					MakeGradient(buf, r, buttonPressed.style->type, buttonPressed.color, buttonPressed.colorTo, buttonPressed.style->interlaced, buttonPressed.style->bevelstyle, buttonPressed.style->bevelposition, frame.bevelWidth, frame.borderColor, 0);
+				}
+
+				SetTextColor(buf, buttonPressed.fontColor);
+			}
+			else
+			{
+				if (!button.style->parentRelative)
+				{						
+					MakeGradient(buf, r, button.style->type, button.color, button.colorTo, button.style->interlaced, button.style->bevelstyle, button.style->bevelposition, frame.bevelWidth, frame.borderColor, 0);
+				}
+
+				SetTextColor(buf, button.fontColor);
+			}
+
+			// Draw some text...
+			DrawText(buf, "S", -1, &r, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+
+			//DeleteObject(font);
+			DeleteObject(SelectObject(buf, oldfont));
+
+			// Finally, copy from the paint buffer to the window...
+			BitBlt(hdc, 0, 0, width, height, buf, 0, 0, SRCCOPY);
+
+			// Remember to delete all objects!
+/*			SelectObject(buf, oldbuf);
+			DeleteDC(buf);
+			DeleteObject(bufbmp);
+			DeleteObject(oldbuf);
+			EndPaint(hwnd, &ps);
+*/
+            //restore the first previous whatever to the dc,
+            //get in exchange back our bitmap, and delete it.
+            DeleteObject(SelectObject(buf, oldbmp));
+
+            //delete the memory - 'device context'
+            DeleteDC(buf);
+
+            //done
+            EndPaint(hwnd, &ps);
+
+			return 0;
 		}
 		break;
+
+		// ==========
+
+		// Broadcast messages (bro@m -> the bang killah! :D <vbg>)
+		case BB_BROADCAST:
+		{
+			char temp[MAX_LINE_LENGTH];
+			strcpy(temp, (LPCSTR)lParam);
+
+			// ==========
+
+			// First we check for the two "global" bro@ms, @BBShowPlugins and @BBHidePlugins...
+			if (!_stricmp(temp, "@BBShowPlugins")) // @BBShowPlugins: Show window and force update (global bro@m)
+			{
+				if (!hideWindow)
+				{
+					ShowWindow(hwndPlugin, SW_SHOW);
+					InvalidateRect(hwndPlugin, NULL, true);
+				}
+
+				return 0;
+			}
+			else if (!_stricmp(temp, "@BBHidePlugins")) // @BBHidePlugins: Hide window (global bro@m)
+			{
+				if (!hideWindow && !inSlit)
+				{
+					ShowWindow(hwndPlugin, SW_HIDE);
+				}
+
+				return 0;
+			}
+
+			// ==========
+
+			// ...then we check for the plugin bro@ms that are available to the end-user (ie. listed in the documentation! <g>)...
+			else if (!_stricmp(temp, "@BBStyleRandom")) // @myBroam is "our own" bro@m to set the temporary toolbar display
+			{
+				NewStyle(true);
+				SetStyle();				
+				return 0;
+			}
+
+			// ==========
+
+			// Finally, we check for our "internal" bro@m, which is used for
+			// all plugin internal commands, for example the menu commands
+			// (this "masking" technique saves a *lot* of _stricmp's in more
+			// advanced plugins or when having many menu commands!)...
+			else if (IsInString(temp, "@BBStyleInternal"))
+			{
+				static char msg[MAX_LINE_LENGTH];
+				static char status[9];
+				char token1[4096], token2[4096], extra[4096];
+				LPSTR tokens[2];
+				tokens[0] = token1;
+				tokens[1] = token2;
+
+				token1[0] = token2[0] = extra[0] = '\0';
+				BBTokenize (temp, tokens, 2, extra);
+
+				// open current style file with default editor
+				if (!_stricmp(token2, "EditStyle")) 
+				{
+					SendMessage(hwndBlackbox, BB_EDITFILE, 0, 0);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Edit Style");
+					return 0;
+				}
+				else if (!_stricmp(token2, "AboutStyle")) 
+				{
+					char stylepath[MAX_LINE_LENGTH], temp[MAX_LINE_LENGTH], a1[MAX_LINE_LENGTH], a2[MAX_LINE_LENGTH], a3[MAX_LINE_LENGTH], a4[MAX_LINE_LENGTH], a5[MAX_LINE_LENGTH];
+					strcpy(stylepath, stylePath());
+					strcpy(a1, ReadString(stylepath, "style.name:", "[Style name not specified]"));
+					strcpy(a2, ReadString(stylepath, "style.author:", "[Author not specified]"));
+					strcpy(a3, ReadString(stylepath, "style.date:", ""));
+					strcpy(a4, ReadString(stylepath, "style.credits:", ""));
+					strcpy(a5, ReadString(stylepath, "style.comments:", ""));
+					sprintf(temp, "%s\nby %s\n%s\n%s\n%s", a1, a2, a3, a4, a5);
+					MessageBox(GetBBWnd(), temp, "BBStyle: Style information", MB_OK | MB_SETFOREGROUND | MB_ICONINFORMATION);
+					return 0;
+				}
+				else if (!_stricmp(token2, "ToggleTimer"))
+				{
+					if (timer)
+					{
+						KillTimer(hwndPlugin, 1);
+						timer = false;
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Style Change On Timer disabled");
+					}
+					else
+					{
+						if (!SetTimer(hwndPlugin, 1, changeTime, (TIMERPROC)NULL))
+						{
+							MessageBox(0, "Error creating update timer", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
+							//Log("Could not create Toolbar update timer", NULL);
+							timer = false;
+							return 0;
+						}
+						timer = true;
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Style Change On Timer enabled");
+					}
+				}
+				else if (!_stricmp(token2, "RefreshList"))
+				{
+					InitList(listPath, true);
+					NewStyle(true);
+					//MessageBox(0, styleToSet, "Before NewStyle()...", MB_OK);
+					//NewStyle();
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Refresh Style List");
+					return 0;
+				}
+				else if (!_stricmp(token2, "AlwaysOnTop"))
+				{
+					if (!inSlit)
+					{
+						if (alwaysOnTop)
+						{
+							alwaysOnTop = false;
+							SetWindowPos(hwndPlugin, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+						}
+						else
+						{
+							alwaysOnTop = true;
+							SetWindowPos(hwndPlugin, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+						}
+
+						(alwaysOnTop) ? strcpy(status, "enabled") : strcpy(status, "disabled");
+						sprintf(msg, "BBStyle -> Always On Top %s", status);
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+					}
+				}
+				else if (!_stricmp(token2, "ToggleStartChange"))
+				{
+					if (changeOnStart) changeOnStart = false;
+					else changeOnStart = true;
+
+					(changeOnStart) ? strcpy(status, "enabled") : strcpy(status, "disabled");
+					sprintf(msg, "BBStyle -> Style Change On Start %s", status);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+				}
+				else if (!_stricmp(token2, "ToggleStyleTwice"))
+				{
+					noStyleTwice = !noStyleTwice;
+
+					if (noStyleTwice)
+					{
+						strcpy(status, "enabled");
+					}
+					else // if turning off no style twice, repopulate list
+					{
+						strcpy(status, "disabled");
+						InitList(listPath, true);
+						NewStyle(true);
+					}
+
+					sprintf(msg, "BBStyle -> No Style Twice %s", status);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+				}
+				/*else if (!_stricmp(token2, "ToggleRootCommands"))
+				{
+					if (rootCommands)
+					{
+						rootCommands = false;
+
+						// Execute the style's rootCommand...
+						char command[MAX_LINE_LENGTH], arguments[MAX_LINE_LENGTH];
+						LPSTR tokens[1];
+						tokens[0] = command;
+						command[0] = arguments[0] = '\0';
+
+						BBTokenize (styleRootCommand, tokens, 1, arguments);
+
+						// Since it's a rootCommand, we use the Blackbox dir as working directory...
+						char bbpath[MAX_LINE_LENGTH];
+						GetBlackboxPath(bbpath, sizeof(bbpath));
+
+						BBExecute(GetDesktopWindow(), NULL, command, arguments, bbpath, SW_SHOWNORMAL, true);
+					}
+					else 
+					{
+						rootCommands = true;
+						oldDesk = currentDesktop;
+						SendMessage(hwndBlackbox, BB_LISTDESKTOPS, (WPARAM)hwndPlugin, 0);
+						ChangeRoot();
+					}
+
+					(rootCommands) ? strcpy(status, "enabled") : strcpy(status, "disabled");
+					sprintf(msg, "BBStyle -> Workspace RootCommands %s", status);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+				}*/
+				else if (!_stricmp(token2, "ToggleWindow"))
+				{
+					if (!inSlit)
+					{
+						if (hideWindow)
+						{
+							hideWindow = false;
+							ShowWindow(hwndPlugin, SW_SHOW);
+							InvalidateRect(hwndPlugin, NULL, true);
+						}
+						else 
+						{
+							hideWindow = true;
+							ShowWindow(hwndPlugin, SW_HIDE);
+						}
+
+						(hideWindow) ? strcpy(status, "enabled") : strcpy(status, "disabled");
+						sprintf(msg, "BBStyle -> Hide Window %s", status);
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+					}
+				}
+				else if (!_stricmp(token2, "SnapWindowToEdge"))
+				{
+					if (!inSlit)
+					{
+						if (snapWindow) snapWindow = false;
+						else snapWindow = true;
+
+						(snapWindow) ? strcpy(status, "enabled") : strcpy(status, "disabled");
+						sprintf(msg, "BBStyle -> Snap Window To Edge %s", status);
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+					}
+				}
+				else if (!_stricmp(token2, "ToggleSlit"))
+				{
+					ToggleSlit();
+					return 0;
+				}
+				else if (!_stricmp(token2, "ToggleBorder"))
+				{
+					if (frame.drawBorder)
+					{
+						frame.drawBorder = false;
+					}
+					else
+					{
+						frame.drawBorder = true;
+					}
+
+					GetStyleSettings();
+					InvalidateRect(hwndPlugin, NULL, true);
+					if (hSlit && inSlit)
+						SendMessage(hSlit, SLIT_UPDATE, 0, 0);					
+
+					(frame.drawBorder) ? strcpy(status, "enabled") : strcpy(status, "disabled");
+					sprintf(msg, "BBStyle -> Draw Border %s", status);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);					
+				}
+				else if (!_stricmp(token2, "ToggleToolbar"))
+				{
+					if (inheritToolbar) 
+					{
+						inheritToolbar = false;
+						/*height = width = 21 + (2 * frame.borderWidth);
+						frame.bevelWidth = 3;*/
+						GetStyleSettings();
+						MoveWindow(hwndPlugin, xpos, ypos, width, height, true);
+						InvalidateRect(hwndPlugin, NULL, true);
+						if (hSlit && inSlit)
+							SendMessage(hSlit, SLIT_UPDATE, 0, 0);
+					}
+					else 
+					{
+						inheritToolbar = true;
+						//height = width = tbInfo.height;
+						if (GetClientRect(FindWindow("Toolbar", 0), &tRect))
+						{
+							//GetClientRect(FindWindow("Toolbar", 0), &tRect);
+							tbInfo.height = height = width = tRect.bottom - tRect.top;
+							frame.bevelWidth = styleBevelWidth;
+							GetClientRect(FindWindow("Toolbar", 0), &tRect);
+							tbInfo.height = height = width = tRect.bottom - tRect.top;
+							frame.bevelWidth = styleBevelWidth;
+							//GetStyleSettings();
+							MoveWindow(hwndPlugin, xpos, ypos, width, height, true);
+							InvalidateRect(hwndPlugin, NULL, true);
+							if (hSlit && inSlit)
+								SendMessage(hSlit, SLIT_UPDATE, 0, 0);
+						}
+						else if (GetClientRect(FindWindow("BBToolbar", 0), &tRect))
+						{
+							//GetClientRect(FindWindow("Toolbar", 0), &tRect);
+							tbInfo.height = height = width = tRect.bottom - tRect.top;
+							frame.bevelWidth = styleBevelWidth;
+							GetClientRect(FindWindow("BBToolbar", 0), &tRect);
+							tbInfo.height = height = width = tRect.bottom - tRect.top;
+							frame.bevelWidth = styleBevelWidth;
+							//GetStyleSettings();
+							MoveWindow(hwndPlugin, xpos, ypos, width, height, true);
+							InvalidateRect(hwndPlugin, NULL, true);
+							if (hSlit && inSlit)
+								SendMessage(hSlit, SLIT_UPDATE, 0, 0);
+						}
+						else if (GetClientRect(FindWindow("bbLeanBar", 0), &tRect))
+						{
+							//GetClientRect(FindWindow("Toolbar", 0), &tRect);
+							tbInfo.height = height = width = tRect.bottom - tRect.top;
+							frame.bevelWidth = styleBevelWidth;
+							GetClientRect(FindWindow("bbLeanBar", 0), &tRect);
+							tbInfo.height = height = width = tRect.bottom - tRect.top;
+							frame.bevelWidth = styleBevelWidth;
+							//GetStyleSettings();
+							MoveWindow(hwndPlugin, xpos, ypos, width, height, true);
+							InvalidateRect(hwndPlugin, NULL, true);
+							if (hSlit && inSlit)
+								SendMessage(hSlit, SLIT_UPDATE, 0, 0);
+						}
+						else
+						{
+							inheritToolbar = false;
+						}
+					}
+
+					(inheritToolbar) ? strcpy(status, "enabled") : strcpy(status, "disabled");
+					sprintf(msg, "BBStyle -> Inherit Toolbar Height %s", status);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+				}
+				else if (!_stricmp(token2, "Transparency"))
+				{
+					if (usingWin2kXP)
+					{
+						if (transparency)
+						{
+							transparency = false;
+							SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+						}
+						else
+						{
+							transparency = true;
+							SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+							BBSetLayeredWindowAttributes(hwndPlugin, NULL, (unsigned char)transparencyAlpha, LWA_ALPHA);
+						}
+
+						(transparency) ? strcpy(status, "enabled") : strcpy(status, "disabled");
+						sprintf(msg, "BBStyle -> Transparency %s", status);
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+					}
+				}
+				else if (!_stricmp(token2, "About"))
+				{
+					char aboutmsg[MAX_LINE_LENGTH];
+
+					strcpy(aboutmsg, szVersion);
+					strcat(aboutmsg, "\n\n© 2005 nc-17@ratednc-17.com   \n\nhttp://www.ratednc-17.com/\n#bb4win on irc.freenode.net");
+
+					/*SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> About BBStyle");
+					MessageBox(0, aboutmsg, "About BBStyle...", MB_OK | MB_TOPMOST | MB_SETFOREGROUND | MB_ICONINFORMATION);
+					return 0;*/
+
+					MSGBOXPARAMS msgbox;
+					ZeroMemory(&msgbox, sizeof(msgbox));
+					msgbox.cbSize = sizeof(msgbox);
+					msgbox.hwndOwner = 0; //GetBBWnd();
+					msgbox.hInstance = hInstance;
+					msgbox.lpszText = aboutmsg;
+					msgbox.lpszCaption = "About BBStyle...";
+					msgbox.dwStyle = MB_OK | MB_SETFOREGROUND | MB_TOPMOST | MB_USERICON;
+					msgbox.lpszIcon = MAKEINTRESOURCE(IDI_ICON1);
+					msgbox.dwContextHelpId = 0;
+					msgbox.lpfnMsgBoxCallback = NULL;
+					msgbox.dwLanguageId = LANG_NEUTRAL;
+					MessageBoxIndirect(&msgbox);
+					return 0;
+				}
+			}
+
+			WriteRCSettings();
+			return 0;
+		}
+		break;
+
+		// ==========
+
+		// If Blackbox sends a reconfigure message, load the new style settings and update the window...
+		case BB_RECONFIGURE:
+		{
+			ReadRCSettings();
+			GetStyleSettings();
+			leftButtonDown = false;
+
+			UpdateMonitorInfo();
+			if (!inSlit)
+			{
+				// snap to edge on style change
+				// stops diff. bevel/border widths moving pager from screen edge
+				int x; int y; int z; int dx, dy, dz;
+				int nDist = 20;
+
+				// top/bottom edge
+				dy = y = ypos - screenTop;
+				dz = z = ypos + height - screenBottom;
+				if (dy<0) dy=-dy;
+				if (dz<0) dz=-dz;
+				if (dz < dy) y = z, dy = dz;
+
+				// left/right edge
+				dx = x = xpos - screenLeft;
+				dz = z = xpos + width - screenRight;
+				if (dx<0) dx=-dx;
+				if (dz<0) dz=-dz;
+				if (dz < dx) x = z, dx = dz;
+
+				if (dy < nDist)
+				{
+					ypos -= y;
+					// top/bottom center
+					dz = z = xpos + (width - screenRight - screenLeft)/2;
+					if (dz<0) dz=-dz;
+					if (dz < dx) x = z, dx = dz;
+				}
+
+				if (dx < nDist)
+					xpos -= x;
+
+				SetWindowPos(hwndPlugin, HWND_TOP, xpos, ypos, width, height, SWP_NOZORDER);
+			}
+
+			InvalidateRect(hwndPlugin, NULL, true);
+			//currentDesktop = 254;
+
+			if (hSlit && inSlit)
+				SendMessage(hSlit, SLIT_UPDATE, 0, 0);
+
+			if (badPath)
+			{
+				GetBlackboxPath(listPath, sizeof(listPath));
+				strcat(listPath, "styles\\*");
+				char temp[4096];
+				strcpy(temp, "The original style path in the bbstyle.rc file was invalid.\n\nThe default path will now be used...\n\nPath: ");
+				strcat(temp, listPath);
+				MessageBox(hwndBlackbox, temp, szVersion, MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+				WriteRCSettings();
+				badPath = false;
+				//endPlugin(hInstance);
+				//return 0;
+			}
+
+			//SendMessage(hwndBlackbox, BB_LISTDESKTOPS, (WPARAM)hwndPlugin, 0);
+			//MessageBox(0, "Reconfigure...?", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
+		}
+		break;
+
+		// ==========
+
+		case WM_WINDOWPOSCHANGING:
+		{
+			// Is SnapWindowToEdge enabled?
+			if (!inSlit)
+			{
+				if (snapWindow)
+				{
+					// Snap window to screen edges (if the last bool is false it uses the current DesktopArea)
+					if(IsWindowVisible(hwnd)) SnapWindowToEdge((WINDOWPOS*)lParam, 20, true);
+				}
+			}
+		}
+		break;
+
+		// ==========
+		// Save window position if it changes...
+
+		case WM_WINDOWPOSCHANGED:
+		{
+			if (!inSlit)
+			{
+				WINDOWPOS* windowpos = (WINDOWPOS*)lParam;
+				xpos = windowpos->x;
+				ypos = windowpos->y;
+
+				WriteInt(rcpath, "bbstyle.position.x:", xpos);
+				WriteInt(rcpath, "bbstyle.position.y:", ypos);
+			}
+			
+			return 0;
+		}
+		break;
+
+		case WM_MOVING:
+		{
+			RECT *r = (RECT *)lParam;
+
+			// Makes sure BBStyle stays on screen when moving.
+			if (r->left < vScreenLeft)
+			{
+				r->left = vScreenLeft;
+				r->right = r->left + width;
+			}
+			if ((r->left + width) > vScreenWidth)
+			{
+				r->left = vScreenWidth - width;
+				r->right = r->left + width;
+			}
+
+			if (r->top < vScreenTop) 
+			{
+				r->top = vScreenTop;
+				r->bottom = r->top + height;
+			}
+			if ((r->top + height) > vScreenHeight)
+			{
+				r->top = vScreenHeight - height;
+				r->bottom = r->top + height;
+			}
+
+			return TRUE;
+		}
+		break;
+
+		// ==========
+
+		case WM_DISPLAYCHANGE:  
+		{ 
+			// IntelliMove(tm) by qwilk... <g> 
+			int relx, rely;  
+			int oldscreenwidth = screenWidth; 
+			int oldscreenheight = screenHeight;
+
+			/*screenLeft = GetSystemMetrics(SM_YVIRTUALSCREEN);
+			screenTop = GetSystemMetrics(SM_XVIRTUALSCREEN);
+			
+			screenWidth = screenLeft + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+			screenHeight = screenTop + GetSystemMetrics(SM_CYVIRTUALSCREEN);*/
+			UpdateMonitorInfo();
+
+			if (xpos > oldscreenwidth / 2)  
+			{ 
+				relx = oldscreenwidth - xpos;  
+				xpos = screenWidth - relx; 
+			} 
+
+			if (ypos > oldscreenheight / 2)  
+			{
+				rely = oldscreenheight - ypos;  
+				ypos = screenHeight - rely; 
+			} 
+			
+			MoveWindow(hwndPlugin, xpos, ypos, width, height, true);  
+		}
+		break; 
 
 		//====================
 		// Timer message:
 
 		case WM_TIMER:
-			{
-				//StyleChanger
-				if(wParam==1)
-					setStyle();
-			}
-			break;
-
-		// ----------------------------------------------------------
-		// Manually moving/sizing has been started
-
-		case WM_ENTERSIZEMOVE:
-			plugin.is_moving = true;
-			break;
-
-		case WM_EXITSIZEMOVE:
-			if (plugin.is_moving)
-			{
-				if (plugin.hSlit) // already we are
-				{
-					SendMessage(plugin.hSlit, SLIT_UPDATE, 0, (LPARAM)hwnd);
-				}
-				else
-				{
-					// record new location
-					WriteInt(rcpath, "bbStyle.X:", position.X);
-					WriteInt(rcpath, "bbStyle.Y:", position.Y);
-					WriteString(rcpath, "bbStyle.placement:", (char*)"User");
-				}
-			}
-			plugin.is_moving =  false;
-			break;
-
-		// ---------------------------------------------------
-		// Make sure plugin stays on screen.
-
-		case WM_WINDOWPOSCHANGING:
-			if (plugin.is_moving)
-				if(IsWindowVisible(hwnd)) SnapWindowToEdge((WINDOWPOS*)lParam, position.snap, true);
-			break;
-
-		// ----------------------------------------------------------
-		// start moving according to keys held down
-
-		case WM_LBUTTONDOWN:
-			UpdateWindow(hwnd);
-			if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
-			{
-				// start moving, when control-key is held down
-				PostMessage(hwnd, WM_SYSCOMMAND, 0xf012, 0);
-				break;
-			}
-			if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
-			{
-				// toggle styleInfo display
-				eval_menu_cmd(M_BOL, &plugin.showStyleInfo, "showStyleInfo");
-				SendMessage(BBhwnd, BB_RECONFIGURE, 0, 0);
-				break;
-			}
-			// otherwise change styles
-			// required for pressed effect
-			leftButtonDown = true;
-			invalidate_window();
-			// do not reset until ButtonUp
-			break;
-
-		case WM_LBUTTONUP:
-			{
-			if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
-				break;
-				
-			if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
-				break;
-				
-			leftButtonDown = false;
-			invalidate_window();
-			setStyle();
-			}
-			break;
-
-		case WM_MBUTTONUP:
-			{
-			// show current Styles menu - xoblite has its own default
-			if (!is_xoblite)
-			{
-				char p[MAX_PATH];
-				sprintf(p, "@BBCore.ShowMenu %s  >> @BBCore.style %%1", plugin.stylePath);
-				SendMessage(BBhwnd, BB_BROADCAST, 0, (LPARAM)p);
-			}
-			}
-			break;
-			
-		// ----------------------------------------------------------
-		// Show the user menu
-
-		case WM_RBUTTONUP:
-			if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
-			{
-				// enter|leave slit, when shift-key is held down
-				eval_menu_cmd(M_BOL, &plugin.useSlit, "useSlit");
-				break;
-			}
-			else
-				displayMenu(true);
-			break;
-
-		// ----------------------------------------------------------
-
-		case WM_DISPLAYCHANGE:  
-		{ 
-			if (NULL == plugin.hSlit)
-				setPosition();
-		}
-		break; 
-
-		case WM_KEYUP:
 		{
-			if (wParam == VK_NUMPAD7) 
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.TopLeft");
-			else if (wParam == VK_NUMPAD8) 
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.TopCenter");
-			else if (wParam == VK_NUMPAD9) 
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.TopRight");
-			else if (wParam == VK_NUMPAD4) 
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.CenterLeft");
-			else if (wParam == VK_NUMPAD6) 
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.CenterRight");
-			else if (wParam == VK_NUMPAD1) 
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.BottomLeft");
-			else if (wParam == VK_NUMPAD2) 
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.BottomCenter");
-			else if (wParam == VK_NUMPAD3) 
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.BottomRight");
-			else if ((wParam == VK_BACK) && !is_xoblite)
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.stylePath");
-			else if (wParam == VK_SUBTRACT)
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.editRC");
-			else if (wParam == VK_ADD)
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.onTop");
-			else if (wParam == VK_ESCAPE)	
-				SendMessage(plugin.hwnd, BB_BROADCAST, 0, (LPARAM)"@bbStyle.timerOn");
-			
-			invalidate_window();			
+			// Change to a new style!
+			NewStyle(true);
+			SetStyle();						
+			return 0;
+		}
+
+		// ====================
+		// Grabs the number of desktops and sets the names of the desktops
+
+		/*case BB_DESKTOPINFO:
+		{
+			DesktopInfo* info = (DesktopInfo*)lParam;
+
+			if (info->isCurrent)
+			{
+				oldDesk = currentDesktop;
+				currentDesktop = info->number;
+				if (oldDesk != currentDesktop)
+					ChangeRoot();
+			}
+		}
+		break;*/
+
+		// ====================
+		// Get toolbar height and use it if inherit option on
+
+		case BB_TOOLBARUPDATE:
+		{
+			//GetToolbarInfo(&tbInfo);
+
+			if (inheritToolbar)
+			{
+				GetClientRect(FindWindow("Toolbar", 0), &tRect);
+				tbInfo.height = height = width = tRect.bottom - tRect.top;
+				frame.bevelWidth = styleBevelWidth;
+				GetClientRect(FindWindow("Toolbar", 0), &tRect);
+				tbInfo.height = height = width = tRect.bottom - tRect.top;
+				frame.bevelWidth = styleBevelWidth;
+				//GetStyleSettings();
+				MoveWindow(hwndPlugin, xpos, ypos, width, height, true);
+				InvalidateRect(hwndPlugin, NULL, true);
+				if (hSlit && inSlit)
+					SendMessage(hSlit, SLIT_UPDATE, 0, 0);
+			}
+
+			//SendMessage(hwndBlackbox, BB_LISTDESKTOPS, (WPARAM)hwndPlugin, 0);
 		}
 		break;
 
-		// ----------------------------------------------------------
-		// prevent the user from closing the plugin with alt-F4
+		// ====================
 
-		case WM_CLOSE:
-			break;
-
-		// ----------------------------------------------------------
-		// If Blackbox sends a reconfigure message, load the new style settings and update the window...
-
-		case BB_RECONFIGURE:
-			getStyleSettings();
-			set_window_modes();
-			break;
-
-		// ----------------------------------------------------------
-		// Blackbox sends Bro@ms to all windows...
-
-		case BB_BROADCAST:
+		/*case BB_WORKSPACE:
+		case BB_BRINGTOFRONT:
+		case BB_MINIMIZE:
 		{
-			const char *msg_string = (LPCSTR)lParam;
+			PostMessage(hwndBlackbox, BB_LISTDESKTOPS, (WPARAM)hwndPlugin, 0);
+		}
+		break;*/
 
-			// check general broams
-			if (!stricmp(msg_string, "@BBShowPlugins"))
+		//===========
+		// Allow window to move...
+
+		case WM_NCHITTEST:
+		{
+			//ClickMouse();
+
+			//if (!inButton || GetAsyncKeyState(VK_CONTROL) & 0x8000)
+			if (!ClickMouse() || GetAsyncKeyState(VK_CONTROL) & 0x8000)
+				return HTCAPTION;
+			else
+				return HTCLIENT;
+		}
+		break;
+
+		// ==========
+
+		case WM_NCLBUTTONDBLCLK:
+		//case WM_LBUTTONDBLCLK:
+		{
+			ToggleSlit();
+		}
+		break;
+
+		case WM_NCLBUTTONDOWN:
+		{
+			/* Please do not allow plugins to be moved in the slit.
+			 * That's not a request..  Okay, so it is.. :-P
+			 * I don't want to hear about people losing their plugins
+			 * because they loaded it into the slit and then moved it to
+			 * the very edge of the slit window and can't get it back..
+			 */
+			if (!inSlit)// && (GetAsyncKeyState(VK_CONTROL) & 0x8000))
+				return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		break;
+
+		// ==========
+
+		case WM_LBUTTONDOWN:
+		//case WM_NCLBUTTONDOWN:
+		{
+				leftButtonDown = true;
+				InvalidateRect(hwndPlugin, NULL, true);
+		}
+		break;
+
+		case WM_LBUTTONUP:
+		//case WM_NCLBUTTONUP:
+		{
+			if (leftButtonDown)
 			{
-				if (!plugin.shown)
-				{
-					plugin.shown = true;
-					ShowWindow(hwnd, SW_SHOWNA);
-				}
-				break;
+				leftButtonDown = false;
+				InvalidateRect(hwndPlugin, NULL, true);
+				NewStyle(true);
+				SetStyle();									
 			}
-
-			if (!stricmp(msg_string, "@BBHidePlugins"))
-			{
-				if (plugin.toggle && NULL == plugin.hSlit)
-				{
-					plugin.shown = false;
-					ShowWindow(hwnd, SW_HIDE);
-				}
-				break;
-			}
-
-			// Our broadcast message prefix:
-			const int broam_prefix_len = sizeof broam_prefix - 1; // minus terminating \0
-
-			// check broams sent from our own menu
-			if (!memicmp(msg_string, broam_prefix, broam_prefix_len))
-			{
-				msg_string += broam_prefix_len;
-				// note - styleList is refreshed on every style change
-				if (!stricmp(msg_string, "random"))
-					{
-					setStyle();
-					break;
-					}
-				if (!stricmp(msg_string, "timerOn"))
-				{
-					eval_menu_cmd(M_BOL, &plugin.timerOn, msg_string);
-					if (plugin.timerOn)
-					// Force randomisation by uneven # of seconds
-						SetTimer(plugin.hwnd, 1, plugin.changeTime*59000, (TIMERPROC)NULL);
-					else
-						KillTimer(plugin.hwnd, 1);
-					break;
-				}
-				if (!stricmp(msg_string, "editRC"))
-				{
-					GetBlackboxEditor(path);
-					BBExecute(NULL, NULL, path, rcpath, NULL, SW_SHOWNORMAL, false);
-					break;
-				}
-				if (!stricmp(msg_string, "stylePath"))
-				{
-					if (false == select_folder(plugin.hwnd, plugin.stylePath, path, false))
-						break;
-					WriteString(rcpath, "bbStyle.stylePath:", path);
-					getRCSettings();
-					setStyle();
-					break;
-				}
-				if (!_stricmp(msg_string, "loadDocs"))
-				{
-					locate_file(hInstance, path, szAppName, "html");
-					BBExecute(BBhwnd, "open", path, NULL, NULL, SW_SHOWNORMAL, false);
-				}
-				if (!stricmp(msg_string, "about"))
-				{
-					about_box();
-					break;
-				}
-				// set out the standard broams values in the broamprops table below
-				const broamprop *bp = check_item(msg_string, always_broams);
-				if (bp)
-				{
-					eval_menu_cmd(bp->mode, bp->val, msg_string);
-					break;
-				}
-				// check bro@ms that won't work in the Slit
-				if (!plugin.useSlit)
-				{
-					const broamprop *bps = check_item(msg_string, nonSlit_broams);
-					if (bps)
-					{
-						eval_menu_cmd(bps->mode, bps->val, msg_string);
-						break;
-					}
-					// check position bro@ms
-					const broamprop *bpp = check_item(msg_string, position_broams);
-					if (bpp)
-					{
-						strcpy(position.placement, bpp->key);
-						setPosition();
-						WriteString(rcpath, "bbStyle.placement:", bpp->key);
-						set_window_modes();
-					break;
-					}
-				}
-				char szTemp[MAX_PATH];
-				GetBlackboxEditor(szTemp);
-				if (!stricmp(msg_string, "edit3dcRC"))
-				{
-					get_path(path, sizeof(path), "plugins\\bbColor_3dc2\\bbColor_3dc2.rc");
-					if (File_Exists(path))
-					{
-						BBExecute(NULL, NULL, szTemp, path, NULL, SW_SHOWNORMAL, false);
-						break;
-					}
-					else
-						get_path(path, sizeof(path), "plugins\\bbColor3dc\\bbColor3dc.rc");
-					if (File_Exists(path))
-						BBExecute(NULL, NULL, szTemp, path, NULL, SW_SHOWNORMAL, false);
-					break;
-				}
-				if (!stricmp(msg_string, "load3dcDocs"))
-				{
-					get_path(path, sizeof(path), "plugins\\bbColor_3dc2\\bbColor_3dc2.html");
-					if (File_Exists(path))
-						BBExecute(BBhwnd, "open", path, NULL, NULL, SW_SHOWNORMAL, false);
-					break;
-				}
-			}
-			break;
 		}
 
-		// ----------------------------------------------------------
-		// let windows handle any other message
+		// ===========
+
+		case WM_NCMBUTTONDOWN:
+		{
+			middleButtonDownNC = true;
+		}
+		break;
+
+		case WM_MBUTTONDOWN: 
+		{
+			middleButtonDown = true;
+		}
+		break;
+
+		case WM_NCMBUTTONUP:
+		{
+			if (middleButtonDownNC)
+			{
+				SendMessage(hwndBlackbox, BB_EDITFILE, 0, 0);
+				SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Edit Style");
+				middleButtonDownNC = false;
+			}			
+		}
+		break;
+
+		case WM_MBUTTONUP:
+		{	
+			if (middleButtonDown)
+			{
+				SendMessage(hwndBlackbox, BB_EDITFILE, 0, 0);
+				SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Edit Style");
+				middleButtonDown = false;
+			}			
+		}
+		break;
+
+		// ===========
+		// Right mouse button clicked?
+
+		case WM_NCRBUTTONDOWN:
+		{
+			rightButtonDownNC = true;
+		}
+		break;
+
+		case WM_RBUTTONDOWN: 
+		{
+			rightButtonDown = true;
+		}
+		break;
+
+		case WM_NCRBUTTONUP:
+		{
+			if (rightButtonDownNC)
+			{
+				DisplayMenu();
+				rightButtonDownNC = false;
+			}			
+		}
+		break;
+
+		case WM_RBUTTONUP:
+		{	
+			if (rightButtonDown)
+			{
+				DisplayMenu();
+				rightButtonDown = false;
+			}			
+		}
+		break;
+
+		// ===================
+		// reset pressed mouse button statuses if mouse leaves the BBPager window
+
+		case WM_MOUSELEAVE:
+		{
+			//if (!inSlit)
+			//{
+				leftButtonDown = middleButtonDown = rightButtonDown = false;
+				InvalidateRect(hwndPlugin, NULL, true);
+			//}
+		}
+		break;
+
+
+		case WM_NCMOUSELEAVE:
+		{
+			//if (!inSlit)
+			//{
+				middleButtonDownNC = rightButtonDownNC = false;
+				InvalidateRect(hwndPlugin, NULL, true);
+			//}
+		}
+		break;
+
+		// ==========
+
+		case WM_MOUSEMOVE:
+		case WM_NCMOUSEMOVE:
+		{	
+			TrackMouse();
+		}
+		break;
+
+		// ==========
+
+		case WM_CLOSE:
+			return 0;
+		break;
+
 		default:
-			return DefWindowProc(hwnd,message,wParam,lParam);
+			return DefWindowProc(hwnd, message, wParam, lParam);
 	}
 	return 0;
 }
 
 //===========================================================================
 
-void drawPlugin()
+void ToggleSlit()
 {
-		// Create buffer hdc's, bitmaps etc.
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(plugin.hwnd, &ps);
+	static char msg[MAX_LINE_LENGTH];
+	static char status[9];
 
-		// create a DC for the buffer
-		HDC buf = CreateCompatibleDC(hdc);
-		HGDIOBJ otherbmp;
+	hSlit = FindWindow("BBSlit", "");
 
-		if (NULL == plugin.bufbmp) // No bitmap yet?
+	if (inSlit)
+	{
+		// We are in the slit, so lets unload and get out..
+		if (snapWindowOld) snapWindow = true;
+		//SetParent(hwndPlugin, NULL);
+		//SetWindowLong(hwndPlugin, GWL_STYLE, (GetWindowLong(hwndPlugin, GWL_STYLE) & ~WS_CHILD) | WS_POPUP);
+		SendMessage(hSlit, SLIT_REMOVE, NULL, (LPARAM)hwndPlugin);
+		inSlit = false;
+
+		//turn trans back on?
+		if (transparency && usingWin2kXP)
 		{
-			// Generate it and paint everything
-			plugin.bufbmp = CreateCompatibleBitmap(hdc, plugin.width, plugin.height);
-
-			// Select it into the DC, storing the previous default.
-			otherbmp = SelectObject(buf, plugin.bufbmp);
-
-			// Setup the rectangle
-			RECT r; r.left = r.top = 0; r.right = plugin.width; r.bottom = plugin.height;
-
-			// and draw the frame
-			MakeStyleGradient(buf, &r, &style_info.Frame, style_info.Frame.bordered);
-
-			// Set the font, storing the default..
-			HGDIOBJ otherfont = SelectObject(buf, plugin.hFont);
-			SetBkMode(buf, TRANSPARENT);
-
-			// adjust the rectangle for a margin
-			r.left  += style_info.frameWidth;
-			r.top   += style_info.frameWidth;
-			r.right   -= style_info.frameWidth;
-			r.bottom  -= style_info.frameWidth;
-
-			if (leftButtonDown)
-			{
-				MakeStyleGradient(buf, &r, &style_info.Pressed, style_info.Pressed.bordered);
-				SetTextColor(buf, style_info.Pressed.TextColor);
-			}
-			else
-			{
-				MakeStyleGradient(buf, &r, &style_info.Button, style_info.Button.bordered);
-				SetTextColor(buf, style_info.Button.TextColor);
-			}
-
-
-			if (!plugin.showStyleInfo)
-			{
-				strcpy(plugin.windowText, "S");
-				BBDrawText(buf, plugin.windowText, -1, &r, DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_WORD_ELLIPSIS, leftButtonDown ? &style_info.Pressed : &style_info.Button);
-			}
-			else
-			{
-				//vertical centering not in API for multiple lines
-				getTitleText(true);
-				BBDrawText(buf, plugin.windowText, -1, &r, DT_CENTER|DT_WORDBREAK, leftButtonDown ? &style_info.Pressed : &style_info.Button);
-			}
-
-			// Put back the previous default font.
-			SelectObject(buf, otherfont);
-		}
-		else
-		{
-			// Otherwise it has been painted previously,
-			// so just select it into the DC
-			otherbmp = SelectObject(buf, plugin.bufbmp);
+			SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+			BBSetLayeredWindowAttributes(hwndPlugin, NULL, (unsigned char)transparencyAlpha, LWA_ALPHA);
 		}
 
-		// ... and copy the buffer on the screen:
-		BitBlt(hdc,
-			ps.rcPaint.left,
-			ps.rcPaint.top,
-			ps.rcPaint.right  - ps.rcPaint.left,
-			ps.rcPaint.bottom - ps.rcPaint.top,
-			buf,
-			ps.rcPaint.left,
-			ps.rcPaint.top,
-			SRCCOPY
-			);
+		// Here you can move to where ever you want ;)
+		SetWindowPos(hwndPlugin, NULL, xpos2, ypos2, 0, 0, SWP_NOZORDER | SWP_NOSIZE);		
+	}
+	/* Make sure before you try and load into the slit that you have
+	 * the HWND of the slit ;)
+	 */
+	else if (hSlit)
+	{
+		// (Back) into the slit..
+		if (snapWindow) snapWindowOld = true;
+		else snapWindowOld = false;
+		snapWindow = false;
+		xpos2 = xpos; ypos2 = ypos;
 
-		// Put back the previous default bitmap
-		SelectObject(buf, otherbmp);
+		//turn trans off
+		SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
-		//remember to delete all objects
-		DeleteDC(buf);
+		//SetParent(hwndPlugin, hSlit);
+		//SetWindowLong(hwndPlugin, GWL_STYLE, (GetWindowLong(hwndPlugin, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+		SendMessage(hSlit, SLIT_ADD, NULL, (LPARAM)hwndPlugin);
+		inSlit = true;
+	}
 
-		// takes care of hdc
-		EndPaint(plugin.hwnd, &ps);
+	if (hSlit)
+	{
+		(inSlit) ? strcpy(status, "enabled") : strcpy(status, "disabled");
+		sprintf(msg, "BBStyle -> Use Slit %s", status);
+		SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+		WriteBool(rcpath, "bbstyle.useSlit:", inSlit);
+	}
 }
 
 //===========================================================================
 
-void getRCSettings(void)
+bool ClickMouse()
 {
-	// If a config file was found we read the plugin settings from it...
-	// ...if not, the ReadXXX functions give us just the defaults.
-	locate_file(hInstance, (char*)rcpath, szAppName, "rc");
+	RECT r;
+	POINT mousepos;
+	GetCursorPos(&mousepos);
+	GetWindowRect(hwndPlugin, &r);
+	mousepos.x = mousepos.x - r.left;
+	mousepos.y = mousepos.y - r.top;
 
-	position.X     = ReadInt(rcpath, "bbStyle.X:", 775);
-	position.Y     = ReadInt(rcpath, "bbStyle.Y:", 10);
-	position.fullScreen = ReadBool(rcpath, "bbStyle.fullScreen:", false);
-	position.snap       = ReadInt(rcpath, "bbStyle.snap:", 20);
-	plugin.shown	= ReadBool(rcpath, "bbStyle.shown:", true);
-	strcpy(position.placement, ReadString(rcpath, "bbStyle.placement:", "TopCenter"));
-
-	plugin.alpha      = plugin.usingWin2kPlus ? ReadInt(rcpath,  "bbStyle.alpha:", *(int *)GetSettingPtr(SN_MENUALPHA)) : 8;
-	plugin.alpha      = eightScale_up(plugin.alpha);
-	plugin.onTop      = ReadBool(rcpath, "bbStyle.onTop:", true);
-	plugin.toggle     = ReadBool(rcpath, "bbStyle.togglePlugins:", true);
-	plugin.useSlit    = ReadBool(rcpath, "bbStyle.useSlit:", false);
-
-	plugin.changeTime	= ReadInt(rcpath, "bbStyle.changeTime:", 5);
-	plugin.showStyleInfo = ReadBool(rcpath, "bbStyle.showStyleInfo:", true);
-	plugin.timerOn		= ReadBool(rcpath, "bbStyle.timerOn:", true);
-	plugin.changeOnStart = ReadBool(rcpath, "bbStyle.changeOnStart:", false);
-	plugin.count	= ReadInt(rcpath, "bbStyle.count:", 0);
-	plugin.chance	= ReadBool(rcpath, "bbStyle.chance:", true);
-
-	strcpy(plugin.stylePath, ReadString(rcpath, "bbStyle.stylePath:", "no"));
-	if (strlen(ReadString(rcpath, "bbStyle.stylePath:", "no")) == 2) 
-		strcpy(plugin.stylePath, set_stylePath());
-	strcpy(listPath, plugin.stylePath);
+	// check if mouse cursor is within button RECT
+	if (PtInRect(&buttonRect, mousepos) != 0)
+		inButton = true; // if so, set inButton bool
+	else
+		inButton = false;
 	
-	//find a new style - list refreshed on every styleChange
-	initList(listPath, true);
+	return inButton;
 }
 
-void get3dcSettings(void)
+void TrackMouse()
 {
-	char dcPath[MAX_PATH];
-	dcFile = File_Exists(get_path(dcPath, sizeof(dcPath), "plugins\\bbColor_3dc2\\bbColor_3dc2.rc")) ? true : File_Exists(get_path(dcPath, sizeof(dcPath), "plugins\\bbColor3dc\\bbColor3dc.rc"));
+	TRACKMOUSEEVENT track;
+	ZeroMemory(&track,sizeof(track));
+	track.cbSize = sizeof(track);
+	track.dwFlags = TME_LEAVE;
+	track.dwHoverTime = HOVER_DEFAULT;
+	track.hwndTrack = hwndPlugin;
+	TrackMouseEvent(&track);
 
-	dc_info.Menus		 = ReadBool(dcPath, "bbColor3dc.SetMenus:", false);
-	dc_info.Selected     = ReadBool(dcPath, "bbColor3dc.SetSelectedItem:", false);
-	dc_info.Tooltips     = ReadBool(dcPath, "bbColor3dc.SetTooltip:", false);
-	dc_info.Highlights   = ReadBool(dcPath, "bbColor3dc.SetMenuSelect:", false);
-	dc_info.Titles		 = ReadBool(dcPath, "bbColor3dc.SetTitles:", false);
+	TRACKMOUSEEVENT track2;
+	ZeroMemory(&track2,sizeof(track2));
+	track2.cbSize = sizeof(track2);
+#if (defined __MINGW32__) && (!defined __MINGW64__)
+	int const TME_NONCLIENT = 0x00000010; // missing in mingw32
+#endif
+	track2.dwFlags = TME_LEAVE | TME_NONCLIENT;
+	track2.dwHoverTime = HOVER_DEFAULT;
+	track2.hwndTrack = hwndPlugin;
+	TrackMouseEvent(&track2);
 }
 
 //===========================================================================
-
-void getStyleSettings(void)
+/*
+void ChangeRoot()
 {
-	bool nix = false;
-	if (!is_xoblite)
-		nix = 0 == (int)GetSettingPtr(35); //SN_NEWMETRICS aka SN_ISSTYLE070
-	else 
+	if (rootCommands)
 	{
-		char style[MAX_PATH]; char temp[64]; 
-		strcpy(style, stylePath());
-		strcpy(temp, ReadString(style, "toolbar.appearance:", (char *)"no"));
-		if (strlen(temp) != 2) nix = true;
+		char bgcmd[MAX_LINE_LENGTH];
+		
+		vector <string>::size_type i;
+		i = workspaceRootCommand.size();
+
+		if ((int)i >= currentDesktop + 1)
+			strcpy(bgcmd, workspaceRootCommand[currentDesktop].c_str());
+		else
+			strcpy(bgcmd, styleRootCommand);
+
+		// Execute the style's rootCommand...
+		char command[MAX_LINE_LENGTH], arguments[MAX_LINE_LENGTH];
+		LPSTR tokens[1];
+		tokens[0] = command;
+		command[0] = arguments[0] = '\0';
+
+		BBTokenize (bgcmd, tokens, 1, arguments);
+
+		// Since it's a rootCommand, we use the Blackbox dir as working directory...
+		char bbpath[MAX_LINE_LENGTH];
+		GetBlackboxPath(bbpath, sizeof(bbpath));
+		
+		BBExecute(GetDesktopWindow(), NULL, command, arguments, bbpath, SW_SHOWNORMAL, true);
 	}
+}
+*/
+//===========================================================================
 
-	style_info.Frame = *(StyleItem *)GetSettingPtr(SN_TOOLBAR);
-	if (false == (style_info.Frame.validated & VALID_TEXTCOLOR))
-		style_info.Frame.TextColor = ((StyleItem *)GetSettingPtr(SN_TOOLBARLABEL))->TextColor;
-	style_info.Button = *(StyleItem *)GetSettingPtr(SN_TOOLBARBUTTON);
-	if (style_info.Button.parentRelative)
-		style_info.Button = *(StyleItem *)GetSettingPtr(SN_TOOLBAR);
-	if (false == (style_info.Button.validated))
-		style_info.Button.TextColor = ((StyleItem *)GetSettingPtr(SN_TOOLBARLABEL))->TextColor;
-	style_info.Pressed = *(StyleItem *)GetSettingPtr(SN_TOOLBARBUTTONP);
-	if (style_info.Pressed.parentRelative)
-		style_info.Pressed = *(StyleItem *)GetSettingPtr(SN_TOOLBAR);
-	if (false == (style_info.Pressed.validated))
-		style_info.Pressed.TextColor = ((StyleItem *)GetSettingPtr(SN_TOOLBARLABEL))->TextColor;
+void DisplayMenu()
+{
+	// First we delete the main plugin menu if it exists (PLEASE NOTE that this takes care of submenus as well!)
+	if (BBStyleMenu) DelMenu(BBStyleMenu);
 
-	style_info.frameWidth = nix ? (style_info.Frame.marginWidth +style_info.Frame.borderWidth) : (*(int*)GetSettingPtr(SN_BEVELWIDTH) + *(int*)GetSettingPtr(SN_BORDERWIDTH));
-	plugin.hideWidth = imin(style_info.frameWidth, 3);
+	// Then we create the main plugin menu with a few commands...
+	BBStyleMenu = MakeMenu("BBStyle");
+
+	// Next, we create the first submenu (with a few applications)...
+	BBStyleWindowSubMenu = MakeMenu("Window");
+
+		if (!inSlit)
+		{
+			MakeMenuItem(BBStyleWindowSubMenu, "Always On Top", "@BBStyleInternal AlwaysOnTop", alwaysOnTop);
+			MakeMenuItem(BBStyleWindowSubMenu, "Snap Window To Edge", "@BBStyleInternal SnapWindowToEdge", snapWindow);
+		}
+		MakeMenuItem(BBStyleWindowSubMenu, "Inherit Toolbar Height", "@BBStyleInternal ToggleToolbar", inheritToolbar);
+		MakeMenuItem(BBStyleWindowSubMenu, "Draw Border", "@BBStyleInternal ToggleBorder", frame.drawBorder);
+		if (usingWin2kXP && !inSlit) MakeMenuItem(BBStyleWindowSubMenu, "Transparency", "@BBStyleInternal Transparency", transparency);
+		if (!inSlit) MakeMenuItem(BBStyleWindowSubMenu, "Hide Window", "@BBStyleInternal ToggleWindow", hideWindow);
+		if ((hSlit = FindWindow("BBSlit", ""))) 
+			MakeMenuItem(BBStyleWindowSubMenu, "Use Slit", "@BBStyleInternal ToggleSlit", inSlit);
+
+	MakeSubmenu(BBStyleMenu, BBStyleWindowSubMenu, "Window");
+
+	// ...the second submenu (with configuration options, please note the "internal" bro@m!)...
+	BBStyleStyleSubMenu = MakeMenu("Style");
+		MakeMenuItem(BBStyleStyleSubMenu, "About Current Style", "@BBStyleInternal AboutStyle", false);
+		MakeMenuItem(BBStyleStyleSubMenu, "Edit Current Style", "@BBStyleInternal EditStyle", false);
+		MakeMenuItem(BBStyleStyleSubMenu, "Apply Random Style", "@BBStyleRandom", false);
+	MakeSubmenu(BBStyleMenu, BBStyleStyleSubMenu, "Style");
 	
-	if (plugin.hFont) DeleteObject(plugin.hFont);
-	plugin.hFont = CreateStyleFont((StyleItem *)GetSettingPtr(SN_TOOLBAR));	
+	BBStyleConfigSubMenu = MakeMenu("Configuration");
+		MakeMenuItem(BBStyleConfigSubMenu, "Style Change On Timer", "@BBStyleInternal ToggleTimer", timer);
+		MakeMenuItem(BBStyleConfigSubMenu, "Style Change On Startup", "@BBStyleInternal ToggleStartChange", changeOnStart);
+		MakeMenuItem(BBStyleConfigSubMenu, "No Style Twice", "@BBStyleInternal ToggleStyleTwice", noStyleTwice);
+		//MakeMenuItem(BBStyleConfigSubMenu, "Workspace RootCommands", "@BBStyleInternal ToggleRootCommands", rootCommands);
+	MakeSubmenu(BBStyleMenu, BBStyleConfigSubMenu, "Configuration");
 
-	if (plugin.showStyleInfo)
-	{
-		plugin.height = ((int)(5.25 * style_info.Frame.FontHeight));
-		if (style_info.Frame.FontHeight >8)
-			plugin.height = (int)(plugin.height/2);
-		plugin.width = int((((int)getTitleText(false) * .6) + 4) * style_info.Frame.FontHeight * .6) ;
-		/*		plugin.width = (150 *//*+ temp + (2 * style_info.Frame.borderWidth) + (2 * style_info.Button.marginWidth));
-		if (plugin.width > 170) plugin.width = 170;*/
-	}
-	else
-	{
-		plugin.width = plugin.height = ((style_info.Frame.FontHeight) +  (5 * style_info.Frame.borderWidth) + (5 * style_info.Button.marginWidth))/**/;
-		if (plugin.width > 40) plugin.width = 40;
-	}
+	MakeMenuItem(BBStyleMenu, "Refresh Style List", "@BBStyleInternal RefreshList", false);
+
+	// ...an "About" box is always nice, even though we now have the regular plugin info function...
+	MakeMenuItem(BBStyleMenu, "About BBStyle...", "@BBStyleInternal About", false);
+
+	// Finally, we show the menu...
+	ShowMenu(BBStyleMenu);
 }
 
 //===========================================================================
 
-void displayMenu(bool popup)
-{
-	Menu *pMenu, *pSub, *pStyle, *p3dc, *pPlace;
-	bool MonitorCount = GetSystemMetrics(SM_CMONITORS) > 1;
-
-	// Create the main menu, with a title and an unique IDString
-	pMenu = MakeNamedMenu("bbStyle_3dc", "bbStyle_IDMain", popup);
-
-	if (!hSlit_present) hSlit_present = FindWindow("BBSlit", "");
-
-	// Insert first Item
-	if (NULL == plugin.hSlit)
-	{
-		// Create a submenu, also with title and unique IDString
-		pSub = MakeNamedMenu("Window", "bbStyle_IDConfig", popup);
-			// these are only available if outside the slit
-			MakeMenuItem(pSub,      "Always On Top",        "@bbStyle.onTop", plugin.onTop);
-			MakeMenuItemInt(pSub,      "Snap To Edges",        "@bbStyle.snap", position.snap, 0, 50);
-			MakeMenuNOP(pSub, NULL);
-			MakeMenuItem(pSub,      "Toggle With Plugins",  "@bbStyle.togglePlugins", plugin.toggle);
-			if (plugin.usingWin2kPlus)
-			MakeMenuItemInt(pSub,   "Alpha Value",          "@bbStyle.alpha", eightScale_down(plugin.alpha), 0, 8);
-		// Insert the submenu into the main menu
-		MakeSubmenu(pMenu, pSub, "Window");
-
-	// Position Submenu
-		pPlace = MakeNamedMenu("Placement", "bbStyle_IDPlace", popup);
-		MakeMenuItem(pPlace, "Top Left", "@bbStyle.TopLeft", (position.side == 7));
-		MakeMenuItem(pPlace, "Top Center", "@bbStyle.TopCenter", (position.side == 8));
-		MakeMenuItem(pPlace, "Top Right", "@bbStyle.TopRight", (position.side == 9));
-		MakeMenuNOP(pPlace, NULL);
-		MakeMenuItem(pPlace, "Center Left", "@bbStyle.CenterLeft", (position.side == 4));
-		MakeMenuItem(pPlace, "Center Right", "@bbStyle.CenterRight", (position.side == 6));
-		MakeMenuNOP(pPlace, NULL);
-		MakeMenuItem(pPlace, "Bottom Left", "@bbStyle.BottomLeft", (position.side == 1));
-		MakeMenuItem(pPlace, "Bottom Center", "@bbStyle.BottomCenter", (position.side == 2));
-		MakeMenuItem(pPlace, "Bottom Right", "@bbStyle.BottomRight", (position.side == 3));
-	if (MonitorCount)
-	{
-		MakeMenuNOP(pPlace, NULL);
-		MakeMenuItem(pPlace, "Full Screen", "@bbStyle.fullScreen", position.fullScreen);
-	}
-		MakeSubmenu(pMenu, pPlace, "Placement");		
-
-		MakeMenuNOP(pMenu, NULL);
-	}
-
-	// bbStyle Submenu
-	pStyle = MakeNamedMenu("Edit bbStyle Values", "bbStyle_IDStyle", popup);
-		MakeMenuItem(pStyle, "Visible", "@bbStyle.shown", plugin.shown);
-		MakeMenuItem(pStyle, "Display Style Info", "@bbStyle.showStyleInfo", plugin.showStyleInfo);
-		MakeMenuItem(pStyle, "Timer Style Change", "@bbStyle.timerOn", plugin.timerOn);
-		MakeMenuItem(pStyle, "Startup Style Change", "@bbStyle.changeOnStart", plugin.changeOnStart);		
-
-		MakeMenuNOP(pStyle, NULL);
-
-		if (hSlit_present)
-			MakeMenuItem(pStyle,  "Use Slit",     "@bbStyle.useSlit", plugin.useSlit);
-		MakeMenuItemInt(pStyle, "Timer Interval", "@bbStyle.changeTime", plugin.changeTime, 1, 600);
-		/*if (!is_xoblite)*/
-			MakeMenuItem(pStyle, "Random Change", "@bbStyle.chance", plugin.chance);		
-		MakeMenuNOP(pStyle, NULL);
-		if (!is_xoblite)
-			MakeMenuItem(pStyle, "Style Path", "@bbStyle.stylePath", false);
-		else
-			MakeMenuItemString(pStyle, "Style Path", "@bbStyle.stylePath", plugin.stylePath);
-
-		MakeMenuItem(pStyle, "Open bbStyle Settings File", "@bbStyle.editRC", false);
-	MakeSubmenu(pMenu, pStyle, "Edit bbStyle Values");
-
-	// bbColor3dc Submenu
-	if (FindWindow("bbColor_3dc2", NULL) || FindWindow("bbColor-3dc2", NULL) || FindWindow("bbColor3dc", NULL))
-	{
-		p3dc = MakeNamedMenu("Edit bb3dc Values", "bbStyle_IDBroams", popup);
-		get3dcSettings();
-		if (dcFile)
-		{
-			MakeMenuItem(p3dc, "3dc Menus && Desktop", "@bbColor3dc.SetMenus", dc_info.Menus);
-			MakeMenuItem(p3dc, "3dc Selected Item", "@bbColor3dc.SetSelectedItem", dc_info.Selected);
-			MakeMenuItem(p3dc, "3dc Tooltips", "@bbColor3dc.SetTooltip", dc_info.Tooltips);
-			MakeMenuItem(p3dc, "3dc Highlights", "@bbColor3dc.SetMenuSelect", dc_info.Highlights);
-			MakeMenuItem(p3dc, "3dc Titles", "@bbColor3dc.SetTitles", dc_info.Titles);
-			MakeMenuNOP(p3dc, NULL);
-			MakeMenuItem(p3dc, "Append 3dc to Style", "@bbColor3dc.Append", false);
-		}
-		MakeMenuItem(p3dc, "Clear 3dc", "@bbColor3dc.Clear", false);
-		MakeMenuItem(p3dc, "Keep 3dc", "@bbColor3dc.Keep", false);
-		if (dcFile)
-		{
-			MakeMenuNOP(p3dc, NULL);
-			MakeMenuItem(p3dc, "Open 3dc Settings File", "@bbStyle.edit3dcRC", false);
-			MakeMenuItem(p3dc, "bb3dc Documentation", "@bbStyle.load3dcDocs", false);
-		}
-		MakeSubmenu(pMenu, p3dc, "Edit bb3dc Values");
-	}
-
-	// ----------------------------------
-	// add an empty line
-	MakeMenuNOP(pMenu, NULL);
-
-	// add an entry for access to the documentation
-	MakeMenuItem(pMenu, "Documentation", "@bbStyle.LoadDocs", false);
-
-	// and an about box
-	MakeMenuItem(pMenu, "About", "@bbStyle.About", false);
-
-	// ----------------------------------
-	// Finally, show the menu...
-	ShowMenu(pMenu);
-}
-
-//===========================================================================
-// helpers to handle commands  from the menu
-
-// fill in standard bro@ms values here
-const struct broamprop always_broams[] = {
-    {"useSlit"			,M_BOL	,&plugin.useSlit		},
-    {"changeOnStart"	,M_BOL 	,&plugin.changeOnStart     },
-    {"changeTime"		,M_INT 	,&plugin.changeTime     },
-    {"timerOn"			,M_BOL 	,&plugin.timerOn     },
-    {"showStyleInfo" 	,M_BOL	,&plugin.showStyleInfo	},
-    {"shown"			,M_BOL	,&plugin.shown			},
-    {"chance"		 	,M_BOL	,&plugin.chance			},
-    {NULL          ,0	,0         }
-    };
-
-// this is for bro@ms that won't work in the Slit
-const struct broamprop nonSlit_broams[] = {
-    {"snap"				,M_INT	,&position.snap		},
-    {"fullScreen"		,M_BOL	,&position.fullScreen	},
-    {"onTop"			,M_BOL	,&plugin.onTop			},
-    {"alpha"			,M_INT	,&plugin.alpha			},
-    {"togglePlugins"	,M_BOL	,&plugin.toggle			},
-    {NULL          ,0	,0         }
-    };
-
-const struct broamprop position_broams[] = {
-    {"TopLeft"			,7	,0		},
-    {"TopCenter"		,8	,0		},
-    {"TopRight"			,9	,0		},
-    {"CenterLeft"		,4	,0		},
-    {"CenterRight"		,6	,0		},
-    {"BottomLeft"		,1	,0     },
-    {"BottomCenter"		,2	,0     },
-    {"BottomRight"		,3	,0     },
-    {NULL			,0	,0     }
-    };
-
-const struct broamprop *check_item(const char *key, const broamprop *prop)
-{
-    const broamprop *p = prop;
-    do if (strstr(key, p->key)) return p; while ((++p)->key);
-    return NULL;
-}
-
-void eval_menu_cmd(int mode, void *pValue, const char *msg_string)
-{
-	// Our rc_key prefix:
-	const int rc_prefix_len = sizeof szAppName;
-
-	char rc_string[80];
-
-	// scan for a second argument after a space, like in "AlphaValue 200"
-	const char *p = strchr(msg_string, ' ');
-	INT_PTR msg_len = p ? p++ - msg_string : (int)strlen(msg_string);
-
-	// Build the full rc_key. i.e. "<plugin>.<subkey>:"
-	strcpy(rc_string, szAppName);
-	strcpy(rc_string + (rc_prefix_len - 1), "."); // adjust for terminating \0
-	memcpy(rc_string + rc_prefix_len, msg_string, msg_len);
-	strcpy(rc_string + rc_prefix_len + msg_len, ":");
-
-	switch (mode)
-	{
-		case M_BOL: // --- check for pre-chosen boolean value ---
-			if (NULL != p)
-			{
-				strcpy((char*)pValue, p);
-
-				// write the new setting to the rc - file
-				WriteString(rcpath, rc_string, (char*)pValue);
-			}
-			else // --- toggle boolean variable -----------------
-			{
-				*(bool*)pValue = false == *(bool*)pValue;
-
-			// write the new setting to the rc - file
-			WriteBool(rcpath, rc_string, *(bool*)pValue);
-			}
-			break;
-
-		case M_INT: // --- set integer variable -------------------
-			if (p)
-			{
-				*(int*)pValue = atoi(p);
-
-				// write the new setting to the rc - file
-				WriteInt(rcpath, rc_string, *(int*)pValue);
-			}
-			break;
-
-		case M_STR: // --- set string variable -------------------
-			if (p)
-			{
-				strcpy((char*)pValue, p);
-
-				// write the new setting to the rc - file
-				WriteString(rcpath, rc_string, (char*)pValue);
-			}
-			break;
-	}
-
-	// apply new settings
-	set_window_modes();
-}
-
-//===========================================================================
-// this invalidates the window, and resets the bitmap at the same time.
-
-void invalidate_window(void)
-{
-	if (plugin.bufbmp)
-	{
-		// delete the bitmap, so it will be drawn again
-		// next time with WM_PAINT
-		DeleteObject(plugin.bufbmp);
-		plugin.bufbmp = NULL;
-	}
-	// notify the os that the window needs painting
-	InvalidateRect(plugin.hwnd, NULL, FALSE);
-}
-
-//===========================================================================
-// Update position and size, as well as onTop, transparency and inSlit states.
-
-void set_window_modes(void)
-{
-	HWND hwnd = plugin.hwnd;
-
-	// update the menu checkmarks
-	displayMenu(false);
-
-	// and load latest settings
-	getRCSettings();
-	//dbg_printf("Xpos", ReadString(rcpath, "bbStyle.X:", "no"));
-
-	if (!hSlit_present) hSlit_present = FindWindow("BBSlit", "");
-	if (plugin.useSlit && hSlit_present)
-	{
-		// if in slit, dont move...
-		SetWindowPos(hwnd, NULL,
-			0, 0, plugin.width, plugin.height,
-			SWP_NOACTIVATE|SWP_NOSENDCHANGING|SWP_NOZORDER|SWP_NOMOVE
-			);
-
-		if (plugin.hSlit) // already we are
-		{
-			SendMessage(plugin.hSlit, SLIT_UPDATE, 0, (LPARAM)hwnd);
-		}
-		else // enter it
-		{
-			SetTransparency(hwnd, 255);
-			plugin.hSlit = hSlit_present;
-			SendMessage(plugin.hSlit, SLIT_ADD, 0, (LPARAM)hwnd);
-		}
-	}
-	else
-	{
-		if (plugin.hSlit) // leave it
-		{
-			SendMessage(plugin.hSlit, SLIT_REMOVE, 0, (LPARAM)hwnd);
-			plugin.hSlit = NULL;
-		}
-
-		if (!plugin.shown)
-		{
-			ShowWindow(plugin.hwnd, SW_HIDE);
-			return;
-		}
-		else
-		{
-			// is the window AlwaysOnTop?
-			HWND hwnd_after = plugin.onTop ? HWND_TOPMOST : HWND_NOTOPMOST;
-			UINT flags = SWP_NOACTIVATE|SWP_NOSENDCHANGING;
-		/*getMonitorInfo();
-		updatePosition();*/
-
-			SetWindowPos(hwnd, hwnd_after, position.X, position.Y, plugin.width, plugin.height, flags);
-			SetTransparency(hwnd, (BYTE)plugin.alpha);
-		}
-	}
-
-	// window needs drawing
-	invalidate_window();
-}
-
-//*****************************************************************************
-void setPosition()
-{
-	int ScreenWidth = position.fullScreen ? GetSystemMetrics(SM_CXVIRTUALSCREEN) : GetSystemMetrics(SM_CXSCREEN);
-    int ScreenHeight = position.fullScreen ? GetSystemMetrics(SM_CYVIRTUALSCREEN) : GetSystemMetrics(SM_CYSCREEN);
-
-
-	if (!_stricmp(position.placement, "BottomCenter"))
-	{
-		position.X = (ScreenWidth - plugin.width) / 2;
-		position.Y = ScreenHeight - plugin.height;
-	}
-	else if (!stricmp(position.placement, "TopLeft"))
-	{
-		position.X = 0;
-		position.Y = 0;
-	}
-	else if (!_stricmp(position.placement, "BottomLeft"))
-	{
-		position.X = 0;
-		position.Y = ScreenHeight - plugin.height;
-	}
-	else if (!_stricmp(position.placement, "TopRight"))
-	{
-		position.X = ScreenWidth - plugin.width;
-		position.Y = 0;
-	}
-	else if (!_stricmp(position.placement, "BottomRight"))
-	{
-		position.X = ScreenWidth - plugin.width;
-		position.Y = ScreenHeight - plugin.height;
-	}
-	else if(!_stricmp(position.placement, "CenterLeft"))
-	{
-		position.Y = (ScreenHeight - plugin.height) / 2;
-		position.X = 0;
-	}
-	else if(!_stricmp(position.placement, "CenterRight"))
-	{
-		position.Y = (ScreenHeight - plugin.height) / 2;
-		position.X = ScreenWidth - plugin.width;
-	}
-	else if(!stricmp(position.placement, "TopCenter"))
-	{
-		position.X = ReadInt(rcpath, "bbStyle.X:", (ScreenWidth - plugin.width) / 2 );
-		position.Y = ReadInt(rcpath, "bbStyle.Y:", 0);
-	}
-	else 
-	{
-		position.X = ReadInt(rcpath, "bbStyle.X:", 895);
-		position.Y = ReadInt(rcpath, "bbStyle.Y:", 10);
-		strcpy(position.placement, "User");
-	}
-	
-	WriteInt(rcpath, "bbStyle.X:", position.X);
-	WriteInt(rcpath, "bbStyle.Y:", position.Y);
-	WriteString(rcpath, "bbStyle.placement:", position.placement);
-	set_window_modes();
-}
-
-//===========================================================================
-// helper
-
-char getTitleText(bool Text)
-{
-	char a1[MAX_PATH], a2[MAX_PATH];
-	strcpy(stylepath, stylePath());
-	strcpy(a1, ReadString(stylepath, "style.name:", (char *)""));
-	strcpy(a2, ReadString(stylepath, "style.author:", (char *)""));
-	if (strlen(a1) <2)
-	{
-		//use the filename if  "style.name:" is empty
-		WIN32_FIND_DATA FindFileData;
-		HANDLE hFind;
-		hFind = FindFirstFile(stylepath, &FindFileData);
-		strcpy(a1, FindFileData.cFileName);
-	}
-
-	if (strlen(a2) <2) strcpy(a2, "[unsigned]");
-	//remove e-mail|website address - if in style.author
-	//e-mail address
-	if(!trim_address(a2, '@',  ' '))
-		//website address
-		trim_address(a2, ':',  ' ');
-	//else
-	//lyrae et al.
-	trim_address(a2, '|',  ' ');
-
-	//remove file extension - if in style.name
-	*(char*)file_extension(a1) = 0;
-
-	if (!Text)
-		if (strlen(a1) > (strlen(a2) + 3))
-			return (char)strlen(a1);
-		else
-			//padding to deal with font proportionality
-			return (char)(strlen(a2) + 8);
-	else
-		return sprintf(plugin.windowText,"%s\nby %s", a1, a2);
-}
-
-char *set_stylePath()
-{
-	//xoblite style path
-	if (is_xoblite && (strlen(ReadString(extensionsrcPath(), "xoblite.stylesFolder:", (char *)"no")) > 2))
-	{
-		strcpy(plugin.stylePath, ReadString(extensionsrcPath(), "xoblite.stylesFolder:", (char *)"no"));
-	if (plugin.stylePath[strlen(plugin.stylePath)-1] != '\\')
-		strcat(plugin.stylePath, "\\");
-	}
-	else
-		get_path(plugin.stylePath, sizeof(plugin.stylePath), "styles\\");
-
-	WriteString(rcpath, "bbStyle.stylePath:", plugin.stylePath);
-	return (char *)plugin.stylePath;
-}
-
-void initList(char *path, bool init)
+void InitList(char *path, bool init)
 {
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
-	char buf[MAX_PATH];
+	char buf[4096];
 
 	if (init)
 	{
@@ -1196,18 +1373,11 @@ void initList(char *path, bool init)
 	while (FindNextFile(hFind, &FindFileData) != 0)
 	{
 		// Skip hidden files... and 3dc stuff
-		if ( strcmp(FindFileData.cFileName, ".") == 0 || strcmp(FindFileData.cFileName, "..") == 0
-			|| (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
-			|| IsInString(FindFileData.cFileName, ".3dc")
-			// also shortcuts (.lnk)
-			|| IsInString(FindFileData.cFileName, ".lnk")  )
-			continue;
-
-		// skip files outside the typical size range
-		if (((FindFileData.nFileSizeLow > 12288) && !(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-			|| ((FindFileData.nFileSizeLow < 3072) && !(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)))
-			continue;/**/
-
+		if (   strcmp(FindFileData.cFileName, ".") == 0 || strcmp(FindFileData.cFileName, "..") == 0 
+			|| (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) 
+			|| IsInString(FindFileData.cFileName, ".3dc")  )
+				continue;
+		
 		// if directory, recurse...
 		if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
@@ -1215,68 +1385,548 @@ void initList(char *path, bool init)
 			buf[strlen(buf)-1] = '\0';
 			strcat(buf, FindFileData.cFileName);
 			strcat(buf, "\\*");
-			initList(buf, false);
+			InitList(buf, false);
 		}
 		else
 		{
 			strcpy(buf, path);
 			buf[strlen(buf)-1] = '\0';
 			strcat(buf, FindFileData.cFileName);
-			styleList.push_back((std::string)buf);
+			styleList.push_back(string(buf));
 		}
 	}
 
 	FindClose(hFind);
-	
-	if (styleList.size() < 1)
-	{
-		// reset styles path to default - as none found
-		WriteString(rcpath, "bbStyle.stylePath:", (char *)"");
-		set_stylePath();
-	}
 }
 
-//===========================================================================
+void NewStyle(bool seed)
+{
+	char oldStyle[4096];
+	
+	unsigned int num;
+	num = styleList.size();
+	if (num < 1)
+	{
+		char temp[4096];
+		strcpy(temp, "No styles in list.\n\nPath: ");
+		strcat(temp, listPath);
+		MessageBox(0, temp, szVersion, MB_OK);
+		//MessageBox(0, listPath, szVersion, MB_OK);
+		return;
+	}
 
-void setStyle(void)
+	if (seed)
+	{
+		SYSTEMTIME time;
+		GetLocalTime(&time);
+		srand((unsigned)time.wMilliseconds);
+	}
+	
+	int random = rand();
+
+	random = random % num;
+
+	if (random == num)
+		random--;
+
+	// save old style's path
+	strcpy(oldStyle, styleToSet);
+
+	// get new style's path
+	strcpy(styleToSet, styleList[random].c_str());
+
+	// if 'no styles twice', remove style path from list
+	if (noStyleTwice)
+	{
+		styleList.erase(styleList.begin() + random);
+		if (styleList.size() < 1)	// if list empty, repopulate
+			InitList(listPath, true);
+	}
+	// otherwise, if same style picked, try again
+	else if (!strcmp(oldStyle, styleToSet) && num > 1)
+		NewStyle(false);
+}
+
+void SetStyle()
 {
 	if (styleList.size() < 1)	// dont try to set a style if list empty
 		return;
 
-	int j;
-
-	if (plugin.chance)
+	// Look for a line that should "always" exist in a style file...
+	if (strlen(ReadString(styleToSet, "menu.frame:", "")) || strlen(ReadString(styleToSet, "menu.frame.appearance:", "")))
 	{
-		// seed randomness
-		srand( (unsigned)time( NULL ) );
-
-		//generate more randomness
-		int i = (int)(10 * rand() / (RAND_MAX + 1.0));
-		for (j = 0; j < i; j++) {
-			rand();
-		}
-
-		//get style list number
-		j = (int)(styleList.size() * rand() / (RAND_MAX + 1.0));
+		// Set new style...
+		SendMessage(hwndBlackbox, BB_SETSTYLE, 0, (LPARAM)styleToSet);
+		SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Apply random style");
+		if (timer)
+			SetTimer(hwndPlugin, 1, changeTime, (TIMERPROC)NULL);
 	}
 	else
 	{
-		j = plugin.count >= (styleList.size() - 1) ? 0 : plugin.count + 1;
-		WriteInt(rcpath, "bbStyle.count:", j);
-	}
+		char temp[4096];
 
-	// get new style's path
-	strcpy(plugin.styleToSet, styleList[j].c_str());
+		sprintf(temp, "BBStyle couldn't set the following file as a style:\n\n%s\n\nIt didn't contain a \"menu.frame:\" or \"menu.frame.appearance:\"definition. Please make sure your styles path contains only style files.", styleToSet);
 
-	if (strlen(ReadString(plugin.styleToSet, "menu.plugin.appearance:", (char *)"")) || strlen(ReadString(plugin.styleToSet, "menu.frame:", (char *)"")) || strlen(ReadString(plugin.styleToSet, "menu.items.bg:", (char *)"")))
-	{
-		// Set new style...
-		SendMessage(BBhwnd, BB_SETSTYLE, 0, (LPARAM)plugin.styleToSet);
-
-		if (plugin.timerOn)
-			// Force randomisation by uneven # of seconds
-			SetTimer(plugin.hwnd, 1, plugin.changeTime*59000, (TIMERPROC)NULL);
+		MessageBox(0, temp, szVersion, MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
 	}
 }
 
 //===========================================================================
+
+void GetStyleSettings()
+{
+	char tempstyle[MAX_LINE_LENGTH];
+	
+	// Get the path to the current style file from Blackbox...
+	strcpy(stylepath, stylePath());
+
+	// FRAME - COLOURS
+	frame.color = ReadColor(stylepath, "toolbar.color:", "#000000");
+	frame.colorTo = ReadColor(stylepath, "toolbar.colorTo:", "#FFFFFF");
+	frame.borderColor = ReadColor(stylepath, "borderColor:", "#000000");
+
+	// FRAME - STYLE
+	strcpy(tempstyle, ReadString(stylepath, "toolbar:", "Flat Gradient Vertical"));
+	if (frame.style) delete frame.style;
+	frame.style = new StyleItem;
+	ParseItem(tempstyle, frame.style);
+
+	// ...and some additional parameters
+	styleBevelWidth = ReadInt(stylepath, "bevelWidth:", 2);
+
+	if (!inheritToolbar)
+		frame.bevelWidth = 3; //ReadInt(stylepath, "bevelWidth:", 1); // try fixed now...
+	else
+		frame.bevelWidth = styleBevelWidth;
+
+	if (frame.drawBorder)
+		frame.borderWidth = ReadInt(stylepath, "borderWidth:", 1);
+	else
+		frame.borderWidth = 0;
+	
+	// BUTTON - STYLE
+	strcpy(tempstyle, ReadString(stylepath, "toolbar.button:", "Flat Gradient Vertical"));
+	if (button.style) delete button.style;
+	button.style = new StyleItem;
+	ParseItem(tempstyle, button.style);
+	
+	// BUTTON - COLOURS
+	button.color = ReadColor(stylepath, "toolbar.button.color:", "#000000");
+	button.colorTo = ReadColor(stylepath, "toolbar.button.colorTo:", "#FFFFFF");
+
+	// BUTTON - FONT
+	strcpy(button.fontFace, ReadString(stylepath, "toolbar.font:", ""));
+	if (!_stricmp(button.fontFace, "")) strcpy(button.fontFace, ReadString(stylepath, "*font:", "Tahoma"));
+	button.fontSize = ReadInt(stylepath, "toolbar.fontHeight:", 666);
+	if (button.fontSize == 666)
+		button.fontSize = ReadInt(stylepath, "*fontHeight:", 12);
+
+	char temp[32];
+	strcpy(temp, ReadString(stylepath, "toolbar.fontWeight:", ""));
+
+	if (!_stricmp(temp, "")) 
+		strcpy(temp, ReadString(stylepath, "*fontWeight:", "normal"));
+
+	if (!_stricmp(temp, "bold"))
+		button.fontWeight = FW_BOLD;
+	else
+		button.fontWeight = FW_NORMAL;
+
+	strcpy(tempstyle, ReadString(stylepath, "toolbar.button.picColor:", "doesntexist"));
+	if (strcmp(tempstyle, "doesntexist") == 0)
+		button.fontColor = ReadColor(stylepath, "toolbar.textColor:", "#FFFFFF");
+	else
+		button.fontColor = ReadColor(stylepath, "toolbar.button.picColor:", "#FFFFFF");
+
+	// BUTTON PRESSED - STYLE
+	strcpy(tempstyle, ReadString(stylepath, "toolbar.button.pressed:", "Flat Gradient Vertical"));
+	if (buttonPressed.style) delete buttonPressed.style;
+	buttonPressed.style = new StyleItem;
+	ParseItem(tempstyle, buttonPressed.style);
+
+	// BUTTON PRESSED - COLOURS
+	buttonPressed.color = ReadColor(stylepath, "toolbar.button.pressed.color:", "#000000");
+	buttonPressed.colorTo = ReadColor(stylepath, "toolbar.button.pressed.colorTo:", "#FFFFFF");
+
+	strcpy(tempstyle, ReadString(stylepath, "toolbar.button.pressed.picColor:", "doesntexist"));
+	if (strcmp(tempstyle, "doesntexist") == 0)
+	{
+		strcpy(tempstyle, ReadString(stylepath, "toolbar.button.picColor:", "doesntexist"));
+		if (strcmp(tempstyle, "doesntexist") == 0)
+			buttonPressed.fontColor = ReadColor(stylepath, "toolbar.textColor:", "#FFFFFF");
+		else
+			buttonPressed.fontColor = ReadColor(stylepath, "toolbar.button.picColor:", "#FFFFFF");
+	}
+	else
+		buttonPressed.fontColor = ReadColor(stylepath, "toolbar.button.pressed.picColor:", "#FFFFFF");
+
+	// Detect screen edges
+	/*if (xpos == 0) 
+		bleft = true;
+	else 
+		bleft = false;
+
+	if (xpos == screenWidth - width) 
+		bright = true;
+	else 
+		bright = false;
+
+	if (ypos == 0) 
+		btop = true;
+	else 
+		btop = false;
+
+	if (ypos == screenHeight - height) 
+		bbottom = true;
+	else 
+		bbottom = false;*/
+
+	if (!inheritToolbar)
+		height = width = 21 + (2 * frame.borderWidth);
+	else
+	{
+		//height = width = tbInfo.height;
+		GetClientRect(FindWindow("Toolbar", 0), &tRect);
+		tbInfo.height = height = width = tRect.bottom - tRect.top;
+	}
+
+	// Makes sure BBStyle stays on screen after style change.
+	if (xpos < vScreenLeft /*|| bleft == true*/) 
+		xpos = vScreenLeft;
+	if ((xpos + width) > vScreenWidth /*|| bright == true*/)
+		xpos = vScreenWidth - width;
+
+	if (ypos < vScreenTop /*|| btop == true*/) 
+		ypos = vScreenTop;
+	if ((ypos + height) > vScreenHeight /*|| bbottom == true*/)
+		ypos = vScreenHeight - height;
+
+	// Different wallpapers on different workspaces
+	/*if (rootCommands)
+	{
+		char temp[MAX_LINE_LENGTH], command[MAX_LINE_LENGTH];
+
+		if (strcmp("", ReadString(stylepath, "bbstyle.workspace1.rootCommand:", "")))
+		{
+			workspaceRootCommand.clear();
+
+			for (int n = 0; n < 128; n++)
+			{		
+				sprintf(temp, "bbstyle.workspace%d.rootCommand:", n + 1);
+				strcpy(command, ReadString(stylepath, temp, ""));
+				//MessageBox(0, command, "stuff", MB_OK);
+
+				if (!strcmp(command,""))
+					break;
+				else
+				{
+					workspaceRootCommand.push_back(string(command));	
+					//MessageBox(0, command, "stuff", MB_OK);
+				}
+			}
+		}
+		else
+			GetRCRootCommands();
+	}
+
+	strcpy(styleRootCommand, ReadString(stylepath, "rootCommand:", ""));*/
+
+	MoveWindow(hwndPlugin, xpos, ypos, width, height, true);
+
+	if (inSlit)
+		SendMessage(hSlit, SLIT_UPDATE, 0, 0);
+
+	//MessageBox(0, "style settings read", szVersion, MB_OK | MB_TOPMOST);
+}
+
+//===========================================================================
+/*
+void GetRCRootCommands()
+{
+	// Different wallpapers on different workspaces
+	char temp[MAX_LINE_LENGTH], command[MAX_LINE_LENGTH];
+
+	workspaceRootCommand.clear();
+
+	for (int n = 0; n < 128; n++)
+	{		
+		sprintf(temp, "bbstyle.workspace%d.rootCommand:", n + 1);
+		strcpy(command, ReadString(rcpath, temp, ""));
+		//MessageBox(0, command, "stuff", MB_OK);
+
+		if (!strcmp(command,""))
+			break;
+		else
+		{
+			workspaceRootCommand.push_back(string(command));	
+			//MessageBox(0, command, "stuff", MB_OK);
+		}
+	}
+}
+*/
+//===========================================================================
+
+void ReadRCSettings()
+{
+	//char temp[MAX_LINE_LENGTH];
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+
+	if (!FileExists(rcpath)) 
+	{
+		InitRC();
+		return;
+	}
+
+	// If a config file was found we read the plugin settings from the file...
+	xpos2 = xpos = ReadInt(rcpath, "bbstyle.position.x:", 10);
+	ypos2 = ypos = ReadInt(rcpath, "bbstyle.position.y:", 10);
+
+	UpdateMonitorInfo();
+
+	// dont in GetStyleSettings() now
+	//if (xpos >= screenWidth) xpos = 0;
+	//if (ypos >= screenHeight) ypos = 0;
+
+	alwaysOnTop = ReadBool(rcpath, "bbstyle.alwaysOnTop:", true);
+	snapWindow = ReadBool(rcpath, "bbstyle.snapWindow:", true);
+	if (snapWindow) snapWindowOld = true;
+
+	inheritToolbar = ReadBool(rcpath, "bbstyle.inheritToolbarHeight:", false);
+
+	strcpy(listPath,ReadString(rcpath, "bbstyle.stylePath:", "C:\\Blackbox\\styles\\"));
+
+	if (listPath[strlen(listPath)-1] == '\\')
+		strcat(listPath, "*");
+	//if (listPath[strlen(listPath)-1] != '*')
+	else
+		strcat(listPath, "\\*");
+
+	hFind = FindFirstFile(listPath, &FindFileData);
+
+	if (hFind == INVALID_HANDLE_VALUE)
+		badPath = true;
+
+	// new...
+	FindClose(hFind);
+
+	changeTime = ReadInt(rcpath, "bbstyle.changeTime:", 5);
+	if (changeTime < 1) changeTime = 1;
+	changeTime = changeTime * 60 * 1000;
+
+	changeOnStart = ReadBool(rcpath, "bbstyle.changeOnStart:", false);
+
+	timer = ReadBool(rcpath, "bbstyle.timerOn:", false);
+
+	hideWindow = ReadBool(rcpath, "bbstyle.hideWindow:", false);
+
+	noStyleTwice = ReadBool(rcpath, "bbstyle.noStyleTwice:", false);
+
+	/*rootCommands = ReadBool(rcpath, "bbstyle.rootCommands:", false);
+
+	GetRCRootCommands();*/
+
+	transparency = ReadBool(rcpath, "bbstyle.transparency:", false);
+	transparencyAlpha = ReadInt(rcpath, "bbstyle.transparency.alpha:", 200);
+
+	frame.drawBorder = ReadBool(rcpath, "bbstyle.drawBorder:", true);
+
+	useSlit = ReadBool(rcpath, "bbstyle.useSlit:", false);
+
+	//MessageBox(0, "rc settings read", szVersion, MB_OK | MB_TOPMOST);
+}
+
+//===========================================================================
+
+void WriteRCSettings()
+{
+	static char szTemp[MAX_LINE_LENGTH];
+	static char temp[8];
+	DWORD retLength = 0;
+
+	// Write plugin settings to config file, using path found in ReadRCSettings()...
+	HANDLE file = CreateFile(rcpath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (file)
+	{
+		//if (inSlit) { xpos = xpos2; ypos = ypos2; }
+		sprintf(szTemp, "bbstyle.position.x: %d\r\n", xpos);
+		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+		sprintf(szTemp, "bbstyle.position.y: %d\r\n", ypos);
+		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		(alwaysOnTop) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.alwaysOnTop: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		(snapWindow || snapWindowOld) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.snapWindow: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		(inheritToolbar) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.inheritToolbarHeight: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		if (usingWin2kXP)
+		{
+			(transparency) ? strcpy(temp, "true") : strcpy(temp, "false");
+			sprintf(szTemp, "bbstyle.transparency: %s\r\n", temp);
+ 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+			sprintf(szTemp, "bbstyle.transparency.alpha: %d\r\n", transparencyAlpha);
+			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+		}
+
+		(frame.drawBorder) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.drawBorder: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		(timer) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.timerOn: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		changeTime = changeTime / (60 * 1000);
+		if (changeTime < 1) changeTime = 1;
+		sprintf(szTemp, "bbstyle.changeTime: %d\r\n", changeTime);
+		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		(changeOnStart) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.changeOnStart: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		if (listPath[strlen(listPath)-1] == '*') listPath[strlen(listPath)-1] = '\0';
+		sprintf(szTemp, "bbstyle.stylePath: %s\r\n", listPath);
+		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		(hideWindow) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.hideWindow: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		(noStyleTwice) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.noStyleTwice: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		/*(rootCommands) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.rootCommands: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+
+		vector <string>::size_type i;
+		i = workspaceRootCommand.size();
+		
+		for (int n = 0; n < (int)i; n++)
+		{
+			sprintf(szTemp, "bbstyle.workspace%d.rootCommand: %s\r\n", n + 1, workspaceRootCommand[n].c_str());
+			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+			//MessageBox(0, szTemp, "stuff2", MB_OK);
+		}*/
+
+		// Are we in the slit?
+		(useSlit) ? strcpy(temp, "true") : strcpy(temp, "false");
+		sprintf(szTemp, "bbstyle.useSlit: %s\r\n", temp);
+ 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
+ 	}
+	CloseHandle(file);
+}
+
+//===========================================================================
+
+void InitRC()
+{
+	char temp[MAX_LINE_LENGTH], path[MAX_LINE_LENGTH], defaultpath[MAX_LINE_LENGTH];
+	int nLen;
+
+	// First we look for the config file in the same folder as the plugin...
+	GetModuleFileName(hInstance, rcpath, sizeof(rcpath));
+	nLen = strlen(rcpath) - 1;
+	while (nLen >0 && rcpath[nLen] != '\\') nLen--;
+	rcpath[nLen + 1] = 0;
+	strcpy(temp, rcpath);
+	strcpy(path, rcpath);
+
+	strcat(temp, "bbstyle.rc");
+	strcat(path, "bbstylerc");
+	// ...checking the two possible filenames example.rc and examplerc ...
+	if (FileExists(temp)) strcpy(rcpath, temp);
+	else if (FileExists(path)) strcpy(rcpath, path);
+	// ...if not found, we try the Blackbox directory...
+	else
+	{
+		// ...but first we save the default path (example.rc in the same
+		// folder as the plugin) just in case we need it later (see below)...
+		strcpy(defaultpath, temp);
+		GetBlackboxPath(rcpath, sizeof(rcpath));
+		strcpy(temp, rcpath);
+		strcpy(path, rcpath);
+		strcat(temp, "bbstyle.rc");
+		strcat(path, "bbstylerc");
+		if (FileExists(temp)) strcpy(rcpath, temp);
+		else if (FileExists(path)) strcpy(rcpath, path);
+		else // If no config file was found, we use the default path and settings, and return
+		{
+			strcpy(rcpath, defaultpath);
+			xpos = ypos = 10;
+			alwaysOnTop = true;
+			snapWindow = true;
+			inheritToolbar = false;
+			transparency = false;
+			transparencyAlpha = 200;
+			frame.drawBorder = true;
+
+			changeTime = 5 * 60 * 1000;
+			changeOnStart = false;
+			timer = false;
+			hideWindow = false;
+			noStyleTwice = false;
+			//rootCommands = false;
+			useSlit = false;
+
+			GetBlackboxPath(listPath, sizeof(listPath));
+			strcat(listPath, "styles\\*");
+			//strcpy(windowText, "Welcome to Blackbox for Windows... [Plugin SDK example]");
+			//return;
+
+			WriteRCSettings();
+		}
+	}
+}
+
+//===========================================================================
+
+BOOL WINAPI BBSetLayeredWindowAttributes(HWND hwnd, COLORREF crKey, BYTE bAlpha, DWORD dwFlags)
+{
+    static BOOL (WINAPI *pSLWA)(HWND, COLORREF, BYTE, DWORD);
+    static char f=0;
+    for (;;) {
+    if (2==f)   return pSLWA(hwnd, crKey, bAlpha, dwFlags);
+    // if it's not there, just do nothing and report success
+    if (f)      return TRUE;
+    *(FARPROC*)&pSLWA = GetProcAddress(
+        GetModuleHandle("USER32"), "SetLayeredWindowAttributes");
+    f = pSLWA ? 2 : 1;
+    }
+}
+
+void UpdateMonitorInfo()
+{
+	// multimonitor
+	vScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	vScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
+
+	vScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	vScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+	vScreenRight = vScreenLeft + vScreenWidth;
+	vScreenBottom = vScreenTop + vScreenHeight;
+
+	// current monitor
+	HMONITOR hMon = MonitorFromWindow(hwndPlugin, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO mInfo;
+	mInfo.cbSize = sizeof(MONITORINFO);
+	GetMonitorInfo(hMon, &mInfo);
+
+	screenLeft = mInfo.rcMonitor.left;
+	screenRight = mInfo.rcMonitor.right;
+	screenTop = mInfo.rcMonitor.top;
+	screenBottom = mInfo.rcMonitor.bottom;
+	screenWidth = screenRight - screenLeft;
+	screenHeight = screenBottom - screenTop;
+}
