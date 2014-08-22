@@ -27,11 +27,8 @@
 
  ============================================================================
 */
-
+#pragma once
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
-
-#ifndef __BBPAGER_H
-#define __BBPAGER_H
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
@@ -40,13 +37,7 @@
 
 #include "BBApi.h"
 #include <commctrl.h>
-#include <string>
-#include <vector>
 #include <shellapi.h>
-
-using namespace std;
-
-//===========================================================================
 
 //const long magicDWord = 0x49474541;
 
@@ -164,20 +155,6 @@ struct POSITION
 	char placement[20];
 };
 
-extern struct POSITION position;
-extern struct FRAME frame;
-extern struct DESKTOP desktop;
-extern struct ACTIVEDESKTOP activeDesktop;
-extern struct WINDOW window;
-extern struct FOCUSEDWINDOW focusedWindow;
-
-// Window information
-extern int vScreenWidth, vScreenHeight;
-extern int vScreenLeft, vScreenTop, vScreenRight, vScreenBottom;
-extern int screenWidth, screenHeight;
-extern int screenLeft, screenTop, screenRight, screenBottom;
-extern double ratioX, ratioY;
-
 typedef struct winStruct
 {
 	HWND window;
@@ -187,58 +164,12 @@ typedef struct winStruct
 	int desk;
 } winStruct;
 
-extern vector<winStruct> winList;
-
 // flashing tasks
 typedef struct flashTask
 {
 	HWND task;
 	bool on;
 } flashTask;
-
-extern vector<flashTask> flashList;
-
-extern HWND hToolTips;
-
-extern int winCount;
-
-extern bool winMoving;
-extern winStruct moveWin;
-extern int mx, yx;
-extern HWND hwndBBPager;
-
-extern int leftMargin, topMargin;
-
-extern bool drawBorder;
-
-// File paths
-extern char rcpath[MAX_PATH];
-extern char bspath[MAX_PATH];
-extern char stylepath[MAX_PATH];
-
-extern char editor[MAX_PATH];
-
-// Desktop information
-extern int desktops;
-extern int currentDesktop;
-extern vector<RECT> desktopRect;
-extern int desktopChangeButton;
-extern int focusButton;
-extern int moveButton;
-
-// Transparency
-extern bool usingWin2kXP;
-extern bool transparency;
-extern int transparencyAlpha;
-
-// Slit
-extern bool inSlit, useSlit;
-extern int xpos, ypos;
-
-// Compatibility
-extern struct tasklist *tl;
-extern bool is_xoblite;
-extern bool usingAltMethod;
 
 //===========================================================================
 // function declarations
@@ -247,15 +178,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK CheckTaskEnumProc(HWND hwnd, LPARAM lParam);
 BOOL CALLBACK CheckTaskEnumProc_AltMethod(HWND hwnd, LPARAM lParam);
 
-extern void GetStyleSettings();
-extern void ReadRCSettings();
-extern void WriteRCSettings();
-
-extern void DrawBBPager(HWND hwnd);
-extern void DrawBorder(HDC hdc, RECT rect, COLORREF borderColour, int borderWidth);
-extern void DrawActiveDesktop(HDC buf, RECT r, int i);
-extern void DrawActiveWindow(HDC buf, RECT r);
-extern void DrawInactiveWindow(HDC buf, RECT r);
+void DrawBBPager(HWND hwnd);
+void DrawBorder(HDC hdc, RECT rect, COLORREF borderColour, int borderWidth);
 
 void GetPos(bool snap);
 void SetPos(int place);
@@ -295,6 +219,4 @@ bool BBPager_SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags);
 tasklist* BBPager_GetTaskListPtr(void);
 
 //===========================================================================
-
-#endif
 

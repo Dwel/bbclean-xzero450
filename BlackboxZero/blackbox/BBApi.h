@@ -473,12 +473,14 @@ enum SN_INDEX {
     SN_WINFOCUS_FRAME_COLOR     , /* COLORREF* */
     SN_WINUNFOCUS_FRAME_COLOR   , /* COLORREF* */
 
+    SN_NEWMETRICS               , /* bool (not a ptr) */ // @TODO: mojmir: find some implementation
+
     SN_ISSTYLE070               , /* bool* */
     SN_SLIT                     , /* StyleItem* */
 
-	SN_MENUSEPMARGIN			, /* int* */
-	SN_MENUSEPCOLOR				, /* COLORREF* */
-	SN_MENUSEPSHADOWCOLOR		, /* COLORREF* */
+    SN_MENUSEPMARGIN			, /* int* */
+    SN_MENUSEPCOLOR				, /* COLORREF* */
+    SN_MENUSEPSHADOWCOLOR		, /* COLORREF* */
 
     SN_LAST
 };

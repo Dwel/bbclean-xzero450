@@ -35,7 +35,7 @@ plugins\bbColor3dc\bbColor3dc.dll
 [sep]
 [submenu] (other)
 ! plugins\bbLeanBar+\bbLeanBar+.dll
-! plugins\BBPager\BBPager.dll
+! plugins\bbPager\bbPager.dll
 ! plugins\bbRecycleBin\bbRecycleBin.dll
 ! plugins\bbWorkspaceWheel\bbWorkspaceWheel.dll
 ! plugins\BBRSS\BBRSS.dll

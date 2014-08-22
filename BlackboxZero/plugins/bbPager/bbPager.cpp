@@ -27,22 +27,41 @@
 
  ============================================================================
 */
+#include "bbPager.h"
+#include "Settings.h"
+#include <vector>
+#include <string>
+
+// from Settings.cpp
+extern bool useSlit;
+extern std::vector<RECT> desktopRect;
+extern bool transparency;
+extern int transparencyAlpha;
+extern char rcpath[MAX_PATH];
+extern char editor[MAX_PATH];
+extern bool drawBorder;
+extern int screenLeft, screenTop, screenRight, screenBottom;
+extern int vScreenLeft, vScreenTop, vScreenRight, vScreenBottom;
+extern int currentDesktop;
+extern int screenWidth, screenHeight;
+extern int desktopChangeButton;
+extern int focusButton;
+extern int moveButton;
+extern int vScreenWidth, vScreenHeight;
+extern double ratioX, ratioY;
+extern int leftMargin, topMargin;
 
 #define REFRESH_TIME 1000	// Automatic repaint time in milliseconds
 
-#include "bbPager.h"
-
-//using namespace std;
-
 const char szAppName [] = "bbPager";  // The name of our window class, etc.
-const char szVersion [] = "bbPager 3.7";
+const char szVersion [] = "bbPager 3.8";
 
 const char szInfoVersion [] = "3.7";
-const char szInfoAuthor [] = "NC-17|unkamunka";
-const char szInfoRelDate [] = "2008-05-20";
+const char szInfoAuthor [] = "NC-17|unkamunka|mojmir";
+const char szInfoRelDate [] = "2014-08-22";
 const char szInfoLink [] = "http://www.ratednc-17.com/";
 const char szInfoEmail [] = "irc://irc.freenode.net/bb4win";
-const char szInfoUpdateURL [] = "http://www.lostinthebox.com/viewforum.php?t=2992";
+const char szInfoUpdateURL [] = "http://www.blackbox4windows.com";
 
 //=====================================================================
 
@@ -68,10 +87,10 @@ struct POSITION position;
 // Desktop information
 int desktops;
 int desktopPressed = -1;
-vector<string> desktopName;
+std::vector<std::string> desktopName;
 
 // Window information
-vector<winStruct> winList;
+std::vector<winStruct> winList;
 int winCount = 0;
 int winPressed;
 bool winMoving;
@@ -81,7 +100,7 @@ HWND lastActive;
 bool passive = false;
 
 // flashing tasks
-vector<flashTask> flashList;
+std::vector<flashTask> flashList;
 
 // tooltips
 HWND hToolTips;
@@ -526,7 +545,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// open bbpager.bb file with default editor
 				else if (!_stricmp(token2, "OpenStyle")) 
 				{
-					BBExecute(GetDesktopWindow(), NULL, editor, bspath, NULL, SW_SHOWNORMAL, false);
+					BBExecute(GetDesktopWindow(), NULL, editor, getbspath(), NULL, SW_SHOWNORMAL, false);
 					return 0;
 				}
 				// @BBPagerToggleNumbers toggles drawing of numbers on desktops
@@ -773,7 +792,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				currentDesktop = info->number;
 			}
 			//strcpy(desktopName[desktops], info->name); // Grab the name of each desktop as it comes
-			desktopName.push_back(string(info->name));
+			desktopName.push_back(std::string(info->name));
 			desktops++; // Increase desktop count by one for each
 		}
 		break;

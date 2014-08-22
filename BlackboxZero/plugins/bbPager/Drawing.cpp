@@ -27,8 +27,9 @@
 
  ============================================================================
 */
-
 #include "bbPager.h"
+#include "Drawing.h"
+#include <vector>
 
 //using namespace std;
 
@@ -37,7 +38,29 @@
 // Desktop information
 int currentDesktop;
 //RECT desktopRect[64];
-vector<RECT> desktopRect;
+std::vector<RECT> desktopRect;
+
+extern struct FRAME frame;
+extern struct DESKTOP desktop;
+extern struct POSITION position;
+extern struct ACTIVEDESKTOP activeDesktop;
+extern int desktops;
+extern int winCount;
+extern std::vector<winStruct> winList;
+extern bool usingAltMethod;
+extern bool is_xoblite;
+extern bool winMoving;
+extern winStruct moveWin;
+extern HWND hwndBBPager;
+extern struct FOCUSEDWINDOW focusedWindow;
+extern struct WINDOW window;
+#if 0
+extern int currentDesktop;
+extern vector<RECT> desktopRect;
+extern int desktopChangeButton;
+extern int focusButton;
+extern int moveButton;
+#endif
 
 char desktopNumber[4];
 

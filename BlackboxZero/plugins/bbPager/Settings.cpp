@@ -27,9 +27,20 @@
 
  ============================================================================
 */
-
+#include "Settings.h"
 #include "bbPager.h"
 
+extern struct POSITION position;
+extern int xpos, ypos;
+extern struct DESKTOP desktop;
+extern struct FRAME frame;
+extern bool usingAltMethod;
+extern bool usingWin2kXP;
+extern HWND hwndBBPager;
+extern bool is_xoblite;
+extern struct ACTIVEDESKTOP activeDesktop;
+extern struct WINDOW window;
+extern struct FOCUSEDWINDOW focusedWindow;
 //===========================================================================
 
 char rcpath[MAX_PATH];
@@ -56,6 +67,7 @@ bool useSlit;
 //===========================================================================
 
 char bspath[MAX_PATH];
+char * getbspath () { return bspath; }
 char stylepath[MAX_PATH];
 
 //===========================================================================
