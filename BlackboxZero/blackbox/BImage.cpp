@@ -490,7 +490,7 @@ inline static void elli_fn(struct bimage *bi, unsigned char *c, int x, int y)
 **
 ** */
 // -------------------------------------
-struct bimage *bimage_create(int width, int height,  StyleItem *si)
+struct bimage * bimage_create(int width, int height,  StyleItem const * si)
 {
     int byte_size;
     int table_size;
@@ -867,7 +867,7 @@ void bimage_init(int dither, bool is_070)
 // API: CreateBorder
 //===========================================================================
 
-void CreateBorder(HDC hdc, RECT *rp, COLORREF borderColor, int borderWidth)
+void CreateBorder (HDC hdc, RECT const * rp, COLORREF borderColor, int borderWidth)
 {
     if (borderWidth) {
         int x = rp->left;
@@ -892,7 +892,7 @@ void CreateBorder(HDC hdc, RECT *rp, COLORREF borderColor, int borderWidth)
 // API: MakeStyleGradient
 // Purpose:  Make a gradient from style Item
 //===========================================================================
-void MakeStyleGradient(HDC hdc, RECT *rp, StyleItem *pSI, bool withBorder)
+void MakeStyleGradient (HDC hdc, RECT const * rp, StyleItem const * pSI, bool withBorder)
 {
     int x, y, w, h, b;
     struct bimage *bi;

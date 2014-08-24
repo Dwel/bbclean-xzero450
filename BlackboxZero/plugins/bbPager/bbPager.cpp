@@ -7,25 +7,6 @@
  http://www.ratednc-17.com
  http://bb4win.sourceforge.net
  ============================================================================
-
-  Blackbox for Windows is free software, released under the
-  GNU General Public License (GPL version 2 or later), with an extension
-  that allows linking of proprietary modules under a controlled interface.
-  What this means is that plugins etc. are allowed to be released
-  under any license the author wishes. Please note, however, that the
-  original Blackbox gradient math code used in Blackbox for Windows
-  is available under the BSD license.
-
-  http://www.fsf.org/licenses/gpl.html
-  http://www.fsf.org/licenses/gpl-faq.html#LinkingOverControlledInterface
-  http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  GNU General Public License for more details.
-
- ============================================================================
 */
 #include "bbPager.h"
 #include "Settings.h"
@@ -33,30 +14,14 @@
 #include <string>
 
 // from Settings.cpp
-extern bool useSlit;
 extern std::vector<RECT> desktopRect;
-extern bool transparency;
-extern int transparencyAlpha;
 extern char rcpath[MAX_PATH];
-extern char editor[MAX_PATH];
-extern bool drawBorder;
-extern int screenLeft, screenTop, screenRight, screenBottom;
-extern int vScreenLeft, vScreenTop, vScreenRight, vScreenBottom;
-extern int currentDesktop;
-extern int screenWidth, screenHeight;
-extern int desktopChangeButton;
-extern int focusButton;
-extern int moveButton;
-extern int vScreenWidth, vScreenHeight;
-extern double ratioX, ratioY;
-extern int leftMargin, topMargin;
 
-#define REFRESH_TIME 1000	// Automatic repaint time in milliseconds
+const int refresh_time = 1000;	// Automatic repaint time in milliseconds
 
 const char szAppName [] = "bbPager";  // The name of our window class, etc.
 const char szVersion [] = "bbPager 3.8";
-
-const char szInfoVersion [] = "3.7";
+const char szInfoVersion [] = "3.8";
 const char szInfoAuthor [] = "NC-17|unkamunka|mojmir";
 const char szInfoRelDate [] = "2014-08-22";
 const char szInfoLink [] = "http://www.ratednc-17.com/";
@@ -64,59 +29,44 @@ const char szInfoEmail [] = "irc://irc.freenode.net/bb4win";
 const char szInfoUpdateURL [] = "http://www.blackbox4windows.com";
 
 //=====================================================================
-
-HINSTANCE hInstance;
-HWND hwndBBPager, hwndBlackbox;
+RuntimeState g_RuntimeState;
+RuntimeState & getRuntimeState () { return g_RuntimeState; } // "singleton"
 
 // Blackbox messages we want to "subscribe" to:
 int msgs[] = {BB_RECONFIGURE, BB_BROADCAST, BB_DESKTOPINFO, BB_WORKSPACE, BB_BRINGTOFRONT,
 	BB_ADDTASK,	BB_REMOVETASK, BB_ACTIVETASK, BB_MINMAXTASK, BB_WINDOWSHADE, BB_WINDOWGROWHEIGHT,
 	BB_WINDOWGROWWIDTH,	BB_WINDOWLOWER,	BB_REDRAWTASK, /*BB_MINIMIZE,*/ BB_WINDOWMINIMIZE, BB_WINDOWRAISE,
-	BB_WINDOWMAXIMIZE, BB_WINDOWRESTORE, BB_WINDOWCLOSE, 
+	BB_WINDOWMAXIMIZE, BB_WINDOWRESTORE, BB_WINDOWCLOSE,
 	BB_TASKSUPDATE, // IMPORTANT for flashing.
 	0};
 
-// Structure definitions
-struct FRAME frame;
-struct DESKTOP desktop;
-struct ACTIVEDESKTOP activeDesktop;
-struct WINDOW window;
-struct FOCUSEDWINDOW focusedWindow;
-struct POSITION position;
-
 // Desktop information
-int desktops;
 int desktopPressed = -1;
 std::vector<std::string> desktopName;
 
 // Window information
-std::vector<winStruct> winList;
-int winCount = 0;
-int winPressed;
-bool winMoving;
-winStruct moveWin;
-int mx, my, oldx, oldy, grabDesktop;
+int winPressed = -1;
+bool winMoving = false;
+WinStruct moveWin;
+int mx = 0, my = 0, oldx = 0, oldy = 0, grabDesktop = 0;
 HWND lastActive;
 bool passive = false;
 
 // flashing tasks
-std::vector<flashTask> flashList;
+std::vector<FlashTask> flashList;
 
 // tooltips
 HWND hToolTips;
 bool tempTool;
 
 // Mouse button settings
-bool leftButtonDown = false, middleButtonDown = false, 
+bool leftButtonDown = false, middleButtonDown = false,
 rightButtonDown = false, rightButtonDownNC = false;
 
 // Menus
 Menu *BBPagerMenu, *BBPagerWindowSubMenu, *BBPagerDisplaySubMenu;
 Menu *BBPagerPositionSubMenu, *BBPagerAlignSubMenu;
 Menu *BBPagerSettingsSubMenu, *BBPagerDebugSubMenu;
-
-// Transparency
-bool usingWin2kXP;
 
 // Slit items
 int heightOld = 0, widthOld = 0, posXOld = 0, posYOld = 0;
@@ -128,7 +78,6 @@ HWND hSlit;				//The Window Handle to the Slit (for if we are loaded)
 bool (*BBPager_STL)(HWND, struct taskinfo *, UINT) = NULL;
 tasklist* (*BBPager_GTLP)(void) = NULL;
 struct tasklist *tl;
-bool is_xoblite, usingAltMethod;
 
 //bool loggerOn = true;
 
@@ -138,12 +87,13 @@ extern "C"
 {
 	DLL_EXPORT int beginPlugin(HINSTANCE hPluginInstance);
 	DLL_EXPORT int beginSlitPlugin(HINSTANCE hPluginInstance, HWND hBBSlit);
-	DLL_EXPORT int beginPluginEx(HINSTANCE hPluginInstance, HWND hBBSlit) 
+	DLL_EXPORT int beginPluginEx(HINSTANCE hPluginInstance, HWND hBBSlit)
 	{
+		Settings & s = getSettings();
 		hSlit = hBBSlit;
 		WNDCLASS wc;
-		hwndBlackbox = GetBBWnd();
-		hInstance = hPluginInstance;
+		g_RuntimeState.m_hwndBlackbox = GetBBWnd();
+		g_RuntimeState.m_hInstance = hPluginInstance;
 
 		*(FARPROC*)&BBPager_STL = GetProcAddress(GetModuleHandle(NULL), "SetTaskLocation");
 		*(FARPROC*)&BBPager_GTLP = GetProcAddress(GetModuleHandle(NULL), "GetTaskListPtr");
@@ -153,47 +103,47 @@ extern "C"
 		wc.lpfnWndProc = WndProc;			// our window procedure
 		wc.hInstance = hPluginInstance;		// hInstance of .dll
 		wc.lpszClassName = szAppName;		// our window class name
-		if (!RegisterClass(&wc)) 
+		if (!RegisterClass(&wc))
 		{
-			MessageBox(hwndBlackbox, "Error registering window class", szAppName, MB_OK | MB_ICONERROR | MB_TOPMOST);
+			MessageBox(g_RuntimeState.m_hwndBlackbox, "Error registering window class", szAppName, MB_OK | MB_ICONERROR | MB_TOPMOST);
 			return 1;
 		}
 
 		// Get plugin and style settings...
 		const char *bbv = GetBBVersion();
-		is_xoblite = 0 == (_memicmp(bbv, "bb", 2) + strlen(bbv) - 3);
-		ReadRCSettings();
-		GetStyleSettings();
+		g_RuntimeState.m_is_xoblite = 0 == (_memicmp(bbv, "bb", 2) + strlen(bbv) - 3);
+		s.ReadRCSettings();
+		s.GetStyleSettings();
 
-		inSlit = useSlit;
-		tempTool = desktop.tooltips;
+		inSlit = s.m_useSlit;
+		tempTool = s.m_desktop.tooltips;
 
 		// Set window size and position
 		desktopName.clear();
-		winList.clear();
+		g_RuntimeState.m_winList.clear();
 		desktopRect.clear();
 
 		GetPos(false);
-		SetPos(position.side);
+		SetPos(s.m_position.side);
 		UpdatePosition();
 
 		// Create the window...
-		hwndBBPager = CreateWindowEx(
+		g_RuntimeState.m_hwndBBPager = CreateWindowEx(
 			WS_EX_TOOLWINDOW,								// window style
 			szAppName,										// our window class name
 			NULL,											// NULL -> does not show up in task manager!
 			WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,	// window parameters
-			position.x,										// x position
-			position.y,										// y position
-			0,											// window width
-			0,											// window height
+			s.m_position.x,						// x position
+			s.m_position.y,						// y position
+			0,												// window width
+			0,												// window height
 			NULL,											// parent window
 			NULL,											// no menu
 			hPluginInstance,								// hInstance of .dll
 			NULL);
 
-		if (!hwndBBPager)
-		{						   
+		if (!g_RuntimeState.m_hwndBBPager)
+		{
 			MessageBox(0, "Error creating window", szAppName, MB_OK | MB_ICONERROR | MB_TOPMOST);
 			return 1;
 		}
@@ -203,23 +153,25 @@ extern "C"
 
 		if (inSlit && hSlit)		// Are we in the Slit?
 		{
-			if (position.autohide) position.autohideOld = true;
-			else position.autohideOld = false;
-			position.autohide = false;
-			SendMessage(hSlit, SLIT_ADD, 0, (LPARAM)hwndBBPager);
+			if (s.m_position.autohide)
+				s.m_position.autohideOld = true;
+			else
+				s.m_position.autohideOld = false;
+			s.m_position.autohide = false;
+			SendMessage(hSlit, SLIT_ADD, 0, (LPARAM)g_RuntimeState.m_hwndBBPager);
 
 			/* A window can not be a WS_POPUP and WS_CHILD so remove POPUP and add CHILD
 			* IF you decide to allow yourself to be unloaded from the slit, then you would
 			* do the oppisite, remove CHILD and add POPUP
 			*/
-			SetWindowLong(hwndBBPager, GWL_STYLE, (GetWindowLong(hwndBBPager, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+			SetWindowLong(g_RuntimeState.m_hwndBBPager, GWL_STYLE, (GetWindowLong(g_RuntimeState.m_hwndBBPager, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
 
 			// Make your parent window BBSlit
-			SetParent(hwndBBPager, hSlit);
+			SetParent(g_RuntimeState.m_hwndBBPager, hSlit);
 		}
 		else
 		{
-			useSlit = inSlit = false;
+			s.m_useSlit = inSlit = false;
 		}
 
 		// Transparency is only supported under Windows 2000/XP...
@@ -228,39 +180,41 @@ extern "C"
 		osInfo.dwOSVersionInfoSize = sizeof(osInfo);
 		GetVersionEx(&osInfo);
 
-		if (osInfo.dwPlatformId == VER_PLATFORM_WIN32_NT && osInfo.dwMajorVersion >= 5) 
-			usingWin2kXP = true;
-		else 
-			usingWin2kXP = false;
+		// @TODO: use general GetOSVersion.. i saw it somewhere
+		if (osInfo.dwPlatformId == VER_PLATFORM_WIN32_NT && osInfo.dwMajorVersion >= 5)
+			getRuntimeState().m_usingWin2kXP = true;
+		else
+			getRuntimeState().m_usingWin2kXP = false;
 
-		if (usingWin2kXP)
+		if (getRuntimeState().m_usingWin2kXP)
 		{
-			if (transparency && !inSlit)
-				SetTransparency(hwndBBPager, (unsigned char)transparencyAlpha);
+			if (s.m_transparency && !inSlit)
+				SetTransparency(g_RuntimeState.m_hwndBBPager, (unsigned char)s.m_transparencyAlpha);
 		}
 
 		// Register to receive Blackbox messages...
-		SendMessage(hwndBlackbox, BB_REGISTERMESSAGE, (WPARAM)hwndBBPager, (LPARAM)msgs);
-		MakeSticky(hwndBBPager);
+		SendMessage(g_RuntimeState.m_hwndBlackbox, BB_REGISTERMESSAGE, (WPARAM)g_RuntimeState.m_hwndBBPager, (LPARAM)msgs);
+		MakeSticky(g_RuntimeState.m_hwndBBPager);
 		// Make the window AlwaysOnTop?
-		if (position.raised) SetWindowPos(hwndBBPager, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+		if (s.m_position.raised)
+			SetWindowPos(g_RuntimeState.m_hwndBBPager, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 
 		// Set window size again, etc.
-		UpdateMonitorInfo();
+		getSettings().UpdateMonitorInfo();
 		UpdatePosition();
 
 		if (hSlit && inSlit)
 		{
-			SetWindowPos(hwndBBPager, HWND_TOP, 0, 0, frame.width, frame.height, SWP_NOMOVE | SWP_NOZORDER);
+			SetWindowPos(g_RuntimeState.m_hwndBBPager, HWND_TOP, 0, 0, s.m_frame.width, s.m_frame.height, SWP_NOMOVE | SWP_NOZORDER);
 			SendMessage(hSlit, SLIT_UPDATE, 0, 0);
 		}
 
-		if (!is_xoblite)
+		if (!g_RuntimeState.m_is_xoblite)
 			tl = BBPager_GetTaskListPtr();
 
 		// Show the window and force it to update...
-		ShowWindow(hwndBBPager, SW_SHOW);
-		InvalidateRect(hwndBBPager, NULL, true);
+		ShowWindow(g_RuntimeState.m_hwndBBPager, SW_SHOW);
+		InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 
 		hToolTips = CreateWindowEx(	// Create tooltips window
 			WS_EX_TOPMOST,
@@ -290,7 +244,7 @@ extern "C"
 		}
 
 		// Timer for auto redraw, to catch window movement
-		if (!SetTimer(hwndBBPager, 1, REFRESH_TIME, (TIMERPROC)NULL))
+		if (!SetTimer(g_RuntimeState.m_hwndBBPager, 1, refresh_time, (TIMERPROC)NULL))
 		{
 			MessageBox(0, "Error creating update timer", szAppName, MB_OK | MB_ICONERROR | MB_TOPMOST);
 			//return 0;
@@ -300,93 +254,91 @@ extern "C"
 	}
 
 	//===========================================================================
-
 	DLL_EXPORT void endPlugin(HINSTANCE hPluginInstance)
 	{
-		KillTimer(hwndBBPager, 1);
+		Settings & s = getSettings();
+		KillTimer(g_RuntimeState.m_hwndBBPager, 1);
 
 		// Delete used StyleItems...
-		if (frame.style) delete frame.style;
-		if (desktop.style) delete desktop.style;
-		if (activeDesktop.style) delete activeDesktop.style;
-		if (window.style) delete window.style;
-		if (focusedWindow.style) delete focusedWindow.style;
+		if (s.m_frame.style)
+			delete s.m_frame.style;
+		if (s.m_desktop.style)
+			delete s.m_desktop.style; // @TODO: move to destructor
+		if (s.m_activeDesktop.style)
+			delete s.m_activeDesktop.style;
+		if (s.m_window.style)
+			delete s.m_window.style;
+		if (s.m_focusedWindow.style)
+			delete s.m_focusedWindow.style;
 
 		// Delete the main plugin menu if it exists (PLEASE NOTE that this takes care of submenus as well!)
-		if (BBPagerMenu) DelMenu(BBPagerMenu);
+		if (BBPagerMenu)
+			DelMenu(BBPagerMenu);
 
 		// remove from slit
 		if (inSlit)
-			SendMessage(hSlit, SLIT_REMOVE, 0, (LPARAM)hwndBBPager);
+			SendMessage(hSlit, SLIT_REMOVE, 0, (LPARAM)g_RuntimeState.m_hwndBBPager);
 
 		// Unregister Blackbox messages...
-		SendMessage(hwndBlackbox, BB_UNREGISTERMESSAGE, (WPARAM)hwndBBPager, (LPARAM)msgs);
+		SendMessage(g_RuntimeState.m_hwndBlackbox, BB_UNREGISTERMESSAGE, (WPARAM)g_RuntimeState.m_hwndBBPager, (LPARAM)msgs);
 
 		// Delete vectors
 		desktopName.clear();
-		winList.clear();
+		g_RuntimeState.m_winList.clear();
 		desktopRect.clear();
 		flashList.clear();
 
 		// Destroy our window...
 		ClearToolTips();
 		DestroyWindow(hToolTips);
-		DestroyWindow(hwndBBPager);
+		DestroyWindow(g_RuntimeState.m_hwndBBPager);
 
 		// Unregister window class...
 		UnregisterClass(szAppName, hPluginInstance);
 	}
 
 	//===========================================================================
-
 	DLL_EXPORT LPCSTR pluginInfo(int field)
 	{
 		// pluginInfo is used by Blackbox for Windows to fetch information about
 		// a particular plugin. At the moment this information is simply displayed
 		// in an "About loaded plugins" MessageBox, but later on this will be
 		// expanded into a more advanced plugin handling system. Stay tuned! :)
-
 		switch (field)
 		{
-		case 1:
-			return szAppName; // Plugin name
-		case 2:
-			return szInfoVersion; // Plugin version
-		case 3:
-			return szInfoAuthor; // Author
-		case 4:
-			return szInfoRelDate; // Release date, preferably in yyyy-mm-dd format
-		case 5:
-			return szInfoLink; // Link to author's website
-		case 6:
-			return szInfoEmail; // Author's email
-		case 7:					//PLUGIN_BROAMS
-			{
-				return
-					"@BBPager ListStuff"  //List other information
-					"@BBPager ListDesktops"  //List desktops
-					"@BBPager ListWindows"  //List windows
-					"@BBPager ToggleWindows"  //Toggle window painting
-					"@BBPager ToggleTrans"  //Toggles transparency
-					"@BBPager ToggleNumbers"  //Toggles drawing of numbers on desktops
-					"@BBPager OpenRC"  //Open bbpager.rc file with default editor
-					"@BBPager OpenStyle"  //Open bbpager.bb file with default editor
-					"@BBPager Vertical"  //Toggles vertical/horizontal alignment
-					"@BBPager ToggleSnap"  //Toggle snap to windows
-					"@BBPager ToggleRaised"  //Toggle always on top
-					"@BBPager ToggleToolTips"  //Toggles showing tooltips
-					"@BBPager ToggleHide"  //Toggles autohiding
-					"@BBPager ToggleSlit"  //Toggle whether plugin is in slit
-					"@BBPager Reload"  //Rereads RC|style settings and updates window
-					"@BBPager LoadDocs"  //Loads bbPager documentation in browser
-					"@BBPager About";  //Display message box about the plugin
-			}
-		case 8:		return szInfoUpdateURL; // Link to update page
+			case 1: return szAppName; // Plugin name
+			case 2: return szInfoVersion; // Plugin version
+			case 3: return szInfoAuthor; // Author
+			case 4: return szInfoRelDate; // Release date, preferably in yyyy-mm-dd format
+			case 5: return szInfoLink; // Link to author's website
+			case 6: return szInfoEmail; // Author's email
+			case 7:					//PLUGIN_BROAMS
+				{
+					return
+						"@BBPager ListStuff"  //List other information
+						"@BBPager ListDesktops"  //List desktops
+						"@BBPager ListWindows"	//List windows
+						"@BBPager ToggleWindows"  //Toggle window painting
+						"@BBPager ToggleTrans"	//Toggles transparency
+						"@BBPager ToggleNumbers"  //Toggles drawing of numbers on desktops
+						"@BBPager OpenRC"  //Open bbpager.rc file with default editor
+						"@BBPager OpenStyle"  //Open bbpager.bb file with default editor
+						"@BBPager Vertical"  //Toggles vertical/horizontal alignment
+						"@BBPager ToggleSnap"  //Toggle snap to windows
+						"@BBPager ToggleRaised"  //Toggle always on top
+						"@BBPager ToggleToolTips"  //Toggles showing tooltips
+						"@BBPager ToggleHide"  //Toggles autohiding
+						"@BBPager ToggleSlit"  //Toggle whether plugin is in slit
+						"@BBPager Reload"  //Rereads RC|style settings and updates window
+						"@BBPager LoadDocs"  //Loads bbPager documentation in browser
+						"@BBPager About";  //Display message box about the plugin
+				}
+			case 8:		return szInfoUpdateURL; // Link to update page
 
-			// ==========
+				// ==========
 
-		default:
-			return szVersion; // Fallback: Plugin name + version, e.g. "MyPlugin 1.0"
+			default:
+				return szVersion; // Fallback: Plugin name + version, e.g. "MyPlugin 1.0"
 		}
 	}
 }
@@ -395,41 +347,37 @@ extern "C"
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	Settings & s = getSettings();
 	switch (message)
-	{		
+	{
 		// Window update process...
-
 		case WM_PAINT:
 		{
 			UpdatePosition(); // get number of desktops and sets size/position of window
-	
 			DrawBBPager(hwnd);
-
 			//ClearToolTips();
-
 			return 0;
 		}
 		break;
 
-        //====================
-
-        case BB_TASKSUPDATE:
-        {
-			if (desktop.windows)
-            {
+		//====================
+		case BB_TASKSUPDATE:
+		{
+			if (s.m_desktop.windows)
+			{
 				HWND taskHwnd = (HWND)wParam;
 
-                if ((int)lParam == TASKITEM_MODIFIED)
-                {
-                }
-                else if((int)lParam == TASKITEM_ACTIVATED)
-                {
+				if ((int)lParam == TASKITEM_MODIFIED)
+				{
+				}
+				else if ((int)lParam == TASKITEM_ACTIVATED)
+				{
 					RemoveFlash(taskHwnd, false);
-					InvalidateRect(hwndBBPager, NULL, true);
-                }
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
+				}
 				else if ((int)lParam == TASKITEM_ADDED)
 				{
-					InvalidateRect(hwndBBPager, NULL, true);
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
 				else if ((int)lParam == TASKITEM_FLASHED)
 				{
@@ -440,38 +388,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					else if (taskHwnd != GetForegroundWindow())
 					{
 						AddFlash(taskHwnd);
-						InvalidateRect(hwndBBPager, NULL, true);
+						InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 					}
 				}
-                else if ((int)lParam == TASKITEM_REMOVED)
-                {
+				else if ((int)lParam == TASKITEM_REMOVED)
+				{
 					RemoveFlash(taskHwnd, false);
-					InvalidateRect(hwndBBPager, NULL, true);
-                }
-            }
-        }
-        break;
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
+				}
+			}
+		}
+		break;
 
 		// =================
 		// Broadcast messages (bro@m -> the bang killah! :D <vbg>)
-
 		case BB_BROADCAST:
 		{
 			char temp[64];
 			strcpy(temp, (LPCSTR)lParam);
 			
 			// @BBShowPlugins: Show window and force update (global bro@m)
-			if (!_stricmp(temp, "@BBShowPlugins")) 
+			if (!_stricmp(temp, "@BBShowPlugins"))
 			{
-				ShowWindow(hwndBBPager, SW_SHOW);
-				InvalidateRect(hwndBBPager, NULL, true);
+				ShowWindow(g_RuntimeState.m_hwndBBPager, SW_SHOW);
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				return 0;
 			}
 			// @BBHidePlugins: Hide window (global bro@m)
-			else if (!_stricmp(temp, "@BBHidePlugins")) 
+			else if (!_stricmp(temp, "@BBHidePlugins"))
 			{
 				if (!inSlit)
-					ShowWindow(hwndBBPager, SW_HIDE);
+					ShowWindow(g_RuntimeState.m_hwndBBPager, SW_HIDE);
 				return 0;
 			}
 			// start positioning bro@ms for BBPager
@@ -487,33 +434,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					token1[0] = token2[0] = extra[0] = '\0';
 					BBTokenize (temp, tokens, 2, extra);
 
-					if (!_stricmp(token2, "TopLeft")) 
-						position.side = 3;
-					else if (!_stricmp(token2, "TopCenter")) 
-						position.side = 2;
-					else if (!_stricmp(token2, "TopRight")) 
-						position.side = 6;
-					else if (!_stricmp(token2, "CenterLeft")) 
-						position.side = 1;
-					else if (!_stricmp(token2, "CenterRight")) 
-						position.side = 4;
-					else if (!_stricmp(token2, "BottomLeft")) 
-						position.side = 9;
-					else if (!_stricmp(token2, "BottomCenter")) 
-						position.side = 8;
-					else if (!_stricmp(token2, "BottomRight")) 
-						position.side = 12;
+					if (!_stricmp(token2, "TopLeft"))
+						s.m_position.side = 3;
+					else if (!_stricmp(token2, "TopCenter"))
+						s.m_position.side = 2;
+					else if (!_stricmp(token2, "TopRight"))
+						s.m_position.side = 6;
+					else if (!_stricmp(token2, "CenterLeft"))
+						s.m_position.side = 1;
+					else if (!_stricmp(token2, "CenterRight"))
+						s.m_position.side = 4;
+					else if (!_stricmp(token2, "BottomLeft"))
+						s.m_position.side = 9;
+					else if (!_stricmp(token2, "BottomCenter"))
+						s.m_position.side = 8;
+					else if (!_stricmp(token2, "BottomRight"))
+						s.m_position.side = 12;
 					else
 						return 0;
 
-					SetPos(position.side);
+					SetPos(s.m_position.side);
 
-					SetWindowPos(hwndBBPager, HWND_TOP, position.x, position.y, frame.width, frame.height, SWP_NOZORDER);
-					InvalidateRect(hwndBBPager, NULL, true);
+					SetWindowPos(g_RuntimeState.m_hwndBBPager, HWND_TOP, s.m_position.x, s.m_position.y, s.m_frame.width, s.m_frame.height, SWP_NOZORDER);
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 
 					WriteString(rcpath, "bbPager.position:", token2);
 				}
-
 			}
 			// start internal bro@ms for BBPager only
 			else if (IsInString(temp, "@BBPager"))
@@ -528,189 +474,188 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				// @BBPagerReload rereads RC/style settings and updates window
 				// Nice to do without reconfiguring all of blackbox
-				if (!_stricmp(temp, "Reload")) 
+				if (!_stricmp(temp, "Reload"))
 				{
-					ReadRCSettings();
-					GetStyleSettings();
+					s.ReadRCSettings();
+					s.GetStyleSettings();
 					//UpdatePosition();
-					InvalidateRect(hwndBBPager, NULL, true);
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 					return 0;
 				}
 				//open bbpager.rc file with default editor
-				if (!_stricmp(token2, "OpenRC")) 
+				if (!_stricmp(token2, "OpenRC"))
 				{
-					BBExecute(GetDesktopWindow(), NULL, editor, rcpath, NULL, SW_SHOWNORMAL, false);
+					BBExecute(GetDesktopWindow(), NULL, s.m_editor, rcpath, NULL, SW_SHOWNORMAL, false);
 					return 0;
 				}
 				// open bbpager.bb file with default editor
-				else if (!_stricmp(token2, "OpenStyle")) 
+				else if (!_stricmp(token2, "OpenStyle"))
 				{
-					BBExecute(GetDesktopWindow(), NULL, editor, getbspath(), NULL, SW_SHOWNORMAL, false);
+					BBExecute(GetDesktopWindow(), NULL, s.m_editor, getbspath(), NULL, SW_SHOWNORMAL, false);
 					return 0;
 				}
 				// @BBPagerToggleNumbers toggles drawing of numbers on desktops
-				else if (!_stricmp(token2, "ToggleNumbers")) 
+				else if (!_stricmp(token2, "ToggleNumbers"))
 				{
-					if (desktop.numbers) 
-						desktop.numbers = false;
-					else 
-						desktop.numbers = true;						
+					if (s.m_desktop.numbers)
+						s.m_desktop.numbers = false;
+					else
+						s.m_desktop.numbers = true;
 
-					InvalidateRect(hwndBBPager, NULL, true);
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
 				// @BBPagerVertical / Horizontal toggles vertical/horizontal alignment
 				// also forces window to update
-				else if (!_stricmp(token2, "Vertical")) 
+				else if (!_stricmp(token2, "Vertical"))
 				{
-					if (position.horizontal) // set drawing to use columns/vertical
+					if (s.m_position.horizontal) // set drawing to use columns/vertical
 					{
-						position.horizontal = false; 
-						position.vertical = true;
+						s.m_position.horizontal = false;
+						s.m_position.vertical = true;
 					}
 					else
 					{
-						position.horizontal = true; 
-						position.vertical = false;
+						s.m_position.horizontal = true;
+						s.m_position.vertical = false;
 					}
-					InvalidateRect(hwndBBPager, NULL, true);					
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
 				else if (!_stricmp(token2, "Horizontal"))
 				{
-					if (position.vertical) // set drawing to use rows/horizontal
+					if (s.m_position.vertical) // set drawing to use rows/horizontal
 					{
-						position.horizontal = true; 
-						position.vertical = false;
+						s.m_position.horizontal = true;
+						s.m_position.vertical = false;
 					}
 					else
 					{
-						position.horizontal = false; 
-						position.vertical = true;
+						s.m_position.horizontal = false;
+						s.m_position.vertical = true;
 					}
-					InvalidateRect(hwndBBPager, NULL, true);
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
 				 // @BBPagerToggleSnap toggles snap to windows and sets toolbar msg
-				else if (!_stricmp(token2, "ToggleSnap")) 
+				else if (!_stricmp(token2, "ToggleSnap"))
 				{
 					if (!inSlit)
 					{
-						if (position.snapWindow) 
-							position.snapWindow = false;
-						else 
-							position.snapWindow = true;
+						if (s.m_position.snapWindow)
+							s.m_position.snapWindow = false;
+						else
+							s.m_position.snapWindow = true;
 					}
 				}
 				// @BBPagerToggleRaised toggles always on top and sets toolbar msg
-				else if (!_stricmp(token2, "ToggleRaised")) 
+				else if (!_stricmp(token2, "ToggleRaised"))
 				{
-					if (position.raised) 
+					if (s.m_position.raised)
 					{
-						position.raised = false;
-						SetWindowPos(hwndBBPager, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+						s.m_position.raised = false;
+						SetWindowPos(g_RuntimeState.m_hwndBBPager, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 					}
-					else 
+					else
 					{
-						position.raised = true;
-						SetWindowPos(hwndBBPager, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-;
+						s.m_position.raised = true;
+						SetWindowPos(g_RuntimeState.m_hwndBBPager, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 					}
 				}
 				// @BBPager ToggleHide toggles autohiding
-				else if (!_stricmp(token2, "ToggleHide")) 
+				else if (!_stricmp(token2, "ToggleHide"))
 				{
 					if (!inSlit)
 					{
-						if (position.autohide) 
+						if (s.m_position.autohide)
 						{
-							position.autohide = false;
-							position.hidden = false;
+							s.m_position.autohide = false;
+							s.m_position.hidden = false;
 						}
-						else 
+						else
 						{
-							position.autohide = true;
+							s.m_position.autohide = true;
 							GetPos(true);
-							SetPos(position.side);
+							SetPos(s.m_position.side);
 							HidePager();
 						}
 					}
 				}
 				// @BBPagerToggleWindows toggles window painting
-				else if (!_stricmp(token2, "ToggleWindows")) 
+				else if (!_stricmp(token2, "ToggleWindows"))
 				{
-					if (desktop.windows) 
-						desktop.windows = false;
-					else 
-						desktop.windows = true;
+					if (s.m_desktop.windows)
+						s.m_desktop.windows = false;
+					else
+						s.m_desktop.windows = true;
 
-					InvalidateRect(hwndBBPager, NULL, true);
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
-				else if (!_stricmp(token2, "ToggleToolTips")) 
+				else if (!_stricmp(token2, "ToggleToolTips"))
 				{
-					if (desktop.tooltips) 
+					if (s.m_desktop.tooltips)
 					{
-						desktop.tooltips = false;
+						s.m_desktop.tooltips = false;
 						ClearToolTips();
 					}
-					else 
+					else
 					{
-						desktop.tooltips = true;
+						s.m_desktop.tooltips = true;
 					}
-					tempTool = desktop.tooltips;
+					tempTool = s.m_desktop.tooltips;
 
-					InvalidateRect(hwndBBPager, NULL, true);
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
-				else if (!_stricmp(token2, "ToggleAltMethod") && !is_xoblite) 
+				else if (!_stricmp(token2, "ToggleAltMethod") && !g_RuntimeState.m_is_xoblite)
 				{
-					if (usingAltMethod) 
-						usingAltMethod = false;
-					else 
-						usingAltMethod = true;
+					if (g_RuntimeState.m_usingAltMethod)
+						g_RuntimeState.m_usingAltMethod = false;
+					else
+						g_RuntimeState.m_usingAltMethod = true;
 
-					InvalidateRect(hwndBBPager, NULL, true);
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
-				else if (!_stricmp(token2, "ToggleBorder")) 
+				else if (!_stricmp(token2, "ToggleBorder"))
 				{
-					if (drawBorder) 
-						drawBorder = false;
-					else 
-						drawBorder = true;
+					if (s.m_drawBorder)
+						s.m_drawBorder = false;
+					else
+						s.m_drawBorder = true;
 
-					GetStyleSettings();
-					InvalidateRect(hwndBBPager, NULL, true);
+					s.GetStyleSettings();
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
 				// @BBPager Transparency toggles transparency in w2k/xp
 				else if (!_stricmp(token2, "ToggleTrans"))
 				{
-					if (usingWin2kXP)
+					if (getRuntimeState().m_usingWin2kXP)
 					{
-						if (transparency)
+						if (s.m_transparency)
 						{
-							transparency = false;
-							SetTransparency(hwndBBPager, 255);
+							s.m_transparency = false;
+							SetTransparency(g_RuntimeState.m_hwndBBPager, 255);
 						}
 						else if (!inSlit)
 						{
-							transparency = true;
-							SetTransparency(hwndBBPager, (unsigned char)transparencyAlpha);
+							s.m_transparency = true;
+							SetTransparency(g_RuntimeState.m_hwndBBPager, (unsigned char)s.m_transparencyAlpha);
 						}
 					}
 				}
 				else if (!_stricmp(token2, "ToggleSlit"))
 				{
 					ToggleSlit();
-					WriteRCSettings();
+					s.WriteRCSettings();
 					return 0;
 				}
 				else if (!_stricmp(token2, "LoadDocs"))
 				{
-					char docspath[MAX_PATH];				
+					char docspath[MAX_PATH];
 					strcpy(docspath, rcpath);
 					char *target_file = strrchr(docspath, '\\');
 					if (target_file) ++target_file;
 					strcpy(target_file, "bbPager.html");
-					ShellExecute(hwndBlackbox, "open", docspath, NULL, NULL, SW_SHOWNORMAL);
+					ShellExecute(g_RuntimeState.m_hwndBlackbox, "open", docspath, NULL, NULL, SW_SHOWNORMAL);
 				}
 				// @BBPagerAbout pops up info box about the plugin
-				else if (!_stricmp(token2, "About")) 
+				else if (!_stricmp(token2, "About"))
 				{
 					char tempaboutmsg[MAX_PATH];
 
@@ -722,23 +667,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					return 0;
 				}
 
-				WriteRCSettings();
+				s.WriteRCSettings();
 			}
-
 			return 0;
 		}
 		break;
 
 		// =================
 		// If Blackbox sends a reconfigure message, load the new style settings and update the window...
-
 		case BB_RECONFIGURE:
 		{
-			ReadRCSettings();
-			GetStyleSettings();
+			s.ReadRCSettings();
+			s.GetStyleSettings();
 			UpdatePosition();
 
-			UpdateMonitorInfo();
+			getSettings().UpdateMonitorInfo();
 			if (!inSlit)
 			{
 				// snap to edge on style change
@@ -747,87 +690,83 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				int nDist = 20;
 
 				// top/bottom edge
-				dy = y = position.y - screenTop;
-				dz = z = position.y + frame.height - screenBottom;
+				dy = y = s.m_position.y - s.m_screenTop;
+				dz = z = s.m_position.y + s.m_frame.height - s.m_screenBottom;
 				if (dy<0) dy=-dy;
 				if (dz<0) dz=-dz;
 				if (dz < dy) y = z, dy = dz;
 
 				// left/right edge
-				dx = x = position.x - screenLeft;
-				dz = z = position.x + frame.width - screenRight;
+				dx = x = s.m_position.x - s.m_screenLeft;
+				dz = z = s.m_position.x + s.m_frame.width - s.m_screenRight;
 				if (dx<0) dx=-dx;
 				if (dz<0) dz=-dz;
 				if (dz < dx) x = z, dx = dz;
 
 				if (dy < nDist)
 				{
-					position.y -= y;
+					s.m_position.y -= y;
 					// top/bottom center
-					dz = z = position.x + (frame.width - screenRight - screenLeft)/2;
+					dz = z = s.m_position.x + (s.m_frame.width - s.m_screenRight - s.m_screenLeft) / 2;
 					if (dz<0) dz=-dz;
 					if (dz < dx) x = z, dx = dz;
 				}
 
 				if (dx < nDist)
-					position.x -= x;
+					s.m_position.x -= x;
 
-				SetWindowPos(hwndBBPager, HWND_TOP, position.x, position.y, frame.width, frame.height, SWP_NOZORDER);
+				SetWindowPos(g_RuntimeState.m_hwndBBPager, HWND_TOP, s.m_position.x, s.m_position.y, s.m_frame.width, s.m_frame.height, SWP_NOZORDER);
 			}
 
 			//UpdatePosition();
 
-			InvalidateRect(hwndBBPager, NULL, true);
+			InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 		}
 		break;
 
 		// ===================
 		// Grabs the number of desktops and sets the names of the desktops
-	
 		case BB_DESKTOPINFO:
 		{
 			DesktopInfo* info = (DesktopInfo*)lParam;
-			if (info->isCurrent) 
+			if (info->isCurrent)
 			{
-				currentDesktop = info->number;
+				g_RuntimeState.m_currentDesktop = info->number;
 			}
 			//strcpy(desktopName[desktops], info->name); // Grab the name of each desktop as it comes
 			desktopName.push_back(std::string(info->name));
-			desktops++; // Increase desktop count by one for each
+			g_RuntimeState.m_desktops++; // Increase desktop count by one for each
 		}
 		break;
 
 		//====================
 		// This is done for workspace switching with the toolbar
 		// as a result of focusing an app that is on another workspace
-
 		case BB_BRINGTOFRONT:
 
 		// Force window to update when workspaces are changed or added, etc.
 		// Or when apps moved by middle click on taskbar/desktop
-
 		case BB_WORKSPACE:
 		case BB_LISTDESKTOPS:
 
 		// Here's all the Hook msgs, makes the pager a lot more responsive to window changes
 		case BB_ADDTASK:		case BB_REMOVETASK:		case BB_ACTIVETASK:
 		case BB_MINMAXTASK:		case BB_WINDOWSHADE:	case BB_WINDOWGROWHEIGHT:
-		case BB_WINDOWGROWWIDTH:case BB_WINDOWLOWER:	case BB_REDRAWTASK:			
+		case BB_WINDOWGROWWIDTH:case BB_WINDOWLOWER:	case BB_REDRAWTASK:
 		/*case BB_MINIMIZE:*/	case BB_WINDOWMINIMIZE:	case BB_WINDOWRAISE:
 		case BB_WINDOWMAXIMIZE:	case BB_WINDOWRESTORE:	case BB_WINDOWCLOSE:
 		{
-			InvalidateRect(hwndBBPager, NULL, true);
+			InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 		}
 		break;
 
 		// ==================		
-
 		case WM_WINDOWPOSCHANGING:
 		{
 			if (!inSlit)
 			// Snap window to screen edges (if the last bool is false it uses the current DesktopArea)
-				if(IsWindowVisible(hwnd)) SnapWindowToEdge((WINDOWPOS*)lParam, position.snapWindow, true);
-			
+				if (IsWindowVisible(hwnd))
+					SnapWindowToEdge((WINDOWPOS*)lParam, s.m_position.snapWindow, true);
 			return 0;
 		}
 		break;
@@ -840,91 +779,85 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				WINDOWPOS* windowpos = (WINDOWPOS*)lParam;
 
-				position.x = windowpos->x;
-				position.y = windowpos->y;
+				s.m_position.x = windowpos->x;
+				s.m_position.y = windowpos->y;
 
-				WriteInt(rcpath, "bbPager.position.x:", position.x);
-				WriteInt(rcpath, "bbPager.position.y:", position.y);
+				WriteInt(rcpath, "bbPager.position.x:", s.m_position.x);
+				WriteInt(rcpath, "bbPager.position.y:", s.m_position.y);
 			}
-
 			return 0;
 		}
 		break;
 
 		// ==================
-
 		case WM_MOVING:
 		{
 			RECT *r = (RECT *)lParam;
 
-			if (!position.autohide)
+			if (!s.m_position.autohide)
 			{
 				// Makes sure BBPager stays on screen when moving.
-				if (r->left < vScreenLeft)
+				if (r->left < s.m_vScreenLeft)
 				{
-					r->left = vScreenLeft;
-					r->right = r->left + frame.width;
+					r->left = s.m_vScreenLeft;
+					r->right = r->left + s.m_frame.width;
 				}
-				if ((r->left + frame.width) > vScreenRight)
+				if ((r->left + s.m_frame.width) > s.m_vScreenRight)
 				{
-					r->left = vScreenRight - frame.width;
-					r->right = r->left + frame.width;
+					r->left = s.m_vScreenRight - s.m_frame.width;
+					r->right = r->left + s.m_frame.width;
 				}
 
-				if (r->top < vScreenTop) 
+				if (r->top < s.m_vScreenTop)
 				{
-					r->top = vScreenTop;
-					r->bottom = r->top + frame.height;
+					r->top = s.m_vScreenTop;
+					r->bottom = r->top + s.m_frame.height;
 				}
-				if ((r->top + frame.height) > vScreenBottom)
+				if ((r->top + s.m_frame.height) > s.m_vScreenBottom)
 				{
-					r->top = vScreenBottom - frame.height;
-					r->bottom = r->top + frame.height;
+					r->top = s.m_vScreenBottom - s.m_frame.height;
+					r->bottom = r->top + s.m_frame.height;
 				}
 			}
-			
 			return TRUE;
 		}
 		break;
 
 		// ==================
+		case WM_DISPLAYCHANGE:
+		{
+			// IntelliMove(tm) by qwilk... <g>
+			int const oldscreenwidth = s.m_screenWidth;
+			int const oldscreenheight = s.m_screenHeight;
 
-		case WM_DISPLAYCHANGE:  
-		{ 
-			// IntelliMove(tm) by qwilk... <g> 
-			int relx, rely;  
-			int oldscreenwidth = screenWidth; 
-			int oldscreenheight = screenHeight;
+			getSettings().UpdateMonitorInfo();
 
-			UpdateMonitorInfo();
-
-			if (position.x > oldscreenwidth / 2)  
-			{ 
-				relx = oldscreenwidth - position.x;  
-				position.x = screenRight - relx; 
-			} 
-
-			if (position.y > oldscreenheight / 2)  
+			if (s.m_position.x > oldscreenwidth / 2)
 			{
-				rely = oldscreenheight - position.y;  
-				position.y = screenBottom - rely; 
-			} 
+				int const relx = oldscreenwidth - s.m_position.x;
+				s.m_position.x = s.m_screenRight - relx;
+			}
+
+			if (s.m_position.y > oldscreenheight / 2)
+			{
+				int const rely = oldscreenheight - s.m_position.y;
+				s.m_position.y = s.m_screenBottom - rely;
+			}
 
 			if (!inSlit)
 				UpdatePosition();
 		}
-		break; 
+		break;
 
 		// ==================
 		// Allow window to move...
-
 		case WM_NCHITTEST:
 		{
 			ClickMouse();
 
 			if (/*(desktopPressed == -1) || */(GetAsyncKeyState(VK_CONTROL) & 0x8000))
 			{
-				if (!position.autohide)
+				if (!s.m_position.autohide)
 					return HTCAPTION;
 				else
 					return HTCLIENT;
@@ -938,14 +871,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		// ===================
 		// Left mouse button msgs
-
 		case WM_NCLBUTTONDBLCLK:
 		case WM_LBUTTONDBLCLK:
 		{
 			ToggleSlit();
+			break;
 		}
-		break;
-
 		case WM_NCLBUTTONDOWN:
 		{
 			/* Please do not allow plugins to be moved in the slit.
@@ -956,125 +887,104 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			 */
 			if (!inSlit || !hSlit)
 				return DefWindowProc(hwnd, message, wParam, lParam);
+			break;
 		}
-		break;
-
 		case WM_LBUTTONDOWN:
 		{
 			leftButtonDown = true;
-
-			if (moveButton == 1)
+			if (s.m_moveButton == 1)
 				if (!winMoving)
 					GrabWindow();
-
 			return 0;
 		}
-		break;
-
 		case WM_LBUTTONUP:
 		{
-			if (leftButtonDown) 
+			if (leftButtonDown)
 			{
-				if (focusButton == 1 && !winMoving) // if window focus button is RMB
+				if (s.m_focusButton == 1 && !winMoving) // if window focus button is RMB
 					FocusWindow();
 
-				if (moveButton == 1 && winMoving)
-				{
-					if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
-						passive = true;
-					DropWindow();
-					winMoving = false;					
-					desktop.tooltips = tempTool;
-					InvalidateRect(hwndBBPager, NULL, true);
-				}
-				
-				if (desktopChangeButton == 1 && !winMoving) 
-				{
-					if (desktopPressed != currentDesktop)
-						DeskSwitch();
-				}
-			}
-			leftButtonDown = false;
-
-			return 0;
-		}
-		break;
-
-		// ===================
-		// Middle mouse button msgs
-
-		case WM_MBUTTONDOWN:
-		{
-			middleButtonDown = true;
-
-			if (moveButton == 3)
-				if (!winMoving)
-					GrabWindow();
-
-			return 0;
-		}
-		break;
-
-		case WM_MBUTTONUP:
-		{
-			if (middleButtonDown) 
-			{
-				if (focusButton == 3 && !winMoving) // if window focus button is RMB
-				{
-					FocusWindow();
-					//return 0;
-				}
-
-				if (moveButton == 3 && winMoving)
+				if (s.m_moveButton == 1 && winMoving)
 				{
 					if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
 						passive = true;
 					DropWindow();
 					winMoving = false;
-					desktop.tooltips = tempTool;
-					InvalidateRect(hwndBBPager, NULL, true);
+					s.m_desktop.tooltips = tempTool;
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
+				
+				if (s.m_desktopChangeButton == 1 && !winMoving)
+				{
+					if (desktopPressed != g_RuntimeState.m_currentDesktop)
+						DeskSwitch();
+				}
+			}
+			leftButtonDown = false;
+			return 0;
+		}
 
-				if (desktopChangeButton == 3 && !winMoving) 
+		// ===================
+		// Middle mouse button msgs
+		case WM_MBUTTONDOWN:
+		{
+			middleButtonDown = true;
+			if (s.m_moveButton == 3)
+				if (!winMoving)
+					GrabWindow();
+			return 0;
+		}
+		case WM_MBUTTONUP:
+		{
+			if (middleButtonDown)
+			{
+				if (s.m_focusButton == 3 && !winMoving) // if window focus button is RMB
+				{
+					FocusWindow();
+					//return 0;
+				}
+				if (s.m_moveButton == 3 && winMoving)
+				{
+					if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
+						passive = true;
+					DropWindow();
+					winMoving = false;
+					s.m_desktop.tooltips = tempTool;
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
+				}
+				if (s.m_desktopChangeButton == 3 && !winMoving)
 				{
 					if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
 						ToggleSlit();
 					else
-					if (desktopPressed != currentDesktop)
+						if (desktopPressed != g_RuntimeState.m_currentDesktop)
 						DeskSwitch();
 					//return 0;
 				}
 			}
 			middleButtonDown = false;
-
 			return 0;
 		}
-		break;
-		
 		case WM_NCMBUTTONUP:
 		{
 			if (winMoving && middleButtonDown)
 			{
 				DropWindow();
 				winMoving = false;
-				desktop.tooltips = tempTool;
-				InvalidateRect(hwndBBPager, NULL, true);
+				s.m_desktop.tooltips = tempTool;
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			}
 			middleButtonDown = false;
+			break;
 		}
-		break;
 
 		// ====================
 		// Right mouse button msgs
-
 		case WM_NCRBUTTONDOWN:
 		{
 			rightButtonDownNC = true; // right button clicked on BBPager
-
 			return 0;
 		}
-		break;
-
 		case WM_NCRBUTTONUP:
 		{
 			if (rightButtonDownNC) // was right button clicked on BBPager?
@@ -1082,59 +992,51 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				DisplayMenu(); // Just show menu if right clicked on Non-Client Area (not desktops)
 				rightButtonDownNC = false;
 			}
-
 			if (winMoving)
 			{
 				winMoving = false;
-				desktop.tooltips = tempTool;
-				InvalidateRect(hwndBBPager, NULL, true);
+				s.m_desktop.tooltips = tempTool;
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			}
-
 			return 0;
 		}
-		break;
-		
 		case WM_RBUTTONDOWN:
 		{
 			rightButtonDown = true; // right button clicked on BBPager
-
-			if (moveButton == 2)
+			if (s.m_moveButton == 2)
 				if (!winMoving)
 					GrabWindow();
-
 			return 0;
 		}
-		break;		
-		
 		case WM_RBUTTONUP:
-		{			
+		{
 			if (rightButtonDown) // was right button clicked on BBPager?
 			{
-				if (/*desktopPressed == -1 || */(GetAsyncKeyState(VK_CONTROL) & 0x8000)) 
+				if (/*desktopPressed == -1 || */(GetAsyncKeyState(VK_CONTROL) & 0x8000))
 				{	// if mouse was not inside a desktop, show the menu
 					DisplayMenu();
 					return 0;
 				}
-	
-				if ((focusButton == 2 || (focusButton == 3 && (GetAsyncKeyState(VK_SHIFT) & 0x8000))) && !winMoving) // if window focus button is RMB
+
+				if ((s.m_focusButton == 2 || (s.m_focusButton == 3 && (GetAsyncKeyState(VK_SHIFT) & 0x8000))) && !winMoving) // if window focus button is RMB
 					FocusWindow();
 
-				if ((moveButton == 2 || (moveButton == 3 && (GetAsyncKeyState(VK_SHIFT) & 0x8000))) && winMoving)
+				if ((s.m_moveButton == 2 || (s.m_moveButton == 3 && (GetAsyncKeyState(VK_SHIFT) & 0x8000))) && winMoving)
 				{
 					if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
 						passive = true;
 					DropWindow();
 					winMoving = false;
-					desktop.tooltips = tempTool;
-					InvalidateRect(hwndBBPager, NULL, true);
+					s.m_desktop.tooltips = tempTool;
+					InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				}
 
-				if ((desktopChangeButton == 2 || (desktopChangeButton == 3 && (GetAsyncKeyState(VK_SHIFT) & 0x8000))) && !winMoving) // if desktop switch button is RMB
+				if ((s.m_desktopChangeButton == 2 || (s.m_desktopChangeButton == 3 && (GetAsyncKeyState(VK_SHIFT) & 0x8000))) && !winMoving) // if desktop switch button is RMB
 				{
 					if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
 						ToggleSlit();
 					else
-						if (desktopPressed != currentDesktop)
+						if (desktopPressed != g_RuntimeState.m_currentDesktop)
 							DeskSwitch();
 					else
 					// if desktop switch button is not RMB, just show menu
@@ -1143,26 +1045,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				rightButtonDown = false;
 			}
-
 			return 0;
 		}
-		break;
 
 		// ===================
-
 		case WM_MOUSEMOVE:
 		case WM_NCMOUSEMOVE:
 		{				
-			if (position.hidden && position.autohide)
+			if (s.m_position.hidden && s.m_position.autohide)
 			{
-				position.hidden = false;
-				InvalidateRect(hwndBBPager, NULL, true);
+				s.m_position.hidden = false;
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				//Sleep(250);
-				position.x = position.ox;
-				position.y = position.oy;
+				s.m_position.x = s.m_position.ox;
+				s.m_position.y = s.m_position.oy;
 				// reverted to original code - otherwise written to RC
-				MoveWindow(hwndBBPager, position.ox, position.oy, frame.width, frame.height, true);
-				InvalidateRect(hwndBBPager, NULL, true);
+				MoveWindow(g_RuntimeState.m_hwndBBPager, s.m_position.ox, s.m_position.oy, s.m_frame.width, s.m_frame.height, true);
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			}
 
 			if (winMoving)
@@ -1171,7 +1070,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				RECT r;
 				POINT mousepos;
 				GetCursorPos(&mousepos);
-				GetWindowRect(hwndBBPager, &r);
+				GetWindowRect(g_RuntimeState.m_hwndBBPager, &r);
 
 				//mousepos.x -= position.x;
 				//mousepos.y -= position.y;
@@ -1189,7 +1088,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				moveWin.r.top += dy;
 				moveWin.r.bottom += dy;
 
-				InvalidateRect(hwndBBPager, NULL, true);
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			}
 			else
 				lastActive = GetForegroundWindow();
@@ -1202,138 +1101,121 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		// ===================
 		// reset pressed mouse button statuses if mouse leaves the BBPager window
-
 		case WM_MOUSELEAVE:
 		{
 			if (winMoving)
 			{
-				if (moveButton != 1)
+				if (s.m_moveButton != 1)
 					leftButtonDown = false;
-				if (moveButton != 2)
+				if (s.m_moveButton != 2)
 					rightButtonDown = false;
-				if (moveButton != 3)
+				if (s.m_moveButton != 3)
 					middleButtonDown = false;
 			}
 			else
 				leftButtonDown = middleButtonDown = rightButtonDown = false;
-			
-			if (position.autohide && !inSlit)
+
+			if (s.m_position.autohide && !inSlit)
 				HidePager();
 
 			if (CursorOutside() && winMoving)
 			{
 				winMoving = leftButtonDown = middleButtonDown = rightButtonDown = false;
-				InvalidateRect(hwndBBPager, NULL, true);
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			}
-
 			return 0;
 		}
-		break;
-
 		case WM_NCMOUSELEAVE:
 		{
 			rightButtonDownNC = false;
 
-			if (position.autohide && !inSlit)
+			if (s.m_position.autohide && !inSlit)
 				HidePager();
 
 			if (CursorOutside() && winMoving)
 			{
 				winMoving = leftButtonDown = middleButtonDown = rightButtonDown = false;
-				InvalidateRect(hwndBBPager, NULL, true);
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			}
-
 			return 0;
 		}
-		break;
 
 		//====================
 		// Mouse wheel desktop changing:
-
 		case WM_MOUSEWHEEL:
 		{
 			int delta = (int)wParam;
 
 			if (delta < 0)
-				SendMessage(hwndBlackbox, BB_WORKSPACE, 1, 0);
+				SendMessage(g_RuntimeState.m_hwndBlackbox, BB_WORKSPACE, 1, 0);
 			else
-				SendMessage(hwndBlackbox, BB_WORKSPACE, 0, 0);
+				SendMessage(g_RuntimeState.m_hwndBlackbox, BB_WORKSPACE, 0, 0);
 
-			SetForegroundWindow(hwndBBPager);
-
+			SetForegroundWindow(g_RuntimeState.m_hwndBBPager);
 			return 0;
 		}
-		break;
 
 		//====================
 		// Timer message:
-
 		case WM_TIMER:
 		{
 			if (CursorOutside() && winMoving)
 			{
 				winMoving = false;
-				desktop.tooltips = tempTool;
+				s.m_desktop.tooltips = tempTool;
 			}
 
-			InvalidateRect(hwndBBPager, NULL, true);
-
+			InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			return 0;
 		}
 
 		// ===================
-
 		case WM_KEYDOWN:
 		{
 			if (wParam == VK_ESCAPE && winMoving)
 			{
 				winMoving = false;
-				desktop.tooltips = tempTool;
+				s.m_desktop.tooltips = tempTool;
 			}
 			
-			InvalidateRect(hwndBBPager, NULL, true);			
-
+			InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			return 0;
 		}
-		break;
 
 		case WM_KEYUP:
 		{
-			if (wParam == VK_NUMPAD7) 
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition TopLeft");
-			else if (wParam == VK_NUMPAD8) 
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition TopCenter");
-			else if (wParam == VK_NUMPAD9) 
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition TopRight");
-			else if (wParam == VK_NUMPAD4) 
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition CenterLeft");
-			else if (wParam == VK_NUMPAD6) 
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition CenterRight");
-			else if (wParam == VK_NUMPAD1) 
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition BottomLeft");
-			else if (wParam == VK_NUMPAD2) 
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition BottomCenter");
-			else if (wParam == VK_NUMPAD3) 
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition BottomRight");
+			if (wParam == VK_NUMPAD7)
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition TopLeft");
+			else if (wParam == VK_NUMPAD8)
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition TopCenter");
+			else if (wParam == VK_NUMPAD9)
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition TopRight");
+			else if (wParam == VK_NUMPAD4)
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition CenterLeft");
+			else if (wParam == VK_NUMPAD6)
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition CenterRight");
+			else if (wParam == VK_NUMPAD1)
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition BottomLeft");
+			else if (wParam == VK_NUMPAD2)
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition BottomCenter");
+			else if (wParam == VK_NUMPAD3)
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerPosition BottomRight");
 			else if (wParam == VK_BACK || wParam == VK_RETURN)
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPager ToggleHide");
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPager ToggleHide");
 			else if (wParam == VK_SUBTRACT)
-				SendMessage(hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerReload");
+				SendMessage(g_RuntimeState.m_hwndBBPager, BB_BROADCAST, 0, (LPARAM)"@BBPagerReload");
 			else if (wParam == VK_ESCAPE && winMoving)
 			{
 				winMoving = false;
-				desktop.tooltips = tempTool;
+				s.m_desktop.tooltips = tempTool;
 			}
 			
-			InvalidateRect(hwndBBPager, NULL, true);			
-
+			InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			return 0;
 		}
-		break;
 
 		case WM_CLOSE:
 			return 0;
-		break;
 
 		default:
 			return DefWindowProc(hwnd,message,wParam,lParam);
@@ -1343,9 +1225,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 //===========================================================================
-
 void ToggleSlit()
 {
+	Settings const & s = getSettings();
 	/*static char msg[MAX_PATH];*/
 	static char status[9];
 
@@ -1354,24 +1236,26 @@ void ToggleSlit()
 	if (inSlit)
 	{
 		// We are in the slit, so lets unload and get out..
-		if (position.autohideOld) position.autohide = true;
-		SendMessage(hSlit, SLIT_REMOVE, 0, (LPARAM)hwndBBPager);
+		if (getSettings().m_position.autohideOld)
+			getSettings().m_position.autohide = true;
+		SendMessage(hSlit, SLIT_REMOVE, 0, (LPARAM)g_RuntimeState.m_hwndBBPager);
 		inSlit = false;
 
 		//turn trans back on?
-		if (transparency && usingWin2kXP)
+		if (s.m_transparency && getRuntimeState().m_usingWin2kXP)
 		{
-			SetWindowLong(hwndBBPager, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
-			SetTransparency(hwndBBPager, (unsigned char)transparencyAlpha);
+			SetWindowLong(g_RuntimeState.m_hwndBBPager, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+			SetTransparency(g_RuntimeState.m_hwndBBPager, (unsigned char)s.m_transparencyAlpha);
 		}
 
-		position.x = xpos; position.y = ypos;
+		getSettings().m_position.x = xpos;
+		getSettings().m_position.y = ypos;
 
-		// Here you can move to where ever you want ;)				
-		if (position.raised) 
-			SetWindowPos(hwndBBPager, HWND_TOPMOST, xpos, ypos, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+		// Here you can move to where ever you want ;)
+		if (getSettings().m_position.raised)
+			SetWindowPos(g_RuntimeState.m_hwndBBPager, HWND_TOPMOST, xpos, ypos, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 		else
-			SetWindowPos(hwndBBPager, NULL, xpos, ypos, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+			SetWindowPos(g_RuntimeState.m_hwndBBPager, NULL, xpos, ypos, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 	}
 	/* Make sure before you try and load into the slit that you have
 	 * the HWND of the slit ;)
@@ -1379,17 +1263,20 @@ void ToggleSlit()
 	else if (hSlit)
 	{
 		// (Back) into the slit..
-		if (position.autohide) position.autohideOld = true;
-		else position.autohideOld = false;
-		position.autohide = false;
-		xpos = position.x; ypos = position.y;
+		if (getSettings().m_position.autohide)
+			getSettings().m_position.autohideOld = true;
+		else
+			getSettings().m_position.autohideOld = false;
+		getSettings().m_position.autohide = false;
+		xpos = getSettings().m_position.x;
+		ypos = getSettings().m_position.y;
 
 		//turn trans off
-		SetWindowLong(hwndBBPager, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+		SetWindowLong(g_RuntimeState.m_hwndBBPager, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
 		//SetParent(hwndBBPager, hSlit);
 		//SetWindowLong(hwndBBPager, GWL_STYLE, (GetWindowLong(hwndBBPager, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
-		SendMessage(hSlit, SLIT_ADD, 0, (LPARAM)hwndBBPager);
+		SendMessage(hSlit, SLIT_ADD, 0, (LPARAM)g_RuntimeState.m_hwndBBPager);
 		inSlit = true;
 	}
 
@@ -1404,19 +1291,19 @@ void ToggleSlit()
 
 //===========================================================================
 // Grabs handles to windows, checks them, and saves their info in an array of structs
-
 BOOL CALLBACK CheckTaskEnumProc(HWND window, LPARAM lParam)
 {
+	Settings const & s = getSettings();
 	int d, height, width, offsetX;
 	RECT desk; desk.top = desk.left = 0;
-	winStruct winListTemp;
+	WinStruct winListTemp;
 
 	// Only allow 128 windows, just for speed reasons...
-	if (winCount > 128)
+	if (g_RuntimeState.m_winCount > 128)
 		return 0;
 
 	// Make sure the window meets criteria to be drawn
-	if (IsValidWindow(window))		
+	if (IsValidWindow(window))
 	{
 		// Get the virtual workspace the window is located.
 		d = getDesktop(window);
@@ -1429,9 +1316,9 @@ BOOL CALLBACK CheckTaskEnumProc(HWND window, LPARAM lParam)
 		else
 			winListTemp.sticky = false;
 
-		if (position.horizontal)
+		if (getSettings().m_position.horizontal)
 			desk = desktopRect[d];
-		else if (position.vertical)
+		else if (getSettings().m_position.vertical)
 			desk = desktopRect[d];
 
 		// Check whether the window is currently active/focused
@@ -1448,48 +1335,46 @@ BOOL CALLBACK CheckTaskEnumProc(HWND window, LPARAM lParam)
 		GetWindowRect(window, &winListTemp.r);
 
 		// offset in desktops away from current desktop
-		offsetX = currentDesktop - winListTemp.desk;
+		offsetX = g_RuntimeState.m_currentDesktop - winListTemp.desk;
 
 		// Height and width of window as displayed in the pager
-		height = int( 1 + (winListTemp.r.bottom - winListTemp.r.top) /  ratioY );
-		width = int( 1 + (winListTemp.r.right - winListTemp.r.left) /  ratioX );
+		height = int(1 + (winListTemp.r.bottom - winListTemp.r.top) / s.m_ratioY);
+		width = int(1 + (winListTemp.r.right - winListTemp.r.left) / s.m_ratioX);
 		
 		// Set RECT of window using width/height and top/left values
-		winListTemp.r.top = long( desk.top + winListTemp.r.top / ratioY );
+		winListTemp.r.top = long(desk.top + winListTemp.r.top / s.m_ratioY);
 
 		//winList[winCount].r.bottom = long( winList[winCount].r.top + (winList[winCount].r.bottom - winList[winCount].r.top) /  ratioY );
 		winListTemp.r.bottom = winListTemp.r.top + height;
 
-		while (winListTemp.r.left < -10 + vScreenLeft) 
+		while (winListTemp.r.left < -10 + s.m_vScreenLeft)
 		{
-			winListTemp.r.left += vScreenWidth + 10;
+			winListTemp.r.left += s.m_vScreenWidth + 10;
 		}
 
-		while (winListTemp.r.left >= vScreenWidth + vScreenLeft)
+		while (winListTemp.r.left >= s.m_vScreenWidth + s.m_vScreenLeft)
 		{
-			winListTemp.r.left -= vScreenWidth + 10;
+			winListTemp.r.left -= s.m_vScreenWidth + 10;
 		}
 
-		winListTemp.r.left -= vScreenLeft;
-
-		winListTemp.r.left = long( desk.left + (winListTemp.r.left / ratioX) );
+		winListTemp.r.left -= s.m_vScreenLeft;
+		winListTemp.r.left = long(desk.left + (winListTemp.r.left / s.m_ratioX));
 
 		//winList[winCount].r.right = long( winList[winCount].r.left + (winList[winCount].r.right - winList[winCount].r.left) /  ratioX );
 		winListTemp.r.right = winListTemp.r.left + width;
 
-		winList.push_back(winListTemp);
+		g_RuntimeState.m_winList.push_back(winListTemp);
 		//winList[winCount] = winListTemp;
 		
 		// Increase number of windows by one if everything successful
-		winCount++;
+		g_RuntimeState.m_winCount++;
 	}
 
 	UNREFERENCED_PARAMETER( lParam );
-
 	return 1;
 }
 
-BOOL CALLBACK CheckTaskEnumProc_AltMethod(HWND window, LPARAM lParam)
+BOOL CALLBACK CheckTaskEnumProc_AltMethod (HWND window, LPARAM lParam)
 {
 	tl = BBPager_GetTaskListPtr();
 
@@ -1514,68 +1399,51 @@ BOOL CALLBACK CheckTaskEnumProc_AltMethod(HWND window, LPARAM lParam)
 	return 1;
 }
 
-bool AddBBWindow(tasklist *tl)
+bool AddBBWindow (tasklist * tl)
 {
-	int height, width, bbdesk;
-	RECT desk;
-	winStruct winListTemp;
-	HWND window;
-
-	window = tl->hwnd;
+	Settings const & s = getSettings();
+	HWND window = tl->hwnd;
 
 	// Only allow 128 windows, just for speed reasons...
-	if (winCount > 128)
+	if (g_RuntimeState.m_winCount > 128)
 		return 0;
 
-	// Make sure the window meets criteria to be drawn
-	if (1)		
-	{
-		// Get the virtual workspace the window is located.
-		bbdesk = tl->wkspc;
+	WinStruct winListTemp;
+	// Get the virtual workspace the window is located.
+	int const bbdesk = tl->wkspc;
+	// ... and save this information
+	winListTemp.desk = bbdesk;
 
-		// ... and save this information
-		winListTemp.desk = bbdesk;
+	RECT desk = desktopRect[bbdesk];
 
-		desk = desktopRect[bbdesk];
+	if (CheckSticky(window))
+		winListTemp.sticky = true;
+	else
+		winListTemp.sticky = false;
 
-		if (CheckSticky(window))
-			winListTemp.sticky = true;
-		else
-			winListTemp.sticky = false;
+	winListTemp.active = tl->active;
+	winListTemp.window = window;// Set window handle
 
-		winListTemp.active = tl->active;
+	// Get window coordinates/RECT
+	GetWindowRect(window, &winListTemp.r);
 
-		// Set window handle
-		winListTemp.window = window;
+	// Height and width of window as displayed in the pager
+	int const height = int(1 + (winListTemp.r.bottom - winListTemp.r.top) / s.m_ratioY);
+	int const width = int(1 + (winListTemp.r.right - winListTemp.r.left) / s.m_ratioX);
+	
+	// Set RECT of window using width/height and top/left values
+	winListTemp.r.top = long(desk.top + winListTemp.r.top / s.m_ratioY);
+	winListTemp.r.bottom = winListTemp.r.top + height;
+	winListTemp.r.left = long(desk.left + (winListTemp.r.left / s.m_ratioX));
+	winListTemp.r.right = winListTemp.r.left + width;
 
-		// Get window coordinates/RECT
-		GetWindowRect(window, &winListTemp.r);
-
-		// Height and width of window as displayed in the pager
-		height = int( 1 + (winListTemp.r.bottom - winListTemp.r.top) /  ratioY );
-		width = int( 1 + (winListTemp.r.right - winListTemp.r.left) /  ratioX );
-		
-		// Set RECT of window using width/height and top/left values
-		winListTemp.r.top = long( desk.top + winListTemp.r.top / ratioY );
-
-		winListTemp.r.bottom = winListTemp.r.top + height;
-		
-		winListTemp.r.left = long( desk.left + (winListTemp.r.left / ratioX) );
-
-		winListTemp.r.right = winListTemp.r.left + width;
-
-		winList.push_back(winListTemp);
-		
-		// Increase number of windows by one if everything successful
-		winCount++;
-	}
-
+	g_RuntimeState.m_winList.push_back(winListTemp);
+	g_RuntimeState.m_winCount++; // Increase number of windows by one if everything successful
 	return 1;
 }
 
 //===========================================================================
-
-bool IsValidWindow(HWND hWnd)
+bool IsValidWindow (HWND hWnd)
 {
 	// if window is minimised, fail it
 	// (no point in displaying something not there =)
@@ -1583,8 +1451,7 @@ bool IsValidWindow(HWND hWnd)
 		return false;
 
 	// if it is a WS_CHILD or not WS_VISIBLE, fail it
-	LONG nStyle;
-	nStyle = GetWindowLong(hWnd, GWL_STYLE);	
+	LONG nStyle = GetWindowLong(hWnd, GWL_STYLE);	
 	if ((nStyle & WS_CHILD) || !(nStyle & WS_VISIBLE))
 		return false;
 	
@@ -1603,41 +1470,42 @@ bool IsValidWindow(HWND hWnd)
 }
 
 //===========================================================================
-
-int getDesktop(HWND h)
+int getDesktop (HWND h)
 {
-	if (desktops < 1)
+	if (g_RuntimeState.m_desktops < 1)
 		return -1;
 
+	Settings const & s = getSettings();
 	RECT r;
 	GetWindowRect(h, &r);
 
-	int desktopWidth = vScreenWidth + 10;
+	int const desktopWidth = s.m_vScreenWidth + 10;
 	int offset = 0;
 	int winLeft = r.left;
 
-	while (winLeft < -10 + vScreenLeft) 
+	while (winLeft < -10 + s.m_vScreenLeft)
 	{
 		winLeft += desktopWidth;
 		offset--;
 	}
 
-	while (winLeft >= (vScreenWidth + vScreenLeft)) 
+	while (winLeft >= (s.m_vScreenWidth + s.m_vScreenLeft))
 	{
 		winLeft -= desktopWidth;
 		offset++;
 	}
 
-	return offset + currentDesktop;
+	return offset + g_RuntimeState.m_currentDesktop;
 }
 
 //===========================================================================
 // The actual building of the menu
-
 void DisplayMenu()
 {
+	Settings const & s = getSettings();
 	// First we delete the main plugin menu if it exists (PLEASE NOTE that this takes care of submenus as well!)
-	if (BBPagerMenu) DelMenu(BBPagerMenu);
+	if (BBPagerMenu)
+		DelMenu(BBPagerMenu);
 
 	// Then we create the main plugin menu with a few commands...
 	BBPagerMenu = MakeMenu("bbPager");
@@ -1646,12 +1514,12 @@ void DisplayMenu()
 		BBPagerWindowSubMenu = MakeMenu("Window");
 			if (!inSlit)
 			{
-				MakeMenuItem(BBPagerWindowSubMenu, "Always On Top", "@BBPager ToggleRaised", position.raised);
-				MakeMenuItem(BBPagerWindowSubMenu, "Autohide", "@BBPager ToggleHide", position.autohide);
-				MakeMenuItem(BBPagerWindowSubMenu, "Snap Window To Edge", "@BBPager ToggleSnap", position.snapWindow);
-				if (usingWin2kXP)
+				MakeMenuItem(BBPagerWindowSubMenu, "Always On Top", "@BBPager ToggleRaised", getSettings().m_position.raised);
+				MakeMenuItem(BBPagerWindowSubMenu, "Autohide", "@BBPager ToggleHide", getSettings().m_position.autohide);
+				MakeMenuItem(BBPagerWindowSubMenu, "Snap Window To Edge", "@BBPager ToggleSnap", getSettings().m_position.snapWindow == 1);
+				if (getRuntimeState().m_usingWin2kXP)
 				{
-					MakeMenuItem(BBPagerWindowSubMenu, "Transparency", "@BBPager ToggleTrans", transparency);
+					MakeMenuItem(BBPagerWindowSubMenu, "Transparency", "@BBPager ToggleTrans", s.m_transparency);
 				}
 			}
 			/*MakeMenuItem(BBPagerWindowSubMenu, "Draw Border", "@BBPager ToggleBorder", drawBorder);*/
@@ -1661,32 +1529,32 @@ void DisplayMenu()
 
 		// Display Submenu
 		BBPagerDisplaySubMenu = MakeMenu("Display");
-			MakeMenuItem(BBPagerDisplaySubMenu, "Desktop Numbers", "@BBPager ToggleNumbers", desktop.numbers);
-			MakeMenuItem(BBPagerDisplaySubMenu, "Desktop Windows", "@BBPager ToggleWindows", desktop.windows);
-			MakeMenuItem(BBPagerDisplaySubMenu, "Window ToolTips", "@BBPager ToggleToolTips", desktop.tooltips);
-			if (!is_xoblite) 
-				MakeMenuItem(BBPagerDisplaySubMenu, "Use Alt. Method", "@BBPager ToggleAltMethod", usingAltMethod);
+			MakeMenuItem(BBPagerDisplaySubMenu, "Desktop Numbers", "@BBPager ToggleNumbers", getSettings().m_desktop.numbers);
+			MakeMenuItem(BBPagerDisplaySubMenu, "Desktop Windows", "@BBPager ToggleWindows", getSettings().m_desktop.windows);
+			MakeMenuItem(BBPagerDisplaySubMenu, "Window ToolTips", "@BBPager ToggleToolTips", getSettings().m_desktop.tooltips);
+			if (!g_RuntimeState.m_is_xoblite)
+				MakeMenuItem(BBPagerDisplaySubMenu, "Use Alt. Method", "@BBPager ToggleAltMethod", g_RuntimeState.m_usingAltMethod);
 			//MakeMenuItem(BBPagerDisplaySubMenu, "Debugging", "@BBPager ToggleDebug", debug);
 		MakeSubmenu(BBPagerMenu, BBPagerDisplaySubMenu, "Display");
 
 		// Alignment Submenu
 		BBPagerAlignSubMenu = MakeMenu("Alignment");
-			MakeMenuItem(BBPagerAlignSubMenu, "Horizontal", "@BBPager Horizontal", position.horizontal);
-			MakeMenuItem(BBPagerAlignSubMenu, "Vertical", "@BBPager Vertical", position.vertical);
+			MakeMenuItem(BBPagerAlignSubMenu, "Horizontal", "@BBPager Horizontal", getSettings().m_position.horizontal);
+			MakeMenuItem(BBPagerAlignSubMenu, "Vertical", "@BBPager Vertical", getSettings().m_position.vertical);
 		MakeSubmenu(BBPagerMenu, BBPagerAlignSubMenu, "Alignment");		
 		
 		// Position Submenu
 		if (!inSlit)
 		{
 			BBPagerPositionSubMenu = MakeMenu("Placement");
-				MakeMenuItem(BBPagerPositionSubMenu, "Top Left", "@BBPagerPosition TopLeft", (position.side == 3));
-				MakeMenuItem(BBPagerPositionSubMenu, "Top Center", "@BBPagerPosition TopCenter", (position.side == 2));
-				MakeMenuItem(BBPagerPositionSubMenu, "Top Right", "@BBPagerPosition TopRight", (position.side == 6));
-				MakeMenuItem(BBPagerPositionSubMenu, "Center Left", "@BBPagerPosition CenterLeft", (position.side == 1));
-				MakeMenuItem(BBPagerPositionSubMenu, "Center Right", "@BBPagerPosition CenterRight", (position.side == 4));
-				MakeMenuItem(BBPagerPositionSubMenu, "Bottom Left", "@BBPagerPosition BottomLeft", (position.side == 9));
-				MakeMenuItem(BBPagerPositionSubMenu, "Bottom Center", "@BBPagerPosition BottomCenter", (position.side == 8));
-				MakeMenuItem(BBPagerPositionSubMenu, "Bottom Right", "@BBPagerPosition BottomRight", (position.side == 12));
+				MakeMenuItem(BBPagerPositionSubMenu, "Top Left", "@BBPagerPosition TopLeft", (getSettings().m_position.side == 3));
+				MakeMenuItem(BBPagerPositionSubMenu, "Top Center", "@BBPagerPosition TopCenter", (getSettings().m_position.side == 2));
+				MakeMenuItem(BBPagerPositionSubMenu, "Top Right", "@BBPagerPosition TopRight", (getSettings().m_position.side == 6));
+				MakeMenuItem(BBPagerPositionSubMenu, "Center Left", "@BBPagerPosition CenterLeft", (getSettings().m_position.side == 1));
+				MakeMenuItem(BBPagerPositionSubMenu, "Center Right", "@BBPagerPosition CenterRight", (getSettings().m_position.side == 4));
+				MakeMenuItem(BBPagerPositionSubMenu, "Bottom Left", "@BBPagerPosition BottomLeft", (getSettings().m_position.side == 9));
+				MakeMenuItem(BBPagerPositionSubMenu, "Bottom Center", "@BBPagerPosition BottomCenter", (getSettings().m_position.side == 8));
+				MakeMenuItem(BBPagerPositionSubMenu, "Bottom Right", "@BBPagerPosition BottomRight", (getSettings().m_position.side == 12));
 			MakeSubmenu(BBPagerMenu, BBPagerPositionSubMenu, "Placement");		
 		}
 
@@ -1705,13 +1573,12 @@ void DisplayMenu()
 
 //===========================================================================
 // Checks to see if the cursor is inside the pager window
-
-bool CursorOutside()
+bool CursorOutside ()
 {
-	RECT r;
 	POINT pt;
 	GetCursorPos(&pt);
-	GetWindowRect(hwndBBPager, &r);
+	RECT r;
+	GetWindowRect(g_RuntimeState.m_hwndBBPager, &r);
 
 	//RECT r = {position.x, position.y, position.x + frame.width, position.y + frame.height};
 
@@ -1723,14 +1590,13 @@ bool CursorOutside()
 
 //===========================================================================
 // This checks the coords of the click to set the appropriate desktop to pressed...
-
-void ClickMouse()
+void ClickMouse ()
 {
 	RECT r;
 	int inDesk = 0;
 	POINT mousepos;
 	GetCursorPos(&mousepos);
-	GetWindowRect(hwndBBPager, &r);
+	GetWindowRect(g_RuntimeState.m_hwndBBPager, &r);
 	//mousepos.x = mousepos.x - position.x;
 	//mousepos.y = mousepos.y - position.y;
 	mousepos.x = mousepos.x - r.left;
@@ -1738,7 +1604,7 @@ void ClickMouse()
 
 	desktopPressed = -1;
 
-	for (int i = 0; i < desktops; i++) 
+	for (int i = 0; i < g_RuntimeState.m_desktops; i++)
 	{
 		inDesk = PtInRect(&desktopRect[i], mousepos); // check if mouse cursor is within a desktop RECT
 		if (inDesk != 0)
@@ -1752,12 +1618,12 @@ void ClickMouse()
 // This checks the pressed desktop and switches to that, as well as displaying a nice msg :D
 void DeskSwitch()
 {
-	if (desktopPressed > -1 && desktopPressed != (currentDesktop)) 
+	if (desktopPressed > -1 && desktopPressed != g_RuntimeState.m_currentDesktop)
 	{
 		/*char desktopmsg[MAX_PATH];
 		sprintf(desktopmsg, "bbPager -> Change to Workspace %d (%s)", (desktopPressed + 1), desktopName[desktopPressed].c_str());
 		SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)desktopmsg);*/
-		SendMessage(hwndBlackbox, BB_WORKSPACE, 4, (LPARAM)desktopPressed);
+		SendMessage(g_RuntimeState.m_hwndBlackbox, BB_WORKSPACE, 4, (LPARAM)desktopPressed);
 	}
 
 	desktopPressed = -1;
@@ -1765,14 +1631,13 @@ void DeskSwitch()
 
 //===========================================================================
 // Focuses window under cursor
-
-void FocusWindow()
+void FocusWindow ()
 {
-	RECT r;
 	int inWin = 0;
 	POINT mousepos;
 	GetCursorPos(&mousepos);
-	GetWindowRect(hwndBBPager, &r);
+	RECT r;
+	GetWindowRect(g_RuntimeState.m_hwndBBPager, &r);
 	//mousepos.x = mousepos.x - position.x;
 	//mousepos.y = mousepos.y - position.y;
 	mousepos.x = mousepos.x - r.left;
@@ -1780,61 +1645,58 @@ void FocusWindow()
 
 	winPressed = -1;
 
-	for (int i = 0;i <= (winCount - 1);i++)
+	for (int i = 0; i <= (g_RuntimeState.m_winCount - 1); i++)
 	{
-		inWin = PtInRect(&winList[i].r, mousepos); // check if mouse cursor is within a window RECT
+		inWin = PtInRect(&g_RuntimeState.m_winList[i].r, mousepos); // check if mouse cursor is within a window RECT
 		if (inWin != 0)
 		{
 			winPressed = i; // if so, set desktop pressed
-			SendMessage(hwndBlackbox, BB_BRINGTOFRONT, 0, (LPARAM)winList[winPressed].window);
+			SendMessage(g_RuntimeState.m_hwndBlackbox, BB_BRINGTOFRONT, 0, (LPARAM)g_RuntimeState.m_winList[winPressed].window);
 
-			InvalidateRect(hwndBBPager, NULL, true);
+			InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 			return;
 		}
 	}
-
-	return;
 }
 
 //===========================================================================
-// Picks up window under cursor and drops it wherever 
+// Picks up window under cursor and drops it wherever
 // (according to top left corner of window)
 
-void GrabWindow()
+void GrabWindow ()
 {
-	if (!desktop.windows)
+	if (!getSettings().m_desktop.windows)
 		return;
 
-	RECT r;
-	int inWin = 0;
 	POINT mousepos;
-
 	GetCursorPos(&mousepos);
-	GetWindowRect(hwndBBPager, &r);
+	RECT r;
+	GetWindowRect(g_RuntimeState.m_hwndBBPager, &r);
 	mousepos.x -= r.left;
 	mousepos.y -= r.top;
 
-	for (int i = (winCount - 1);i > -1;i--)
+	for (int i = (g_RuntimeState.m_winCount - 1); i > -1; i--)
 	{
-		inWin = PtInRect(&winList[i].r, mousepos); // check if mouse cursor is within a window RECT
+		int const inWin = PtInRect(&g_RuntimeState.m_winList[i].r, mousepos); // check if mouse cursor is within a window RECT
 		if (inWin != 0)
 		{
-			moveWin = winList[i];
+			moveWin = g_RuntimeState.m_winList[i];
 			grabDesktop = moveWin.desk;
 			oldx = moveWin.r.left;
 			oldy = moveWin.r.top;
 			mx = mousepos.x - moveWin.r.left;
 			my = mousepos.y - moveWin.r.top;
 			winMoving = true;
-			tempTool = desktop.tooltips;
-			desktop.tooltips = false;
+			tempTool = getSettings().m_desktop.tooltips;
+			getSettings().m_desktop.tooltips = false;
 		}
 	}
 }
 
-void DropWindow()
+void DropWindow ()
 {
-	if (!desktop.windows)
+	Settings const & s = getSettings();
+	if (!s.m_desktop.windows)
 		return;
 
 	int inDesk = 0, newx, newy;
@@ -1855,14 +1717,14 @@ void DropWindow()
 
 	int dropDesktop = -1;
 
-	for (int i = 0; i < desktops; i++) 
+	for (int i = 0; i < g_RuntimeState.m_desktops; i++)
 	{
 		inDesk = PtInRect(&desktopRect[i], pos); // check if middle of moving window is within a desktop RECT
 		if (inDesk != 0)
 		{
 			dropDesktop = i; // if so, set desktop pressed
 
-			if (!is_xoblite)
+			if (!g_RuntimeState.m_is_xoblite)
 			{
 				taskinfo ti;
 				int stl_flags;
@@ -1877,13 +1739,13 @@ void DropWindow()
 					int offX = moveWin.r.left - desktopRect[dropDesktop].left;
 					int offY = moveWin.r.top - desktopRect[dropDesktop].top;
 
-					int movX = int(offX * ratioX);
-					int movY = int(offY * ratioY);
+					int movX = int(offX * s.m_ratioX);
+					int movY = int(offY * s.m_ratioY);
 
 					if (movX < 0) movX = 0;
 					if (movY < 0) movY = 0;
-					if (movX + ti.width > vScreenWidth) movX = vScreenWidth - ti.width;
-					if (movY + ti.height > vScreenHeight) movY = vScreenHeight - ti.height;
+					if (movX + ti.width > s.m_vScreenWidth) movX = s.m_vScreenWidth - ti.width;
+					if (movY + ti.height > s.m_vScreenHeight) movY = s.m_vScreenHeight - ti.height;
 
 					ti.xpos = movX;
 					ti.ypos = movY;
@@ -1897,28 +1759,28 @@ void DropWindow()
 					stl_flags = BBTI_SETDESK;
 				}			
 
-				if (moveWin.active || dropDesktop == currentDesktop)
+				if (moveWin.active || dropDesktop == g_RuntimeState.m_currentDesktop)
 					stl_flags |= BBTI_SWITCHTO;
 
 				BBPager_SetTaskLocation(moveWin.window, &ti, stl_flags);
 			}
 			else
 			{
-				int diff = dropDesktop - currentDesktop;
+				int diff = dropDesktop - g_RuntimeState.m_currentDesktop;
 				int offX = moveWin.r.left - desktopRect[dropDesktop].left;
 				int offY = moveWin.r.top - desktopRect[dropDesktop].top;
 
-				int movX = int((diff * (vScreenWidth + 10) + vScreenLeft) + (offX * ratioX));
-				int movY = int((offY * ratioX));
+				int movX = int((diff * (s.m_vScreenWidth + 10) + s.m_vScreenLeft) + (offX * s.m_ratioX));
+				int movY = int((offY * s.m_ratioX));
 
 				if (IsZoomed(moveWin.window))
 				{
 					if (dropDesktop == grabDesktop)
 						return;
 					if (moveWin.active)
-						SetWindowPos(moveWin.window, HWND_TOP, (diff * (vScreenWidth + 10) - 4 + vScreenLeft) + leftMargin, -4 + topMargin, 300, 300, SWP_NOSIZE);
+						SetWindowPos(moveWin.window, HWND_TOP, (diff * (s.m_vScreenWidth + 10) - 4 + s.m_vScreenLeft) + s.m_leftMargin, -4 + s.m_topMargin, 300, 300, SWP_NOSIZE);
 					else
-						SetWindowPos(moveWin.window, HWND_TOP, (diff * (vScreenWidth + 10) - 4) + leftMargin, -4 + topMargin, 300, 300, SWP_NOSIZE | SWP_NOACTIVATE);
+						SetWindowPos(moveWin.window, HWND_TOP, (diff * (s.m_vScreenWidth + 10) - 4) + s.m_leftMargin, -4 + s.m_topMargin, 300, 300, SWP_NOSIZE | SWP_NOACTIVATE);
 				}
 				else
 				{
@@ -1930,18 +1792,18 @@ void DropWindow()
 
 				SetTaskWorkspace(moveWin.window, dropDesktop);
 
-				if (currentDesktop != dropDesktop && moveWin.active)
-					SendMessage(hwndBlackbox, BB_WORKSPACE, 4, (LPARAM)dropDesktop);
+				if (g_RuntimeState.m_currentDesktop != dropDesktop && moveWin.active)
+					SendMessage(g_RuntimeState.m_hwndBlackbox, BB_WORKSPACE, 4, (LPARAM)dropDesktop);
 			}
 
 			char temp[40];
 			GetWindowText(moveWin.window, temp, 32);
 			strcat(temp, "...");
 
-			if (!GetWindowLong(moveWin.window, WS_VISIBLE) && dropDesktop == currentDesktop)
+			if (!GetWindowLong(moveWin.window, WS_VISIBLE) && dropDesktop == g_RuntimeState.m_currentDesktop)
 				ShowWindow(moveWin.window, SW_SHOW);
 
-			if (moveWin.active || dropDesktop == currentDesktop)
+			if (moveWin.active || dropDesktop == g_RuntimeState.m_currentDesktop)
 			{
 				if (!passive)
 				{
@@ -1973,33 +1835,34 @@ void TrackMouse()
 	TRACKMOUSEEVENT tme0;
 	tme0.cbSize = sizeof(TRACKMOUSEEVENT);
 	tme0.dwFlags = TME_LEAVE;
-	tme0.hwndTrack = hwndBBPager;
+	tme0.hwndTrack = g_RuntimeState.m_hwndBBPager;
 	tme0.dwHoverTime = 0;
 	TrackMouseEvent(&tme0);
 
 	TRACKMOUSEEVENT tme1;
 	tme1.cbSize = sizeof(TRACKMOUSEEVENT);
 	tme1.dwFlags = TME_LEAVE | TME_NONCLIENT;
-	tme1.hwndTrack = hwndBBPager;
+	tme1.hwndTrack = g_RuntimeState.m_hwndBBPager;
 	tme1.dwHoverTime = 0;
 	TrackMouseEvent(&tme1);
 }
 
 void HidePager()
 {
+	Settings & s = getSettings();
 	if (!inSlit)
 	{
-		if (!position.hidden)
+		if (!s.m_position.hidden)
 		{
 			if (CursorOutside())
 			{
-				InvalidateRect(hwndBBPager, NULL, true);
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
 				GetPos(true);
-				position.x = position.hx;
-				position.y = position.hy;
-				MoveWindow(hwndBBPager, position.x, position.y, frame.width, frame.height, true);
-				InvalidateRect(hwndBBPager, NULL, true);
-				position.hidden = true;
+				s.m_position.x = s.m_position.hx;
+				s.m_position.y = s.m_position.hy;
+				MoveWindow(g_RuntimeState.m_hwndBBPager, s.m_position.x, s.m_position.y, s.m_frame.width, s.m_frame.height, true);
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, true);
+				s.m_position.hidden = true;
 			}		
 		}
 	}
@@ -2007,23 +1870,24 @@ void HidePager()
 
 void SetPos(int place)
 {
+	Settings & s = getSettings();
 	//UpdateMonitorInfo();
 	switch (place)
 	{
 		case 3:
 		{
-			position.x = position.ox = screenLeft;
-			position.y = position.oy = screenTop;
+			s.m_position.x = s.m_position.ox = s.m_screenLeft;
+			s.m_position.y = s.m_position.oy = s.m_screenTop;
 
-			if (position.vertical)
+			if (s.m_position.vertical)
 			{
-				position.hx = frame.hideWidth - frame.width + screenLeft;
-				position.hy = position.oy;
+				s.m_position.hx = s.m_frame.hideWidth - s.m_frame.width + s.m_screenLeft;
+				s.m_position.hy = s.m_position.oy;
 			}
 			else
 			{
-				position.hy = frame.hideWidth - frame.height + screenTop;
-				position.hx = position.ox;
+				s.m_position.hy = s.m_frame.hideWidth - s.m_frame.height + s.m_screenTop;
+				s.m_position.hx = s.m_position.ox;
 			}
 			return;
 		}
@@ -2031,18 +1895,18 @@ void SetPos(int place)
 
 		case 6:
 		{
-			position.x = position.ox = screenWidth - frame.width + screenLeft;
-			position.y = position.oy = screenTop;
+			s.m_position.x = s.m_position.ox = s.m_screenWidth - s.m_frame.width + s.m_screenLeft;
+			s.m_position.y = s.m_position.oy = s.m_screenTop;
 
-			if (position.vertical)
+			if (s.m_position.vertical)
 			{
-				position.hx = screenWidth - frame.hideWidth + screenLeft;
-				position.hy = position.oy;
+				s.m_position.hx = s.m_screenWidth - s.m_frame.hideWidth + s.m_screenLeft;
+				s.m_position.hy = s.m_position.oy;
 			}
 			else
 			{
-				position.hy = frame.hideWidth - frame.height + screenTop;
-				position.hx = position.ox;
+				s.m_position.hy = s.m_frame.hideWidth - s.m_frame.height + s.m_screenTop;
+				s.m_position.hx = s.m_position.ox;
 			}
 			return;
 		}
@@ -2050,18 +1914,18 @@ void SetPos(int place)
 
 		case 9:
 		{
-			position.y = position.oy = screenHeight - frame.height + screenTop;
-			position.x = position.ox = screenLeft;
+			s.m_position.y = s.m_position.oy = s.m_screenHeight - s.m_frame.height + s.m_screenTop;
+			s.m_position.x = s.m_position.ox = s.m_screenLeft;
 
-			if (position.vertical)
+			if (s.m_position.vertical)
 			{
-				position.hx = frame.hideWidth - frame.width + screenLeft;
-				position.hy = position.oy;
+				s.m_position.hx = s.m_frame.hideWidth - s.m_frame.width + s.m_screenLeft;
+				s.m_position.hy = s.m_position.oy;
 			}
 			else
 			{
-				position.hy = screenHeight - frame.hideWidth + screenTop;
-				position.hx = position.ox;
+				s.m_position.hy = s.m_screenHeight - s.m_frame.hideWidth + s.m_screenTop;
+				s.m_position.hx = s.m_position.ox;
 			}
 			return;
 		}
@@ -2069,18 +1933,18 @@ void SetPos(int place)
 
 		case 12:
 		{		
-			position.y = position.oy = screenHeight - frame.height + screenTop;
-			position.x = position.ox = screenWidth - frame.width + screenLeft;
+			s.m_position.y = s.m_position.oy = s.m_screenHeight - s.m_frame.height + s.m_screenTop;
+			s.m_position.x = s.m_position.ox = s.m_screenWidth - s.m_frame.width + s.m_screenLeft;
 
-			if (position.vertical)
+			if (s.m_position.vertical)
 			{
-				position.hx = screenWidth - frame.hideWidth + screenLeft;
-				position.hy = position.oy;
+				s.m_position.hx = s.m_screenWidth - s.m_frame.hideWidth + s.m_screenLeft;
+				s.m_position.hy = s.m_position.oy;
 			}
 			else
 			{
-				position.hy = screenHeight - frame.hideWidth + screenTop;
-				position.hx = position.ox;
+				s.m_position.hy = s.m_screenHeight - s.m_frame.hideWidth + s.m_screenTop;
+				s.m_position.hx = s.m_position.ox;
 			}
 			return;	
 		}
@@ -2088,44 +1952,44 @@ void SetPos(int place)
 
 		case 1:
 		{
-			position.x = position.ox = screenLeft;
-			position.y = position.oy = (screenHeight / 2) - (frame.height / 2) + screenTop;
+			s.m_position.x = s.m_position.ox = s.m_screenLeft;
+			s.m_position.y = s.m_position.oy = (s.m_screenHeight / 2) - (s.m_frame.height / 2) + s.m_screenTop;
 
-			position.hx = frame.hideWidth - frame.width + screenLeft;
-			position.hy = position.oy;
+			s.m_position.hx = s.m_frame.hideWidth - s.m_frame.width + s.m_screenLeft;
+			s.m_position.hy = s.m_position.oy;
 			return;
 		}
 		break;
 
 		case 2:
 		{
-			position.y = position.oy = screenTop;
-			position.x = position.ox = (screenWidth / 2) - (frame.width / 2) + screenLeft;
+			s.m_position.y = s.m_position.oy = s.m_screenTop;
+			s.m_position.x = s.m_position.ox = (s.m_screenWidth / 2) - (s.m_frame.width / 2) + s.m_screenLeft;
 
-			position.hy = frame.hideWidth - frame.height + screenTop;
-			position.hx = position.ox;
+			s.m_position.hy = s.m_frame.hideWidth - s.m_frame.height + s.m_screenTop;
+			s.m_position.hx = s.m_position.ox;
 			return;
 		}
 		break;
 
 		case 4:
 		{
-			position.x = position.ox = screenWidth - frame.width + screenLeft;
-			position.y = position.oy = (screenHeight / 2) - (frame.height / 2) + screenTop;
+			s.m_position.x = s.m_position.ox = s.m_screenWidth - s.m_frame.width + s.m_screenLeft;
+			s.m_position.y = s.m_position.oy = (s.m_screenHeight / 2) - (s.m_frame.height / 2) + s.m_screenTop;
 
-			position.hx = screenWidth - frame.hideWidth + screenLeft;
-			position.hy = position.oy;
+			s.m_position.hx = s.m_screenWidth - s.m_frame.hideWidth + s.m_screenLeft;
+			s.m_position.hy = s.m_position.oy;
 			return;
 		}
 		break;
 	
 		case 8:
 		{
-			position.y = position.oy = screenHeight - frame.height + screenTop;
-			position.x = position.ox = (screenWidth / 2) - (frame.width / 2) + screenLeft;
+			s.m_position.y = s.m_position.oy = s.m_screenHeight - s.m_frame.height + s.m_screenTop;
+			s.m_position.x = s.m_position.ox = (s.m_screenWidth / 2) - (s.m_frame.width / 2) + s.m_screenLeft;
 
-			position.hy = screenHeight - frame.hideWidth + screenTop;
-			position.hx = position.ox;
+			s.m_position.hy = s.m_screenHeight - s.m_frame.hideWidth + s.m_screenTop;
+			s.m_position.hx = s.m_position.ox;
 			return;
 		}
 		break;
@@ -2138,118 +2002,119 @@ void SetPos(int place)
 	}
 }
 
-void GetPos(bool snap)
+void GetPos (bool snap)
 {
-	if (!position.hidden)
+	Settings & s = getSettings();
+	if (!s.m_position.hidden)
 	{
-		position.ox = position.x;
-		position.oy = position.y;
+		s.m_position.ox = s.m_position.x;
+		s.m_position.oy = s.m_position.y;
 
-		if (position.ox == screenLeft && position.oy == ((screenHeight / 2) - (frame.height / 2)) + screenTop)
+		if (s.m_position.ox == s.m_screenLeft && s.m_position.oy == ((s.m_screenHeight / 2) - (s.m_frame.height / 2)) + s.m_screenTop)
 		{
-			position.side = 1; //CL
+			s.m_position.side = 1; //CL
 			return;
 		}
-		if (position.ox == screenLeft && position.oy == screenTop) 
+		if (s.m_position.ox == s.m_screenLeft && s.m_position.oy == s.m_screenTop)
 		{
-			position.side = 3; //TL
+			s.m_position.side = 3; //TL
 			return;
 		}
-		if (position.oy == screenTop && position.ox == ((screenWidth / 2) - (frame.width / 2)) + screenLeft)
+		if (s.m_position.oy == s.m_screenTop && s.m_position.ox == ((s.m_screenWidth / 2) - (s.m_frame.width / 2)) + s.m_screenLeft)
 		{
-			position.side = 2; //TC
+			s.m_position.side = 2; //TC
 			return;
 		}
-		if (position.ox + frame.width == screenRight && position.oy == screenTop)
+		if (s.m_position.ox + s.m_frame.width == s.m_screenRight && s.m_position.oy == s.m_screenTop)
 		{
-			position.side = 6; //TR
+			s.m_position.side = 6; //TR
 			return;	
 		}
-		if (position.ox == screenRight - frame.width && position.oy == ((screenHeight / 2) - (frame.height / 2)) + screenTop)
+		if (s.m_position.ox == s.m_screenRight - s.m_frame.width && s.m_position.oy == ((s.m_screenHeight / 2) - (s.m_frame.height / 2)) + s.m_screenTop)
 		{
-			position.side = 4; //CR
+			s.m_position.side = 4; //CR
 			return;
 		}
-		if (position.oy + frame.height == screenBottom && position.ox == screenLeft)
+		if (s.m_position.oy + s.m_frame.height == s.m_screenBottom && s.m_position.ox == s.m_screenLeft)
 		{
-			position.side = 9; //BL
+			s.m_position.side = 9; //BL
 			return;
 		}
-		if (position.oy + frame.height == screenBottom && position.ox + frame.width == screenRight)
+		if (s.m_position.oy + s.m_frame.height == s.m_screenBottom && s.m_position.ox + s.m_frame.width == s.m_screenRight)
 		{
-			position.side = 12; //BR
+			s.m_position.side = 12; //BR
 			return;
 		}
-		if (position.oy + frame.height == screenBottom && position.ox == ((screenWidth / 2) - (frame.width / 2)) + screenLeft)
+		if (s.m_position.oy + s.m_frame.height == s.m_screenBottom && s.m_position.ox == ((s.m_screenWidth / 2) - (s.m_frame.width / 2)) + s.m_screenLeft)
 		{
-			position.side = 8; //BC
+			s.m_position.side = 8; //BC
 			return;
 		}
 
-		position.side = 0;
+		s.m_position.side = 0;
 
 		if (snap)
 		{
 			int left, right, top, bottom;
 
-			left = position.ox;
-			top = position.oy;
-			right = screenWidth - (position.ox + frame.width) + screenLeft;
-			bottom = screenHeight - (position.oy + frame.height) + screenTop;
+			left = s.m_position.ox;
+			top = s.m_position.oy;
+			right = s.m_screenWidth - (s.m_position.ox + s.m_frame.width) + s.m_screenLeft;
+			bottom = s.m_screenHeight - (s.m_position.oy + s.m_frame.height) + s.m_screenTop;
 			
 			if (left <=	top && left <= right && left <= bottom)
 			{
-				position.ox = position.x = screenLeft;
-				position.oy = position.y;
-				position.hx = frame.hideWidth - frame.width;
-				position.hy = position.oy;
+				s.m_position.ox = s.m_position.x = s.m_screenLeft;
+				s.m_position.oy = s.m_position.y;
+				s.m_position.hx = s.m_frame.hideWidth - s.m_frame.width;
+				s.m_position.hy = s.m_position.oy;
 
-				if (position.y == ((screenHeight / 2) - (frame.height / 2)) + screenTop)
-					position.side = 1;
+				if (s.m_position.y == ((s.m_screenHeight / 2) - (s.m_frame.height / 2)) + s.m_screenTop)
+					s.m_position.side = 1;
 
 				return;
 			}
 			if (top <= bottom && top <= left && top <= right)
 			{
-				position.ox = position.x;
-				position.oy = position.y = screenTop;
-				position.hy = frame.hideWidth - frame.height;
-				position.hx = position.ox;
+				s.m_position.ox = s.m_position.x;
+				s.m_position.oy = s.m_position.y = s.m_screenTop;
+				s.m_position.hy = s.m_frame.hideWidth - s.m_frame.height;
+				s.m_position.hx = s.m_position.ox;
 
-				if (position.x == ((screenWidth / 2) - (frame.width / 2)) + screenLeft)
-					position.side = 2;
+				if (s.m_position.x == ((s.m_screenWidth / 2) - (s.m_frame.width / 2)) + s.m_screenLeft)
+					s.m_position.side = 2;
 
 				return;
 			}
 			if (right <= top && right <= bottom && right <= left)
 			{
-				position.ox = position.x = screenWidth - frame.width + screenLeft;
-				position.oy = position.y;
-				position.hx = screenWidth - frame.hideWidth + screenLeft;
-				position.hy = position.oy;
+				s.m_position.ox = s.m_position.x = s.m_screenWidth - s.m_frame.width + s.m_screenLeft;
+				s.m_position.oy = s.m_position.y;
+				s.m_position.hx = s.m_screenWidth - s.m_frame.hideWidth + s.m_screenLeft;
+				s.m_position.hy = s.m_position.oy;
 				
-				if (position.y == ((screenHeight / 2) - (frame.height / 2)) + screenTop)
-					position.side = 4;
+				if (s.m_position.y == ((s.m_screenHeight / 2) - (s.m_frame.height / 2)) + s.m_screenTop)
+					s.m_position.side = 4;
 
 				return;
 			}
 			if (bottom <= top && bottom <= left && bottom <= right)
 			{
-				position.ox = position.x;
-				position.oy = position.y = screenHeight - frame.height + screenTop;
-				position.hy = screenHeight - frame.hideWidth + screenTop;
-				position.hx = position.ox;	
+				s.m_position.ox = s.m_position.x;
+				s.m_position.oy = s.m_position.y = s.m_screenHeight - s.m_frame.height + s.m_screenTop;
+				s.m_position.hy = s.m_screenHeight - s.m_frame.hideWidth + s.m_screenTop;
+				s.m_position.hx = s.m_position.ox;	
 				
-				if (position.x == ((screenWidth / 2) - (frame.width / 2)) + screenLeft)
-					position.side = 8;
+				if (s.m_position.x == ((s.m_screenWidth / 2) - (s.m_frame.width / 2)) + s.m_screenLeft)
+					s.m_position.side = 8;
 
 				return;
 			}
-			 
-			position.hy = position.oy = position.y;
-			position.hx = position.ox = position.x;
-			position.hidden = false;
-			position.autohide = false;
+			
+			s.m_position.hy = s.m_position.oy = s.m_position.y;
+			s.m_position.hx = s.m_position.ox = s.m_position.x;
+			s.m_position.hidden = false;
+			s.m_position.autohide = false;
 			return;
 		}
 	}
@@ -2259,107 +2124,108 @@ void GetPos(bool snap)
 
 void UpdatePosition()
 {
+	Settings & s = getSettings();
 	// save old dimensions for slit updating
-	heightOld = frame.height;
-	widthOld = frame.width;
-	posXOld = position.x;
-	posYOld = position.y;
+	heightOld = s.m_frame.height;
+	widthOld = s.m_frame.width;
+	posXOld = s.m_position.x;
+	posYOld = s.m_position.y;
 
 	// =======================
 	// Size of pager
 	
-	desktops = 0; // reset number of desktops
+	g_RuntimeState.m_desktops = 0; // reset number of desktops
 	desktopName.clear();
-	SendMessage(hwndBlackbox, BB_LISTDESKTOPS, (WPARAM)hwndBBPager, 0);
+	SendMessage(g_RuntimeState.m_hwndBlackbox, BB_LISTDESKTOPS, (WPARAM)g_RuntimeState.m_hwndBBPager, 0);
 	// currentDesktop gives current desktop number starting at _0_ !
 
 	// Set window width and height based on number of desktops
 	// Takes into account of row/column setting
-	if (position.horizontal) // row/horizontal
+	if (s.m_position.horizontal) // row/horizontal
 	{
-		frame.width = (unsigned int)((desktops - 1)/frame.rows + 1) *
-                (desktop.width + frame.bevelWidth) + 
-                 frame.bevelWidth + (2 * frame.borderWidth);
+		s.m_frame.width = (unsigned int)((g_RuntimeState.m_desktops - 1) / s.m_frame.rows + 1) *
+				(s.m_desktop.width + s.m_frame.bevelWidth) +
+				 s.m_frame.bevelWidth + (2 * s.m_frame.borderWidth);
 
-		if (desktops < frame.rows)
-			frame.height = (unsigned int)(desktops * (desktop.height + frame.bevelWidth)) + frame.bevelWidth 
-							+ (2 * frame.borderWidth);
+		if (g_RuntimeState.m_desktops < s.m_frame.rows)
+			s.m_frame.height = (unsigned int)(g_RuntimeState.m_desktops * (s.m_desktop.height + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
+							+ (2 * s.m_frame.borderWidth);
 		else
-			frame.height = (unsigned int)(frame.rows * (desktop.height + frame.bevelWidth)) + frame.bevelWidth
-							+ (2 * frame.borderWidth);
+			s.m_frame.height = (unsigned int)(s.m_frame.rows * (s.m_desktop.height + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
+							+ (2 * s.m_frame.borderWidth);
 	}
 	else // column/vertical
 	{
-		if (desktops < frame.columns)
-			frame.width = (unsigned int)(desktops * (desktop.width + frame.bevelWidth)) + frame.bevelWidth
-							+ (2 * frame.borderWidth);
+		if (g_RuntimeState.m_desktops < s.m_frame.columns)
+			s.m_frame.width = (unsigned int)(g_RuntimeState.m_desktops * (s.m_desktop.width + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
+							+ (2 * s.m_frame.borderWidth);
 		else
-			frame.width = (unsigned int)(frame.columns * (desktop.width + frame.bevelWidth)) + frame.bevelWidth
-							+ (2 * frame.borderWidth);
+			s.m_frame.width = (unsigned int)(s.m_frame.columns * (s.m_desktop.width + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
+							+ (2 * s.m_frame.borderWidth);
 
-		frame.height = (unsigned int)(((desktops - 1)/frame.columns) + 1) *
-                  (desktop.height + frame.bevelWidth) + 
-                  frame.bevelWidth + (2 * frame.borderWidth);
+		s.m_frame.height = (unsigned int)(((g_RuntimeState.m_desktops - 1) / s.m_frame.columns) + 1) *
+				  (s.m_desktop.height + s.m_frame.bevelWidth) +
+				  s.m_frame.bevelWidth + (2 * s.m_frame.borderWidth);
 	}
 
 	// ========================
 	// Keep in screen area if no autohide :)
 
 	//UpdateMonitorInfo();
-	if (!position.autohide)
+	if (!s.m_position.autohide)
 	{
-		if (position.x < vScreenLeft) 
-			position.x = vScreenLeft;
-		if ((position.x + frame.width) > (vScreenWidth + vScreenLeft))
-			position.x = vScreenWidth - frame.width + vScreenLeft;
+		if (s.m_position.x < s.m_vScreenLeft)
+			s.m_position.x = s.m_vScreenLeft;
+		if ((s.m_position.x + s.m_frame.width) >(s.m_vScreenWidth + s.m_vScreenLeft))
+			s.m_position.x = s.m_vScreenWidth - s.m_frame.width + s.m_vScreenLeft;
 
-		if (position.y < vScreenTop) 
-			position.y = vScreenTop;
-		if ((position.y + frame.height) > (vScreenHeight + vScreenTop))
-			position.y = vScreenHeight - frame.height + vScreenTop;
+		if (s.m_position.y < s.m_vScreenTop)
+			s.m_position.y = s.m_vScreenTop;
+		if ((s.m_position.y + s.m_frame.height) >(s.m_vScreenHeight + s.m_vScreenTop))
+			s.m_position.y = s.m_vScreenHeight - s.m_frame.height + s.m_vScreenTop;
 	}
 	else
 	{
-		if (position.hx <= vScreenLeft - frame.width) 
-			position.hx = vScreenLeft - frame.width + frame.hideWidth;
-		if (position.hx >= (vScreenWidth + vScreenLeft))
-			position.hx = vScreenWidth - frame.hideWidth + vScreenLeft;
+		if (s.m_position.hx <= s.m_vScreenLeft - s.m_frame.width)
+			s.m_position.hx = s.m_vScreenLeft - s.m_frame.width + s.m_frame.hideWidth;
+		if (s.m_position.hx >= (s.m_vScreenWidth + s.m_vScreenLeft))
+			s.m_position.hx = s.m_vScreenWidth - s.m_frame.hideWidth + s.m_vScreenLeft;
 
-		if (position.hy <= vScreenTop - frame.height) 
-			position.hy = vScreenTop - frame.height + frame.hideWidth;
-		if (position.hy >= (vScreenHeight + vScreenTop))
-			position.hy = vScreenHeight - frame.hideWidth + vScreenTop;
+		if (s.m_position.hy <= s.m_vScreenTop - s.m_frame.height)
+			s.m_position.hy = s.m_vScreenTop - s.m_frame.height + s.m_frame.hideWidth;
+		if (s.m_position.hy >= (s.m_vScreenHeight + s.m_vScreenTop))
+			s.m_position.hy = s.m_vScreenHeight - s.m_frame.hideWidth + s.m_vScreenTop;
 	}
 
 	//===============
 	
-	if (!position.hidden)
+	if (!s.m_position.hidden)
 	{
-		position.ox = position.x;
-		position.oy = position.y;
+		s.m_position.ox = s.m_position.x;
+		s.m_position.oy = s.m_position.y;
 	}
 
-	if (position.autohide && !inSlit)
+	if (s.m_position.autohide && !inSlit)
 	{
 		GetPos(true);
-		SetPos(position.side);
-		position.hidden = false;
+		SetPos(s.m_position.side);
+		s.m_position.hidden = false;
 		HidePager();
 		return;
 	}
 
 	GetPos(false);
-	SetPos(position.side);
+	SetPos(s.m_position.side);
 
 	// Reset BBPager window's position and dimensions
 	if (!inSlit)
 	{
-		if (heightOld != frame.height || widthOld != frame.width || posXOld != position.x || posYOld != position.y)
-			MoveWindow(hwndBBPager, position.x, position.y, frame.width, frame.height, true);
+		if (heightOld != s.m_frame.height || widthOld != s.m_frame.width || posXOld != s.m_position.x || posYOld != s.m_position.y)
+			MoveWindow(g_RuntimeState.m_hwndBBPager, s.m_position.x, s.m_position.y, s.m_frame.width, s.m_frame.height, true);
 	}
-	else if (heightOld != frame.height || widthOld != frame.width)
+	else if (heightOld != s.m_frame.height || widthOld != s.m_frame.width)
 	{
-		SetWindowPos(hwndBBPager, HWND_TOP, 0, 0, frame.width, frame.height, SWP_NOMOVE | SWP_NOZORDER);
+		SetWindowPos(g_RuntimeState.m_hwndBBPager, HWND_TOP, 0, 0, s.m_frame.width, s.m_frame.height, SWP_NOMOVE | SWP_NOZORDER);
 
 		if (hSlit && inSlit)
 		{
@@ -2382,7 +2248,7 @@ void AddFlash(HWND task)
 		}
 	}
 
-	flashTask flashTemp;
+	FlashTask flashTemp;
 
 	flashTemp.task = task;
 	flashTemp.on = true;
@@ -2397,7 +2263,7 @@ void RemoveFlash(HWND task, bool quick)
 		{
 			flashList.erase(flashList.begin() + i);
 			if (quick)
-				InvalidateRect(hwndBBPager, NULL, false);
+				InvalidateRect(g_RuntimeState.m_hwndBBPager, NULL, false);
 			return;
 		}
 	}
@@ -2418,7 +2284,7 @@ bool IsFlashOn(HWND task)
 
 void *m_alloc(unsigned s) { return malloc(s); }
 void *c_alloc(unsigned s) { return calloc(1,s); }
-void m_free(void *v)      { free(v); }
+void m_free(void *v)	  { free(v); }
 
 struct tt
 {
@@ -2459,14 +2325,14 @@ void SetToolTip(RECT *tipRect, char *tipText)
 
 	t->ti.cbSize   = sizeof(TOOLINFO);
 	t->ti.uFlags   = TTF_SUBCLASS;
-	t->ti.hwnd     = hwndBBPager;
-	t->ti.uId      = n+1;
+	t->ti.hwnd = g_RuntimeState.m_hwndBBPager;
+	t->ti.uId	   = n+1;
 	t->ti.lpszText = t->text;
-	t->ti.rect     = *tipRect;
+	t->ti.rect	   = *tipRect;
 
 	SendMessage(hToolTips, TTM_ADDTOOL, 0, (LPARAM)&t->ti);
 
-	HFONT toolFont  = CreateStyleFont((StyleItem *)GetSettingPtr(SN_TOOLBAR));
+	HFONT toolFont	= CreateStyleFont((StyleItem *)GetSettingPtr(SN_TOOLBAR));
 	SendMessage(hToolTips, WM_SETFONT, (WPARAM)toolFont, (LPARAM)true);
 }
 
@@ -2498,7 +2364,7 @@ void ClearToolTips(void)
 
 bool BBPager_SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags)
 {
-	if (NULL == BBPager_STL) 
+	if (NULL == BBPager_STL)
 	{
 		MessageBox(0,"bbPager_SetTaskLocation NO","bbPager_SetTaskLocation NO",MB_OK);
 		return false;
@@ -2509,7 +2375,7 @@ bool BBPager_SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags)
 
 tasklist* BBPager_GetTaskListPtr(void)
 {
-	if (NULL == BBPager_GTLP) 
+	if (NULL == BBPager_GTLP)
 	{
 		MessageBox(0,"bbPager_GetTaskListPtr NO","bbPager_GetTaskListPtr NO",MB_OK);
 		return NULL;

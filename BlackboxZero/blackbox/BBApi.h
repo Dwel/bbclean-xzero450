@@ -728,9 +728,9 @@ extern "C" {
 					int bevelPosition, int bevelWidth, COLORREF borderColor, int borderWidth);
 
     /* Draw a Gradient Rectangle from StyleItem, optional using the style border. */
-    API_EXPORT void MakeStyleGradient(HDC hDC, RECT* p_rect, StyleItem * m_si, bool withBorder);
+    API_EXPORT void MakeStyleGradient(HDC hDC, RECT const * p_rect, StyleItem const * m_si, bool withBorder);
     /* Draw a Border */
-    API_EXPORT void CreateBorder(HDC hdc, RECT* p_rect, COLORREF borderColour, int borderWidth);
+    API_EXPORT void CreateBorder(HDC hdc, RECT const * p_rect, COLORREF borderColour, int borderWidth);
     /* Draw a Pixmap for buttons, menu bullets, checkmarks ... */
     API_EXPORT void bbDrawPix(HDC hDC, RECT *p_rect, COLORREF picColor, int style);
     /* Create a font handle from styleitem, with parsing and substitution. */

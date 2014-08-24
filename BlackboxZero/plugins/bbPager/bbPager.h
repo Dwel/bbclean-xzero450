@@ -7,25 +7,6 @@
  http://www.ratednc-17.com
  http://bb4win.sourceforge.net
  ============================================================================
-
-  Blackbox for Windows is free software, released under the
-  GNU General Public License (GPL version 2 or later), with an extension
-  that allows linking of proprietary modules under a controlled interface.
-  What this means is that plugins etc. are allowed to be released
-  under any license the author wishes. Please note, however, that the
-  original Blackbox gradient math code used in Blackbox for Windows
-  is available under the BSD license.
-
-  http://www.fsf.org/licenses/gpl.html
-  http://www.fsf.org/licenses/gpl-faq.html#LinkingOverControlledInterface
-  http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  GNU General Public License for more details.
-
- ============================================================================
 */
 #pragma once
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
@@ -33,15 +14,15 @@
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
 #endif
-#define TME_NONCLIENT   0x00000010
+#define TME_NONCLIENT		0x00000010
 
 #include "BBApi.h"
 #include <commctrl.h>
 #include <shellapi.h>
+#include <vector>
 
 //const long magicDWord = 0x49474541;
 
-extern HINSTANCE hInstance;
 
 // data structures
 struct FRAME
@@ -62,6 +43,8 @@ struct FRAME
 
 	StyleItem *style;
 	StyleItem Style;
+
+	FRAME () { memset(this, 0, sizeof(*this)); }
 };
 
 struct DESKTOP
@@ -87,6 +70,8 @@ struct DESKTOP
 
 	StyleItem *style;
 	StyleItem Style;
+
+	DESKTOP () { memset(this, 0, sizeof(*this)); }
 };
 
 struct ACTIVEDESKTOP
@@ -103,6 +88,8 @@ struct ACTIVEDESKTOP
 
 	StyleItem *style;
 	StyleItem Style;
+
+	ACTIVEDESKTOP () { memset(this, 0, sizeof(*this)); }
 };
 
 struct WINDOW
@@ -115,6 +102,8 @@ struct WINDOW
 
 	StyleItem *style;
 	StyleItem Style;
+
+	WINDOW () { memset(this, 0, sizeof(*this)); }
 };
 
 struct FOCUSEDWINDOW
@@ -131,6 +120,8 @@ struct FOCUSEDWINDOW
 
 	StyleItem *style;
 	StyleItem Style;
+
+	FOCUSEDWINDOW () { memset(this, 0, sizeof(*this)); }
 };
 
 struct POSITION
@@ -153,70 +144,107 @@ struct POSITION
 	bool hidden;
 
 	char placement[20];
+
+	POSITION () { memset(this, 0, sizeof(*this)); }
 };
 
-typedef struct winStruct
+struct WinStruct
 {
 	HWND window;
 	RECT r;
 	BOOL active;
 	BOOL sticky;
 	int desk;
-} winStruct;
+
+	WinStruct () { memset(this, 0, sizeof(*this)); }
+};
 
 // flashing tasks
-typedef struct flashTask
+struct FlashTask
 {
 	HWND task;
 	bool on;
-} flashTask;
+};
+
+struct RuntimeState
+{
+	HINSTANCE m_hInstance;
+	HWND m_hwndBBPager;
+	HWND m_hwndBlackbox;
+	int m_currentDesktop;
+	int m_desktops;
+	int m_winCount;
+	bool m_usingAltMethod;
+	bool m_is_xoblite;
+	bool m_winMoving;
+	bool m_usingWin2kXP;
+	std::vector<WinStruct> m_winList;
+	WinStruct m_moveWin;
+
+	RuntimeState ()
+		: m_hInstance(0)
+		, m_hwndBBPager(0)
+		, m_hwndBlackbox(0)
+		, m_currentDesktop(0)
+		, m_desktops(-1)
+		, m_winCount(0)
+		, m_usingAltMethod(false)
+		, m_is_xoblite(false)
+		, m_winMoving(false)
+		, m_usingWin2kXP(false)
+		, m_winList()
+		, m_moveWin()
+	{ }
+};
+
+RuntimeState & getRuntimeState ();
 
 //===========================================================================
 // function declarations
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK CheckTaskEnumProc(HWND hwnd, LPARAM lParam);
-BOOL CALLBACK CheckTaskEnumProc_AltMethod(HWND hwnd, LPARAM lParam);
+LRESULT CALLBACK WndProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK CheckTaskEnumProc (HWND hwnd, LPARAM lParam);
+BOOL CALLBACK CheckTaskEnumProc_AltMethod (HWND hwnd, LPARAM lParam);
 
-void DrawBBPager(HWND hwnd);
-void DrawBorder(HDC hdc, RECT rect, COLORREF borderColour, int borderWidth);
+void DrawBBPager (HWND hwnd);
+void DrawBorder (HDC hdc, RECT rect, COLORREF borderColour, int borderWidth);
 
-void GetPos(bool snap);
-void SetPos(int place);
+void GetPos (bool snap);
+void SetPos (int place);
 
-bool IsValidWindow(HWND hWnd);
-int getDesktop(HWND h);
+bool IsValidWindow (HWND hWnd);
+int getDesktop (HWND h);
 
-void UpdatePosition();
-void UpdateMonitorInfo();
+void UpdatePosition ();
+void UpdateMonitorInfo ();
 
-void ClickMouse();
-void TrackMouse();
-bool CursorOutside();
+void ClickMouse ();
+void TrackMouse ();
+bool CursorOutside ();
 
-void DeskSwitch();
+void DeskSwitch ();
 
-void FocusWindow();
-void GrabWindow();
-void DropWindow();
+void FocusWindow ();
+void GrabWindow ();
+void DropWindow ();
 
-void AddFlash(HWND task);
-void RemoveFlash(HWND task, bool quick);
-bool IsFlashOn(HWND task);
+void AddFlash (HWND task);
+void RemoveFlash (HWND task, bool quick);
+bool IsFlashOn (HWND task);
 
-void SetToolTip(RECT *tipRect, char *tipText);
-void ClearToolTips(void);
+void SetToolTip (RECT * tipRect, char * tipText);
+void ClearToolTips ();
 
-void HidePager();
+void HidePager ();
 
-void DisplayMenu();
+void DisplayMenu ();
 
-void ToggleSlit();
+void ToggleSlit ();
 
-bool AddBBWindow(tasklist* tl);
+bool AddBBWindow (tasklist * tl);
 
-bool BBPager_SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags);
-tasklist* BBPager_GetTaskListPtr(void);
+bool BBPager_SetTaskLocation (HWND hwnd, struct taskinfo *pti, UINT flags);
+tasklist * BBPager_GetTaskListPtr ();
 
 //===========================================================================
 

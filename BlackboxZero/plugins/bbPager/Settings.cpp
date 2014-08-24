@@ -7,71 +7,21 @@
  http://www.ratednc-17.com
  http://bb4win.sourceforge.net
  ============================================================================
-
-  Blackbox for Windows is free software, released under the
-  GNU General Public License (GPL version 2 or later), with an extension
-  that allows linking of proprietary modules under a controlled interface.
-  What this means is that plugins etc. are allowed to be released
-  under any license the author wishes. Please note, however, that the
-  original Blackbox gradient math code used in Blackbox for Windows
-  is available under the BSD license.
-
-  http://www.fsf.org/licenses/gpl.html
-  http://www.fsf.org/licenses/gpl-faq.html#LinkingOverControlledInterface
-  http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  GNU General Public License for more details.
-
- ============================================================================
 */
 #include "Settings.h"
 #include "bbPager.h"
 
-extern struct POSITION position;
-extern int xpos, ypos;
-extern struct DESKTOP desktop;
-extern struct FRAME frame;
-extern bool usingAltMethod;
-extern bool usingWin2kXP;
-extern HWND hwndBBPager;
-extern bool is_xoblite;
-extern struct ACTIVEDESKTOP activeDesktop;
-extern struct WINDOW window;
-extern struct FOCUSEDWINDOW focusedWindow;
 //===========================================================================
-
 char rcpath[MAX_PATH];
-char editor[MAX_PATH];
-
-//struct POSITION position;
-int desktopChangeButton;
-int focusButton;
-int moveButton;
-
-// Window information
-int screenWidth, screenHeight, screenLeft, screenTop, screenRight, screenBottom;
-int vScreenWidth, vScreenHeight, vScreenLeft, vScreenTop, vScreenRight, vScreenBottom;
-double ratioX, ratioY;
-int leftMargin, topMargin;
-bool drawBorder;
-
-// Transparency
-bool transparency;
-int transparencyAlpha;
-
-bool useSlit;
-
-//===========================================================================
-
 char bspath[MAX_PATH];
 char * getbspath () { return bspath; }
 char stylepath[MAX_PATH];
 
+Settings g_settings;
+Settings & getSettings () { return g_settings; } // "singleton"
+
 //===========================================================================
-#define IS_SLASH(c) ((c) == '\\' || (c) == '/')
+inline bool is_slash(char c) { return c == '\\' || c == '/'; }
 
 int File_Exists(const char* szFileName)
 {
@@ -92,7 +42,7 @@ int locate_file(HINSTANCE hInstance, char *path, const char *fname, const char *
 const char *file_basename(const char *path)
 {
     int nLen = strlen(path);
-    while (nLen && !IS_SLASH(path[nLen-1])) nLen--;
+    while (nLen && !is_slash(path[nLen-1])) nLen--;
     return path + nLen;
 }
 
@@ -101,7 +51,7 @@ int imin(int a, int b)
     return a<b?a:b;
 }
 
-void ReadRCSettings()
+void Settings::ReadRCSettings ()
 {
 	char temp[16];
 
@@ -114,90 +64,87 @@ void ReadRCSettings()
 
 	if (n == 2)
 	{
-		position.unix = true;
-		xpos = position.x = position.ox = n1;
-		ypos = position.y = position.oy = n2;
+		m_position.unix = true;
+		m_xpos = m_position.x = m_position.ox = n1;
+		m_ypos = m_position.y = m_position.oy = n2;
 	}
 	else 
 	{
-		position.unix = false;
-		xpos = position.x = position.ox = ReadInt(rcpath, "bbPager.position.x:", 895);
-		ypos = position.y = position.oy = ReadInt(rcpath, "bbPager.position.y:", 10);
+		m_position.unix = false;
+		m_xpos = m_position.x = m_position.ox = ReadInt(rcpath, "bbPager.position.x:", 895);
+		m_ypos = m_position.y = m_position.oy = ReadInt(rcpath, "bbPager.position.y:", 10);
 	}
 
-	position.raised = ReadBool(rcpath, "bbPager.raised:", true);
-	position.snapWindow = ReadInt(rcpath, "bbPager.snapWindow:", 20);
+	m_position.raised = ReadBool(rcpath, "bbPager.raised:", true);
+	m_position.snapWindow = ReadInt(rcpath, "bbPager.snapWindow:", 20);
 
 	// BBPager metrics
-	desktop.width = ReadInt(rcpath, "bbPager.desktop.width:", 40);
-	desktop.height  = ReadInt(rcpath, "bbPager.desktop.height:", 30);
+	m_desktop.width = ReadInt(rcpath, "bbPager.desktop.width:", 40);
+	m_desktop.height  = ReadInt(rcpath, "bbPager.desktop.height:", 30);
 
 	UpdateMonitorInfo();
 
-	desktop.sizeRatio = ReadInt(rcpath, "bbPager.sizeRatio:", 20);
-	desktop.width = vScreenWidth / desktop.sizeRatio;
-	desktop.height = vScreenHeight / desktop.sizeRatio;
+	m_desktop.sizeRatio = ReadInt(rcpath, "bbPager.sizeRatio:", 20);
+	m_desktop.width = m_vScreenWidth / m_desktop.sizeRatio;
+	m_desktop.height = m_vScreenHeight / m_desktop.sizeRatio;
 
 	// get mouse button for desktop changing, etc., 1 = LMB, 2 = Middle, 3 = RMB
-	desktopChangeButton = ReadInt(rcpath, "bbPager.desktopChangeButton:", 2);
-
-	focusButton = ReadInt(rcpath, "bbPager.windowFocusButton:", 1);
-
-	moveButton = ReadInt(rcpath, "bbPager.windowMoveButton:", 3);
+	m_desktopChangeButton = ReadInt(rcpath, "bbPager.desktopChangeButton:", 2);
+	m_focusButton = ReadInt(rcpath, "bbPager.windowFocusButton:", 1);
+	m_moveButton = ReadInt(rcpath, "bbPager.windowMoveButton:", 3);
  
 	// default BB editor
-	GetBlackboxEditor(editor);
-	if (strlen(editor) < 2)
-		strcpy(editor, "notepad.exe");
+	GetBlackboxEditor(m_editor);
+	if (strlen(m_editor) < 2)
+		strcpy(m_editor, "notepad.exe");
 
 	//get vertical or horizontal alignment setting
 	strcpy(temp, ReadString(rcpath, "bbPager.alignment:", "horizontal"));
 	if (!_stricmp(temp, "vertical")) 
 	{
-		position.horizontal = false;
-		position.vertical = true;
+		m_position.horizontal = false;
+		m_position.vertical = true;
 	}
 	else 
 	{
-		position.horizontal = true;
-		position.vertical = false;
+		m_position.horizontal = true;
+		m_position.vertical = false;
 	}
 
 	// row and column number
-	frame.columns = ReadInt(rcpath, "bbPager.columns:", 1);
-	frame.rows = ReadInt(rcpath, "bbPager.rows:", 1);
+	m_frame.columns = ReadInt(rcpath, "bbPager.columns:", 1);
+	m_frame.rows = ReadInt(rcpath, "bbPager.rows:", 1);
 
-	if (frame.rows < 1) frame.rows = 1;
-	if (frame.columns < 1) frame.columns = 1;
+	if (m_frame.rows < 1) m_frame.rows = 1;
+	if (m_frame.columns < 1) m_frame.columns = 1;
 
 	//numbers on desktop enable
-	desktop.numbers = ReadBool(rcpath, "bbPager.desktopNumbers:", false);
+	m_desktop.numbers = ReadBool(rcpath, "bbPager.desktopNumbers:", false);
 
 	//windows on desktop enable
-	desktop.windows = ReadBool(rcpath, "bbPager.desktopWindows:", true);
-
-	desktop.tooltips = ReadBool(rcpath, "bbPager.windowToolTips:", false);
+	m_desktop.windows = ReadBool(rcpath, "bbPager.desktopWindows:", true);
+	m_desktop.tooltips = ReadBool(rcpath, "bbPager.windowToolTips:", false);
 
 	// Autohide enable
-	position.autohide = ReadBool(rcpath, "bbPager.autoHide:", false);
+	m_position.autohide = ReadBool(rcpath, "bbPager.autoHide:", false);
 
-	topMargin = ReadInt(extensionsrcPath(), "blackbox.desktop.marginTop:", 0);
-	leftMargin = ReadInt(extensionsrcPath(), "blackbox.desktop.marginLeft:", 0);
-	usingAltMethod = ReadBool(extensionsrcPath(), "blackbox.workspaces.altMethod:", false);
+	m_topMargin = ReadInt(extensionsrcPath(), "blackbox.desktop.marginTop:", 0);
+	m_leftMargin = ReadInt(extensionsrcPath(), "blackbox.desktop.marginLeft:", 0);
+	m_usingAltMethod = ReadBool(extensionsrcPath(), "blackbox.workspaces.altMethod:", false);
 
 	// Transparency
-	transparency = ReadBool(rcpath, "bbPager.transparency:", false);
-	transparencyAlpha = ReadInt(rcpath, "bbPager.transparency.alpha:", 192);
+	m_transparency = ReadBool(rcpath, "bbPager.transparency:", false);
+	m_transparencyAlpha = ReadInt(rcpath, "bbPager.transparency.alpha:", 192);
 
-	useSlit = ReadBool(rcpath, "bbPager.useSlit:", false);
+	m_useSlit = ReadBool(rcpath, "bbPager.useSlit:", false);
 
-	if (!locate_file(hInstance, (char*)rcpath, "bbPager", "rc"))
+	if (!locate_file(getRuntimeState().m_hInstance, (char*)rcpath, "bbPager", "rc"))
 		WriteRCSettings();
 }
 
 //===========================================================================
 
-void WriteRCSettings()
+void Settings::WriteRCSettings ()
 {
 	static char szTemp[128];
 	static char temp[32];
@@ -208,94 +155,94 @@ void WriteRCSettings()
 	if (file)
 	{
 		// BBPager position
-		if (position.unix) 
+		if (m_position.unix) 
 		{
-			sprintf(szTemp, "bbPager.position: +%d-%d\r\n", position.ox, position.oy);
+			sprintf(szTemp, "bbPager.position: +%d-%d\r\n", m_position.ox, m_position.oy);
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		}
 		else 
 		{
-			sprintf(szTemp, "bbPager.position.x: %d\r\n", position.ox);
+			sprintf(szTemp, "bbPager.position.x: %d\r\n", m_position.ox);
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
-			sprintf(szTemp, "bbPager.position.y: %d\r\n", position.oy);
+			sprintf(szTemp, "bbPager.position.y: %d\r\n", m_position.oy);
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		}
 
 		// desktop size
-		sprintf(szTemp, "bbPager.desktop.width: %d\r\n", desktop.width);
+		sprintf(szTemp, "bbPager.desktop.width: %d\r\n", m_desktop.width);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
-		sprintf(szTemp, "bbPager.desktop.height: %d\r\n", desktop.height);
+		sprintf(szTemp, "bbPager.desktop.height: %d\r\n", m_desktop.height);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
-		sprintf(szTemp, "bbPager.desktop.sizeRatio: %d\r\n", desktop.sizeRatio);
+		sprintf(szTemp, "bbPager.desktop.sizeRatio: %d\r\n", m_desktop.sizeRatio);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		// alignment
-		(position.vertical) ? strcpy(temp, "vertical") : strcpy(temp, "horizontal");
+		(m_position.vertical) ? strcpy(temp, "vertical") : strcpy(temp, "horizontal");
 		sprintf(szTemp, "bbPager.alignment: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		// Write column/row values
-		sprintf(szTemp, "bbPager.columns: %d\r\n", frame.columns);
+		sprintf(szTemp, "bbPager.columns: %d\r\n", m_frame.columns);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbPager.rows: %d\r\n", frame.rows);
+		sprintf(szTemp, "bbPager.rows: %d\r\n", m_frame.rows);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		// desktop change mouse button, etc.
-		sprintf(szTemp, "bbPager.desktopChangeButton: %d\r\n", desktopChangeButton);
+		sprintf(szTemp, "bbPager.desktopChangeButton: %d\r\n", m_desktopChangeButton);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbPager.windowMoveButton: %d\r\n", moveButton);
+		sprintf(szTemp, "bbPager.windowMoveButton: %d\r\n", m_moveButton);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		sprintf(szTemp, "bbPager.windowFocusButton: %d\r\n", focusButton);
+		sprintf(szTemp, "bbPager.windowFocusButton: %d\r\n", m_focusButton);
 		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		// Snap window to edge of screen
-		sprintf(szTemp, "bbPager.snapWindow: %d\r\n", position.snapWindow);
+		sprintf(szTemp, "bbPager.snapWindow: %d\r\n", m_position.snapWindow);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		// Always on top
-		(position.raised) ? strcpy(temp, "true") : strcpy(temp, "false");
+		(m_position.raised) ? strcpy(temp, "true") : strcpy(temp, "false");
 		sprintf(szTemp, "bbPager.raised: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		// Autohide
-		(position.autohide) ? strcpy(temp, "true") : strcpy(temp, "false");
+		(m_position.autohide) ? strcpy(temp, "true") : strcpy(temp, "false");
 		sprintf(szTemp, "bbPager.autoHide: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		// Transparency
-		if (usingWin2kXP)
+		if (getRuntimeState().m_usingWin2kXP)
 		{
-			(transparency) ? strcpy(temp, "true") : strcpy(temp, "false");
+			(m_transparency) ? strcpy(temp, "true") : strcpy(temp, "false");
 			sprintf(szTemp, "bbPager.transparency: %s\r\n", temp);
  			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-			sprintf(szTemp, "bbPager.transparency.alpha: %d\r\n", transparencyAlpha);
+			sprintf(szTemp, "bbPager.transparency.alpha: %d\r\n", m_transparencyAlpha);
 			WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 		}
 
 		// Numbers on Desktops
-		(desktop.numbers) ? strcpy(temp, "true") : strcpy(temp, "false");
+		(m_desktop.numbers) ? strcpy(temp, "true") : strcpy(temp, "false");
 		sprintf(szTemp, "bbPager.desktopNumbers: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		// Windows on Desktops
-		(desktop.windows) ? strcpy(temp, "true") : strcpy(temp, "false");
+		(m_desktop.windows) ? strcpy(temp, "true") : strcpy(temp, "false");
 		sprintf(szTemp, "bbPager.desktopWindows: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(usingAltMethod) ? strcpy(temp, "true") : strcpy(temp, "false");
+		(m_usingAltMethod) ? strcpy(temp, "true") : strcpy(temp, "false");
 		sprintf(szTemp, "bbPager.desktopAltMethod: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
-		(desktop.tooltips) ? strcpy(temp, "true") : strcpy(temp, "false");
+		(m_desktop.tooltips) ? strcpy(temp, "true") : strcpy(temp, "false");
 		sprintf(szTemp, "bbPager.windowToolTips: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
 
 		// Are we in the slit?
-		(useSlit) ? strcpy(temp, "true") : strcpy(temp, "false");
+		(m_useSlit) ? strcpy(temp, "true") : strcpy(temp, "false");
 		sprintf(szTemp, "bbPager.useSlit: %s\r\n", temp);
  		WriteFile(file, szTemp, strlen(szTemp), &retLength, NULL);
  	}
@@ -304,71 +251,69 @@ void WriteRCSettings()
 
 //===========================================================================
 
-void UpdateMonitorInfo()
+void Settings::UpdateMonitorInfo ()
 {
 	// multimonitor
-	vScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
-	vScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	m_vScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	m_vScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
 
-	vScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	vScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	m_vScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	m_vScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-	vScreenRight = vScreenLeft + vScreenWidth;
-	vScreenBottom = vScreenTop + vScreenHeight;
+	m_vScreenRight = m_vScreenLeft + m_vScreenWidth;
+	m_vScreenBottom = m_vScreenTop + m_vScreenHeight;
 
-	ratioX = vScreenWidth / desktop.width;
-	ratioY = vScreenHeight / desktop.height;
+	m_ratioX = m_vScreenWidth / m_desktop.width;
+	m_ratioY = m_vScreenHeight / m_desktop.height;
 
-	
-	int xScreen, yScreen;
-	xScreen = GetSystemMetrics(SM_CXSCREEN);
-	yScreen = GetSystemMetrics(SM_CYSCREEN);
+	int xScreen = GetSystemMetrics(SM_CXSCREEN);
+	int yScreen = GetSystemMetrics(SM_CYSCREEN);
 
-	if (vScreenWidth > xScreen || vScreenHeight > yScreen)
+	if (m_vScreenWidth > xScreen || m_vScreenHeight > yScreen)
 	{	// multimon
 		// current monitor
-		HMONITOR hMon = MonitorFromWindow(hwndBBPager, MONITOR_DEFAULTTONEAREST);
+		HMONITOR hMon = MonitorFromWindow(getRuntimeState().m_hwndBBPager, MONITOR_DEFAULTTONEAREST);
 		MONITORINFO mInfo;
 		mInfo.cbSize = sizeof(MONITORINFO);
 		GetMonitorInfo(hMon, &mInfo);
 
-		screenLeft = mInfo.rcMonitor.left;
-		screenRight = mInfo.rcMonitor.right;
-		screenTop = mInfo.rcMonitor.top;
-		screenBottom = mInfo.rcMonitor.bottom;
-		screenWidth = screenRight - screenLeft;
-		screenHeight = screenBottom - screenTop;
+		m_screenLeft = mInfo.rcMonitor.left;
+		m_screenRight = mInfo.rcMonitor.right;
+		m_screenTop = mInfo.rcMonitor.top;
+		m_screenBottom = mInfo.rcMonitor.bottom;
+		m_screenWidth = m_screenRight - m_screenLeft;
+		m_screenHeight = m_screenBottom - m_screenTop;
 	}
 	else	// single mon (or treat as such)
 	{
-		vScreenTop = vScreenLeft = 0;
+		m_vScreenTop = m_vScreenLeft = 0;
 
-		screenLeft = 0;
-		screenRight = screenWidth;
-		screenTop = 0;
-		screenBottom = screenHeight;
-		screenWidth = vScreenWidth = xScreen;
-		screenHeight = vScreenHeight = yScreen;
+		m_screenLeft = 0;
+		m_screenRight = m_screenWidth;
+		m_screenTop = 0;
+		m_screenBottom = m_screenHeight;
+		m_screenWidth = m_vScreenWidth = xScreen;
+		m_screenHeight = m_vScreenHeight = yScreen;
 
-		ratioX = screenWidth / desktop.width;
-		ratioY = screenHeight / desktop.height;
+		m_ratioX = m_screenWidth / m_desktop.width;
+		m_ratioY = m_screenHeight / m_desktop.height;
 	}
 }
 
 //===========================================================================
 
-void GetStyleSettings()
+void Settings::GetStyleSettings()
 {
-	char tempstring[32];
+	char tempstring[256];
 	char colorAsString[32] = "#000000";
 
 	// Get the path to the current style file from Blackbox...
 	strcpy(stylepath, stylePath());
 	// Get the path to the plugin.bb file
-	locate_file(hInstance, (char*)bspath, "bbPager", "bb");
+	locate_file(getRuntimeState().m_hInstance, (char*)bspath, "bbPager", "bb");
 
 	bool nix = false;
-	if (!is_xoblite)
+	if (!getRuntimeState().m_is_xoblite)
 		nix = 0 == (int)GetSettingPtr(SN_NEWMETRICS);
 	else 
 	{
@@ -376,216 +321,212 @@ void GetStyleSettings()
 		if (strlen(tempstring) != 2) nix = true;
 	}
 
-//===========================================================
-// bbpager.frame: -> this is for the BBPager frame/background
-
-	frame.ownStyle = false;
-	frame.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBAR);
+	//===========================================================
+	// bbpager.frame: -> this is for the BBPager frame/background
+	m_frame.ownStyle = false;
+	m_frame.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBAR);
 
 	strcpy(tempstring, ReadString(bspath, "bbPager.frame:", ReadString(stylepath, "bbPager.frame:", "no")));
 	if (strlen(tempstring) != 2)
  	{
-		frame.ownStyle = true;
- 		if (frame.style) delete frame.style;
- 		frame.style = new StyleItem;
-		ParseItem(tempstring, frame.style);
-		frame.color = ReadColor(bspath, "bbPager.frame.color:", ReadString(stylepath, "bbPager.frame.color:", colorAsString));
-		frame.colorTo = ReadColor(bspath, "bbPager.frame.colorTo:", ReadString(stylepath, "bbPager.frame.colorTo:", colorAsString));
+		m_frame.ownStyle = true;
+ 		if (m_frame.style)
+			delete m_frame.style;
+ 		m_frame.style = new StyleItem;
+		ParseItem(tempstring, m_frame.style);
+		m_frame.color = ReadColor(bspath, "bbPager.frame.color:", ReadString(stylepath, "bbPager.frame.color:", colorAsString));
+		m_frame.colorTo = ReadColor(bspath, "bbPager.frame.colorTo:", ReadString(stylepath, "bbPager.frame.colorTo:", colorAsString));
  	}
 
-//===========================================================
-// bbpager.frame.borderColor: -> this is the colour for the border around BBPager
+	//===========================================================
+	// bbpager.frame.borderColor: -> this is the colour for the border around BBPager
+	m_frame.borderColor = ReadColor(bspath, "bbPager.frame.borderColor:", ReadString(stylepath, "bbPager.frame.borderColor:", ReadString(stylepath, "toolbarLabel.TextColor:", ReadString(stylepath, "borderColor:", colorAsString))));
 
-	frame.borderColor = ReadColor(bspath, "bbPager.frame.borderColor:", ReadString(stylepath, "bbPager.frame.borderColor:", ReadString(stylepath, "toolbarLabel.TextColor:", ReadString(stylepath, "borderColor:", colorAsString))));
+	//===========================================================
+	// bbpager.desktop: -> this is for the normal desktops
+	m_desktop.ownStyle = false;
 
-//===========================================================
-// bbpager.desktop: -> this is for the normal desktops
-
-	desktop.ownStyle = false;
-
-	desktop.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBARBUTTON);
-	if (desktop.Style.parentRelative)
-		desktop.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBARLABEL);
+	m_desktop.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBARBUTTON);
+	if (m_desktop.Style.parentRelative)
+		m_desktop.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBARLABEL);
  
 	strcpy(tempstring, ReadString(bspath, "bbPager.desktop:", ReadString(stylepath, "bbPager.desktop:", "no")));
 	if (strlen(tempstring) != 2)
  	{
-		desktop.ownStyle = true;
-		if (desktop.style) delete desktop.style;
-		desktop.style = new StyleItem;
-		ParseItem(tempstring, desktop.style);
-		desktop.color = ReadColor(bspath, "bbPager.desktop.color:", ReadString(stylepath, "bbPager.desktop.color:", colorAsString));
-		desktop.colorTo = ReadColor(bspath, "bbPager.desktop.colorTo:", ReadString(stylepath, "bbPager.desktop.colorTo:", colorAsString));
+		m_desktop.ownStyle = true;
+		if (m_desktop.style) delete m_desktop.style;
+		m_desktop.style = new StyleItem;
+		ParseItem(tempstring, m_desktop.style);
+		m_desktop.color = ReadColor(bspath, "bbPager.desktop.color:", ReadString(stylepath, "bbPager.desktop.color:", colorAsString));
+		m_desktop.colorTo = ReadColor(bspath, "bbPager.desktop.colorTo:", ReadString(stylepath, "bbPager.desktop.colorTo:", colorAsString));
  	}
 
-	desktop.Style.bevelstyle = BEVEL_RAISED; 
-	desktop.Style.bevelposition = BEVEL2; 
+	m_desktop.Style.bevelstyle = BEVEL_RAISED; 
+	m_desktop.Style.bevelposition = BEVEL2; 
 
-//===========================================================
-// bbpager.desktop.focusStyle: -> specifies how to draw active desktop - none|border|border2|border3|texture
+	//===========================================================
+	// bbpager.desktop.focusStyle: -> specifies how to draw active desktop - none|border|border2|border3|texture
 
-	strcpy(activeDesktop.styleType, ReadString(bspath, "bbPager.desktop.focusStyle:", ReadString(stylepath, "bbPager.desktop.focusStyle:", "border")));
+	strcpy(m_activeDesktop.styleType, ReadString(bspath, "bbPager.desktop.focusStyle:", ReadString(stylepath, "bbPager.desktop.focusStyle:", "border")));
 
-//===========================================================
-// bbpager.desktop.focus: -> style definition used for current workspace
+	//===========================================================
+	// bbpager.desktop.focus: -> style definition used for current workspace
 
-	activeDesktop.ownStyle = false;
+	m_activeDesktop.ownStyle = false;
 
-	activeDesktop.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBARBUTTONP);
-	if (activeDesktop.Style.parentRelative)
-		activeDesktop.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBARWINDOWLABEL);
+	m_activeDesktop.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBARBUTTONP);
+	if (m_activeDesktop.Style.parentRelative)
+		m_activeDesktop.Style = *(StyleItem *)GetSettingPtr(SN_TOOLBARWINDOWLABEL);
 
 	strcpy(tempstring, ReadString(bspath, "bbPager.desktop.focus:", ReadString(stylepath, "bbPager.desktop.focus:", "no")));
 	if (strlen(tempstring) != 2)
  	{
-		activeDesktop.ownStyle = true;
-		if (activeDesktop.style) delete activeDesktop.style;
-		activeDesktop.style = new StyleItem;
-		ParseItem(tempstring, activeDesktop.style);
-		activeDesktop.color = ReadColor(bspath, "bbPager.desktop.focus.color:", ReadString(stylepath, "bbPager.desktop.focus.color:", colorAsString));
-		activeDesktop.colorTo = ReadColor(bspath, "bbPager.desktop.focus.colorTo:", ReadString(stylepath, "bbPager.desktop.focus.colorTo:", colorAsString));
+		m_activeDesktop.ownStyle = true;
+		if (m_activeDesktop.style)
+			delete m_activeDesktop.style;
+		m_activeDesktop.style = new StyleItem;
+		ParseItem(tempstring, m_activeDesktop.style);
+		m_activeDesktop.color = ReadColor(bspath, "bbPager.desktop.focus.color:", ReadString(stylepath, "bbPager.desktop.focus.color:", colorAsString));
+		m_activeDesktop.colorTo = ReadColor(bspath, "bbPager.desktop.focus.colorTo:", ReadString(stylepath, "bbPager.desktop.focus.colorTo:", colorAsString));
  	}
 
-	activeDesktop.Style.bevelstyle = BEVEL_SUNKEN; 
+	m_activeDesktop.Style.bevelstyle = BEVEL_SUNKEN; 
 
-//===========================================================
-// bbpager.active.desktop.borderColor:
+	//===========================================================
+	// bbpager.active.desktop.borderColor:
 
-	activeDesktop.borderColor = ReadColor(bspath, "bbPager.active.desktop.borderColor:", ReadString(stylepath, "bbPager.active.desktop.borderColor:", ReadString(stylepath, "borderColor:", colorAsString)));
-	if (activeDesktop.borderColor == 0x000000)
-		activeDesktop.borderColor = activeDesktop.Style.TextColor;
+	m_activeDesktop.borderColor = ReadColor(bspath, "bbPager.active.desktop.borderColor:", ReadString(stylepath, "bbPager.active.desktop.borderColor:", ReadString(stylepath, "borderColor:", colorAsString)));
+	if (m_activeDesktop.borderColor == 0x000000)
+		m_activeDesktop.borderColor = m_activeDesktop.Style.TextColor;
 
-//===========================================================
-// frame.bevelWidth: spacing between desktops and edges of BBPager
-	
-	frame.bevelWidth = frame.ownStyle ? ReadInt(bspath, "bbPager.bevelwidth:", *(int *)GetSettingPtr(SN_BEVELWIDTH)) : (nix ? frame.Style.marginWidth : *(int *)GetSettingPtr(SN_BEVELWIDTH));
+	//===========================================================
+	// frame.bevelWidth: spacing between desktops and edges of BBPager
+	m_frame.bevelWidth = m_frame.ownStyle ? ReadInt(bspath, "bbPager.bevelwidth:", *(int *)GetSettingPtr(SN_BEVELWIDTH)) : (nix ? m_frame.Style.marginWidth : *(int *)GetSettingPtr(SN_BEVELWIDTH));
 
-//===========================================================
-// frame.borderWidth: width of border around BBPager
+	//===========================================================
+	// frame.borderWidth: width of border around BBPager
 
-	frame.borderWidth = frame.ownStyle ? ReadInt(bspath, "bbPager.frame.borderWidth:", *(int *)GetSettingPtr(SN_BORDERWIDTH)) : (nix ? frame.Style.borderWidth : *(int *)GetSettingPtr(SN_BORDERWIDTH));
+	m_frame.borderWidth = m_frame.ownStyle ? ReadInt(bspath, "bbPager.frame.borderWidth:", *(int *)GetSettingPtr(SN_BORDERWIDTH)) : (nix ? m_frame.Style.borderWidth : *(int *)GetSettingPtr(SN_BORDERWIDTH));
 
-//===========================================================
-// frame.hideWidth: amount of pager seen in the hidden state
+	//===========================================================
+	// frame.hideWidth: amount of pager seen in the hidden state
 
-	frame.hideWidth = imin(frame.bevelWidth + frame.borderWidth, 3);
+	m_frame.hideWidth = imin(m_frame.bevelWidth + m_frame.borderWidth, 3);
 
-//===========================================================
-// bbpager.window: -> this is for the normal windows
+	//===========================================================
+	// bbpager.window: -> this is for the normal windows
 
-	window.Style = *(StyleItem *)GetSettingPtr(SN_MENUFRAME);
+	m_window.Style = *(StyleItem *)GetSettingPtr(SN_MENUFRAME);
 
-	window.ownStyle = false;
-	if (window.style) delete window.style;
-	window.style = new StyleItem;
+	m_window.ownStyle = false;
+	if (m_window.style)
+		delete m_window.style;
+	m_window.style = new StyleItem;
 
 	strcpy(tempstring, ReadString(bspath, "bbPager.window:", "no"));	
 	if (strlen(tempstring) == 2) // plugin.window NOT in BB
 	{
 		strcpy(tempstring, ReadString(stylepath, "bbPager.window:", "no"));	
 		if (strlen(tempstring) != 2) // plugin.window IS in STYLE
-			window.ownStyle = true;
+			m_window.ownStyle = true;
 	}
 	else // plugin.window IS in BB
-		window.ownStyle = true;
+		m_window.ownStyle = true;
 
 	bool labelPR = false;
 	strcpy(tempstring, ReadString(bspath, "window.label.unfocus:", ReadString(stylepath, "window.label.unfocus.appearance:", "parentrelative")));
 	if (strlen(tempstring) == 14)
 		labelPR = true;
 
-	if (window.ownStyle)
+	if (m_window.ownStyle)
 	{
 		if (labelPR)
 		{
 			strcpy(tempstring, ReadString(bspath, "bbPager.window:", ReadString(stylepath, "bbPager.window:", ReadString(bspath, "window.title.unfocus:", ReadString(bspath, "window.title.unfocus.appearance:", "Sunken Bevel2 Gradient Vertical")))));
-			ParseItem(tempstring, window.style);
+			ParseItem(tempstring, m_window.style);
 
-			window.color = ReadColor(bspath, "bbPager.window.color:", ReadString(stylepath, "bbPager.window.color:", ReadString(stylepath, "window.title.unfocus.color:", ReadString(stylepath, "window.title.unfocus.color1:", ReadString(stylepath, "window.title.unfocus.backgroundColor:", colorAsString)))));
-			if (window.style->type == B_SOLID)
-				window.colorTo = window.color;
+			m_window.color = ReadColor(bspath, "bbPager.window.color:", ReadString(stylepath, "bbPager.window.color:", ReadString(stylepath, "window.title.unfocus.color:", ReadString(stylepath, "window.title.unfocus.color1:", ReadString(stylepath, "window.title.unfocus.backgroundColor:", colorAsString)))));
+			if (m_window.style->type == B_SOLID)
+				m_window.colorTo = m_window.color;
 			else
-				window.colorTo = ReadColor(bspath, "bbPager.window.colorTo:", ReadString(stylepath, "bbPager.window.colorTo:", ReadString(stylepath, "window.title.unfocus.colorTo:", ReadString(stylepath, "window.title.unfocus.color2:", colorAsString))));
+				m_window.colorTo = ReadColor(bspath, "bbPager.window.colorTo:", ReadString(stylepath, "bbPager.window.colorTo:", ReadString(stylepath, "window.title.unfocus.colorTo:", ReadString(stylepath, "window.title.unfocus.color2:", colorAsString))));
 		}
 		else
 		{
-			window.color = ReadColor(bspath, "bbPager.window.color:", ReadString(stylepath, "bbPager.window.color:", ReadString(stylepath, "window.label.unfocus.color:", ReadString(stylepath, "window.label.unfocus.color1:", ReadString(stylepath, "window.label.unfocus.backgroundColor:", colorAsString)))));
-			if (window.style->type == B_SOLID)
-				window.colorTo = window.color;
+			m_window.color = ReadColor(bspath, "bbPager.window.color:", ReadString(stylepath, "bbPager.window.color:", ReadString(stylepath, "window.label.unfocus.color:", ReadString(stylepath, "window.label.unfocus.color1:", ReadString(stylepath, "window.label.unfocus.backgroundColor:", colorAsString)))));
+			if (m_window.style->type == B_SOLID)
+				m_window.colorTo = m_window.color;
 			else
-				window.colorTo = ReadColor(bspath, "bbPager.window.colorTo:", ReadString(stylepath, "bbPager.window.colorTo:", ReadString(stylepath, "window.label.unfocus.colorTo:", ReadString(stylepath, "window.label.unfocus.color2:", colorAsString))));
+				m_window.colorTo = ReadColor(bspath, "bbPager.window.colorTo:", ReadString(stylepath, "bbPager.window.colorTo:", ReadString(stylepath, "window.label.unfocus.colorTo:", ReadString(stylepath, "window.label.unfocus.color2:", colorAsString))));
 		}
 	}
 
-	window.Style.bevelstyle = BEVEL_SUNKEN; 
+	m_window.Style.bevelstyle = BEVEL_SUNKEN; 
 
-//===========================================================
-// bbpager.inactive.window.borderColor:
+	//===========================================================
+	// bbpager.inactive.window.borderColor:
 
-	window.borderColor = ReadColor(bspath, "bbPager.inactive.window.borderColor:", ReadString(stylepath, "bbPager.inactive.window.borderColor:", ReadString(stylepath, "window.label.unfocus.TextColor:", colorAsString)));
-	if (window.borderColor == 0x000000)
-		window.borderColor = activeDesktop.Style.Color;
+	m_window.borderColor = ReadColor(bspath, "bbPager.inactive.window.borderColor:", ReadString(stylepath, "bbPager.inactive.window.borderColor:", ReadString(stylepath, "window.label.unfocus.TextColor:", colorAsString)));
+	if (m_window.borderColor == 0x000000)
+		m_window.borderColor = m_activeDesktop.Style.Color;
 
-//===========================================================
-// bbpager.window.focusStyle: -> specifies how to draw active window - none|border|border2|border3|texture
+	//===========================================================
+	// bbpager.window.focusStyle: -> specifies how to draw active window - none|border|border2|border3|texture
 
-	strcpy(focusedWindow.styleType, ReadString(bspath, "bbPager.window.focusStyle:", ReadString(stylepath, "bbPager.window.focusStyle:", "texture")));
+	strcpy(m_focusedWindow.styleType, ReadString(bspath, "bbPager.window.focusStyle:", ReadString(stylepath, "bbPager.window.focusStyle:", "texture")));
 
-//===========================================================
-// bbpager.window.focus: -> style definition used for active window
+	//===========================================================
+	// bbpager.window.focus: -> style definition used for active window
 
-	focusedWindow.Style = *(StyleItem *)GetSettingPtr(SN_MENUHILITE);
+	m_focusedWindow.Style = *(StyleItem *)GetSettingPtr(SN_MENUHILITE);
 
-	focusedWindow.ownStyle = false;
-	if (focusedWindow.style) delete focusedWindow.style;
-	focusedWindow.style = new StyleItem;
+	m_focusedWindow.ownStyle = false;
+	if (m_focusedWindow.style) delete m_focusedWindow.style;
+	m_focusedWindow.style = new StyleItem;
 
 	strcpy(tempstring, ReadString(bspath, "bbPager.window.focus:", "no"));	
 	if (strlen(tempstring) == 2) // plugin.active.desktop NOT in BB
 	{
 		strcpy(tempstring, ReadString(stylepath, "bbPager.window.focus:", "no"));	
 		if (strlen(tempstring) != 2) // plugin.window.focus IS in STYLE
-			focusedWindow.ownStyle = true;
+			m_focusedWindow.ownStyle = true;
 	}
 	else // plugin.active.desktop IS in BB
-		focusedWindow.ownStyle = true;
+		m_focusedWindow.ownStyle = true;
 
-	if (focusedWindow.ownStyle)
+	if (m_focusedWindow.ownStyle)
 	{
 		if (labelPR)
 		{
 			strcpy(tempstring, ReadString(bspath, "bbPager.focus.window:", ReadString(stylepath, "bbPager.focus.window:", ReadString(bspath, "window.title.focus:", ReadString(bspath, "window.title.focus.appearance:", "Raised Bevel2 Gradient Vertical")))));
-			ParseItem(tempstring, focusedWindow.style);
+			ParseItem(tempstring, m_focusedWindow.style);
 
-			focusedWindow.color = ReadColor(bspath, "bbPager.window.focus.color:", ReadString(stylepath, "bbPager.window.focus.color:", ReadString(stylepath, "window.title.focus.color:", ReadString(stylepath, "window.title.focus.color1:", ReadString(stylepath, "window.title.focus.backgroundColor:", colorAsString)))));
-			if (focusedWindow.style->type == B_SOLID)
-				focusedWindow.colorTo = focusedWindow.color;
+			m_focusedWindow.color = ReadColor(bspath, "bbPager.window.focus.color:", ReadString(stylepath, "bbPager.window.focus.color:", ReadString(stylepath, "window.title.focus.color:", ReadString(stylepath, "window.title.focus.color1:", ReadString(stylepath, "window.title.focus.backgroundColor:", colorAsString)))));
+			if (m_focusedWindow.style->type == B_SOLID)
+				m_focusedWindow.colorTo = m_focusedWindow.color;
 			else
-				focusedWindow.colorTo = ReadColor(bspath, "bbPager.window.focus.colorTo:", ReadString(stylepath, "bbPager.window.focus.colorTo:", ReadString(stylepath, "window.title.focus.colorTo:", ReadString(stylepath, "window.title.focus.color2:", colorAsString))));
+				m_focusedWindow.colorTo = ReadColor(bspath, "bbPager.window.focus.colorTo:", ReadString(stylepath, "bbPager.window.focus.colorTo:", ReadString(stylepath, "window.title.focus.colorTo:", ReadString(stylepath, "window.title.focus.color2:", colorAsString))));
 		}
 		else
 		{
 			strcpy(tempstring, ReadString(bspath, "bbPager.focus.window:", ReadString(stylepath, "bbPager.focus.window:", ReadString(bspath, "window.label.focus:", ReadString(bspath, "window.label.focus.appearance:", "Raised Bevel2 Gradient Vertical")))));
-			ParseItem(tempstring, focusedWindow.style);
+			ParseItem(tempstring, m_focusedWindow.style);
 
-			focusedWindow.color = ReadColor(bspath, "bbPager.window.focus.color:", ReadString(stylepath, "bbPager.window.focus.color:", ReadString(stylepath, "window.label.focus.color:", ReadString(stylepath, "window.label.focus.color1:", ReadString(stylepath, "window.label.focus.backgroundColor:", colorAsString)))));
-			if (focusedWindow.style->type == B_SOLID)
-				focusedWindow.colorTo = focusedWindow.color;
+			m_focusedWindow.color = ReadColor(bspath, "bbPager.window.focus.color:", ReadString(stylepath, "bbPager.window.focus.color:", ReadString(stylepath, "window.label.focus.color:", ReadString(stylepath, "window.label.focus.color1:", ReadString(stylepath, "window.label.focus.backgroundColor:", colorAsString)))));
+			if (m_focusedWindow.style->type == B_SOLID)
+				m_focusedWindow.colorTo = m_focusedWindow.color;
 			else
-				focusedWindow.colorTo = ReadColor(bspath, "bbPager.window.focus.colorTo:", ReadString(stylepath, "bbPager.window.focus.colorTo:", ReadString(stylepath, "window.label.focus.colorTo:", ReadString(stylepath, "windowlabel.focus.color2:", colorAsString))));
+				m_focusedWindow.colorTo = ReadColor(bspath, "bbPager.window.focus.colorTo:", ReadString(stylepath, "bbPager.window.focus.colorTo:", ReadString(stylepath, "window.label.focus.colorTo:", ReadString(stylepath, "windowlabel.focus.color2:", colorAsString))));
 		}
 	}
 
-	focusedWindow.Style.bevelstyle = BEVEL_RAISED; 
-	focusedWindow.Style.bevelposition = BEVEL2; 
+	m_focusedWindow.Style.bevelstyle = BEVEL_RAISED;
+	m_focusedWindow.Style.bevelposition = BEVEL2;
 
-//===========================================================
-// bbpager.active.window.borderColor:
-
-	focusedWindow.borderColor = ReadColor(bspath, "bbPager.active.window.borderColor:", ReadString(stylepath, "bbPager.active.window.borderColor:", ReadString(stylepath, "window.label.focus.TextColor:", colorAsString)));
-	if (focusedWindow.borderColor == 0x000000)
-		focusedWindow.borderColor = frame.Style.Color;
-
+	//===========================================================
+	// bbpager.active.window.borderColor:
+	m_focusedWindow.borderColor = ReadColor(bspath, "bbPager.active.window.borderColor:", ReadString(stylepath, "bbPager.active.window.borderColor:", ReadString(stylepath, "window.label.focus.TextColor:", colorAsString)));
+	if (m_focusedWindow.borderColor == 0x000000)
+		m_focusedWindow.borderColor = m_frame.Style.Color;
 }
 
-//===========================================================================

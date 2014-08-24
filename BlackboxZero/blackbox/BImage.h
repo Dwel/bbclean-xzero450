@@ -49,7 +49,7 @@ void bimage_init(int dither, bool is_070);
 /* ------------------- */
 
 /* create the gradient in memory */
-struct bimage *bimage_create(int width, int height, struct StyleItem *si);
+struct bimage *bimage_create(int width, int height, StyleItem const * si);
 
 /* destroy everything */
 void bimage_destroy(struct bimage *bi);
@@ -81,10 +81,10 @@ void MakeGradientEx(HDC hDC, RECT rect, int type, COLORREF colour_from, COLORREF
 					int bevelPosition, int bevelWidth, COLORREF borderColor, int borderWidth);
 
 /* paint a border on hDC */
-void CreateBorder(HDC hDC, RECT *prect, COLORREF borderColour, int borderWidth);
+void CreateBorder(HDC hDC, RECT const * prect, COLORREF borderColour, int borderWidth);
 
 /* paint the gradient on hDC from StyleStruct */
-void MakeStyleGradient(HDC hDC, RECT *rp, struct StyleItem *pSI, bool withBorder);
+void MakeStyleGradient(HDC hDC, RECT const * rp, StyleItem const * pSI, bool withBorder);
 
 /* Create a HBITMAP and paint the gradient on it */
 HBITMAP MakeGradientBitmap(int width, int height, struct StyleItem *pSI);

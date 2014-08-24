@@ -7,74 +7,26 @@
  http://www.ratednc-17.com
  http://bb4win.sourceforge.net
  ============================================================================
-
-  Blackbox for Windows is free software, released under the
-  GNU General Public License (GPL version 2 or later), with an extension
-  that allows linking of proprietary modules under a controlled interface.
-  What this means is that plugins etc. are allowed to be released
-  under any license the author wishes. Please note, however, that the
-  original Blackbox gradient math code used in Blackbox for Windows
-  is available under the BSD license.
-
-  http://www.fsf.org/licenses/gpl.html
-  http://www.fsf.org/licenses/gpl-faq.html#LinkingOverControlledInterface
-  http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  GNU General Public License for more details.
-
- ============================================================================
 */
 #include "bbPager.h"
 #include "Drawing.h"
+#include "Settings.h"
 #include <vector>
 
-//using namespace std;
-
-//===========================================================================
-
 // Desktop information
-int currentDesktop;
-//RECT desktopRect[64];
 std::vector<RECT> desktopRect;
-
-extern struct FRAME frame;
-extern struct DESKTOP desktop;
-extern struct POSITION position;
-extern struct ACTIVEDESKTOP activeDesktop;
-extern int desktops;
-extern int winCount;
-extern std::vector<winStruct> winList;
-extern bool usingAltMethod;
-extern bool is_xoblite;
-extern bool winMoving;
-extern winStruct moveWin;
-extern HWND hwndBBPager;
-extern struct FOCUSEDWINDOW focusedWindow;
-extern struct WINDOW window;
-#if 0
-extern int currentDesktop;
-extern vector<RECT> desktopRect;
-extern int desktopChangeButton;
-extern int focusButton;
-extern int moveButton;
-#endif
-
-char desktopNumber[4];
 
 int col, row, currentCol, currentRow;
 
 //===========================================================================
-
 void DrawBBPager(HWND hwnd)
 {
+	Settings const & s = getSettings();
 	// Create buffer hdc's, bitmaps etc.
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(hwnd, &ps);
 	HDC buf = CreateCompatibleDC(NULL);
-	HBITMAP bufbmp = CreateCompatibleBitmap(hdc, frame.width, frame.height);
+	HBITMAP bufbmp = CreateCompatibleBitmap(hdc, s.m_frame.width, s.m_frame.height);
 	HGDIOBJ oldbmp = SelectObject(buf, bufbmp);
 	RECT r;
 	char toolText[256];
@@ -82,147 +34,151 @@ void DrawBBPager(HWND hwnd)
 	GetClientRect(hwnd, &r);
 
 	// Paint background and border according to the current style...
-	MakeStyleGradient(buf, &r, frame.ownStyle ? frame.style : &frame.Style, true);
+	MakeStyleGradient(buf, &r, s.m_frame.ownStyle ? s.m_frame.style : &s.m_frame.Style, true);
 
 	HFONT font = CreateStyleFont((StyleItem *)GetSettingPtr(SN_TOOLBARLABEL));
 	HGDIOBJ oldfont = SelectObject(buf, font);
 	SetBkMode(buf, TRANSPARENT);
-	SetTextColor(buf, desktop.fontColor);
+	SetTextColor(buf, s.m_desktop.fontColor);
 	UINT flags = DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_WORD_ELLIPSIS|DT_NOPREFIX;
 
 	desktopRect.clear();
 
 	// Paint desktops :D
-	if (position.horizontal) 
+	if (s.m_position.horizontal) 
 	{
 		// Do loop to draw desktops other than current selected desktop
 		int i = 0;
 
 		do 
 		{
-			col = i / frame.rows;
-			row = i % frame.rows + 1;
+			col = i / s.m_frame.rows;
+			row = i % s.m_frame.rows + 1;
 
-			if (currentDesktop == i) 
+			if (getRuntimeState().m_currentDesktop == i) 
 			{
 				currentCol = col;
 				currentRow = row;
 			}
 			else 
 			{
-				r.left = frame.borderWidth + frame.bevelWidth + ((col) * (desktop.width + frame.bevelWidth));
-				r.right = r.left + desktop.width;
-				r.top = frame.borderWidth + frame.bevelWidth + ((row - 1) * (desktop.height + frame.bevelWidth));
-				r.bottom = r.top + desktop.height;
+				r.left = s.m_frame.borderWidth + s.m_frame.bevelWidth + ((col) * (s.m_desktop.width + s.m_frame.bevelWidth));
+				r.right = r.left + s.m_desktop.width;
+				r.top = s.m_frame.borderWidth + s.m_frame.bevelWidth + ((row - 1) * (s.m_desktop.height + s.m_frame.bevelWidth));
+				r.bottom = r.top + s.m_desktop.height;
 
 				//desktopRect[i] = r; // set RECT item for this desktop
 				//desktopRect.insert(desktopRect.begin() + i - 1, r);
 				desktopRect.push_back(r);
 
-				if (desktop.ownStyle)
-					CreateBorder(buf, &r, activeDesktop.borderColor, 1);
+				if (s.m_desktop.ownStyle)
+					CreateBorder(buf, &r, s.m_activeDesktop.borderColor, 1);
 				else
 				{
 					r.left  += 1;
 					r.top   += 1;
 					r.right   -= 1;
 					r.bottom  -= 1;
-					MakeStyleGradient(buf, &r, &activeDesktop.Style, false);
+					MakeStyleGradient(buf, &r, &s.m_activeDesktop.Style, false);
 				}
-				if (desktop.numbers) 
+				if (s.m_desktop.numbers) 
 				{
+					char desktopNumber[4];
 					sprintf(desktopNumber, "%d", (i + 1));
 					DrawText(buf, desktopNumber, -1, &r, flags);
 				}
 			}
 			i++;
 		}
-		while (i < desktops);
+		while (i < getRuntimeState().m_desktops);
 
 		// Do this now so bordered desktop is drawn last
-		i = currentDesktop;
+		i = getRuntimeState().m_currentDesktop;
 
-		r.left = frame.borderWidth + frame.bevelWidth + ((currentCol) * (desktop.width + frame.bevelWidth));
-		r.right = r.left + desktop.width;
-		r.top = frame.borderWidth + frame.bevelWidth + ((currentRow - 1) * (desktop.height + frame.bevelWidth));
-		r.bottom = r.top + desktop.height;
+		r.left = s.m_frame.borderWidth + s.m_frame.bevelWidth + ((currentCol) * (s.m_desktop.width + s.m_frame.bevelWidth));
+		r.right = r.left + s.m_desktop.width;
+		r.top = s.m_frame.borderWidth + s.m_frame.bevelWidth + ((currentRow - 1) * (s.m_desktop.height + s.m_frame.bevelWidth));
+		r.bottom = r.top + s.m_desktop.height;
 
 		//desktopRect[i] = r; // set RECT item for this desktop
 
 		DrawActiveDesktop(buf, r, i);
 
-		if (desktop.numbers) 
+		if (s.m_desktop.numbers) 
 		{
+			char desktopNumber[4];
 			sprintf(desktopNumber, "%d", (i + 1));
 			DrawText(buf, desktopNumber, -1, &r, flags);
 		}
 	}
-	else if (position.vertical) 
+	else if (s.m_position.vertical) 
 	{
 		// Do loop to draw desktops other than current selected desktop
 		int i = 0;
 
 		do 
 		{					
-			row = i / frame.columns;
-			col = i % frame.columns + 1;
+			row = i / s.m_frame.columns;
+			col = i % s.m_frame.columns + 1;
 
-			if (currentDesktop == i) 
+			if (getRuntimeState().m_currentDesktop == i)
 			{
 				currentCol = col;
 				currentRow = row;
 			}
 			else 
 			{
-				r.left = frame.borderWidth + frame.bevelWidth + ((col - 1) * (desktop.width + frame.bevelWidth));
-				r.right = r.left + desktop.width;
-				r.top = frame.borderWidth + frame.bevelWidth + ((row) * (desktop.height + frame.bevelWidth));
-				r.bottom = r.top + desktop.height;
+				r.left = s.m_frame.borderWidth + s.m_frame.bevelWidth + ((col - 1) * (s.m_desktop.width + s.m_frame.bevelWidth));
+				r.right = r.left + s.m_desktop.width;
+				r.top = s.m_frame.borderWidth + s.m_frame.bevelWidth + ((row) * (s.m_desktop.height + s.m_frame.bevelWidth));
+				r.bottom = r.top + s.m_desktop.height;
 
 				//desktopRect[i] = r; // set RECT item for this desktop
 				//desktopRect.insert(desktopRect.begin() + i - 1, r);
 				desktopRect.push_back(r);
 
-				MakeStyleGradient(buf, &r, desktop.ownStyle ? desktop.style : &desktop.Style, false);
-				if (desktop.ownStyle)
-					CreateBorder(buf, &r, activeDesktop.borderColor, 1);
+				MakeStyleGradient(buf, &r, s.m_desktop.ownStyle ? s.m_desktop.style : &s.m_desktop.Style, false);
+				if (s.m_desktop.ownStyle)
+					CreateBorder(buf, &r, s.m_activeDesktop.borderColor, 1);
 				else
 				{
 					r.left  += 1;
 					r.top   += 1;
 					r.right   -= 1;
 					r.bottom  -= 1;
-					MakeStyleGradient(buf, &r, &activeDesktop.Style, false);
+					MakeStyleGradient(buf, &r, &s.m_activeDesktop.Style, false);
 				}
-				if (desktop.numbers) 
+				if (s.m_desktop.numbers) 
 				{
+					char desktopNumber[4];
 					sprintf(desktopNumber, "%d", (i + 1));
 					DrawText(buf, desktopNumber, -1, &r, flags);
 				}
 			}
 			i++;
 		}
-		while (i < desktops);
+		while (i < getRuntimeState().m_desktops);
 
 		// Do this now so bordered desktop is drawn last
-		i = currentDesktop;
+		i = getRuntimeState().m_currentDesktop;
 
-		r.left = frame.borderWidth + frame.bevelWidth + ((currentCol - 1) * (desktop.width + frame.bevelWidth));
-		r.right = r.left + desktop.width;
-		r.top = frame.borderWidth + frame.bevelWidth + ((currentRow) * (desktop.height + frame.bevelWidth));
-		r.bottom = r.top + desktop.height;
+		r.left = s.m_frame.borderWidth + s.m_frame.bevelWidth + ((currentCol - 1) * (s.m_desktop.width + s.m_frame.bevelWidth));
+		r.right = r.left + s.m_desktop.width;
+		r.top = s.m_frame.borderWidth + s.m_frame.bevelWidth + ((currentRow) * (s.m_desktop.height + s.m_frame.bevelWidth));
+		r.bottom = r.top + s.m_desktop.height;
 
 		//desktopRect[i] = r; // set RECT item for this desktop
 
 		DrawActiveDesktop(buf, r, i);
 
-		if (desktop.numbers) 
+		if (s.m_desktop.numbers) 
 		{
+			char desktopNumber[4];
 			sprintf(desktopNumber, "%d", (i + 1));
-			SetTextColor(buf, activeDesktop.borderColor);
+			SetTextColor(buf, s.m_activeDesktop.borderColor);
 			DrawText(buf, desktopNumber, -1, &r, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX);
 			//DrawText(buf, desktopNumber, strlen(desktopNumber), &r, DT_CALCRECT|DT_NOPREFIX);
-			//SetTextColor(buf, desktop.fontColor);
+			//SetTextColor(buf, s.m_desktop.fontColor);
 		}
 	}
 
@@ -230,13 +186,13 @@ void DrawBBPager(HWND hwnd)
 	DeleteObject(SelectObject(buf, oldfont));
 
 	// Draw windows on workspaces if wanted
-	if (desktop.windows)
+	if (s.m_desktop.windows)
 	{
-		winCount = 0; // Reset number of windows to 0 on each paint to be counted by...
-		winList.clear();
+		getRuntimeState().m_winCount = 0; // Reset number of windows to 0 on each paint to be counted by...
+		getRuntimeState().m_winList.clear();
 
 		// ... this function which passes HWNDs to CheckTaskEnumProc callback procedure
-		if (!is_xoblite && usingAltMethod) 
+		if (!getRuntimeState().m_is_xoblite && getRuntimeState().m_usingAltMethod)
 			EnumWindows(CheckTaskEnumProc_AltMethod, 0);
 		else
 			EnumWindows(CheckTaskEnumProc, 0); 
@@ -250,13 +206,13 @@ void DrawBBPager(HWND hwnd)
 		}*/
 
 		// Only paint windows if there are any!
-		if (winCount > 0)
+		if (getRuntimeState().m_winCount > 0)
 		{
 			// Start at end of list (bottom of zorder)
-			for (int i = (winCount - 1);i > -1;i--)
+			for (int i = (getRuntimeState().m_winCount - 1); i > -1; i--)
 			{
-				RECT win = winList[i].r;
-				RECT desk = desktopRect[winList[i].desk];
+				RECT win = getRuntimeState().m_winList[i].r;
+				RECT desk = desktopRect[getRuntimeState().m_winList[i].desk];
 
 				if (win.right - win.left <= 1 && win.bottom - win.top <= 1)
 					continue;
@@ -274,7 +230,7 @@ void DrawBBPager(HWND hwnd)
 				if (win.left < desk.left) 
 					win.left = desk.left; // + 1;
 
-				if (winList[i].sticky)
+				if (getRuntimeState().m_winList[i].sticky)
 				{
 					RECT sWin;
 					RECT sDesk;
@@ -283,7 +239,7 @@ void DrawBBPager(HWND hwnd)
 					win.left = win.left - desk.left;
 					win.right = win.right - desk.left;
 
-					for (int j = 0; j < desktops; j++)
+					for (int j = 0; j < getRuntimeState().m_desktops; j++)
 					{
 						sDesk = desktopRect[j];
 						sWin.bottom = sDesk.top + win.bottom;
@@ -291,62 +247,62 @@ void DrawBBPager(HWND hwnd)
 						sWin.left = sDesk.left + win.left;
 						sWin.right = sDesk.left + win.right;
 
-						if (winList[i].active) // draw active window style
+						if (getRuntimeState().m_winList[i].active) // draw active window style
 						{
 							DrawActiveWindow(buf, sWin);
-							RemoveFlash(winList[i].window, true);
+							RemoveFlash(getRuntimeState().m_winList[i].window, true);
 						}
-						else if (IsFlashOn(winList[i].window))
+						else if (IsFlashOn(getRuntimeState().m_winList[i].window))
 						{
 							DrawActiveWindow(buf, sWin);
 						}
 						else // draw inactive window style
 						{
 							DrawInactiveWindow(buf, sWin);
-							RemoveFlash(winList[i].window, true);
+							RemoveFlash(getRuntimeState().m_winList[i].window, true);
 						}
 
 						// Create a tooltip...
-						if (desktop.tooltips)
+						if (s.m_desktop.tooltips)
 						{
-							GetWindowText(winList[i].window, toolText, 255);
+							GetWindowText(getRuntimeState().m_winList[i].window, toolText, 255);
 							SetToolTip(&sWin, toolText);
 						}
 					}
 				}
 				else
 				{
-					if (winList[i].active) // draw active window style
+					if (getRuntimeState().m_winList[i].active) // draw active window style
 					{
 						DrawActiveWindow(buf, win);
-						RemoveFlash(winList[i].window, true);
+						RemoveFlash(getRuntimeState().m_winList[i].window, true);
 					}
-					else if (IsFlashOn(winList[i].window))
+					else if (IsFlashOn(getRuntimeState().m_winList[i].window))
 					{
 						DrawActiveWindow(buf, win);
 					}
 					else // draw inactive window style
 					{
 						DrawInactiveWindow(buf, win);
-						RemoveFlash(winList[i].window, true);
+						RemoveFlash(getRuntimeState().m_winList[i].window, true);
 					}
 
 					// Create a tooltip...
-					if (desktop.tooltips)
+					if (s.m_desktop.tooltips)
 					{
-						GetWindowText(winList[i].window, toolText, 255);
+						GetWindowText(getRuntimeState().m_winList[i].window, toolText, 255);
 						SetToolTip(&win, toolText);
 					}
 				}
 			}
 		}
 
-		if (winMoving)
+		if (getRuntimeState().m_winMoving)
 		{
-			RECT win = moveWin.r;
+			RECT win = getRuntimeState().m_moveWin.r;
 			RECT client;
 
-			GetClientRect(hwndBBPager, &client);
+			GetClientRect(getRuntimeState().m_hwndBBPager, &client);
 		
 			// This is done so that the window only shows within the pager
 			if (win.top < client.top) 
@@ -361,7 +317,7 @@ void DrawBBPager(HWND hwnd)
 			if (win.left < client.left) 
 				win.left = client.left; // + 1;
 
-			if (moveWin.active) // draw active window style
+			if (getRuntimeState().m_moveWin.active) // draw active window style
 				DrawActiveWindow(buf, win);
 			else // draw inactive window style
 				DrawInactiveWindow(buf, win);
@@ -372,7 +328,7 @@ void DrawBBPager(HWND hwnd)
 	ClearToolTips();
 
 	// Finally, copy from the paint buffer to the window...
-	BitBlt(hdc, 0, 0, frame.width, frame.height, buf, 0, 0, SRCCOPY);
+	BitBlt(hdc, 0, 0, s.m_frame.width, s.m_frame.height, buf, 0, 0, SRCCOPY);
 
     //restore the first previous whatever to the dc,
     //get in exchange back our bitmap, and delete it.
@@ -386,18 +342,18 @@ void DrawBBPager(HWND hwnd)
 }
 
 //===========================================================================
-
 void DrawActiveWindow(HDC buf, RECT r)
 {
 	COLORREF bColor;
+	Settings const & s = getSettings();
 
 	// Checks for windows just showing on the edges of the screen
 	if (r.bottom - r.top < 2)
 	{
-		if (!_stricmp(focusedWindow.styleType, "border"))
-			bColor = focusedWindow.borderColor;
+		if (!_stricmp(s.m_focusedWindow.styleType, "border"))
+			bColor = s.m_focusedWindow.borderColor;
 		else
-			bColor = window.borderColor;
+			bColor = s.m_window.borderColor;
 
 		HPEN borderPen = CreatePen(PS_SOLID, 1, bColor);
 		HPEN oldPen = (HPEN) SelectObject(buf, borderPen);
@@ -415,10 +371,10 @@ void DrawActiveWindow(HDC buf, RECT r)
 
 	if (r.right - r.left < 2)
 	{
-		if (!_stricmp(focusedWindow.styleType, "border"))
-			bColor = focusedWindow.borderColor;
+		if (!_stricmp(s.m_focusedWindow.styleType, "border"))
+			bColor = s.m_focusedWindow.borderColor;
 		else
-			bColor = window.borderColor;
+			bColor = s.m_window.borderColor;
 
 		HPEN borderPen = CreatePen(PS_SOLID, 1, bColor);
 		HPEN oldPen = (HPEN) SelectObject(buf, borderPen);
@@ -432,25 +388,26 @@ void DrawActiveWindow(HDC buf, RECT r)
 		return;
 	}
 
-	if (!_stricmp(focusedWindow.styleType, "texture"))
+	if (!_stricmp(s.m_focusedWindow.styleType, "texture"))
 	{
-		MakeStyleGradient(buf, &r, focusedWindow.ownStyle ? focusedWindow.style : &focusedWindow.Style, false);
-		CreateBorder(buf, &r, focusedWindow.borderColor, 1);
+		MakeStyleGradient(buf, &r, s.m_focusedWindow.ownStyle ? s.m_focusedWindow.style : &s.m_focusedWindow.Style, false);
+		CreateBorder(buf, &r, s.m_focusedWindow.borderColor, 1);
 	}
-	else if (!_stricmp(focusedWindow.styleType, "border"))
+	else if (!_stricmp(s.m_focusedWindow.styleType, "border"))
 	{
-		MakeStyleGradient(buf, &r, window.ownStyle ? window.style : &window.Style, false);
-		CreateBorder(buf, &r, focusedWindow.borderColor, 1);
+		MakeStyleGradient(buf, &r, s.m_window.ownStyle ? s.m_window.style : &s.m_window.Style, false);
+		CreateBorder(buf, &r, s.m_focusedWindow.borderColor, 1);
 	}
 	else
-		MakeStyleGradient(buf, &r, window.style, true);
+		MakeStyleGradient(buf, &r, s.m_window.style, true);
 }
 
 void DrawInactiveWindow(HDC buf, RECT r)
 {
+	Settings const & s = getSettings();
 	if (r.bottom - r.top < 2)
 	{
-		HPEN borderPen = CreatePen(PS_SOLID, 1, window.borderColor);
+		HPEN borderPen = CreatePen(PS_SOLID, 1, getSettings().m_window.borderColor);
 		HPEN oldPen = (HPEN) SelectObject(buf, borderPen);
 
 		MoveToEx(buf, r.left, r.top, NULL);
@@ -464,7 +421,7 @@ void DrawInactiveWindow(HDC buf, RECT r)
 
 	if (r.right - r.left < 2)
 	{
-		HPEN borderPen = CreatePen(PS_SOLID, 1, window.borderColor);
+		HPEN borderPen = CreatePen(PS_SOLID, 1, getSettings().m_window.borderColor);
 		HPEN oldPen = (HPEN) SelectObject(buf, borderPen);
 
 		MoveToEx(buf, r.left, r.top, NULL);
@@ -476,60 +433,60 @@ void DrawInactiveWindow(HDC buf, RECT r)
 		return;
 	}
 
-	MakeStyleGradient(buf, &r, window.ownStyle ? window.style : &window.Style, false);
-		CreateBorder(buf, &r, window.borderColor, 1);
+	MakeStyleGradient(buf, &r, s.m_window.ownStyle ? s.m_window.style : &s.m_window.Style, false);
+		CreateBorder(buf, &r, s.m_window.borderColor, 1);
 }
 
 //===========================================================================
-
 void DrawActiveDesktop(HDC buf, RECT r, int i)
 {
-	if (!_stricmp(activeDesktop.styleType, "border3")) 
+	Settings const & s = getSettings();
+	if (!_stricmp(s.m_activeDesktop.styleType, "border3")) 
 	{
 		r.right = r.right + 2;
 		r.bottom = r.bottom + 2;
 
-		if (activeDesktop.Style.parentRelative)
-			CreateBorder(buf, &r, activeDesktop.borderColor, 1);
+		if (s.m_activeDesktop.Style.parentRelative)
+			CreateBorder(buf, &r, s.m_activeDesktop.borderColor, 1);
 		else
 		{
-			MakeStyleGradient(buf, &r, activeDesktop.ownStyle ? activeDesktop.style : &activeDesktop.Style, false);
-			CreateBorder(buf, &r, activeDesktop.borderColor, 1);
+			MakeStyleGradient(buf, &r, s.m_activeDesktop.ownStyle ? s.m_activeDesktop.style : &s.m_activeDesktop.Style, false);
+			CreateBorder(buf, &r, s.m_activeDesktop.borderColor, 1);
 		}
 	}
-	else if (!_stricmp(activeDesktop.styleType, "border2")) 
+	else if (!_stricmp(s.m_activeDesktop.styleType, "border2")) 
 	{
 		r.left = r.left - 1;
 		r.top = r.top - 1;
 		r.right = r.right + 1;
 		r.bottom = r.bottom + 1;
 
-		if (!activeDesktop.ownStyle && activeDesktop.Style.parentRelative)
-			CreateBorder(buf, &r, activeDesktop.borderColor, 1);
+		if (!s.m_activeDesktop.ownStyle && s.m_activeDesktop.Style.parentRelative)
+			CreateBorder(buf, &r, s.m_activeDesktop.borderColor, 1);
 		else
 		{
-			MakeStyleGradient(buf, &r, activeDesktop.ownStyle ? activeDesktop.style : &activeDesktop.Style, false);
-			CreateBorder(buf, &r, desktop.Style.borderColor, 1);
+			MakeStyleGradient(buf, &r, s.m_activeDesktop.ownStyle ? s.m_activeDesktop.style : &s.m_activeDesktop.Style, false);
+			CreateBorder(buf, &r, s.m_desktop.Style.borderColor, 1);
 		}
 	}
-	else if (!_stricmp(activeDesktop.styleType, "border")) 
+	else if (!_stricmp(s.m_activeDesktop.styleType, "border")) 
 	{
-		if (!activeDesktop.ownStyle && activeDesktop.Style.parentRelative)
-			CreateBorder(buf, &r, activeDesktop.borderColor, 1);
+		if (!s.m_activeDesktop.ownStyle && s.m_activeDesktop.Style.parentRelative)
+			CreateBorder(buf, &r, s.m_activeDesktop.borderColor, 1);
 		else
 		{
-			MakeStyleGradient(buf, &r, activeDesktop.ownStyle ? activeDesktop.style : &activeDesktop.Style, false);
-			CreateBorder(buf, &r, desktop.Style.borderColor, 1);
+			MakeStyleGradient(buf, &r, s.m_activeDesktop.ownStyle ? s.m_activeDesktop.style : &s.m_activeDesktop.Style, false);
+			CreateBorder(buf, &r, s.m_desktop.Style.borderColor, 1);
 		}
 	}
-	else if (!_stricmp(activeDesktop.styleType, "texture")) 
+	else if (!_stricmp(s.m_activeDesktop.styleType, "texture")) 
 	{
-		if (!activeDesktop.ownStyle && !activeDesktop.Style.parentRelative)
-			MakeStyleGradient(buf, &r, activeDesktop.ownStyle ? activeDesktop.style : &activeDesktop.Style, false);
-		CreateBorder(buf, &r, activeDesktop.borderColor, 1);
+		if (!s.m_activeDesktop.ownStyle && !s.m_activeDesktop.Style.parentRelative)
+			MakeStyleGradient(buf, &r, s.m_activeDesktop.ownStyle ? s.m_activeDesktop.style : &s.m_activeDesktop.Style, false);
+		CreateBorder(buf, &r, s.m_activeDesktop.borderColor, 1);
 	}
-	else if (!desktop.Style.parentRelative) // "none"
-		MakeStyleGradient(buf, &r, desktop.ownStyle ? desktop.style : &desktop.Style, false);	
+	else if (!s.m_desktop.Style.parentRelative) // "none"
+		MakeStyleGradient(buf, &r, s.m_desktop.ownStyle ? s.m_desktop.style : &s.m_desktop.Style, false);	
 
 	//desktopRect[i] = r;
 	desktopRect.insert(desktopRect.begin() + i, r);
