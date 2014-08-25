@@ -1,0 +1,129 @@
+!  ~style
+style.name:                         meditation
+style.author:                       unkamunka
+style.date:                         october 2007
+style.credits:                      rembrandt van rijn
+style.comments:                     initial budge from (foggy memories of) vladimir raud's M$ 95 theme
+
+! ~toolbar
+toolbar:                            raised gradient horizontal
+toolbar.color:                      #000000
+toolbar.colorTo:                    #800000
+toolbar.textColor:                  #fafafa
+toolbar.justify:                    left
+toolbar.font:                       raised gradient horizontal
+toolbar.fontHeight:                 14
+
+toolbar.button:                     raised gradient vertical
+toolbar.button.color:               #ffff00
+toolbar.button.colorTo:             #800000
+toolbar.button.picColor:            #800000
+toolbar.button.pressed:             raised gradient horizontal
+toolbar.button.pressed.color:       #ffff80
+toolbar.button.pressed.colorTo:     #000000
+toolbar.button.pressed.picColor:    #000000
+
+toolbar.clock:                      raised flat
+toolbar.clock.color:                #800000
+toolbar.clock.textColor:            #fafafa
+
+toolbar.label:                      raised flat
+toolbar.label.color:                #800000
+toolbar.label.textColor:            #ffffff
+
+toolbar.windowLabel:                raised bevel2 gradient diagonal
+toolbar.windowLabel.color:          #d0d020
+toolbar.windowLabel.colorTo:        #ac6000
+toolbar.windowLabel.textColor:      #200000
+
+! ~menu
+menu.*.justify:                          left
+
+menu.bullet:                        diamond
+menu.bullet.position:               left
+
+menu.frame:                         raised gradient horizontal
+menu.frame.color:                   #c08000
+menu.frame.colorTo:                 #800000
+menu.frame.textColor:               #fafafa
+menu.frame.justify:                 left
+menu.frame.font:                    raised gradient horizontal
+menu.frame.fontHeight:              14
+
+menu.hilite:                        sunken flat
+menu.hilite.color:                  #800000
+menu.hilite.textColor:              #ffff80
+
+menu.title:                         flat gradient horizontal
+menu.title.color:                   #700000
+menu.title.colorTo:                 #e0e020
+menu.title.textColor:               #fafafa
+menu.title.justify:                 left
+menu.title.font:                    raised gradient horizontal
+menu.title.fontHeight:              14
+
+! ~window
+window.button.focus:                sunken bevel2 gradient vertical
+window.button.focus.color:          #800000
+window.button.focus.colorTo:        #000000
+window.button.focus.picColor:       #feef00
+window.button.pressed:              sunken flat
+window.button.pressed.color:        #800000
+window.button.pressed.picColor:     #600000
+window.button.unfocus:              raised flat
+window.button.unfocus.color:        #800000
+window.button.unfocus.picColor:     #600000
+
+window.fontHeight:                  14
+window.fontWeight:                  bold
+
+window.frame.focus.color:            #ffff00
+window.frame.unfocus.color:          #800000
+
+window.grip.focus:                  raised gradient horizontal
+window.grip.focus.color:            #c0c0c0
+window.grip.focus.colorTo:          #800000
+window.grip.unfocus:                raised gradient horizontal
+window.grip.unfocus.color:          #ffffff
+window.grip.unfocus.colorTo:        #800000
+
+window.handle.focus:                raised gradient horizontal
+window.handle.focus.color:          #ffff00
+window.handle.focus.colorTo:        #800000
+window.handle.unfocus:              raised gradient horizontal
+window.handle.unfocus.color:        #880000
+window.handle.unfocus.colorTo:      #700000
+
+window.justify:                     left
+
+window.label.focus:                 raised gradient horizontal
+window.label.focus.color:           #550000
+window.label.focus.colorTo:         #800000
+window.label.focus.textColor:       #ffffff
+window.label.unfocus:               raised gradient horizontal
+window.label.unfocus.color:         #400000
+window.label.unfocus.colorTo:       #800000
+window.label.unfocus.textColor:     #c8c8c8
+
+window.title.focus:                 raised gradient horizontal
+window.title.focus.color:           #aaaa40
+window.title.focus.colorTo:         #800000
+window.title.unfocus:               raised gradient horizontal
+window.title.unfocus.color:         #800000
+window.title.unfocus.colorTo:       #800000
+
+! ~slit
+slit.appearance:		sunken bevel2 gradient horizontal
+slit.color:				#330000
+slit.colorTo:			#440000
+
+! ~other
+font: bitstream vera sans
+borderColor:                        #806000
+borderWidth:                        2
+bevelWidth:                         0
+frameWidth:                         1
+handleWidth:                        2
+
+!rootCommand:                        bsetroot -c backgrounds/Meditat.jpg -gradient elliptic -from #000000 -to #800000
+rootCommand:                        bsetroot -gradient elliptic -from #000000 -to #800000
