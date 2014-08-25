@@ -233,6 +233,7 @@ void* StyleStructPtr(int sn_index, StyleStruct *pStyle)
     case SN_MENUTITLE               : return &pStyle->MenuTitle              ;
     case SN_MENUFRAME               : return &pStyle->MenuFrame              ;
     case SN_MENUHILITE              : return &pStyle->MenuHilite             ;
+    case SN_MENUGRIP                : return &pStyle->MenuGrip               ;
 
     case SN_MENUBULLET              : return &pStyle->menuBullet             ;
     case SN_MENUBULLETPOS           : return &pStyle->menuBulletPosition     ;
@@ -291,6 +292,7 @@ int Settings_ItemSize(int sn_index)
 
     case SN_MENUTITLE               :
     case SN_MENUFRAME               :
+    case SN_MENUGRIP                :
     case SN_MENUHILITE              : return sizeof (StyleItem);
 
     case SN_MENUBULLET              :
@@ -464,12 +466,13 @@ static const struct items StyleItems[] = {
     // window.font:
     { C_STY, SN_WINFOCUS_LABEL      , "window",                 SN_TOOLBAR      , A_FNT },
 #endif
-    { C_STY, SN_SLIT                , "slit",                   SN_TOOLBAR      , A_TEX|V_MAR|I_DEF|V_SPLIT },
-
+    { C_STY, SN_SLIT                , "slit",                   SN_TOOLBAR      , A_TEX|V_MAR|V_TXT|V_PIC|A_FNT|V_DIS|I_DEF|I_BUL|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
+	{ C_STY, SN_MENUGRIP            , "menu.grip",              SN_TOOLBAR      , A_TEX|V_MAR|V_TXT|V_PIC|A_FNT|V_DIS|I_DEF|I_BUL|V_OUTLINECOLOR|V_SHADOW|V_SPLIT },
     /* BlackboxZero 1.8.2012 */
     { C_INT, SN_MENUSEPMARGIN       , "menu.separator.margin",            0, 0 },
     { C_COL, SN_MENUSEPCOLOR        , "menu.separator.color",            0, 0 },
     { C_COL, SN_MENUSEPSHADOWCOLOR  , "menu.separator.shadowColor",        0, 0 },
+
     { 0,0,NULL,0,0 }
 };
 
@@ -1037,6 +1040,7 @@ static const struct rccfg extrc_cfg[] = {
     { "blackbox.recent.itemSortSize:",          C_INT, (void*)5,            &Settings_recentItemSortSize },
     { "blackbox.recent.withBeginEnd:",          C_BOL, (void*)true,         &Settings_recentBeginEnd },
     /* BlackboxZero 1.7.2012 */
+    { "blackbox.menu.grip.enabled:",            C_BOL, (void*)true,         &Settings_menusGripEnabled },
 
     { "blackbox.global.fonts.enabled",         C_BOL, (void*)false,         &Settings_globalFonts },
     { "blackbox.editor",                       C_STR, (void*)"notepad.exe",  Settings_preferredEditor },

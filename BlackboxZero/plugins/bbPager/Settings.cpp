@@ -359,7 +359,7 @@ void UpdateMonitorInfo()
 
 void GetStyleSettings()
 {
-	char tempstring[32];
+	char tempstring[1024];
 	char colorAsString[32] = "#000000";
 
 	// Get the path to the current style file from Blackbox...

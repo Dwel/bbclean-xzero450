@@ -23,6 +23,7 @@
 #include "../Settings.h"
 #include "bbshell.h"
 #include "MenuMaker.h"
+#include "Menu.h"
 
 // when no menu.rc file is found, use this default menu
 static const char default_root_menu[] =
@@ -232,9 +233,15 @@ skip:
 
         //====================
         case e_no_end:
-            MakeMenuNOP(pMenu, NLS0("missing [end]"));
+            if ( !Settings_menusGripEnabled )
+                MakeMenuNOP(pMenu, NLS0("missing [end]"));
+            else
+                MakeMenuGrip(pMenu, NLS0("missing [end]"));
+
         case e_end:
             MenuOption(pMenu, BBMENU_ISDROPTARGET);
+            if ( Settings_menusGripEnabled )
+                MakeMenuGrip(pMenu, strlen(pMenu->m_pMenuItems->m_pszTitle)?(pMenu->m_pMenuItems->m_pszTitle):(""));
             return pMenu;
 
         //====================
