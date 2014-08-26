@@ -16,7 +16,7 @@ extern "C" {
 DLL_EXPORT void
 Cpp_MakeStyleGradient(HDC hdc, RECT* rect, void* style, BOOL border)
 {
-	MakeStyleGradient(hdc, rect, (StyleItem*)style, border);
+	MakeStyleGradient(hdc, rect, (StyleItem*)style, border == TRUE);
 }
 
 

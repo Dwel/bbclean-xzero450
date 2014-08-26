@@ -74,7 +74,9 @@ static Menu * build_task_folder(int desk, const char *title, bool popup)
     sprintf(buf, (-1 == desk)
         ? "Core_tasks_icons" : "Core_tasks_workspace%d", desk+1);
     m = MakeNamedMenu(title, buf, popup);
-    if (m) fill_task_folder(m, desk, e_alltasks);
+    if (m)
+        fill_task_folder(m, desk, e_alltasks);
+    MakeMenuGrip(m, title);
     return m;
 }
 
@@ -132,6 +134,8 @@ Menu* MakeDesktopMenu(int mode, bool popup)
     if (d > 1) MakeMenuItem(s, NLS0("Remove Last"), "@BBCore.DelWorkspace", false);
     MakeMenuItemString(s, NLS0("Workspace Names"), "@BBCore.SetWorkspaceNames", Settings_workspaceNames);
     MakeSubmenu(m, s, NULL);
+    MakeMenuGrip(s, "New/Remove");
+    MakeMenuGrip(m, "Workspaces");
     return m;
 }
 

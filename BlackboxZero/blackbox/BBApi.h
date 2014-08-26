@@ -481,6 +481,7 @@ enum SN_INDEX {
     SN_MENUSEPMARGIN			, /* int* */
     SN_MENUSEPCOLOR				, /* COLORREF* */
     SN_MENUSEPSHADOWCOLOR		, /* COLORREF* */
+    SN_MENUGRIP					, /* StyleItem* */
 
     SN_LAST
 };
@@ -756,6 +757,7 @@ extern "C" {
     /* creates a Menu or Submenu, Id must be unique, fshow indicates whether
        the menu should be shown (true) or redrawn (false) */
     API_EXPORT Menu *MakeNamedMenu(const char* HeaderText, const char* Id, bool fshow);
+    API_EXPORT MenuItem * MakeMenuGrip (Menu * PluginMenu, LPCSTR Title ISNULL);
 
     /* inserts an item to execute a command or to set a boolean value */
     API_EXPORT MenuItem *MakeMenuItem(

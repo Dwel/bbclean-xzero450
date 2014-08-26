@@ -66,7 +66,7 @@ void dbg_printf (const char *fmt, ...)
     char buffer[1000]; 
     va_list arg;
     va_start(arg, fmt);
-    vsprintf (buffer, fmt, arg);
+    vsprintf_s (buffer, fmt, arg);
     OutputDebugString(buffer);
 }
 
@@ -158,7 +158,7 @@ int get_module(HWND hwnd, char *buffer, int buffsize)
     return r;
 }
 
-char *sprint_window(char *buffer, HWND hwnd, const char *msg)
+char *sprint_window(char *buffer, size_t max_ln, HWND hwnd, const char *msg)
 {
     char sClassName[200]; sClassName[0] = 0;
     GetClassName(hwnd, sClassName, sizeof sClassName);
@@ -169,7 +169,8 @@ char *sprint_window(char *buffer, HWND hwnd, const char *msg)
     char caption[128]; caption[0] = 0;
     GetWindowText(hwnd, caption, sizeof caption);
 
-    sprintf(buffer,
+    sprintf_s(buffer, max_ln,
+        
 #ifdef BBLEANSKIN_ENG32
         "%s window/32 with title \"%s\"\r\n\t%s:%s"
 #else
@@ -188,7 +189,7 @@ void send_log(HWND hwnd, const char *msg)
     if (false == mSkin.enableLog)
         return;
 
-    sprint_window(buffer, hwnd, msg);
+    sprint_window(buffer, 1000, hwnd, msg);
 
     COPYDATASTRUCT cds;
     cds.dwData = 201;
@@ -315,7 +316,7 @@ int HookWindow(HWND hwnd, int early)
     if (mSkin.enableLog)
     {
         char msg[100];
-        sprintf(msg, "%s%s",
+        sprintf_s(msg, 100, "%s%s",
             found > 0 ? "Excluded" : early ? "Hooked early" : "Hooked",
             IsWindowVisible(hwnd) ? "" : " invisible");
         send_log(hwnd, msg);
