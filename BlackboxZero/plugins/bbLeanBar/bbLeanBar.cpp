@@ -32,8 +32,9 @@
 #include "bbPlugin.h"
 #include "drawico.h"
 #ifndef NO_TIPS
-#include "tooltips.h"
+# include "tooltips.h"
 #endif
+//#include "BuffBmp.h"
 
 #include <shellapi.h>
 #include <shlobj.h>
@@ -126,7 +127,7 @@ void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam)
 
 //===========================================================================
 
-//#include "BuffBmp.cpp"
+#include "BuffBmp.cpp"
 #ifndef NO_DROP
 #include "TinyDropTarg.cpp"
 #endif
@@ -963,8 +964,8 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
         case WM_DESTROY:
             SendMessage(BBhwnd, BB_UNREGISTERMESSAGE, (WPARAM)hwnd, (LPARAM)msgs);
             SetDesktopMargin(hwnd, 0, 0);
-            delete this->pLeanBar;
-            delete this->pBuff;
+            delete pLeanBar;
+            delete pBuff;
             if (hFont) DeleteObject(hFont), hFont = NULL;
             this->reset_tbinfo();
             break;
