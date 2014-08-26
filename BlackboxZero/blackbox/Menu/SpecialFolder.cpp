@@ -237,6 +237,9 @@ void SpecialFolder::UpdateFolder(void)
         else
             MakeMenuNOP(this, NLS0("Invalid Path"));
     }
+
+	if ( Settings_menusGripEnabled )
+		AddMenuItem(new MenuGrip(strlen(m_pMenuItems->m_pszTitle) ? m_pMenuItems->m_pszTitle : ""));
 }
 
 //===========================================================================

@@ -242,10 +242,12 @@ protected:
     friend MenuItem* MakeMenuItemInt(Menu *PluginMenu, const char* Title, const char* Cmd, int val, int minval, int maxval);
     friend MenuItem* MakeMenuItemString(Menu *PluginMenu, const char* Title, const char* Cmd, const char* init_string);
     friend MenuItem* MakeMenuNOP(Menu *PluginMenu, const char* Title);
+    friend MenuItem* MakeMenuGrip(Menu *PluginMenu, LPCSTR Title);
     friend MenuItem* MakeMenuItemPath(Menu *ParentMenu, const char* Title, const char* path, const char* Cmd);
     friend Menu* MakeFolderMenu(const char *title, const char* path, const char *cmd);
     friend void MenuOption(Menu *pMenu, int flags, ...);
     friend void MenuItemOption(MenuItem *pItem, int option, ...);
+	friend Menu* ParseMenu(struct menu_src *src, const char *title, const char *IDString);
 
     friend void DelMenu(Menu *PluginMenu);
     friend MenuItem* helper_menu(Menu *PluginMenu, const char* Title, int menuID, MenuItem *pItem);
@@ -272,6 +274,7 @@ protected:
     friend class MenuItem;
     friend class SeparatorItem;
     friend class TitleItem;
+    friend class MenuGrip;
     friend class FolderItem;
     friend class CommandItem;
     friend class CommandItemEx;
@@ -328,7 +331,7 @@ public:
     void LinkSubmenu(Menu *pSubMenu);
     void Active(int bActive);
     void ShowRightMenu(Menu *pSub);
-    void ShowContextMenu(const char *path, LPCITEMIDLIST pidl);
+	void ShowContextMenu(const char *path, const void * pidl);
 
     void GetItemRect(RECT* r);
     void GetTextRect(RECT* r);
@@ -488,6 +491,15 @@ public:
     void Paint(HDC hDC);
     void Mouse(HWND hw, UINT nMsg, DWORD wP, DWORD lP);
 };
+
+class MenuGrip : public MenuItem
+{
+public:
+  MenuGrip(const char* pszTitle) : MenuItem(pszTitle) {}
+  void Paint(HDC hDC);
+  void Mouse(HWND hw, UINT nMsg, DWORD wP, DWORD lP);
+};
+
 
 //=======================================
 // An menuitem that is a pointer to a sub menu, these folder items

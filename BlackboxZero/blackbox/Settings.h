@@ -153,6 +153,7 @@ BBSETTING int  Settings_recentItemSortSize;
 BBSETTING bool Settings_recentBeginEnd;
 BBSETTING bool Settings_globalShadows;
 BBSETTING bool Settings_outlineText;
+BBSETTING bool Settings_menusGripEnabled;
 /* BlackboxZero 1.7.2012 */
 
 // feature select

@@ -103,7 +103,7 @@ void MenuItem::ShowRightMenu(Menu *pSub)
 }
 
 #ifndef BBTINY
-void MenuItem::ShowContextMenu(const char *path, LPCITEMIDLIST pidl)
+void MenuItem::ShowContextMenu(const char *path, const void * pidl)
 {
     ShowRightMenu(MakeContextMenu(path, pidl));
 }

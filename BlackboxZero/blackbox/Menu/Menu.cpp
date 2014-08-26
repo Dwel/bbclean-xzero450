@@ -1849,6 +1849,7 @@ MenuItem *helper_menu(Menu *PluginMenu, const char* Title, int menuID, MenuItem 
     }
     sub->AddMenuItem(pItem);
     sub->m_MenuID = menuID;
+    MakeMenuGrip(sub, Title);
     return MakeSubmenu(PluginMenu, sub);
 }
 
@@ -2604,6 +2605,18 @@ MenuItem* MakeMenuNOP(Menu *PluginMenu, const char* Title)
     pItem->m_bNOP = true;
     return PluginMenu->AddMenuItem(pItem);
 }
+
+//===========================================================================
+// API: MakeMenuGrip
+//===========================================================================
+
+MenuItem* MakeMenuGrip(Menu *PluginMenu, LPCSTR Title)
+{
+    if ( Settings_menusGripEnabled )
+        return PluginMenu->AddMenuItem(new MenuGrip(Title));
+    return 0;
+}
+
 
 //===========================================================================
 // API: MakeMenuItemPath

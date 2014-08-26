@@ -83,6 +83,7 @@ typedef struct StyleStruct
 	int MenuSepMargin;
 	COLORREF MenuSepColor;
 	COLORREF MenuSepShadowColor;
+    StyleItem MenuGrip;
 
 } StyleStruct;
 
