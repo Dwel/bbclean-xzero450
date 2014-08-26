@@ -31,6 +31,9 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
  ============================================================================
+ Foomp 1.8 (August 26 2014) / mojmir
+	» cleaning woman shift
+
  Foomp 1.7 (August 12 2006) / pkt-zer0
 	» Shadow support
 	» User-defined button actions and images
@@ -77,17 +80,84 @@
 
 #include "bbfoomp.h"
 
-LPSTR szAppName = "bbFoomp";			// The name of our window class, etc.
-LPSTR szVersion = "bbFoomp 1.7.1";		// Used in MessageBox titlebars
+#define BBFOOMP_UPDATE_TIMER 1
+#define BB_BRINGTOFRONT 10504
+#define TITLEWIDTH r.right - r.left
 
-LPSTR szInfoVersion = "1.7.1";
+LPSTR szAppName = "bbFoomp";			// The name of our window class, etc.
+LPSTR szVersion = "bbFoomp 1.8";		// Used in MessageBox titlebars
+
+LPSTR szInfoVersion = "1.8";
 LPSTR szInfoAuthor = "freeb0rn";
-LPSTR szInfoRelDate = "FILL IN LATER";
+LPSTR szInfoRelDate = "2014";
 LPSTR szInfoLink = "http://freeb0rn.com";
 LPSTR szInfoEmail = "isidoros.passadis@gmail.com";
 LPSTR szInfoUpdateURL = "http://desktopian.org/bb/plugins/plugins.txt";
 
 //====================
+
+HINSTANCE hInstance;
+HWND hwndPlugin, hwndBlackbox, hwndSlit;
+
+// Blackbox messages we want to subscribe to...
+int msgs[] = {BB_RECONFIGURE, BB_BROADCAST, 0};
+
+// Path Variables
+char rcpath[MAX_PATH];
+char stylepath[MAX_PATH] = "";
+
+// Variables that will be (later) dealt with with the settings.rc
+int screenwidth, screenheight;
+int xpos, ypos;
+int width, height, BorderWidth;
+int FooMode, FooWidth, FooModePrev;
+char FooPath[MAX_LINE_LENGTH];
+FoompButton buttons[NUM_BUTTONS];
+
+
+// Style items
+StyleItem OuterStyle, InnerStyle, ButtonStyle;
+COLORREF ShadowColor;
+
+char scFont[MAX_LINE_LENGTH];
+
+// Miscellaneous
+bool scHidden;
+bool FooDockedToSlit, FooOnTop, usingWin2kXP, FooTrans, FooAlign, FooShadowsEnabled;
+int FooScrollSpeed;
+bool recbinEmpty;
+int transparencyAlpha;
+int useRegKey;
+const int button_spacing = 12;
+bool FirstUpdate; // Moved this up here from below.
+
+// Menu Class
+Menu * scMenu = 0;
+Menu * scSubMenu = 0;
+Menu * scSubMenu2 = 0;
+
+// Display/graphic variables
+int DisplayMode;	// If 1 = display mode, then mode = title; if 2 = display mode, then mode = controls.
+
+// Determines style:
+int InnerStyleIndex;
+int OuterStyleIndex;
+
+// Title [DisplayMode] variables, classes, etc.
+struct Finfo
+{
+	char song_title[MAX_LINE_LENGTH];
+	HWND FooHandle;
+	void update ();
+};
+Finfo * FooClass;
+char CurrentSong[MAX_LINE_LENGTH];
+char DisplayedSong[MAX_LINE_LENGTH];
+char jAmpScrollFiller[256] = "       ";
+char NoInfoText[MAX_LINE_LENGTH];
+bool foobar_v9 = false; // Different commandline syntax needed for newer versions.
+
+
 
 bool SlitExists = false;
 
