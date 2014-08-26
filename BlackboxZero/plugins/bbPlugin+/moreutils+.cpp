@@ -31,7 +31,7 @@
 #include "BB.h"
 
 #define IS_SLASH(c) ((c) == '\\' || (c) == '/')
-#define array_count(ary) (sizeof(ary) / sizeof(ary[0]))
+//#define array_count(ary) (sizeof(ary) / sizeof(ary[0]))
 #define have_imp(pp) ((DWORD_PTR)pp > 1)
 #define NOT_XOBLITE strlen(BBVersion) != 7 && strlen(BBVersion) != 5
 
@@ -114,7 +114,7 @@ unsigned int eightScale_up(unsigned int i)
 // case insensitive string compare, up to length of second string
 int my_substr_icmp(const char *a, const char *b)
 {
-	return memicmp(a, b, strlen(b));
+	return _memicmp(a, b, strlen(b));
 }
 
 //===========================================================================
@@ -122,7 +122,7 @@ int my_substr_icmp(const char *a, const char *b)
 int n_stricmp(const char **pp, const char *s)
 {
 	int n = (int)strlen (s);
-	int i = memicmp(*pp, s, n);
+	int i = _memicmp(*pp, s, n);
 	if (i) return i;
 	i = (*pp)[n] - ' ';
 	if (i > 0) return i;
@@ -139,7 +139,7 @@ int trim_address(char q[MAX_PATH], int is, int js)
 	p = (strchr(q, is));
 	if (p != NULL)
 	{
-		p = strrev(strrchr(strrev(q), js));
+		p = _strrev(strrchr(_strrev(q), js));
 		strcpy(q, (const char *)(p));
 		return 1;
 	}
@@ -153,7 +153,7 @@ int trim_address(char q[MAX_PATH], int is, int js)
 
 int substr_icmp(const char *a, const char *b)
 {
-    return memicmp(a, b, strlen(b));
+    return _memicmp(a, b, strlen(b));
 }
 
 //===========================================================================

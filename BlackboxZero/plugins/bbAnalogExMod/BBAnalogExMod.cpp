@@ -699,7 +699,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			//===================
 
-			if (strnicmp(szTemp, "@BBAnalogExMod", 14))
+			if (_strnicmp(szTemp, "@BBAnalogExMod", 14))
 				return 0;
 			szTemp += 14;
 
