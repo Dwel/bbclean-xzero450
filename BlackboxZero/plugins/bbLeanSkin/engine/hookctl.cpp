@@ -66,7 +66,7 @@ void dbg_printf (const char *fmt, ...)
     char buffer[1000]; 
     va_list arg;
     va_start(arg, fmt);
-    vsprintf (buffer, fmt, arg);
+    vsprintf_s (buffer, fmt, arg);
     OutputDebugString(buffer);
 }
 

@@ -438,7 +438,7 @@ bool AgentType_Mixer_Vista::GetMute () const
 	BOOL mute = 0;
 	if (m_endpoint && S_OK == m_endpoint->GetMute(&mute))
 	{
-		return mute;
+		return mute == TRUE;
 	}
 	return false;
 }

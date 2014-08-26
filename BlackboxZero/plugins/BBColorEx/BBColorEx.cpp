@@ -248,7 +248,7 @@ ColorScheme_LoadEmbeddedColorScheme(ColorScheme* self)
 
 		if (strstr(p, "<3DCC>") != NULL)
 			{tag_type = 'X';  break;}
-		strlwr(p);
+		_strlwr(p);
 		if (strstr(p, " 3dc") != NULL && strstr(p, " start") != NULL)
 			{tag_type = 'A';  break;}
 	}
@@ -308,7 +308,7 @@ ColorScheme_LoadExternalFile(ColorScheme* self)
 	}
 
 	if ( 6 < strlen(filename)
-	     && stricmp(filename + (strlen(filename) - 6), ".style") == 0 )
+	     && _stricmp(filename + (strlen(filename) - 6), ".style") == 0 )
 	{
 		*strrchr(filename, '.') = '\0';
 	}
@@ -390,7 +390,7 @@ ReadItem(const char* file, const char* _key)
 	         ReadString(file, key, "Solid Flat Bevel1"),
 	         NUMBER_OF(value) );
 	value[NUMBER_OF(value) - 1] = '\0';
-	strlwr(value);
+	_strlwr(value);
 	if (strstr(value, "solid") != NULL) {
 		item.gradient = B_SOLID;
 	} else if (strstr(value, "parentrelative") != NULL) {
@@ -516,7 +516,7 @@ ColorScheme_LoadFromStyle(ColorScheme* self)
 			}
 		} else {
 			STRNCPY(tmp, key, NUMBER_OF(tmp));
-			strlwr(tmp);
+			_strlwr(tmp);
 			if (strstr(tmp, "color") != NULL) {
 				self->color[_index(elem)]
 				  = ReadColorEx(style, key);

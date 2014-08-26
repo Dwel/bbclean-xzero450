@@ -315,7 +315,7 @@ style_number_from_name(const char* s)
 	int i;
 
 	for (i = 0; i < (int)NUMBER_OF(STYLE_TABLE); i++)
-		if (!stricmp(s, STYLE_TABLE[i].name))
+		if (!_stricmp(s, STYLE_TABLE[i].name))
 			return STYLE_TABLE[i].number;
 
 	return SN_TOOLBAR;
@@ -573,11 +573,11 @@ unset_anti_auto_hide(void)
 static void
 _interpret_broam_bool(bool* var, const char* value)
 {
-	if (!stricmp(value, "toggle"))
+	if (!_stricmp(value, "toggle"))
 		*var = !(*var);
-	else if (!stricmp(value, "true"))
+	else if (!_stricmp(value, "true"))
 		*var = true;
-	else if (!stricmp(value, "false"))
+	else if (!_stricmp(value, "false"))
 		*var = false;
 	else
 		NOP();
@@ -589,10 +589,10 @@ interpret_broam(const char* broam)
 {
 	(*(G.pBBPlayer_InterpretBroam))(broam);
 
-	if (G.toggle_with_plugins && !stricmp(broam, "@BBShowPlugins")) {
+	if (G.toggle_with_plugins && !_stricmp(broam, "@BBShowPlugins")) {
 		interpret_broam("@BBPlayer.conf.visibility true");
 		return;
-	} else if (G.toggle_with_plugins && !stricmp(broam,"@BBHidePlugins")) {
+	} else if (G.toggle_with_plugins && !_stricmp(broam,"@BBHidePlugins")) {
 		interpret_broam("@BBPlayer.conf.visibility false");
 		return;
 	}
