@@ -1,8 +1,0 @@
-# depslib dependency file v1.0
-1109744166 source:d:\dev\projects\bbclean\plugins\bbtaskswitch\cpp_adaptor.cpp
-	<windows.h>
-	<BBApi.h>
-	"cpp_adaptor.h"
-
-1109744166 d:\dev\projects\bbclean\plugins\bbtaskswitch\cpp_adaptor.h
-
