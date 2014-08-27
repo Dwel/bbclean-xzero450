@@ -9,7 +9,7 @@ set(bbFoomp_SOURCES
 	src/bbfoomp.cpp
 	src/settings.cpp
 	src/foompbutton.cpp
-	src/style:.cpp
+	src/styles.cpp
 )
 
 add_library(bbFoomp SHARED ${bbFoomp_SOURCES})

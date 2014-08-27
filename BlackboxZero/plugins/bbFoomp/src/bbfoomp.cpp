@@ -1,5 +1,6 @@
 #include "bbfoomp.h"
 #include "settings.h"
+#include "styles.h"
 
 #define BBFOOMP_UPDATE_TIMER 1
 #define BB_BRINGTOFRONT 10504
@@ -30,8 +31,6 @@ int msgs[] = {BB_RECONFIGURE, BB_BROADCAST, 0};
 int FooModePrev;
 
 // Style items
-StyleItem OuterStyle, InnerStyle, ButtonStyle;
-COLORREF ShadowColor;
 
 // Miscellaneous
 bool usingWin2kXP;
@@ -62,13 +61,13 @@ bool SlitExists = false;
 
 //===========================================================================
 
-int beginPlugin(HINSTANCE hPluginInstance)
+int beginPlugin (HINSTANCE hPluginInstance)
 {
 	if (!hwndSlit)
-  {
-	MessageBox(0, "bbFoomp wants to be placed in slit!\nModify your plugins.rc, please.", szVersion, MB_OK | MB_ICONINFORMATION);
-	return 1;
-  }
+	{
+		MessageBox(0, "bbFoomp wants to be placed in slit!\nModify your plugins.rc, please.", szVersion, MB_OK | MB_ICONINFORMATION);
+		return 1;
+	}
 
 	WNDCLASS wc;
 	hwndBlackbox = GetBBWnd();
@@ -86,9 +85,8 @@ int beginPlugin(HINSTANCE hPluginInstance)
 	}
 
 	// Get plugin and style settings...
-	ReadRCSettings();
-	GetStyleSettings();
-
+	getSettings().ReadRCSettings();
+	getStyles().GetStyleSettings();
 	
 	// Tap into the FooClass! (It's variables are going to be used
 	// throughout the plugins. Window, handle etc.)
@@ -110,7 +108,7 @@ int beginPlugin(HINSTANCE hPluginInstance)
 						hPluginInstance,								// hInstance of .dll
 						NULL);
 	if (!hwndPlugin)
-	{						   
+	{
 		MessageBox(0, "Error creating window", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
 		return 1;
 	}
@@ -331,9 +329,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			// Paint border+background according to the current style...
 			GetClientRect(hwnd, &r);
-			MakeStyleGradient(buf, &r, &OuterStyle, OuterStyle.bordered);
+			MakeStyleGradient(buf, &r, &getStyles().OuterStyle, getStyles().OuterStyle.bordered);
 			
-			int offset = OuterStyle.borderWidth + getSettings().BorderWidth;
+			int offset = getStyles().OuterStyle.borderWidth + getSettings().BorderWidth;
 			r.left += offset;
 			r.top += offset;
 			r.right -= offset;
@@ -373,8 +371,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 
-			MakeStyleGradient(buf, &r, &InnerStyle, false);
-			int offset2 = OuterStyle.borderWidth + 3;
+			MakeStyleGradient(buf, &r, &getStyles().InnerStyle, false);
+			int offset2 = getStyles().OuterStyle.borderWidth + 3;
 			r.left += offset2;
 			r.top += offset2;
 			r.right -= offset2;
@@ -435,10 +433,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					srect.left		= r.left;
 					srect.right		= r.right; // No weird shadow artifacting on the right hand side.
 					srect.top		= r.top + 1;
-					SetTextColor(buf, GetShadowColor(InnerStyle));
+					SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
 					ExtTextOut(buf, (txtRefX+1), (srect.top), ETO_CLIPPED, &srect, temp, strlen(temp), NULL);
 				}
-				SetTextColor(buf, InnerStyle.TextColor);
+				SetTextColor(buf, getStyles().InnerStyle.TextColor);
 				ExtTextOut(buf, (txtRefX), (r.top), ETO_CLIPPED, &r, temp, strlen(temp), NULL);
 			}
 
@@ -455,10 +453,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					srect.left		= r.left + 1;
 					srect.right		= r.right + 1;
 					srect.top		= r.top + 1;
-					SetTextColor(buf, GetShadowColor(InnerStyle));
+					SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
 					DrawText(buf, FooClass->song_title, strlen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
 				}
-				SetTextColor(buf, InnerStyle.TextColor);
+				SetTextColor(buf, getStyles().InnerStyle.TextColor);
 				DrawText(buf, FooClass->song_title, strlen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
 	
 			}
@@ -578,7 +576,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// ==========
 				if (!_stricmp(token2, "ReadSettings"))
 				{
-					ReadRCSettings();
+					getSettings().ReadRCSettings();
 					UpdatePosition(); // Get new settings and resize window if needed...
 					SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
 					InvalidateRect(hwndPlugin, NULL, false);
@@ -614,7 +612,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					if (val > 0 && val <= 6)
 					{
 						WriteInt(getSettings().rcpath, "bbfoomp.InnerStyle:", val);
-						ReadRCSettings();
+						getSettings().ReadRCSettings();
 						UpdatePosition(); // Get new settings and resize window if needed...
 						SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
 						InvalidateRect(hwndPlugin, NULL, false);
@@ -628,7 +626,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					if (val > 0 && val <= 6)
 					{
 						WriteInt(getSettings().rcpath, "bbfoomp.OuterStyle:", val);
-						ReadRCSettings();
+						getSettings().ReadRCSettings();
 						UpdatePosition(); // Get new settings and resize window if needed...
 						SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
 						InvalidateRect(hwndPlugin, NULL, false);
@@ -650,7 +648,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						getSettings().FooAlign = true;
 						WriteBool(getSettings().rcpath, "bbfoomp.MegaLeftAlign:", getSettings().FooAlign);
 					}
-					ReadRCSettings();
+					getSettings().ReadRCSettings();
 					UpdatePosition(); // Get new settings and resize window if needed...
 					SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
 					InvalidateRect(hwndPlugin, NULL, false);
@@ -1084,7 +1082,8 @@ void UpdateTitle()
 
 void UpdatePosition()
 {
-	GetStyleSettings();
+	getStyles().GetStyleSettings();
+  UpdateTitle();
 	MoveWindow(hwndPlugin, getSettings().xpos, getSettings().ypos, getSettings().width, getSettings().height, true);
 	SetWindowPos(hwndPlugin, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 	return;
@@ -1229,33 +1228,6 @@ void Transparency ()
 			SetTransparency(hwndPlugin, (unsigned char)getSettings().transparencyAlpha);
 		}
 	}
-}
-
-//===========================================================================
-COLORREF MakeShadowColor(StyleItem &style)
-{
-	int rav, gav, bav;
-	if (style.type != B_SOLID)
-	{
-		rav = (GetRValue(style.Color)+GetRValue(style.ColorTo)) / 2;
-		gav = (GetGValue(style.Color)+GetGValue(style.ColorTo)) / 2;
-		bav = (GetBValue(style.Color)+GetBValue(style.ColorTo)) / 2;
-	}
-	else
-	{
-		rav = GetRValue(style.Color);
-		gav = GetGValue(style.Color);
-		bav = GetBValue(style.Color);
-	}
-
-	if (rav < 0x30) rav = 0;
-	else rav -= 0x10;
-	if (gav < 0x30) gav = 0;
-	else gav -= 0x10;
-	if (bav < 0x30) bav = 0;
-	else bav -= 0x10;
-
-	return RGB((BYTE)rav, (BYTE)gav, (BYTE)bav);
 }
 
 //===========================================================================

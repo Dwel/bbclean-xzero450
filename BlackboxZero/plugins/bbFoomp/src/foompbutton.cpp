@@ -1,19 +1,21 @@
 #include "foompbutton.h"
+#include "styles.h"
+#include "settings.h"
 
 void FoompButton::draw (HDC buf)
 {
 	//Create drawing tools
-	HPEN hDefPen = CreatePen(PS_SOLID, 1, OuterStyle.TextColor);
-	HPEN hPressedPen = CreatePen(PS_SOLID, 1, ButtonStyle.TextColor);
-	HPEN hShadowPen = CreatePen(PS_SOLID, 1, GetShadowColor(OuterStyle));
-	HPEN hPressedShadowPen = CreatePen(PS_SOLID, 1, GetShadowColor(ButtonStyle));
+	HPEN hDefPen = CreatePen(PS_SOLID, 1, getStyles().OuterStyle.TextColor);
+	HPEN hPressedPen = CreatePen(PS_SOLID, 1, getStyles().ButtonStyle.TextColor);
+	HPEN hShadowPen = CreatePen(PS_SOLID, 1, GetShadowColor(getStyles().OuterStyle));
+	HPEN hPressedShadowPen = CreatePen(PS_SOLID, 1, GetShadowColor(getStyles().ButtonStyle));
 	//Save current object
 	HGDIOBJ prev = SelectObject(buf,hDefPen);
 
 	if (pressed)
-		MakeStyleGradient(buf, &hitrect, &ButtonStyle, false);
+		MakeStyleGradient(buf, &hitrect, &getStyles().ButtonStyle, false);
 
-	if (FooShadowsEnabled)
+	if (getSettings().FooShadowsEnabled)
 	{
 		SelectObject(buf,pressed ? hPressedShadowPen : hShadowPen);
 		drawShape(buf,x+1,y+1);

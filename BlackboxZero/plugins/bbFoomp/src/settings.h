@@ -24,6 +24,5 @@ struct Settings
   void WriteDefaultRCSettings ();
 };
 
-
 Settings & getSettings ();
 

@@ -735,7 +735,7 @@ extern "C" {
     /* Draw a Pixmap for buttons, menu bullets, checkmarks ... */
     API_EXPORT void bbDrawPix(HDC hDC, RECT *p_rect, COLORREF picColor, int style);
     /* Create a font handle from styleitem, with parsing and substitution. */
-    API_EXPORT HFONT CreateStyleFont(StyleItem * si);
+    API_EXPORT HFONT CreateStyleFont (StyleItem const * si);
 
 	/* Draw text with shadow, etc. */
 	API_EXPORT int BBDrawText(HDC hDC, const char *lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem * si);
