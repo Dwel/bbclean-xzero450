@@ -1,12 +1,15 @@
 #INSTALL_FILES = $(BIN) readme.txt
 #INSTALL_IF_NEW = bbFoomp.rc
 
+#add_definitions(-DUNICODE -D_UNICODE)
+
 include_directories(${CMAKE_SOURCE_DIR}/blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin)
 
 set(bbFoomp_SOURCES
 	src/bbfoomp.cpp
+	src/foobar2000.cpp
 	src/settings.cpp
 	src/foompbutton.cpp
 	src/styles.cpp

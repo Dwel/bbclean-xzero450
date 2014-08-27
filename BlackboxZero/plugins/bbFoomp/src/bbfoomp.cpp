@@ -1,6 +1,7 @@
 #include "bbfoomp.h"
 #include "settings.h"
 #include "styles.h"
+#include <tchar.h>
 
 #define BBFOOMP_UPDATE_TIMER 1
 #define BB_BRINGTOFRONT 10504
@@ -10,15 +11,15 @@
 #define WM_NCXBUTTONDOWN 0x00AB
 #define WM_NCXBUTTONUP 0x00AC
 
-LPSTR szAppName = "bbFoomp";			// The name of our window class, etc.
-LPSTR szVersion = "bbFoomp 1.8";		// Used in MessageBox titlebars
+LPTSTR szAppName = TEXT("bbFoomp");			// The name of our window class, etc.
+LPTSTR szVersion = TEXT("bbFoomp 1.8");		// Used in MessageBox titlebars
 
-LPSTR szInfoVersion = "1.8";
-LPSTR szInfoAuthor = "freeb0rn";
-LPSTR szInfoRelDate = "2014";
-LPSTR szInfoLink = "http://freeb0rn.com";
-LPSTR szInfoEmail = "isidoros.passadis@gmail.com";
-LPSTR szInfoUpdateURL = "http://desktopian.org/bb/plugins/plugins.txt";
+LPTSTR szInfoVersion = TEXT("1.8");
+LPTSTR szInfoAuthor = TEXT("freeb0rn");
+LPTSTR szInfoRelDate = TEXT("2014");
+LPTSTR szInfoLink = TEXT("http://freeb0rn.com");
+LPTSTR szInfoEmail = TEXT("isidoros.passadis@gmail.com");
+LPTSTR szInfoUpdateURL = TEXT("http://desktopian.org/bb/plugins/plugins.txt");
 
 //====================
 
@@ -48,14 +49,14 @@ int DisplayMode;	// If 1 = display mode, then mode = title; if 2 = display mode,
 // Title [DisplayMode] variables, classes, etc.
 struct Finfo
 {
-	char song_title[MAX_LINE_LENGTH];
+	TCHAR song_title[MAX_LINE_LENGTH]; // UNICODE
 	HWND FooHandle;
 	void update ();
 };
 Finfo * FooClass = 0;
-char CurrentSong[MAX_LINE_LENGTH];
-char DisplayedSong[MAX_LINE_LENGTH];
-char jAmpScrollFiller[256] = "		 ";
+TCHAR CurrentSong[MAX_LINE_LENGTH];
+TCHAR DisplayedSong[MAX_LINE_LENGTH];
+TCHAR jAmpScrollFiller[256] = TEXT("		 ");
 bool foobar_v9 = false; // Different commandline syntax needed for newer versions.
 bool SlitExists = false;
 
@@ -65,7 +66,7 @@ int beginPlugin (HINSTANCE hPluginInstance)
 {
 	if (!hwndSlit)
 	{
-		MessageBox(0, "bbFoomp wants to be placed in slit!\nModify your plugins.rc, please.", szVersion, MB_OK | MB_ICONINFORMATION);
+		MessageBox(0, TEXT("bbFoomp wants to be placed in slit!\nModify your plugins.rc, please."), szVersion, MB_OK | MB_ICONINFORMATION);
 		return 1;
 	}
 
@@ -80,7 +81,7 @@ int beginPlugin (HINSTANCE hPluginInstance)
 	wc.lpszClassName = szAppName;		// our window class name
 	if (!RegisterClass(&wc)) 
 	{
-		MessageBox(hwndBlackbox, "Error registering window class", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
+		MessageBox(hwndBlackbox, TEXT("Error registering window class"), szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
 		return 1;
 	}
 
@@ -90,7 +91,8 @@ int beginPlugin (HINSTANCE hPluginInstance)
 	
 	// Tap into the FooClass! (It's variables are going to be used
 	// throughout the plugins. Window, handle etc.)
-	if(FooClass) delete FooClass;	//Make sure FooClass is deleted from previous instances.
+	if (FooClass)
+		delete FooClass;	//Make sure FooClass is deleted from previous instances.
 	FooClass = new Finfo;
 
 	// Create our window...
@@ -109,7 +111,7 @@ int beginPlugin (HINSTANCE hPluginInstance)
 						NULL);
 	if (!hwndPlugin)
 	{
-		MessageBox(0, "Error creating window", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
+		MessageBox(0, TEXT("Error creating window"), szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
 		return 1;
 	}
 
@@ -128,7 +130,7 @@ int beginPlugin (HINSTANCE hPluginInstance)
 	int UpdateInterval = 250;
 	if (!SetTimer(hwndPlugin, BBFOOMP_UPDATE_TIMER, UpdateInterval, (TIMERPROC)NULL))
 	{
-		MessageBox(0, "Error creating update timer", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
+		MessageBox(0, TEXT("Error creating update timer"), szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
 		return 1;
 	}
 
@@ -148,8 +150,6 @@ int beginPlugin (HINSTANCE hPluginInstance)
 	}
 	// This is a check to see if transparency exists in the settings and if so enable it.
 	Transparency();
-
-
 	return 0;
 }
 
@@ -380,7 +380,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			//====================
 			FooClass->update(); // make sure the current data is updated
-			strcpy(CurrentSong,FooClass->song_title);
+			_tcscpy(CurrentSong, FooClass->song_title);
 			// ===== End of grabbing name and handle, time to draw the text.
 
 			// Song title scrolling if songtitle > X characters as it will be clipped.
@@ -390,7 +390,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (getSettings().FooAlign == false) r.left = r.left;
 			}
 			static int txtRefX = r.left;
-			char temp[512] = "";
+			TCHAR temp[512] = TEXT("");
 			int textWidth;
 			int ret;
 			textWidth = r.right;
@@ -401,22 +401,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			r.top = getSettings().height / 2 - 5;
 			r.bottom = r.bottom+2;
 
-			strcat(temp, FooClass->song_title);
-			strcat(temp, jAmpScrollFiller);
+			_tcscat(temp, FooClass->song_title);//UNICODE
+			_tcscat(temp, jAmpScrollFiller);//UNICODE
 
 			HFONT font =  CreateStyleFont((StyleItem *)GetSettingPtr(SN_TOOLBAR));
 			HGDIOBJ oldfont = SelectObject(buf, font);
 			SetBkMode(buf, TRANSPARENT);
 
-			ret = DrawText(buf, temp, strlen(temp), &r2, DT_SINGLELINE | DT_CALCRECT);
+			ret = DrawText(buf, temp, _tcslen(temp), &r2, DT_SINGLELINE | DT_CALCRECT); //UNICODE
 			
 			// Scroll the text if needed
-			if ( (r2.right - r2.left + 118) > textWidth && strlen(FooClass->song_title) > 30) 
+			if ( (r2.right - r2.left + 118) > textWidth && _tcslen(FooClass->song_title) > 30) 
 			{	
 				SetTextAlign(buf,0);
 				// Title text repeater...
-					strcat(temp, FooClass->song_title);
-					strcat(temp, jAmpScrollFiller);
+					_tcscat(temp, FooClass->song_title);
+					_tcscat(temp, jAmpScrollFiller);
 				
 				// The actual scroller and the sliding scroll pointer!
 				if (DisplayMode == 1 && txtRefX <= (r2.left-(r2.right-10))) txtRefX = r.left;
@@ -434,10 +434,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					srect.right		= r.right; // No weird shadow artifacting on the right hand side.
 					srect.top		= r.top + 1;
 					SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
-					ExtTextOut(buf, (txtRefX+1), (srect.top), ETO_CLIPPED, &srect, temp, strlen(temp), NULL);
+					ExtTextOut(buf, (txtRefX + 1), (srect.top), ETO_CLIPPED, &srect, temp, _tcslen(temp), NULL);
 				}
 				SetTextColor(buf, getStyles().InnerStyle.TextColor);
-				ExtTextOut(buf, (txtRefX), (r.top), ETO_CLIPPED, &r, temp, strlen(temp), NULL);
+				ExtTextOut(buf, (txtRefX), (r.top), ETO_CLIPPED, &r, temp, _tcslen(temp), NULL);
 			}
 
 			
@@ -454,10 +454,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					srect.right		= r.right + 1;
 					srect.top		= r.top + 1;
 					SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
-					DrawText(buf, FooClass->song_title, strlen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
+					DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
 				}
 				SetTextColor(buf, getStyles().InnerStyle.TextColor);
-				DrawText(buf, FooClass->song_title, strlen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
+				DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
 	
 			}
 
@@ -542,25 +542,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// ==========
 				if (!_stricmp(token2, "Readme"))
 				{
-					char path[MAX_LINE_LENGTH], directory[MAX_LINE_LENGTH];
+					TCHAR path[MAX_LINE_LENGTH], directory[MAX_LINE_LENGTH];
 					int nLen;
 					// First we look for the readme file in the same folder as the plugin...
 					GetModuleFileName(hInstance, path, sizeof(path));
-					nLen = strlen(path) - 1;
+					nLen = _tcslen(path) - 1;
 					while (nLen >0 && path[nLen] != '\\') nLen--;
 					path[nLen + 1] = 0;
-					strcpy(directory, path);
-					strcat(path, "bbFoomp.htm");
-					if (FileExists(path)) BBExecute(GetDesktopWindow(), NULL, path, "", directory, SW_SHOWNORMAL, true);
+					_tcscpy(directory, path);
+					_tcscat(path, TEXT("bbFoomp.htm"));
+					if (FileExists(path))
+						BBExecute(GetDesktopWindow(), NULL, path, "", directory, SW_SHOWNORMAL, true);
 				}
 
 				// ==========
 				else if (!_stricmp(token2, "About"))
 				{
-					char temp[MAX_LINE_LENGTH];
-					strcpy(temp, szVersion);
-					strcat(temp, "\n\n© 2005 isidoros.passadis@gmail.com\n\nhttp://freeb0rn.com/\n#bb4win on irc.freenode.net	");
-					MessageBox(0, temp, "About this plugin...", MB_OK | MB_ICONINFORMATION);
+					TCHAR temp[MAX_LINE_LENGTH];
+					_tcscpy(temp, szVersion);
+					_tcscat(temp, TEXT("\n\n© 2005 isidoros.passadis@gmail.com\n\nhttp://freeb0rn.com/\n#bb4win on irc.freenode.net	"));
+					MessageBox(0, temp, TEXT("About this plugin..."), MB_OK | MB_ICONINFORMATION);
 					break;
 				}
 
@@ -676,7 +677,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// ==========
 				else if (!_stricmp(token2, "ToggFooMega"))
 				{
-					if (getSettings().width < 300) MessageBox(0, "Please assign a Width greater than 300\nin the bbfoomp.rc for this feature to work.", "ERROR: Feature Unusable at this Width", MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
+					if (getSettings().width < 300)
+						MessageBox(0, TEXT("Please assign a Width greater than 300\nin the bbfoomp.rc for this feature to work."), "ERROR: Feature Unusable at this Width", MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
 					else 
 					{
 						if (getSettings().FooMode != 3) 
@@ -1071,7 +1073,7 @@ void UpdateTitle()
 	if (CurrentSong != DisplayedSong || UpdateDisplay)
 	{
 		// Setting the CurrentSong as the Displayed song for the next Update.
-		strcpy(DisplayedSong,CurrentSong);
+		_tcscpy(DisplayedSong, CurrentSong);
 		UpdateDisplay = true;
 	}
 
@@ -1238,30 +1240,30 @@ void Finfo::update ()
 	// and plugins such as Foo_UI Columns change the handle name! So we have to figure out
 	// if UI Columns is being used and then re-grab the handle. Here goes!
 	// *** NOTE: Current support for foobar 9.1 and Columns UI 0.1.3 beta 1v5
-	strcpy(song_title,"");
+	_tcscpy(song_title, TEXT(""));
 	foobar_v9 = false;
-	if (FooHandle = FindWindow("{DA7CD0DE-1602-45e6-89A1-C2CA151E008E}", NULL)) // Foobar 8.3
+	if (FooHandle = FindWindow(TEXT("{DA7CD0DE-1602-45e6-89A1-C2CA151E008E}"), NULL)) // Foobar 8.3
 	{
 		GetWindowText(FooHandle, song_title, sizeof(song_title));
 		if (_stricmp(song_title, "uninteresting")==0) // It seems Columns UI 1.2 is loaded for 8.3
 		{
-			FooHandle = FindWindow("{E7076D1C-A7BF-4f39-B771-BCBE88F2A2A8}", NULL);
+			FooHandle = FindWindow(TEXT("{E7076D1C-A7BF-4f39-B771-BCBE88F2A2A8}"), NULL);
 			GetWindowText(FooHandle, song_title, sizeof(song_title));
 		}
 	}
-	else if (FooHandle = FindWindow("{DA7CD0DE-1602-45e6-89A1-C2CA151E008E}/1", NULL)) // Plain foobar 9.1
+	else if (FooHandle = FindWindow(TEXT("{DA7CD0DE-1602-45e6-89A1-C2CA151E008E}/1"), NULL)) // Plain foobar 9.1
 	{
 		foobar_v9 = true;
 		GetWindowText(FooHandle, song_title, sizeof(song_title));
 		if (char *c = strstr(song_title,"	[foobar2000 v0.9.") ) *c = 0; // Cut off trailing text
 	}
-	else if (FooHandle = FindWindow("{E7076D1C-A7BF-4f39-B771-BCBE88F2A2A8}", NULL)) // Foobar 9.1 with Coloumns UI
+	else if (FooHandle = FindWindow(TEXT("{E7076D1C-A7BF-4f39-B771-BCBE88F2A2A8}"), NULL)) // Foobar 9.1 with Coloumns UI
 	{
 		foobar_v9 = true;
 		GetWindowText(FooHandle, song_title, sizeof(song_title));
 	}
 	else // If there is no handle (foobar is not on), then display the NoInfoText var.
-		strcpy(song_title, getSettings().NoInfoText);
+		_tcscpy(song_title, getSettings().NoInfoText);
 }
 
 // EOF

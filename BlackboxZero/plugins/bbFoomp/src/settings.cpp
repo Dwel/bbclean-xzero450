@@ -73,25 +73,25 @@ void Settings::ReadRCSettings ()
 	};
 
 
-	char pluginDir[MAX_LINE_LENGTH];
+	TCHAR pluginDir[MAX_LINE_LENGTH];
 	int nLen;
 
 	// First we extract the plugin directory...
 	GetModuleFileName(hInstance, pluginDir, sizeof(pluginDir));
-	nLen = strlen(pluginDir) - 1;
+	nLen = _tcslen(pluginDir)-1;
 	while (nLen >0 && pluginDir[nLen] != '\\') nLen--;
 	pluginDir[nLen + 1] = 0;
 
 	// ...then we search for the bbfoomp.rc config file...
 	// (-> $UserAppData$\Blackbox -> plugin directory -> Blackbox directory)
-	strcpy(rcpath, ConfigFileExists("bbfoomp.rc", pluginDir));
-	if (!strlen(rcpath)) strcpy(rcpath, ConfigFileExists("bbfoomprc", pluginDir));
-	if (!strlen(rcpath))
+	_tcscpy(rcpath, ConfigFileExists("bbfoomp.rc", pluginDir));
+	if (!_tcslen(rcpath)) strcpy(rcpath, ConfigFileExists("bbfoomprc", pluginDir));
+	if (!_tcslen(rcpath))
 	{
 		// If bbfoomp.rc could not be found we create a new
 		// config file in the same folder as the plugin...
-		strcpy(rcpath, pluginDir);
-		strcat(rcpath, "bbfoomp.rc");
+		_tcscpy(rcpath, pluginDir);
+		_tcscat(rcpath, "bbfoomp.rc");
 		WriteDefaultRCSettings();
 	}
 
@@ -99,11 +99,11 @@ void Settings::ReadRCSettings ()
 
 	// Read bbfoomp settings from config file...
 #if defined _WIN64
-	strcpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Program Files (x86)\\foobar2000\\foobar2000.exe"));
+	_tcscpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Program Files (x86)\\foobar2000\\foobar2000.exe"));
 #else
-  strcpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Progra~1\\foobar2000\\foobar2000.exe"));
+	_tcscpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Progra~1\\foobar2000\\foobar2000.exe"));
 #endif
-  strcpy(NoInfoText, ReadString(rcpath, "bbfoomp.DefaultText:", "Nothing is playing"));
+  _tcscpy(NoInfoText, ReadString(rcpath, "bbfoomp.DefaultText:", "Nothing is playing"));
 	FooWidth = ReadInt(rcpath, "bbfoomp.foowidth:" , 200);
 	height = ReadInt(rcpath, "bbfoomp.height:", 20);
 	FooMode = ReadInt(rcpath, "bbfoomp.displaytype:", 2);
@@ -125,8 +125,8 @@ void Settings::ReadRCSettings ()
 		sprintf(cmdname,"bbfoomp.button%d.command:",i+1);
 		sprintf(altcmdname,"bbfoomp.button%d.altcommand:",i+1);
 		b.type = ButtonType(ReadInt(rcpath, picname, i));
-		strcpy(b.cmdarg, ReadString(rcpath, cmdname, default_commands[i]));
-		strcpy(b.altcmdarg, ReadString(rcpath, altcmdname, default_altcommands[i]));
+		_tcscpy(b.cmdarg, ReadString(rcpath, cmdname, default_commands[i]));
+		_tcscpy(b.altcmdarg, ReadString(rcpath, altcmdname, default_altcommands[i]));
 	}
 
 	xpos = ReadInt(rcpath, "bbfoomp.xpos:", 10);
@@ -142,7 +142,7 @@ void Settings::ReadRCSettings ()
 	// Minimum settings checks.
 	if (height < (15 + BorderWidth) || width < 0 || BorderWidth < 0)
 	{
-		MessageBox(0, "The value you have inputted for either: \nheight, width or border-width is below the minimum.\nThe values will default. Please consult the Readme for the minimums.", "ERROR: Illegal value set.", MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
+		MessageBox(0, TEXT("The value you have inputted for either: \nheight, width or border-width is below the minimum.\nThe values will default. Please consult the Readme for the minimums."), "ERROR: Illegal value set.", MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
 		FooWidth = 200;
 		height = 22;
 		BorderWidth = 3;

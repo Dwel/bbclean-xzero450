@@ -57,7 +57,7 @@ void Styles::GetStyleSettings()
 	ButtonStyle = *toolbarButtonPressed;
 
 //	SIZE size;
-	HDC fonthdc = CreateDC("DISPLAY", NULL, NULL, NULL);
+	HDC fonthdc = CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
 	HFONT font = CreateStyleFont(toolbar);
 	HGDIOBJ oldfont = SelectObject(fonthdc, font);
 //	GetTextExtentPoint32(fonthdc, foobarWnd, 32, &size);
