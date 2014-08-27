@@ -7,6 +7,9 @@ include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin)
 
 set(bbFoomp_SOURCES
 	src/bbfoomp.cpp
+	src/settings.cpp
+	src/foompbutton.cpp
+	src/style:.cpp
 )
 
 add_library(bbFoomp SHARED ${bbFoomp_SOURCES})
