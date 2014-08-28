@@ -322,7 +322,7 @@ int FuzzyMatch(COLORREF focus, COLORREF unfocus)
 //===========================================================================
 #define _CopyOffsetRect(lprcDst, lprcSrc, dx, dy) (*lprcDst).left = (*lprcSrc).left + (dx), (*lprcDst).right = (*lprcSrc).right + (dx), (*lprcDst).top = (*lprcSrc).top + (dy), (*lprcDst).bottom = (*lprcSrc).bottom + (dy)
 
-int BBDrawText(HDC hDC, const char *lpString, int nCount, RECT *lpRect, unsigned uFormat, StyleItem * pSI)
+/*int BBDrawText(HDC hDC, const char *lpString, int nCount, RECT *lpRect, unsigned uFormat, StyleItem * pSI)
 {
 #ifdef NOT_XOBLITE  
 	RECT Rs;
@@ -363,7 +363,7 @@ int BBDrawText(HDC hDC, const char *lpString, int nCount, RECT *lpRect, unsigned
 	}
 #endif
 return DrawText(hDC, lpString, nCount, lpRect, uFormat);
-}
+}*/
 
 COLORREF mixcolors(COLORREF c1, COLORREF c2, int f)
 {

@@ -128,7 +128,7 @@ void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam)
 //===========================================================================
 // Plugin support for ShadowColor & OutlineColor
 
-int BB_DrawText(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uFormat, StyleItem * pSI)
+/*int BB_DrawText(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uFormat, StyleItem * pSI)
 {
 		int (*pBBDrawText)(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uFormat, StyleItem * pSI);
 		*(FARPROC*)&pBBDrawText = GetProcAddress((HINSTANCE)GetModuleHandle(NULL), "BBDrawText");
@@ -137,7 +137,7 @@ int BB_DrawText(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uForma
 		else
 			DrawText(hDC, lpString, -1, rc, uFormat);
 		return 1;
-}
+}*/
 
 //===========================================================================
 

@@ -433,7 +433,7 @@ public:
         ThisWin.right   -= i;
         int s = ThisWin.right - ThisWin.left;
 
-        BB_DrawText(m_bar->hdcPaint, tl->caption, -1, &ThisWin,
+        BBDrawText(m_bar->hdcPaint, tl->caption, -1, &ThisWin,
             (s > s1.right ? TBJustify : DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX),
             pSI
             );
@@ -708,7 +708,7 @@ public:
         r.right = mr.right - i;
         r.top   = mr.top;
         r.bottom = mr.bottom;
-        BB_DrawText(m_bar->hdcPaint, m_text, -1, &r, TBJustify, pSI);
+        BBDrawText(m_bar->hdcPaint, m_text, -1, &r, TBJustify, pSI);
         SelectObject(m_bar->hdcPaint, oldfont);
 
     }
