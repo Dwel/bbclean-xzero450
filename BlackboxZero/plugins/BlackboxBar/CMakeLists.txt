@@ -1,19 +1,14 @@
 #INSTALL_FILES = $(BIN) -as bbLeanBar+.txt readme.txt
-#INSTALL_IF_NEW = bbLeanBar.rc
 set(BlackboxBar_SOURCES
-	bbLeanBar+.cpp
+	BlackboxBar.cpp
 )
 
-set(BlackboxBar_CONFIGS
-  bbLeanBar.rc
-)
-
-set(BlackboxBar_RESOURCES bbLeanBar+_private.rc)
+set(BlackboxBar_CONFIGS BlackboxBar.rc)
+set(BlackboxBar_RESOURCES BlackboxBar_private.rc)
 
 set(CMAKE_RC_COMPILER_INIT windres)
 ENABLE_LANGUAGE(RC)
 
-add_definitions(-D__LeanBarPlus__)
 add_definitions(-DNO_BBLIB)
 include_directories(${CMAKE_SOURCE_DIR}/blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
@@ -25,6 +20,6 @@ target_link_libraries(BlackboxBar version comctl32)
 set_property(TARGET BlackboxBar PROPERTY FOLDER "plugins/BlackboxBar")
 
 install(TARGETS BlackboxBar RUNTIME DESTINATION plugins/BlackboxBar)
-if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbLeanBar/${BlackboxBar_CONFIGS}")
+if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/BlackboxBar/${BlackboxBar_CONFIGS}")
 	install(FILES ${BlackboxBar_CONFIGS} DESTINATION plugins/BlackboxBar)
 endif()
