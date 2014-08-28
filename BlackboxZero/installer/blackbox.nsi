@@ -178,8 +178,8 @@ SkipXP32_2:
 	#File /r "vs_xp_32\plugins\bbInterface\"
   SetOutPath $INSTDIR\plugins\bbKeys
 	File /r "vs_xp_32\plugins\bbKeys\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar
-	File /r "vs_xp_32\plugins\bbLeanBar\"
+  SetOutPath $INSTDIR\plugins\BlackboxBar
+	File /r "vs_xp_32\plugins\BlackboxBar\"
   SetOutPath $INSTDIR\plugins\bbLeanSkin
 	File /r "vs_xp_32\plugins\bbLeanSkin\"
   SetOutPath $INSTDIR\plugins\bbSlit
@@ -208,8 +208,6 @@ SkipXP32_3:
 	File /r "vs_xp_32\plugins\bbSeekBar\"
   SetOutPath $INSTDIR\plugins\bbFoomp
 	File /r "vs_xp_32\plugins\bbFoomp\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar+
-	File /r "vs_xp_32\plugins\bbLeanBar+\"
   SetOutPath $INSTDIR\plugins\BBMagnify
 	File /r "vs_xp_32\plugins\BBMagnify\"
   SetOutPath $INSTDIR\plugins\bbPager
@@ -297,8 +295,8 @@ SkipXP64_2:
 	#File /r "vs_xp_64\plugins\bbInterface\"
   SetOutPath $INSTDIR\plugins\bbKeys
 	File /r "vs_xp_64\plugins\bbKeys\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar
-	File /r "vs_xp_64\plugins\bbLeanBar\"
+  SetOutPath $INSTDIR\plugins\BlackboxBar
+	File /r "vs_xp_64\plugins\BlackboxBar\"
   SetOutPath $INSTDIR\plugins\bbLeanSkin
 	File /r "vs_xp_64\plugins\bbLeanSkin\"
   SetOutPath $INSTDIR\plugins\bbSlit
@@ -327,8 +325,6 @@ SkipXP64_3:
 	File /r "vs_xp_64\plugins\bbSeekBar\"
   SetOutPath $INSTDIR\plugins\bbFoomp
 	File /r "vs_xp_64\plugins\bbFoomp\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar+
-	File /r "vs_xp_64\plugins\bbLeanBar+\"
   SetOutPath $INSTDIR\plugins\BBMagnify
 	File /r "vs_xp_64\plugins\BBMagnify\"
   SetOutPath $INSTDIR\plugins\bbPager
@@ -418,8 +414,8 @@ SkipVista32_2:
 	#File /r "vs_vista_32\plugins\bbInterface\"
   SetOutPath $INSTDIR\plugins\bbKeys
 	File /r "vs_vista_32\plugins\bbKeys\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar
-	File /r "vs_vista_32\plugins\bbLeanBar\"
+  SetOutPath $INSTDIR\plugins\BlackboxBar
+	File /r "vs_vista_32\plugins\BlackboxBar\"
   SetOutPath $INSTDIR\plugins\bbLeanSkin
 	File /r "vs_vista_32\plugins\bbLeanSkin\"
   SetOutPath $INSTDIR\plugins\bbSlit
@@ -448,8 +444,6 @@ SkipVista32_3:
 	File /r "vs_vista_32\plugins\bbSeekBar\"
   SetOutPath $INSTDIR\plugins\bbFoomp
 	File /r "vs_vista_32\plugins\bbFoomp\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar+
-	File /r "vs_vista_32\plugins\bbLeanBar+\"
   SetOutPath $INSTDIR\plugins\BBMagnify
 	File /r "vs_vista_32\plugins\BBMagnify\"
   SetOutPath $INSTDIR\plugins\bbPager
@@ -539,8 +533,8 @@ SkipVista64_2:
 	#File /r "vs_vista_64\plugins\bbInterface\"
   SetOutPath $INSTDIR\plugins\bbKeys
 	File /r "vs_vista_64\plugins\bbKeys\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar
-	File /r "vs_vista_64\plugins\bbLeanBar\"
+  SetOutPath $INSTDIR\plugins\BlackboxBar
+	File /r "vs_vista_64\plugins\BlackboxBar\"
   SetOutPath $INSTDIR\plugins\bbLeanSkin
 	File /r "vs_vista_64\plugins\bbLeanSkin\"
   SetOutPath $INSTDIR\plugins\bbSlit
@@ -569,8 +563,6 @@ SkipVista64_3:
 	File /r "vs_vista_64\plugins\bbSeekBar\"
   SetOutPath $INSTDIR\plugins\bbFoomp
 	File /r "vs_vista_64\plugins\bbFoomp\"
-  SetOutPath $INSTDIR\plugins\bbLeanBar+
-	File /r "vs_vista_64\plugins\bbLeanBar+\"
   SetOutPath $INSTDIR\plugins\BBMagnify
 	File /r "vs_vista_64\plugins\BBMagnify\"
   SetOutPath $INSTDIR\plugins\bbPager
