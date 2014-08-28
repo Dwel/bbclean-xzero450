@@ -30,6 +30,7 @@
 #include "bblib.h"
 #include <winuser.h>
 
+//@TODO: why?
 #define DWORD_PTR unsigned long
 
 //===========================================================================
@@ -52,9 +53,8 @@ int File_Exists(const char* szFileName)
 
 int locate_file(HINSTANCE hInstance, char *path, const char *fname, const char *ext)
 {
-	char *file_name_start;
 	GetModuleFileName(hInstance, path, MAX_PATH);
-	file_name_start = strrchr(path, '\\');
+	char *file_name_start = strrchr(path, '\\');
 	if (file_name_start) ++file_name_start;
 	else file_name_start = strchr(path, 0);
 	if (stristr(fname, "."))
@@ -77,14 +77,13 @@ int bbPlugin_LocateFile(HINSTANCE hInstance, LPSTR lpPluginPath, DWORD nSize, LP
 	int i = 0;
 	do
 	{
-		char *file_name_start;
 		// First and third, we look for the config file
 		// in the same folder as the plugin...
 		hInst = hInstance;
 		// second we check the blackbox directory
 		if (i == 1) hInst = NULL;
 		GetModuleFileName(hInst, lpPluginPath, nSize);
-		file_name_start = strrchr(lpPluginPath, '\\');
+		char *file_name_start = strrchr(lpPluginPath, '\\');
 		if (file_name_start) ++file_name_start;
 		else file_name_start = strchr(lpPluginPath, 0);
 		if (stristr(lpString, "."))
@@ -186,9 +185,8 @@ int get_substring_index (const char *key, const char * const * string_array)
 
 void draw_line_h(HDC hDC, int x1, int x2, int y, int w, COLORREF C)
 {
-    HGDIOBJ oldPen;
     if (0 == w) return;
-    oldPen = SelectObject(hDC, CreatePen(PS_SOLID, 1, C));
+    HGDIOBJ oldPen = SelectObject(hDC, CreatePen(PS_SOLID, 1, C));
     do
     {
         MoveToEx(hDC, x1, y, NULL);
@@ -305,10 +303,10 @@ COLORREF Settings_CreateShadowColor(COLORREF textColor)
 
 int FuzzyMatch(COLORREF focus, COLORREF unfocus)
 {
-	int diff;
-	
 	if (focus == unfocus)
 		return 1;
+
+	int diff;
 
 	if (focus > unfocus)
 		diff = GetRValue(focus) - GetRValue(unfocus) + GetGValue(focus) - GetGValue(unfocus) + GetBValue(focus) - GetBValue(unfocus);
@@ -321,8 +319,7 @@ int FuzzyMatch(COLORREF focus, COLORREF unfocus)
 	return 0;
 }
 
-__inline int tobyte(int v)
-{
+inline int tobyte(int v) {
     return ((v<0)?0:(v>255)?255:v);
 }
 
