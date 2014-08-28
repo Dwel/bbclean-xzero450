@@ -1,5 +1,6 @@
 #include "settings.h"
 #include "BBApi.h"
+#include <tchar.h>
 
 Settings g_settings;
 Settings & getSettings () { return g_settings; } // "singleton"
