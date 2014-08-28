@@ -1,15 +1,14 @@
 #INSTALL_FILES = $(BIN) -as bbLeanBar+.txt readme.txt
 #INSTALL_IF_NEW = bbLeanBar.rc
-set(bbLeanBarPlus_SOURCES
-	bbLeanBar+.cpp
+set(BlackboxBar_SOURCES
 	bbLeanBar+.cpp
 )
 
-set(bbLeanBarPlus_CONFIGS
+set(BlackboxBar_CONFIGS
   bbLeanBar.rc
 )
 
-set(bbLeanBarPlus_RESOURCES bbLeanBar+_private.rc)
+set(BlackboxBar_RESOURCES bbLeanBar+_private.rc)
 
 set(CMAKE_RC_COMPILER_INIT windres)
 ENABLE_LANGUAGE(RC)
@@ -19,13 +18,13 @@ add_definitions(-DNO_BBLIB)
 include_directories(${CMAKE_SOURCE_DIR}/blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_SOURCE_DIR}/plugins/bbPlugin+)
-add_library(bbLeanBar+ SHARED ${bbLeanBarPlus_SOURCES} ${bbLeanBarPlus_RESOURCES})
-target_link_libraries(bbLeanBar+ blackbox bblib bbPlugin+)
-target_link_libraries(bbLeanBar+ version comctl32)
+add_library(BlackboxBar SHARED ${BlackboxBar_SOURCES} ${BlackboxBar_RESOURCES})
+target_link_libraries(BlackboxBar blackbox bblib bbPlugin+)
+target_link_libraries(BlackboxBar version comctl32)
 
-set_property(TARGET bbLeanBar+ PROPERTY FOLDER "plugins/bbLeanBar+")
+set_property(TARGET BlackboxBar PROPERTY FOLDER "plugins/BlackboxBar")
 
-install(TARGETS bbLeanBar+ RUNTIME DESTINATION plugins/bbLeanBar+)
-if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbLeanBar/${bbLeanBarPlus_CONFIGS}")
-	install(FILES ${bbLeanBarPlus_CONFIGS} DESTINATION plugins/bbLeanBar+)
+install(TARGETS BlackboxBar RUNTIME DESTINATION plugins/BlackboxBar)
+if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/plugins/bbLeanBar/${BlackboxBar_CONFIGS}")
+	install(FILES ${BlackboxBar_CONFIGS} DESTINATION plugins/BlackboxBar)
 endif()
