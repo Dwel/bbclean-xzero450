@@ -3,7 +3,17 @@
 
 namespace pfc {
 
-	GUID GUID_from_text(const char * text);
+	class GUID_from_text : public GUID
+	{
+		unsigned read_hex(char c);
+		unsigned read_byte(const char * ptr);
+		unsigned read_word(const char * ptr);
+		unsigned read_dword(const char * ptr);
+		void read_bytes(unsigned char * out,unsigned num,const char * ptr);
+
+	public:
+		GUID_from_text(const char * text);
+	};
 
 	class print_guid
 	{
@@ -29,7 +39,7 @@ namespace pfc {
 		return guid;
 	}
 	static GUID xorGUID(const GUID & v1, const GUID & v2) {
-		GUID temp; memxor(&temp, &v1, &v2, sizeof(GUID)); return temp;
+		GUID temp; memxor(&temp, &v1, &v1, sizeof(GUID)); return temp;
 	}
 
 	class format_guid_cpp : public pfc::string_formatter {

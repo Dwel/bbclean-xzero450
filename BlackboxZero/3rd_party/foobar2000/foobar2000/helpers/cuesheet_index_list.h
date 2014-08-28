@@ -12,7 +12,6 @@ struct t_cuesheet_index_list
 	double m_positions[count];
 
 	inline double start() const {return m_positions[1];}
-	inline double pregap() const {return m_positions[1] - m_positions[0];}
 	bool is_empty() const;
 
 	bool is_valid() const;

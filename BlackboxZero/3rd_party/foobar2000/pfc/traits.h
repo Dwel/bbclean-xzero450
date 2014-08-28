@@ -78,5 +78,4 @@ namespace pfc {
 
 	template<typename T,t_size p_count>
 	class traits_t<T[p_count]> : public traits_t<T> {};
-
 }

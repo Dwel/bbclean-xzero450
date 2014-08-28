@@ -56,7 +56,7 @@ void dialog_resize_helper::on_wm_size()
 				else if (e.flags & Y_SIZE)
 					dest_cy += delta_y;
 				
-				hWinPosInfo = DeferWindowPos(hWinPosInfo, wnd,0,dest_x,dest_y,dest_cx,dest_cy,SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+				DeferWindowPos(hWinPosInfo, wnd,0,dest_x,dest_y,dest_cx,dest_cy,SWP_NOZORDER);
 			}
 		}
 		if (sizegrip != 0)
@@ -64,7 +64,7 @@ void dialog_resize_helper::on_wm_size()
 			RECT rc, rc_grip;
 			GetClientRect(parent, &rc);
 			GetWindowRect(sizegrip, &rc_grip);
-			hWinPosInfo = DeferWindowPos(hWinPosInfo, sizegrip, NULL, rc.right - (rc_grip.right - rc_grip.left), rc.bottom - (rc_grip.bottom - rc_grip.top), 0, 0, SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
+			DeferWindowPos(hWinPosInfo, sizegrip, NULL, rc.right - (rc_grip.right - rc_grip.left), rc.bottom - (rc_grip.bottom - rc_grip.top), 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		}
 		EndDeferWindowPos(hWinPosInfo);
 		//RedrawWindow(parent,0,0,RDW_INVALIDATE);

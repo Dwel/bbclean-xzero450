@@ -106,9 +106,6 @@ void file_info_const_impl::copy(const file_info & p_source)
 	t_size hintmap_size = 0;
 #endif
 
-	const char * optbuf[64];
-	size_t optwalk = 0;
-
 	{
 //		profiler(file_info_const_impl__copy__pass1);
 		t_size index;
@@ -121,9 +118,8 @@ void file_info_const_impl::copy(const file_info & p_source)
 		{
 			{
 				const char * name = p_source.meta_enum_name(index);
-				const char * opt = optimize_fieldname(name);
-				if (optwalk < _countof(optbuf)) optbuf[optwalk++] = opt;
-				if (opt == NULL) stringbuffer_size += strlen(name) + 1;
+				if (optimize_fieldname(name) == 0)
+					stringbuffer_size += strlen(name) + 1;
 			}
 
 			t_size val; const t_size val_max = p_source.meta_enum_value_count(index);
@@ -148,9 +144,7 @@ void file_info_const_impl::copy(const file_info & p_source)
 		for(index = 0; index < m_info_count; index++ )
 		{
 			const char * name = p_source.info_enum_name(index);
-			const char * opt = optimize_infoname(name);
-			if (optwalk < _countof(optbuf)) optbuf[optwalk++] = opt;
-			if (opt == NULL) stringbuffer_size += strlen(name) + 1;
+			if (optimize_infoname(name) == NULL) stringbuffer_size += strlen(name) + 1;
 			stringbuffer_size += strlen(p_source.info_enum_value(index)) + 1;
 		}
 	}
@@ -185,7 +179,6 @@ void file_info_const_impl::copy(const file_info & p_source)
 	m_hintmap = hintmap;
 #endif
 
-	optwalk = 0;
 	{
 //		profiler(file_info_const_impl__copy__pass2);
 		t_size index;
@@ -195,11 +188,7 @@ void file_info_const_impl::copy(const file_info & p_source)
 
 			{
 				const char * name = p_source.meta_enum_name(index);
-				const char * name_opt;
-
-				if (optwalk < _countof(optbuf)) name_opt = optbuf[optwalk++];
-				else name_opt = optimize_fieldname(name);
-
+				const char * name_opt = optimize_fieldname(name);
 				if (name_opt == NULL)
 					meta[index].m_name = stringbuffer_append(stringbuffer, name );
 				else
@@ -223,11 +212,7 @@ void file_info_const_impl::copy(const file_info & p_source)
 		for( index = 0; index < m_info_count; index ++ )
 		{
 			const char * name = p_source.info_enum_name(index);
-			const char * name_opt;
-
-			if (optwalk < _countof(optbuf)) name_opt = optbuf[optwalk++];
-			else name_opt = optimize_infoname(name);
-
+			const char * name_opt = optimize_infoname(name);
 			if (name_opt == NULL)
 				info[index].m_name = stringbuffer_append(stringbuffer, name );
 			else

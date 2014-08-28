@@ -19,7 +19,7 @@
 #endif
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x500
+#define _WIN32_WINNT 0x501
 #endif
 
 #include <windows.h>
@@ -40,8 +40,7 @@ inline bool operator!=(REFGUID guidOne, REFGUID guidOther) {return !__InlineIsEq
 
 #include <tchar.h>
 
-#else
-
+#elif defined(__GNUC__) && (defined __unix__ || defined __POSIX__)
 #include <stdint.h>
 #include <memory.h>
 typedef struct {
@@ -59,6 +58,10 @@ inline bool operator!=(const GUID & p_item1,const GUID & p_item2) {
 	return memcmp(&p_item1,&p_item2,sizeof(GUID)) != 0;
 }
 
+#else
+
+#error Only win32 or unix target supported.
+
 #endif
 
 
@@ -73,6 +76,8 @@ inline bool operator!=(const GUID & p_item1,const GUID & p_item2) {
 #include <exception>
 #include <stdexcept>
 #include <new>
+
+#include <malloc.h>
 
 #include <stdio.h>
 
@@ -163,8 +168,5 @@ namespace pfc { void myassert(const wchar_t * _Message, const wchar_t *_File, un
 #include "instance_tracker.h"
 #include "threads.h"
 #include "base64.h"
-#include "primitives_part2.h"
-#include "cpuid.h"
-#include "memalign.h"
 
 #endif //___PFC_H___

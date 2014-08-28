@@ -65,7 +65,7 @@ public:
 	void compile_safe_ex(titleformat_object::ptr & p_out,const char * p_spec,const char * p_fallback = "<ERROR>");
 
 	//! Throws a bug check exception when script can't be compiled. For use with hardcoded scripts only.
-	void compile_force(titleformat_object::ptr & p_out,const char * p_spec) {if (!compile(p_out,p_spec)) uBugCheck();}
+	void compile_force(titleformat_object::ptr & p_out,const char * p_spec) {if (!compile(p_out,p_spec)) throw pfc::exception_bug_check_v2();}
 
 
 	static void remove_color_marks(const char * src,pfc::string_base & out);//helper
@@ -200,25 +200,25 @@ public:
 	string_formatter_tf(titleformat_text_out * out, const GUID & inputType = titleformat_inputtypes::meta) : m_out(out), m_inputType(inputType) {}
 
 	const char * get_ptr() const {
-		uBugCheck();
+		throw pfc::exception_not_implemented();
 	}
 	void add_string(const char * p_string,t_size p_length) {
 		m_out->write(m_inputType,p_string,p_length);
 	}
 	void set_string(const char * p_string,t_size p_length) {
-		uBugCheck();
+		throw pfc::exception_not_implemented();
 	}
 	void truncate(t_size len) {
-		uBugCheck();
+		throw pfc::exception_not_implemented();
 	}
 	t_size get_length() const {
-		uBugCheck();
+		throw pfc::exception_not_implemented();
 	}
 	char * lock_buffer(t_size p_requested_length) {
-		uBugCheck();
+		throw pfc::exception_not_implemented();
 	}
 	void unlock_buffer() {
-		uBugCheck();
+		throw pfc::exception_not_implemented();
 	}
 
 private:

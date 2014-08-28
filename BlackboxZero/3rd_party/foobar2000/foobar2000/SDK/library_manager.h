@@ -5,7 +5,6 @@ Usage: Use static_api_ptr_t<library_manager> to instantiate.
 */
 
 class NOVTABLE library_manager : public service_base {
-	FB2K_MAKE_SERVICE_INTERFACE_ENTRYPOINT(library_manager);
 public:
 	//! Interface for use with library_manager::enum_items().
 	class NOVTABLE enum_callback {
@@ -25,17 +24,16 @@ public:
 	virtual bool get_relative_path(const metadb_handle_ptr & p_item,pfc::string_base & p_out) = 0;
 	//! Calls callback method for every item in the Media Library. Note that order of items in Media Library is undefined.
 	virtual void enum_items(enum_callback & p_callback) = 0;
-protected:
-	//! OBSOLETE, do not call, does nothing.
+	//! Deprecated, does nothing.
 	__declspec(deprecated) virtual void add_items(const pfc::list_base_const_t<metadb_handle_ptr> & p_data) = 0;
-	//! OBSOLETE, do not call, does nothing.
+	//! Deprecated, does nothing.
 	__declspec(deprecated) virtual void remove_items(const pfc::list_base_const_t<metadb_handle_ptr> & p_data) = 0;
-	//! OBSOLETE, do not call, does nothing.
+	//! Deprecated, does nothing.
 	__declspec(deprecated) virtual void add_items_async(const pfc::list_base_const_t<metadb_handle_ptr> & p_data) = 0;
 	
-	//! OBSOLETE, do not call, does nothing.
+	//! Deprecated, does nothing.
 	__declspec(deprecated) virtual void on_files_deleted_sorted(const pfc::list_base_const_t<const char *> & p_data) = 0;
-public:
+
 	//! Retrieves the entire Media Library content.
 	virtual void get_all_items(pfc::list_base_t<metadb_handle_ptr> & p_out) = 0;
 
@@ -44,31 +42,28 @@ public:
 	//! Pops up the Media Library preferences page.
 	virtual void show_preferences() = 0;
 
-	//! OBSOLETE, do not call.
+	//! Deprecated, do not call.
 	virtual void rescan() = 0;
 	
-protected:
-	//! OBSOLETE, do not call, does nothing.
+	//! Deprecated, does nothing.
 	__declspec(deprecated) virtual void check_dead_entries(const pfc::list_base_t<metadb_handle_ptr> & p_list) = 0;
-public:
 
-	
+	FB2K_MAKE_SERVICE_INTERFACE_ENTRYPOINT(library_manager);
 };
 
 //! \since 0.9.3
 class NOVTABLE library_manager_v2 : public library_manager {
-	FB2K_MAKE_SERVICE_INTERFACE(library_manager_v2,library_manager);
-protected:
-	//! OBSOLETE, do not call, does nothing.
+public:
+	//! Deprecated, always returns false.
 	__declspec(deprecated) virtual bool is_rescan_running() = 0;
 
-	//! OBSOLETE, do not call, does nothing.
+	//! Deprecated, does nothing and instantly signals completion.
 	__declspec(deprecated) virtual void rescan_async(HWND p_parent,completion_notify_ptr p_notify) = 0;
 
-	//! OBSOLETE, do not call, does nothing.
+	//! Deprecated, does nothing and instantly signals completion.
 	__declspec(deprecated) virtual void check_dead_entries_async(const pfc::list_base_const_t<metadb_handle_ptr> & p_list,HWND p_parent,completion_notify_ptr p_notify) = 0;
 
-	
+	FB2K_MAKE_SERVICE_INTERFACE(library_manager_v2,library_manager);
 };
 
 

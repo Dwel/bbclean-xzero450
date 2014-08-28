@@ -41,15 +41,8 @@ bool cfg_window_placement::read_from_window(HWND window)
 	WINDOWPLACEMENT wp = {};
 	if (g_is_enabled()) {
 		wp.length = sizeof(wp);
-		if (!GetWindowPlacement(window,&wp)) {
-			PFC_ASSERT(!"GetWindowPlacement fail!");
+		if (!GetWindowPlacement(window,&wp))
 			memset(&wp,0,sizeof(wp));
-		} else {
-			// bad, breaks with taskbar on top
-			/*if (wp.showCmd == SW_SHOWNORMAL) {
-				GetWindowRect(window, &wp.rcNormalPosition);
-			}*/
-		}
 		/*else
 		{
 			if (!IsWindowVisible(window)) wp.showCmd = SW_HIDE;

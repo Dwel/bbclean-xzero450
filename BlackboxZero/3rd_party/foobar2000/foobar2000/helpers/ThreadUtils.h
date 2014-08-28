@@ -30,7 +30,7 @@ namespace ThreadUtils {
 		const HANDLE handles[2] = {ev, abort.get_abort_event()};
 		for(;;) {
 			SetLastError(0);
-			const DWORD status = MsgWaitForMultipleObjects(2, handles, FALSE, INFINITE, QS_ALLINPUT);
+			const DWORD status = MsgWaitForMultipleObjects(2, handles, FALSE, INFINITE, QS_ALLEVENTS);
 			switch(status) {
 				case WAIT_TIMEOUT:
 					PFC_ASSERT(!"How did we get here?");
@@ -56,7 +56,7 @@ namespace ThreadUtils {
 		pfc::memcpy_t(handles.get_ptr() + 1, ev, evCount);
 		for(;;) {
 			SetLastError(0);
-			const DWORD status = MsgWaitForMultipleObjects(handles.get_count(), handles.get_ptr(), FALSE, INFINITE, QS_ALLINPUT);
+			const DWORD status = MsgWaitForMultipleObjects(handles.get_count(), handles.get_ptr(), FALSE, INFINITE, QS_ALLEVENTS);
 			switch(status) {
 				case WAIT_TIMEOUT:
 					PFC_ASSERT(!"How did we get here?");
@@ -88,7 +88,7 @@ namespace ThreadUtils {
 			const DWORD done = GetTickCount() - entry;
 			if (done >= timeout) return;
 			SetLastError(0);
-			const DWORD status = MsgWaitForMultipleObjects(1, handles, FALSE, timeout - done, QS_ALLINPUT);
+			const DWORD status = MsgWaitForMultipleObjects(1, handles, FALSE, timeout - done, QS_ALLEVENTS);
 			switch(status) {
 				case WAIT_TIMEOUT:
 					return;
@@ -110,7 +110,7 @@ namespace ThreadUtils {
 			const DWORD done = GetTickCount() - entry;
 			if (done >= timeout) return false;
 			SetLastError(0);
-			const DWORD status = MsgWaitForMultipleObjects(2, handles, FALSE, timeout - done, QS_ALLINPUT);
+			const DWORD status = MsgWaitForMultipleObjects(2, handles, FALSE, timeout - done, QS_ALLEVENTS);
 			switch(status) {
 				case WAIT_TIMEOUT:
 					return false;
@@ -153,7 +153,7 @@ namespace ThreadUtils {
 		template<typename TDestination> void _Get(TDestination & out) {
 			insync(m_sync);
 			pfc::const_iterator<TWhat> iter = m_content.first();
-			FB2K_DYNAMIC_ASSERT( iter.is_valid() );
+			pfc::dynamic_assert( iter.is_valid() );
 			out = *iter;
 			m_content.remove(iter);
 			if (m_content.get_count() == 0) m_event.set_state(false);
@@ -165,7 +165,7 @@ namespace ThreadUtils {
 
 
 	template<typename TBase, bool processMsgs = false>
-	class CSingleThreadWrapper : protected CVerySimpleThread {
+	class CSingleThreadWrapper : protected pfc::thread {
 	private:
 		enum status {
 			success,
@@ -220,15 +220,14 @@ namespace ThreadUtils {
 		
 		typedef pfc::rcptr_t<command> command_ptr;
 
-		CSingleThreadWrapper() {
+		CSingleThreadWrapper() {		
 			m_completionEvent.create(true,false);
-			this->StartThread();
-			//start();
+			start();
 		}
 
 		~CSingleThreadWrapper() {
 			m_threadAbort.abort();
-			this->WaitTillThreadDone();
+			waitTillDone();
 		}
 
 		void invokeCommand(command_ptr cmd, abort_callback & abort) {
@@ -243,7 +242,7 @@ namespace ThreadUtils {
 		}
 
 	private:
-		void ThreadProc() {
+		void threadProc() {
 			TRACK_CALL_TEXT("CSingleThreadWrapper entry");
 			try {
 				TBase instance;
