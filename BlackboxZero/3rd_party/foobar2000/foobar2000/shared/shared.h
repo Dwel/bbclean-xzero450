@@ -1,6 +1,9 @@
 #ifndef _SHARED_DLL__SHARED_H_
 #define _SHARED_DLL__SHARED_H_
 
+// Global flag - whether it's OK to leak static objects as they'll be released anyway by process death
+#define FB2K_LEAK_STATIC_OBJECTS 1
+
 #include "../../pfc/pfc.h"
 #include <signal.h>
 
@@ -16,7 +19,7 @@
 #include <ddeml.h>
 #include <commctrl.h>
 #include <uxtheme.h>
-#include <vssym32.h>
+#include <tmschema.h>
 
 #ifndef NOTHROW
 #ifdef _MSC_VER
@@ -28,14 +31,10 @@
 
 #define SHARED_API /*NOTHROW*/ __stdcall
 
-#if defined STATIC
-#define SHARED_EXPORT 
-#else
 #ifndef SHARED_EXPORTS
 #define SHARED_EXPORT __declspec(dllimport) SHARED_API
 #else
 #define SHARED_EXPORT __declspec(dllexport) SHARED_API
-#endif
 #endif
 
 extern "C" {
@@ -52,9 +51,9 @@ LRESULT SHARED_EXPORT uSendDlgItemMessageText(HWND wnd,UINT id,UINT msg,WPARAM w
 BOOL SHARED_EXPORT uGetWindowText(HWND wnd,pfc::string_base & out);
 BOOL SHARED_EXPORT uSetWindowText(HWND wnd,const char * p_text);
 BOOL SHARED_EXPORT uSetWindowTextEx(HWND wnd,const char * p_text,unsigned p_text_length);
-inline BOOL SHARED_EXPORT uGetDlgItemText(HWND wnd,UINT id,pfc::string_base & out) { return false; }
-inline BOOL SHARED_EXPORT uSetDlgItemText(HWND wnd,UINT id,const char * p_text) { return false; }
-inline BOOL SHARED_EXPORT uSetDlgItemTextEx(HWND wnd,UINT id,const char * p_text,unsigned p_text_length) { return false; }
+BOOL SHARED_EXPORT uGetDlgItemText(HWND wnd,UINT id,pfc::string_base & out);
+BOOL SHARED_EXPORT uSetDlgItemText(HWND wnd,UINT id,const char * p_text);
+BOOL SHARED_EXPORT uSetDlgItemTextEx(HWND wnd,UINT id,const char * p_text,unsigned p_text_length);
 BOOL SHARED_EXPORT uBrowseForFolder(HWND parent,const char * title,pfc::string_base & out);
 BOOL SHARED_EXPORT uBrowseForFolderWithFile(HWND parent,const char * title,pfc::string_base & out,const char * p_file_to_find);
 int SHARED_EXPORT uMessageBox(HWND wnd,const char * text,const char * caption,UINT type);
@@ -66,7 +65,7 @@ int SHARED_EXPORT uCharCompare(t_uint32 p_char1,t_uint32 p_char2);
 int SHARED_EXPORT uStringCompare_ConvertNumbers(const char * elem1,const char * elem2);
 HINSTANCE SHARED_EXPORT uLoadLibrary(const char * name);
 HANDLE SHARED_EXPORT uCreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes,BOOL bManualReset,BOOL bInitialState, const char * lpName);
-inline HANDLE SHARED_EXPORT GetInfiniteWaitEvent() { return INVALID_HANDLE_VALUE; }
+HANDLE SHARED_EXPORT GetInfiniteWaitEvent();
 DWORD SHARED_EXPORT uGetModuleFileName(HMODULE hMod,pfc::string_base & out);
 BOOL SHARED_EXPORT uSetClipboardString(const char * ptr);
 BOOL SHARED_EXPORT uGetClipboardString(pfc::string_base & out);
@@ -110,13 +109,24 @@ BOOL SHARED_EXPORT uGetOpenFileName(HWND parent,const char * p_ext_mask,unsigned
 HANDLE SHARED_EXPORT uLoadImage(HINSTANCE hIns,const char * name,UINT type,int x,int y,UINT flags);
 UINT SHARED_EXPORT uRegisterClipboardFormat(const char * name);
 BOOL SHARED_EXPORT uGetClipboardFormatName(UINT format,pfc::string_base & out);
-inline BOOL SHARED_EXPORT uFormatSystemErrorMessage(pfc::string_base & p_out,DWORD p_code) { /* dummy */ return true; }
+BOOL SHARED_EXPORT uFormatSystemErrorMessage(pfc::string_base & p_out,DWORD p_code);
 
 HANDLE SHARED_EXPORT uSortStringCreate(const char * src);
 int SHARED_EXPORT uSortStringCompare(HANDLE string1,HANDLE string2);
 int SHARED_EXPORT uSortStringCompareEx(HANDLE string1,HANDLE string2,DWORD flags);//flags - see win32 CompareString
 int SHARED_EXPORT uSortPathCompare(HANDLE string1,HANDLE string2);
 void SHARED_EXPORT uSortStringFree(HANDLE string);
+
+// New in 1.1.12
+HANDLE SHARED_EXPORT CreateFileAbortable(    __in     LPCWSTR lpFileName,
+    __in     DWORD dwDesiredAccess,
+    __in     DWORD dwShareMode,
+    __in_opt LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+    __in     DWORD dwCreationDisposition,
+    __in     DWORD dwFlagsAndAttributes,
+	// Template file handle NOT supported.
+	__in_opt HANDLE hAborter
+	);
 
 
 int SHARED_EXPORT uCompareString(DWORD flags,const char * str1,unsigned len1,const char * str2,unsigned len2);
@@ -254,6 +264,8 @@ UINT SHARED_EXPORT uGetMenuItemType(HMENU menu,UINT position);
 
 
 }//extern "C"
+static inline void uAddDebugEvent(const char * msg) {uPrintCrashInfo_OnEvent(msg, strlen(msg));}
+static inline void uAddDebugEvent(pfc::string_formatter const & msg) {uPrintCrashInfo_OnEvent(msg, msg.length());}
 
 inline char * uCharNext(char * src) {return src+uCharLength(src);}
 inline const char * uCharNext(const char * src) {return src+uCharLength(src);}
@@ -291,45 +303,45 @@ static pfc::string uGetDlgItemText(HWND wnd,UINT id) {
 
 #define uMAKEINTRESOURCE(x) ((const char*)LOWORD(x))
 
-#ifdef _DEBUG
-class critical_section {
-private:
-	CRITICAL_SECTION sec;
-	int count;
-public:
-	int enter() {EnterCriticalSection(&sec);return ++count;}
-	int leave() {int rv = --count;LeaveCriticalSection(&sec);return rv;}
-	int get_lock_count() {return count;}
-	int get_lock_count_check() {enter();return leave();}
-	inline void assert_locked() {assert(get_lock_count_check()>0);}
-	inline void assert_not_locked() {assert(get_lock_count_check()==0);}
-	critical_section() {InitializeCriticalSection(&sec);count=0;}
-	~critical_section() {DeleteCriticalSection(&sec);}
-private:
-	critical_section(const critical_section&) {throw pfc::exception_not_implemented();}
-	const critical_section & operator=(const critical_section &) {throw pfc::exception_not_implemented();}
-};
-#else
-class critical_section {
-private:
+class _critical_section_base {
+protected:
 	CRITICAL_SECTION sec;
 public:
-	void enter() throw() {EnterCriticalSection(&sec);}
-	void leave() throw() {LeaveCriticalSection(&sec);}
-	critical_section() {InitializeCriticalSection(&sec);}
-	~critical_section() {DeleteCriticalSection(&sec);}
+	_critical_section_base() {}
+	inline void enter() throw() {EnterCriticalSection(&sec);}
+	inline void leave() throw() {LeaveCriticalSection(&sec);}
+	inline void create() throw() {InitializeCriticalSection(&sec);}
+	inline void destroy() throw() {DeleteCriticalSection(&sec);}
 private:
-	critical_section(const critical_section&) {throw pfc::exception_not_implemented();}
-	const critical_section & operator=(const critical_section &) {throw pfc::exception_not_implemented();}
+	_critical_section_base(const _critical_section_base&);
+	void operator=(const _critical_section_base&);
 };
+
+// Static-lifetime critical section, no cleanup - valid until process termination
+class critical_section_static : public _critical_section_base {
+public:
+	critical_section_static() {create();}
+#if !FB2K_LEAK_STATIC_OBJECTS
+	~critical_section_static() {destroy();}
 #endif
+};
+
+// Regular critical section, intended for any lifetime scopes
+class critical_section : public _critical_section_base {
+private:
+	CRITICAL_SECTION sec;
+public:
+	critical_section() {create();}
+	~critical_section() {destroy();}
+};
+
 class c_insync
 {
 private:
-	critical_section & m_section;
+	_critical_section_base & m_section;
 public:
-	c_insync(critical_section * p_section) throw() : m_section(*p_section) {m_section.enter();}
-	c_insync(critical_section & p_section) throw() : m_section(p_section) {m_section.enter();}
+	c_insync(_critical_section_base * p_section) throw() : m_section(*p_section) {m_section.enter();}
+	c_insync(_critical_section_base & p_section) throw() : m_section(p_section) {m_section.enter();}
 	~c_insync() throw() {m_section.leave();}
 };
 
@@ -430,67 +442,7 @@ private:
 inline LRESULT uButton_SetCheck(HWND wnd,UINT id,bool state) {return uSendDlgItemMessage(wnd,id,BM_SETCHECK,state ? BST_CHECKED : BST_UNCHECKED,0); }
 inline bool uButton_GetCheck(HWND wnd,UINT id) {return uSendDlgItemMessage(wnd,id,BM_GETCHECK,0,0) == BST_CHECKED;}
 
-class uCallStackTracker
-{
-	t_size param;
-public:
-	explicit SHARED_EXPORT uCallStackTracker(const char * name) { }
-	SHARED_EXPORT ~uCallStackTracker() { }
-};
 
-extern "C"
-{
-	LPCSTR SHARED_EXPORT uGetCallStackPath();
-}
-
-namespace pfc {
-	class formatBugCheck : public string_formatter {
-	public:
-		formatBugCheck(const char * msg) {
-			*this << msg;
-			const char * path = uGetCallStackPath();
-			if (*path) {
-				*this << " (at: " << path << ")";
-			}
-		}
-	};
-	class exception_bug_check_v2 : public exception_bug_check {
-	public:
-		exception_bug_check_v2(const char * msg = exception_bug_check::g_what()) : exception_bug_check(formatBugCheck(msg)) {
-			PFC_ASSERT(!"exception_bug_check_v2 triggered");
-		}
-	};
-}
-
-static int uExceptFilterProc_inline(LPEXCEPTION_POINTERS param) {
-	uDumpCrashInfo(param);
-	TerminateProcess(GetCurrentProcess(), 0);
-	return 0;// never reached
-}
-
-#if !defined(FOOBAR2000_TARGET_VERSION) || FOOBAR2000_TARGET_VERSION >= 76
-extern "C" {
-	LONG SHARED_EXPORT uExceptFilterProc(LPEXCEPTION_POINTERS param);
-	inline PFC_NORETURN void SHARED_EXPORT uBugCheck() { /* dummy */ }
-}
-#else
-#define uExceptFilterProc uExceptFilterProc_inline
-#define uBugCheck() {throw pfc::exception_bug_check_v2(msg);}
-#endif
-
-#define __except_instacrash __except(uExceptFilterProc(GetExceptionInformation()))
-#define fb2k_instacrash_scope(X) __try { X; } __except_instacrash {}
-
-
-#if 1
-#define TRACK_CALL(X) uCallStackTracker TRACKER__##X(#X)
-#define TRACK_CALL_TEXT(X) uCallStackTracker TRACKER__BLAH(X)
-#define TRACK_CODE(description,code) {uCallStackTracker __call_tracker(description); code;}
-#else
-#define TRACK_CALL(X)
-#define TRACK_CALL_TEXT(X)
-#define TRACK_CODE(description,code) {code;}
-#endif
 
 extern "C" {
 int SHARED_EXPORT stricmp_utf8(const char * p1,const char * p2) throw();
@@ -858,15 +810,26 @@ public:
 
 
     
-static void __cdecl _OverrideCrtAbort_handler(int signal) {
-	const ULONG_PTR args[] = {signal};
-	RaiseException(0x6F8E1DC8 /* random GUID */, EXCEPTION_NONCONTINUABLE, _countof(args), args);
+
+static HMODULE LoadSystemLibrary(const TCHAR * name) {
+	pfc::array_t<TCHAR> buffer; buffer.set_size( MAX_PATH + _tcslen(name) + 2 );
+	TCHAR * bufptr = buffer.get_ptr();
+	if (GetSystemDirectory(bufptr, MAX_PATH) == 0) return NULL;
+	bufptr[MAX_PATH] = 0;
+
+	size_t idx = _tcslen(bufptr);
+	if (idx > 0 && bufptr[idx-1] != '\\') bufptr[idx++] = '\\';
+	_tcscpy(bufptr+idx, name);
+	
+	return LoadLibrary(bufptr);
 }
 
-static void OverrideCrtAbort() {
-	const int signals[] = {SIGINT, SIGTERM, SIGBREAK, SIGABRT};
-	for(size_t i=0; i<_countof(signals); i++) signal(signals[i], _OverrideCrtAbort_handler);
-	_set_abort_behavior(0, ~0);
-}
+#include "fb2kdebug.h"
+
+#if FB2K_LEAK_STATIC_OBJECTS
+#define FB2K_STATIC_OBJECT(TYPE, NAME) static TYPE & NAME = * new TYPE;
+#else
+#define FB2K_STATIC_OBJECT(TYPE, NAME) static TYPE NAME;
+#endif
 
 #endif //_SHARED_DLL__SHARED_H_
