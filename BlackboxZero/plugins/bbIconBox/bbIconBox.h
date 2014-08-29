@@ -58,6 +58,8 @@ struct Item
     bool active;
     bool is_folder;
     char szTip [MAX_TIPTEXT];
+
+	//struct _ITEMIDLIST *pidl; // from bb4win
 };
 
 struct Folder
@@ -85,7 +87,7 @@ struct Desk
 };
 
 void ClearFolder(Folder*);
-void LoadFolder(Folder *pFolder, int iconsize, HWND hwnd);
+void LoadFolder(Folder *pFolder, int iconsize,  bool is_visible, HWND hwnd);
 
 // ---------------------------------------------
 // DropTarget.cpp
@@ -93,7 +95,6 @@ void LoadFolder(Folder *pFolder, int iconsize, HWND hwnd);
 class CDropTarget *init_drop_targ(HWND hwnd);
 void exit_drop_targ (class CDropTarget *m_dropTarget);
 LPCITEMIDLIST indrag_get_pidl(HWND hwnd, POINT *);
-
 
 // ---------------------------------------------
 // utils.cpp

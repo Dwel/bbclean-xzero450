@@ -983,7 +983,7 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
             {
                 int h = bbLeanBarLineHeight[i];
                 r.bottom = r.top + h;
-                StyleItem *T = this->transparent ? I : (StyleItem *)GetSettingPtr(SN_TOOLBAR);
+                StyleItem *T = this->alphaEnabled ? I : (StyleItem *)GetSettingPtr(SN_TOOLBAR);
                 /*this->pBuff->*/MakeStyleGradient(buf, &r, T, T->bordered);
                 r.top += h - styleBorderWidth;
             }
@@ -1379,7 +1379,7 @@ void barinfo::GetStyleSettings()
     StyleItem * C = (StyleItem *)GetSettingPtr(SN_TOOLBARCLOCK);
     StyleItem * B = (StyleItem *)GetSettingPtr(SN_TOOLBARBUTTON);
 
-	if (this->transparent && T->TextColor < 0x101010) 
+	if (this->alphaEnabled && T->TextColor < 0x101010) 
 		 T->TextColor = 0x444444;
 
     NTaskStyle = *T;

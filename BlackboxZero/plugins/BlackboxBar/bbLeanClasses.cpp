@@ -360,7 +360,7 @@ public:
         StyleItem *pSI;
 
         if (lit) pSI = &ATaskStyle;
-        else pSI = m_bar->transparent ? I : &NTaskStyle;
+        else pSI = m_bar->alphaEnabled ? I : &NTaskStyle;
 
         if (m_bar->TaskStyle == 1)
             draw_icons(tl, lit, pSI);
@@ -698,7 +698,7 @@ public:
     void draw()
     {
         StyleItem *pSI = (StyleItem*)GetSettingPtr(m_Style);
-		pSI->TextColor = m_bar->transparent ? (pSI->TextColor < 0x101010 ? 0x444444 : pSI->TextColor) : pSI->TextColor;
+		pSI->TextColor = m_bar->alphaEnabled ? (pSI->TextColor < 0x101010 ? 0x444444 : pSI->TextColor) : pSI->TextColor;
         m_bar->pBuff->MakeStyleGradient(m_bar->hdcPaint,  &mr, pSI, pSI->bordered);
         SetBkMode(m_bar->hdcPaint, TRANSPARENT);
         HGDIOBJ oldfont = SelectObject(m_bar->hdcPaint, m_bar->hFont);

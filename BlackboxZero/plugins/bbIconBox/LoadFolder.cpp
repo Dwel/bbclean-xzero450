@@ -8,6 +8,7 @@
   http://bb4win.sf.net/bblean
 
   bbIconBox is free software, released under the GNU General Public License
+  bbIconBox+ is free software, released under the GNU General Public License
   (GPL version 2).
 
   http://www.fsf.org/licenses/gpl.html
@@ -59,7 +60,7 @@ void ClearFolder(Folder *pFolder)
 //              into a menu
 //////////////////////////////////////////////////////////////////////
 
-void LoadFolder(Folder *pFolder, int iconsize, HWND hwnd)
+void LoadFolder(Folder *pFolder, int iconsize, bool is_visible, HWND hwnd)
 {
     struct pidl_node *pidl_list;
     LPCITEMIDLIST pIDFolder;
@@ -78,7 +79,7 @@ void LoadFolder(Folder *pFolder, int iconsize, HWND hwnd)
         LPCITEMIDLIST pIDFolder = first_pidl(pidl_list);
 
         struct enum_files *ef;
-        if (ef_open(pIDFolder, &ef))
+        if (ef_open(pIDFolder, &ef) && is_visible)
         {
             while (ef_next(ef))
             {
