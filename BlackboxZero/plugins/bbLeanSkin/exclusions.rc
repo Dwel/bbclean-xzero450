@@ -17,31 +17,86 @@
 # Invisible windows:
 # (Listed here to save resources, and possibly trouble)
 
-  BROWSEUI.DLL:OTClass
-  SYSTRAY.EXE:SystemTray_Main
-  WEBCHECK.DLL:MS_WebcheckMonitor
-  STMGR.EXE:STATEMGRPROC
-  WIASERVC.DLL:STIExe_Window_Class
-  TAPISRV.EXE:UmdmSP Class
-  TAPISRV.EXE:WAN_Class
-  RNAAPP.EXE:RNAENGCLASS
+BROWSEUI.DLL:OTClass
+SYSTRAY.EXE:SystemTray_Main
+WEBCHECK.DLL:MS_WebcheckMonitor
+STMGR.EXE:STATEMGRPROC
+WIASERVC.DLL:STIExe_Window_Class
+TAPISRV.EXE:UmdmSP Class
+TAPISRV.EXE:WAN_Class
+RNAAPP.EXE:RNAENGCLASS
+USER32.dll:#32770
+wuaclt.exe
+wscntfy.dll:SecNotify
 
-  QUARTZ.DLL:FilterGraphWindow
-  WMPUI.DLL:TimerWindowClass
-  WMPLAYER.EXE:atlcommon_timer*
+QUARTZ.DLL:FilterGraphWindow
 
-  wscntfy.dll
-  taskeng.exe
-  conime.exe:ConsoleIMEClass
-  dwm.exe
-  
-# ---------------------------------------
+comctl32.dll
+conime.exe:ConsoleIMEClass
+conime.exe
+NvMcTray.dll
+NVSVC.dll
+Reader_sl.exe
+sa-gui.exe:QWidget
+#TextPad.exe:Afx:00400000:8:00010005:00000000:00000000
+winxmove.exe
+# visual studio
+msenv.dll:VBFloatingPalette
+msenv.dll:VBMdiChildH
+# firefox|mozilla
+xul.dll:MozillaHiddenWindowClass
+# thunderbird
+thunderbird.exe:MozillaHiddenWindowClass
+# Snarl
+iTunes.exe:iTunesSnarl
+firefox.exe:SnarlXPCOMClass
+MSVBVM60.DLL:ThunderRT6FormDC
+
+# vista invisible windows ??
+csrss.exe
+dwm.exe
+sdclt.exe
+taskeng.exe
+winlogon.exe
+
+kbdmgr.exe
+
+# various programs
+*:TApplication
+
 # programs which come with their own skin:
-
-  trillian.exe
-  toolkit.dll
-  winamp.exe
+foo_ui_std.dll
+Logic Platinum*
+toolkit.dll
+trillian.exe
+#winamp
+vis_*.dll
+winamp.exe
+# WMP
+WMPUI.DLL:TimerWindowClass
+WMPLAYER.EXE:atlcommon_timer*
+Wmp.dll
+# iTunes
+iTunes.DLL 
+iTunes.exe:iTunes
+iTunes.exe:WinAMRestoreWndClass
+iTunesLocalized.DLL
+iTunesRegistry.DLL 
+# windows live photo gallery
+WLXPhotoLibraryMain.dll:WLX_Photo_Library_MainWnd
+WLXPhotoViewer.dll:Photo_Lightweight_Viewer
 
 # programs with trouble
+AdobeOwl.dll:OWL.TabPane
+ccupdate.dll
+ccupdate.dll:*
+nero.exe
+Photoshop.exe:Photoshop
+squidcam.exe
+# wxWidgets version DevCpp
+wxdevcpp.exe
 
-  nero.exe
+# vista issues
+# devenv.exe
+nlite.exe
+taskmgr.exe
