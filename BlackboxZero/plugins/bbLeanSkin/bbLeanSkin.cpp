@@ -2,15 +2,19 @@
  ============================================================================
 
   This file is part of the bbLeanSkin source code.
+  This file is part of the bbLeanSkin+ source code.
   Copyright © 2003-2009 grischka (grischka@users.sourceforge.net)
+  Copyright © 2008-2009 The Blackbox for Windows Development Team
 
   bbLeanSkin is a plugin for Blackbox for Windows
+  bbLeanSkin+ is a plugin for Blackbox for Windows
 
   http://bb4win.sourceforge.net/bblean
   http://bb4win.sourceforge.net/
 
 
   bbLeanSkin is free software, released under the GNU General Public License
+  bbLeanSkin+ is free software, released under the GNU General Public License
   (GPL version 2) For details see:
 
     http://www.fsf.org/licenses/gpl.html
@@ -55,6 +59,8 @@ void about_box(void)
     HWND m_hwnd;
     HWND hwndLog;
     bool enableLog;
+    bool safeMetrics;
+    bool fontShadows;
 
 // settings
     bool adjustCaptionHeight;
@@ -124,6 +130,15 @@ DLL_EXPORT LPCSTR pluginInfo(int field)
         case 4: return szInfoRelDate;
         case 5: return szInfoLink;
         case 6: return szInfoEmail;
+        case 7: 
+        {
+            return
+            "@bbLeanSkin.About"
+            "@bbLeanSkin.toggleOverride"
+            "@bbLeanSkin.toggleShadows"
+            "@bbLeanSkin.toggleLog"
+            "@bbLeanSkin.toggleSkin";
+        }
     }
 }
 
@@ -840,9 +855,11 @@ void readSettings(void)
     mSkin.nixShadeStyle = ReadBool(rcpath, "bbleanskin.option.nixShadeStyle:", true);
     mSkin.snapWindows = ReadBool(rcpath, "bbleanskin.option.snapWindows:", false);
     mSkin.drawLocked = ReadBool(rcpath, "bbleanskin.option.drawLocked:", false);
-    mSkin.imageDither = ReadBool(bbrcPath(), "session.imageDither:", false);
-    mSkin.iconSat = ReadInt(rcpath, "bbleanskin.titlebar.iconSat", 255);
-    mSkin.iconHue = ReadInt(rcpath, "bbleanskin.titlebar.iconHue", 0);
+    //mSkin.imageDither = ReadInt(bbrcPath(), "session.imageDither:", 3);
+    mSkin.imageDither = ReadBool(bbrcPath(), "session.imageDither:", false); // bb4win has 3
+    mSkin.iconSat = ReadInt(rcpath, "bbleanskin.titlebar.iconSat", 255); //bb4win has 95
+    mSkin.iconHue = ReadInt(rcpath, "bbleanskin.titlebar.iconHue", 0);  // bb4win has 53
+    mSkin.labelBarrier = ReadInt(rcpath, "bbleanskin.titlebar.labelBarrier:", -1);
 
     // options
     adjustCaptionHeight = ReadBool(rcpath, "bbleanskin.option.adjustCaptionHeight:", false);
@@ -855,6 +872,8 @@ void readSettings(void)
     windows_menu_fontHeight = ReadInt(rcpath, "bbleanskin.windows.menu.fontHeight:", 8);
     ScrollbarSize = ReadInt(rcpath, "bbleanskin.windows.scrollbarsize:", -1);
     setTTColor = ReadBool(rcpath, "bbleanskin.windows.setTooltipColor:", false);
+    safeMetrics = ReadBool(rcpath, "bbleanskin.windows.safeMetrics:", false);
+    fontShadows = ReadBool(bbrcPath(), "session.force.font.shadows:", ReadBool(rcpath, "bbleanskin.windows.fontShadows:", false));
 
     // pass to skin structure
     mSkin.BBhwnd = BBhwnd;
@@ -899,11 +918,15 @@ void readStyle(void)
 
     void *p;
     bool is_style070;
+    bool safeTitle = false;
     const short *s;
     short id, flags;
-    int tfh, fontheight;
+    int tfh, fontheight, fontCollar;
     StyleItem *pG;
     windowGradients *wG;
+    char style[MAX_PATH], temp1[32], temp2[32];
+
+    strcpy(style, stylePath());
 
     // init style reader (incase its built-in here)
     GetSettingPtr(0);
@@ -971,24 +994,62 @@ void readStyle(void)
         ++pG;
     }
 
+   // bbStylemaker 1.31 ignores all these values for 0.65 syntax
+    if ((false == mSkin.is_style070) /*&& ((false == FindWindow("BBPluginDlg", "BBStylemaker")) || (false == FindWindow("bbStyleMaker", NULL)))*/)
+    {
+        mSkin.frameWidth = ReadInt(style, "frameWidth:", mSkin.frameWidth);
+        mSkin.frameWidth = ReadInt(style, "window.client.padding.width:", mSkin.frameWidth);
+        mSkin.frameWidth = ReadInt(style, "window.frameWidth:", mSkin.frameWidth);
+
+        strcpy(temp1, ReadString(style, "window.frameColor:", "0x000000"));
+        strcpy(temp2, ReadString(style, "window.active.border.color:", temp1));
+        strcpy(temp1, ReadString(style, "window.active.client.color:", temp2));
+        strcpy(temp2, ReadString(style, "window.frame.focus.color:", temp1));
+        mSkin.F.FrameColor = ReadColor(style, "window.frame.focusColor:", temp2);
+
+        strcpy(temp1, ReadString(style, "window.frameColor:", "0x000000"));
+        strcpy(temp2, ReadString(style, "window.inactive.border.color:", temp1));
+        strcpy(temp1, ReadString(style, "window.inactive.client.color:", temp2));
+        strcpy(temp2, ReadString(style, "window.frame.unfocus.color:", temp1));
+        mSkin.U.FrameColor = ReadColor(style, "window.frame.unfocusColor:", temp2);
+    }
+
+    //====================
+    // enable resizeability
+    if (safeMetrics)
+    {
+        if (mSkin.is_style070)
+            mSkin.frameWidth = imax(mSkin.frameWidth, 1);
+        else 
+            mSkin.F.Title.borderWidth = mSkin.U.Title.borderWidth = 
+            mSkin.F.Handle.borderWidth = mSkin.U.Handle.borderWidth = 
+            mSkin.F.Grip.borderWidth = mSkin.U.Grip.borderWidth = 
+            imax(mSkin.F.Title.borderWidth, 1);
+    }
+
     //----------------------------------------------------------------
     // pre-calculate titlebar metrics (formula similar to the toolbar)
 
-    int labelH, buttonH, tbheight;
+    int labelH, buttonH, tbheight, iconSize;
 
     int top_border = imax(mSkin.F.Title.borderWidth, mSkin.U.Title.borderWidth);
     int lbl_border = imax(mSkin.F.Label.borderWidth, mSkin.U.Label.borderWidth);
     int bottom_border = imax(mSkin.F.Handle.borderWidth, mSkin.U.Handle.borderWidth);
     int button_border = imax(mSkin.F.Button.borderWidth, mSkin.U.Button.borderWidth);
 
+    iconSize = tfh + 2;
+    if (iconSize > 20) iconSize = 20;
+
     labelH  = (fontheight|1) +
         2*(mSkin.F.Label.marginWidth/*+lbl_border*/);
+    labelH |= 1;
+    labelH = safeTitle ? imin(labelH, fontCollar) : labelH;
     buttonH = labelH +
         2*(mSkin.F.Button.marginWidth-mSkin.F.Label.marginWidth);
     tbheight = imax(labelH, buttonH) +
         2*(top_border + mSkin.F.Title.marginWidth);
 
-    mSkin.buttonSize = buttonH;
+    mSkin.buttonSize = imax(buttonH, iconSize);
     mSkin.labelHeight = labelH;
     mSkin.labelIndent = imax(2+lbl_border,(labelH-tfh)/2);
 
@@ -1019,6 +1080,8 @@ void readStyle(void)
 
 static NONCLIENTMETRICS ncm_save;
 static NONCLIENTMETRICS ncm_prev;
+static LOGFONT font_save;
+static LOGFONT font_prev;
 
 void setmetrics(void)
 {
@@ -1026,6 +1089,7 @@ void setmetrics(void)
     // copy default settings
 
     NONCLIENTMETRICS ncm_now = ncm_save;
+    LOGFONT font_now = font_save;
 
     //---------------------------
     // set the border to at least the style border.
@@ -1077,6 +1141,8 @@ void setmetrics(void)
         ncm_now.lfMenuFont = F;
         ncm_now.lfStatusFont = F;
         ncm_now.lfMessageFont = F;
+        ncm_now.lfCaptionFont = F;
+        ncm_now.lfSmCaptionFont = F;
     }
 
     //---------------------------
@@ -1088,6 +1154,13 @@ void setmetrics(void)
             SPI_SETNONCLIENTMETRICS,
             sizeof(NONCLIENTMETRICS),
             &ncm_now,
+            SPIF_SENDCHANGE
+            );
+        font_prev = font_now;
+        SystemParametersInfo(
+            SPI_SETICONTITLELOGFONT,
+            sizeof(LOGFONT),
+            &font_now,
             SPIF_SENDCHANGE
             );
     }
@@ -1327,7 +1400,9 @@ void startEngine(void)
     // save the normal SystemParameter settings, window metrics, etc.
     ncm_save.cbSize = sizeof(NONCLIENTMETRICS);
     SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof ncm_save, &ncm_save, 0);
+    SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof font_save, &font_save, 0);
     memset(&ncm_prev, 0, sizeof(NONCLIENTMETRICS));
+    memset(&font_prev, 0, sizeof(LOGFONT));
 
     // read styles for skin
     readStyle();
@@ -1391,6 +1466,12 @@ void stopEngine(void)
         SPI_SETNONCLIENTMETRICS,
         sizeof(NONCLIENTMETRICS),
         &ncm_save,
+        SPIF_SENDCHANGE
+        );
+    SystemParametersInfo(
+        SPI_SETICONTITLELOGFONT,
+        sizeof(LOGFONT),
+        &font_save,
         SPIF_SENDCHANGE
         );
     // restore sys-colors

@@ -1,10 +1,12 @@
 /*
  ============================================================================
 
+  This file is part of the bbLeanSkin+ source code.
   This file is part of the bbLeanSkin source code.
   Copyright © 2003-2009 grischka (grischka@users.sourceforge.net)
 
   bbLeanSkin is a plugin for Blackbox for Windows
+  bbLeanSkin+ is a plugin for Blackbox for Windows
 
   http://bb4win.sourceforge.net/bblean
   http://bb4win.sourceforge.net/

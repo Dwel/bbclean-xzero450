@@ -2,15 +2,19 @@
  ============================================================================
 
   This file is part of the bbLeanSkin source code.
+  This file is part of the bbLeanSkin+ source code.
   Copyright © 2003-2009 grischka (grischka@users.sourceforge.net)
+  Copyright © 2008-2009 The Blackbox for Windows Development Team
 
   bbLeanSkin is a plugin for Blackbox for Windows
+  bbLeanSkin+ is a plugin for Blackbox for Windows
 
   http://bb4win.sourceforge.net/bblean
   http://bb4win.sourceforge.net/
 
 
   bbLeanSkin is free software, released under the GNU General Public License
+  bbLeanSkin+ is free software, released under the GNU General Public License
   (GPL version 2) For details see:
 
     http://www.fsf.org/licenses/gpl.html
@@ -126,6 +130,7 @@ struct SkinStruct
     int labelHeight;
     int labelMargin;
     int labelIndent;
+	int labelBarrier;
 
     int buttonSize;
     int buttonSpace;
@@ -142,10 +147,10 @@ struct SkinStruct
         char Left[4];
     } captionClicks;
 
-    bool snapWindows;
+    int snapWindows;
     bool enableLog;
     bool nixShadeStyle;
-    bool imageDither;
+    int imageDither;
     bool drawLocked;
     bool is_style070;
     char bbsm_option;

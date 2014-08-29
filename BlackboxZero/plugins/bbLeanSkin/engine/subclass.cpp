@@ -2,15 +2,19 @@
  ============================================================================
 
   This file is part of the bbLeanSkin source code.
+  This file is part of the bbLeanSkin+ source code.
   Copyright © 2003-2009 grischka (grischka@users.sourceforge.net)
+  Copyright © 2008-2009 The Blackbox for Windows Development Team
 
   bbLeanSkin is a plugin for Blackbox for Windows
+  bbLeanSkin+ is a plugin for Blackbox for Windows
 
   http://bb4win.sourceforge.net/bblean
   http://bb4win.sourceforge.net/
 
 
   bbLeanSkin is free software, released under the GNU General Public License
+  bbLeanSkin+ is free software, released under the GNU General Public License
   (GPL version 2) For details see:
 
     http://www.fsf.org/licenses/gpl.html
@@ -32,6 +36,8 @@
 #include "BImage.cpp" // @TODO: remove @NOTE: when in CMakeList it is a problem for eclipse to read makefiles
 
 #define array_count(ary) (sizeof(ary) / sizeof(ary[0]))
+//@FIXME: grr, dup from BB.h... fix it mojmir
+#define _CopyOffsetRect(lprcDst, lprcSrc, dx, dy) (*lprcDst).left = (*lprcSrc).left + (dx), (*lprcDst).right = (*lprcSrc).right + (dx), (*lprcDst).top = (*lprcSrc).top + (dy), (*lprcDst).bottom = (*lprcSrc).bottom + (dy)
 
 //===========================================================================
 void get_workarea(HWND hwnd, RECT *w, RECT *s)
@@ -113,6 +119,81 @@ void SnapWindowToEdge(WinInfo *WI, WINDOWPOS* pwPos, int nDist)
 }
 
 //===========================================================================
+
+int BBDrawTextAltW(HDC hDC, LPCWSTR lpString, RECT *lpRect, unsigned uFormat, StyleItem* pG){
+
+	if (pG->ShadowXY){ // draw shadow
+		RECT rcShadow;
+		int x = pG->ShadowX;
+		int y = pG->ShadowY;
+		SetTextColor(hDC, pG->ShadowColor);
+		if (pG->FontShadow){ // draw shadow with outline
+			for (int i = 0; i <= 2; i++){
+				for (int j = 0; j <= 2; j++){
+					if (!((i|j)&0x2)) continue;
+					_CopyOffsetRect(&rcShadow, lpRect, i, j);
+					DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
+				}
+			}
+		}
+		else{
+			_CopyOffsetRect(&rcShadow, lpRect, x, y);
+			DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
+		}
+	}
+	if (pG->FontShadow){ // draw outline
+        RECT rcOutline;
+        SetTextColor(hDC, pG->OutlineColor);
+        for (int i = -1; i <= 1; i++){
+            for (int j = -1; j <= 1; j++){
+                if (!(i|j)) continue; 
+                _CopyOffsetRect(&rcOutline, lpRect, i, j);
+                DrawTextW(hDC, lpString, -1, &rcOutline, uFormat);
+            }
+        }
+    }
+    // draw text
+    SetTextColor(hDC, pG->TextColor);
+    return DrawTextW(hDC, lpString, -1, lpRect, uFormat);
+}
+
+int BBDrawTextAlt(HDC hDC, const char *lpString, RECT *lpRect, unsigned uFormat, StyleItem * pG){
+	int i, j;
+
+	if (pG->ShadowXY){ // draw shadow
+		RECT rcShadow;
+		int x = pG->ShadowX;
+		int y = pG->ShadowY;
+		SetTextColor(hDC, pG->ShadowColor);
+		if (pG->FontShadow){ // draw shadow with outline
+			for (i = 0; i < 3; i++){
+				for (j = 0; j < 3; j++){
+					if (!((i|j)&0x2)) continue; 
+					_CopyOffsetRect(&rcShadow, lpRect, i-x, j-y);
+					DrawText(hDC, lpString, -1, &rcShadow, uFormat);
+				}
+			}
+		}
+		else{
+			_CopyOffsetRect(&rcShadow, lpRect, x, y);
+			DrawText(hDC, lpString, -1, &rcShadow, uFormat);
+		}
+	}
+   if (pG->FontShadow){ // draw outline
+        RECT rcOutline;
+        SetTextColor(hDC, pG->OutlineColor);
+        for (i = -1; i < 2; i++){
+            for (j = -1; j < 2; j++){
+                if (!(i|j)) continue;
+                _CopyOffsetRect(&rcOutline, lpRect, i, j);
+                DrawText(hDC, lpString, -1, &rcOutline, uFormat);
+            }
+        }
+    }
+    // draw text
+    SetTextColor(hDC, pG->TextColor);
+    return DrawText(hDC, lpString, -1, lpRect, uFormat);
+}
 
 void get_rect(HWND hwnd, RECT *rp)
 {
@@ -497,6 +578,8 @@ void PaintAll(struct WinInfo* WI)
 
     int label_left = left;
     int label_right = right;
+	int barrier = mSkin.labelBarrier !=-1 ? 
+		((right - left) * (mSkin.labelBarrier) / 200) : 0;
     int space = mSkin.buttonMargin;
     int d, i;
 
@@ -577,11 +660,11 @@ void PaintAll(struct WinInfo* WI)
 
         if (btn_Icon == b) {
             int s = mSkin.buttonSize;
-            int o = (s - 16)/2;
+            int o = (s - 20)/2;
             if (o < 0)
                 o = 0;
             else
-                s = 16;
+                s = 20;
             DrawIconSatnHue(hdc, rc.left+o, rc.top+o, hico, s, s, 0, NULL, DI_NORMAL, state, mSkin.iconSat, mSkin.iconHue);
         } else {
             int pressed = WI->button_down == b
@@ -596,8 +679,10 @@ void PaintAll(struct WinInfo* WI)
     //----------------------------------
     // Titlebar Label gradient
 
-    rc.left = label_left + (left == label_left ? mSkin.labelMargin : mSkin.buttonInnerMargin);
-    rc.right = label_right - (right == label_right ? mSkin.labelMargin : mSkin.buttonInnerMargin);
+    rc.left = label_left + barrier + 
+		(left == label_left ? mSkin.labelMargin : mSkin.buttonInnerMargin);
+    rc.right = label_right - barrier - 
+		(right == label_right ? mSkin.labelMargin : mSkin.buttonInnerMargin);
     rc.top = top + mSkin.labelMargin;
     rc.bottom = title_bottom - mSkin.labelMargin;
 
@@ -621,21 +706,23 @@ void PaintAll(struct WinInfo* WI)
 
     if (WI->is_unicode) {
         GetWindowTextW(WI->hwnd, wTitle, array_count(wTitle));
-        DrawTextW(hdc, wTitle, -1, &rc,
+        BBDrawTextAltW(hdc, wTitle, &rc,
             mSkin.Justify
             | DT_SINGLELINE
             | DT_NOPREFIX
             | DT_END_ELLIPSIS
-            | DT_VCENTER
+            | DT_VCENTER,
+            pG
             );
     } else {
         GetWindowText(WI->hwnd, (char*)wTitle, array_count(wTitle));
-        DrawText(hdc, (char*)wTitle, -1, &rc,
+        BBDrawTextAlt(hdc, (char*)wTitle, &rc,
             mSkin.Justify
             | DT_SINGLELINE
             | DT_NOPREFIX
             | DT_END_ELLIPSIS
-            | DT_VCENTER
+            | DT_VCENTER,
+            pG
             );
     }
 
@@ -664,6 +751,17 @@ void PaintAll(struct WinInfo* WI)
             rc.left = left;
             rc.right = right;
             rc.bottom = bottom - WI->S.BottomHeight;
+			if (!mSkin.is_style070)
+			{
+				COLORREF pc = active ? mSkin.F.Title.borderColor : mSkin.U.Title.borderColor;
+				HGDIOBJ oldPen = SelectObject(hdc_win, CreatePen(PS_SOLID, 1, pc));
+				int bw = imax(mSkin.F.Title.borderWidth, mSkin.U.Title.borderWidth);
+				draw_line(hdc_win, rc.left, rc.left, rc.top, rc.bottom, bw);
+				draw_line(hdc_win, rc.right-bw, rc.right-bw, rc.top, rc.bottom, bw);
+				DeleteObject(SelectObject(hdc_win, oldPen));
+				rc.left += bw;
+				rc.right -= bw;
+			}
 
             COLORREF bc = wG->FrameColor;
             HGDIOBJ oldPen = SelectObject(hdc_win, CreatePen(PS_SOLID, 1, bc));
@@ -671,10 +769,16 @@ void PaintAll(struct WinInfo* WI)
             draw_line(hdc_win, rc.right-fw, rc.right-fw, rc.top, rc.bottom, fw);
             if (WI->S.BottomHeight == fw)
                 draw_line(hdc_win, rc.left, rc.right, rc.bottom, rc.bottom, fw);
+			if (!mSkin.is_style070)
+			{
+				rc.bottom -= fw;
+				draw_line(hdc_win, rc.left, rc.right, rc.top, rc.top, fw);
+				draw_line(hdc_win, rc.left, rc.right, rc.bottom, rc.bottom, fw);
+			}
             DeleteObject(SelectObject(hdc_win, oldPen));
         }
 
-        if (WI->S.BottomHeight > fw)
+        if (WI->S.BottomHeight > 0)
         {
             int gw = mSkin.gripWidth;
             StyleItem *pG2;
@@ -1351,7 +1455,7 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
              || (WI->S.width == wp->cx 
                 && WI->S.height == wp->cy)
             ))
-            SnapWindowToEdge(WI, (WINDOWPOS*)lParam, 7);
+            SnapWindowToEdge(WI, (WINDOWPOS*)lParam, mSkin.snapWindows);
 
         if (get_rolled(WI)) {
             wp->cy = mSkin.rollupHeight + WI->S.HiddenTop;
