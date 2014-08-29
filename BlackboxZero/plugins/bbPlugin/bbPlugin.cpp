@@ -37,6 +37,84 @@
 #define _THIS_ PI,
 #endif
 
+//===========================================================================
+// API: SetFullTransparency
+// Purpose: Wrapper, win9x compatible
+// In:      HWND, alpha
+// Out:     bool
+//===========================================================================
+
+BOOL (WINAPI *qSetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD) = NULL;
+
+bool SetFullTransparency(HWND hwnd, BYTE alpha)
+{
+	HMODULE hUser32=LoadLibraryA("user32.dll");
+	if (hUser32)
+		qSetLayeredWindowAttributes=(BOOL(WINAPI*)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUser32, "SetLayeredWindowAttributes");
+    if (NULL == qSetLayeredWindowAttributes) return false;
+
+    LONG wStyle1, wStyle2;
+    wStyle1 = wStyle2 = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+    if (alpha < 255) wStyle2 |= WS_EX_LAYERED;
+    else wStyle2 &= ~WS_EX_LAYERED;
+
+    if (wStyle2 != wStyle1)
+        SetWindowLong(hwnd, GWL_EXSTYLE, wStyle2);
+
+    if (wStyle2 & WS_EX_LAYERED)
+		return 0 != qSetLayeredWindowAttributes(hwnd, 0, alpha, LWA_COLORKEY);
+
+    return true;
+}
+
+//===========================================================================
+// Function: GetOSVersion - bb4win_mod
+// Purpose: Retrieves info about the current OS & bit version
+// In: None
+// Out: int = Returns an integer indicating the OS & bit version
+//===========================================================================
+
+OSVERSIONINFO osInfo;
+bool         using_NT;
+
+int GetOSVersion(void)
+{
+    ZeroMemory(&osInfo, sizeof(osInfo));
+    osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+    GetVersionEx(&osInfo);
+
+	//64-bit OS test, when running as 32-bit under WoW
+	BOOL bIs64BitOS= FALSE;
+	typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
+	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle("kernel32"),"IsWow64Process");
+	if (NULL != fnIsWow64Process)
+		fnIsWow64Process(GetCurrentProcess(), &bIs64BitOS);
+	/*usingx64 = bIs64BitOS;
+	//64-bit OS test, if compiled as native 64-bit. In case we ever need it.
+	if (!usingx64)
+		usingx64=(sizeof(int)!=sizeof(void*));*/
+
+    using_NT         = osInfo.dwPlatformId == VER_PLATFORM_WIN32_NT;
+
+    if (using_NT)
+		return ((osInfo.dwMajorVersion * 10) + osInfo.dwMinorVersion + (bIs64BitOS ? 5 : 0)); // NT 40; Win2kXP 50; Vista 60; etc.
+
+
+	if (osInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
+    {
+        if (osInfo.dwMinorVersion >= 90)
+            return 30; // Windows ME
+        if (osInfo.dwMinorVersion >= 10)
+            return 20; // Windows 98
+    }
+	return 10; // Windows 95
+}
+
+
+
+
+
 int parse_bb_version (char const * ver_str, size_t offset)
 {
     int BBVersion = 0;
@@ -613,7 +691,7 @@ void BBP_set_window_modes(plugin_info *PI)
 
         if (PI->autoHide && false == PI->auto_shown)
         {
-            int hangout = 1;
+            int hangout = 3;
             int place = PI->place;
             if ((false == PI->orient_vertical && (place == POS_TopLeft || place == POS_BottomLeft))
                 || place == POS_CenterLeft || place == POS_Left)
@@ -665,7 +743,10 @@ void BBP_set_window_modes(plugin_info *PI)
 
         if (PI->is_alpha != trans)
         {
-            SetTransparency(PI->hwnd, trans);
+            if (PI->alphaEnabled)
+				SetFullTransparency(PI->hwnd, trans);
+			else
+				SetTransparency(PI->hwnd, trans);
             PI->is_alpha = trans;
         }
     }
@@ -687,6 +768,7 @@ const char *placement_strings[] = {
     "BottomRight"   ,
 
     "CenterLeft"    ,
+	"AutoHide"		,
     "CenterRight"   ,
     "Center"        ,
 
@@ -711,6 +793,7 @@ const char *menu_placement_strings[] = {
     "Bottom Right"   ,
 
     "Center Left"    ,
+	"Autohide"		 ,
     "Center Right"   ,
     "Center Screen"  ,
 
@@ -833,7 +916,7 @@ void write_rc(struct plugin_info *PI, void *v)
         BBP_write_bool      (PI, "clickRaise", PI->clickRaise);
     else
     if (v == &PI->snapWindow)
-        BBP_write_bool      (PI, "snapWindow", PI->snapWindow);
+        BBP_write_int      (PI, "snapWindow", PI->snapWindow);
     else
     if (v == &PI->pluginToggle)
         BBP_write_bool      (PI, "pluginToggle", PI->pluginToggle);
@@ -844,6 +927,12 @@ void write_rc(struct plugin_info *PI, void *v)
     if (v == &PI->alphaValue)
         BBP_write_int       (PI, "alpha.value", PI->alphaValue);
     else
+	if (v == &PI->saturation)
+		BBP_write_int       (PI, "icon.saturation", PI->saturation);
+	else
+	if (v == &PI->hue)
+		BBP_write_int       (PI, "icon.hue", PI->hue);
+	else
     if (v == &PI->orient_vertical)
         BBP_write_string    (PI, "orientation", PI->orient_vertical ? "vertical" : "horizontal");
 }
@@ -868,12 +957,18 @@ bool BBP_read_window_modes(struct plugin_info *PI, const char *rcfile)
     PI->useSlit         = BBP_read_bool(PI, "useSlit", false);
     PI->alwaysOnTop     = BBP_read_bool(PI, "alwaysOnTop", false);
     PI->autoHide        = BBP_read_bool(PI, "autoHide", false);
-    PI->snapWindow      = BBP_read_bool(PI, "snapWindow", true);
+    PI->snapWindow      = BBP_read_int(PI, "snapWindow", 20);
     PI->pluginToggle    = BBP_read_bool(PI, "pluginToggle", true);
     PI->clickRaise      = BBP_read_bool(PI, "clickRaise", true);
     PI->alphaEnabled    = BBP_read_bool(PI, "alpha.enabled", false);
-    PI->alphaValue           = (BYTE)BBP_read_int(PI,  "alpha.value",  192);
+    //PI->alphaValue           = (BYTE)BBP_read_int(PI,  "alpha.value",  192);
+    PI->alphaValue      = (BYTE)eightScale_up(BBP_read_int(PI,  "alpha.value",  *(int *)GetSettingPtr(SN_MENUALPHA))); // bb4win
     PI->orient_vertical = PI->is_bar || 0 == _stricmp("vertical", BBP_read_string(PI, NULL, "orientation", "vertical"));
+	if (false == PI->no_icons)
+	{
+		PI->saturation		= eightScale_up(BBP_read_int(PI,  "icon.saturation", 3));
+		PI->hue				= eightScale_up(BBP_read_int(PI,  "icon.hue", 2));
+	}
     if (NULL == place_string) {
         BBP_write_window_modes(PI);
         return false;
@@ -892,6 +987,11 @@ void BBP_write_window_modes(struct plugin_info *PI)
     write_rc(PI, &PI->pluginToggle);
     write_rc(PI, &PI->alphaEnabled);
     write_rc(PI, &PI->alphaValue);
+	if (false == PI->no_icons)
+	{
+		write_rc(PI, &PI->saturation);
+		write_rc(PI, &PI->hue);
+	}
     if (false == PI->is_bar)
         write_rc(PI, &PI->orient_vertical);
 }
@@ -904,15 +1004,22 @@ n_menu * BBP_n_placementmenu(struct plugin_info *PI, n_menu *m)
 {
     n_menu *P; int n, last;
     P = n_submenu(m, "Placement");
-    last = PI->is_bar ? POS_BottomRight : POS_Center;
-    for (n = 1; n <= last; n++)
-    {
-        if (POS_BottomLeft == n || POS_CenterLeft == n)
-            n_menuitem_nop(P, NULL);
+    last = PI->is_bar ? POS_TopRight : POS_Center;
+	for (n = 1; n <= last; n++)
+	{
+		if (POS_TopLeft == n || POS_CenterLeft == n)
+		{
+			n_menuitem_nop(P, NULL);
+			if (PI->is_bar && POS_CenterLeft == n)
+				n = n + 1;
+		}
 
-        char b2[80];
-        sprintf(b2, "placement %s", placement_strings[n]);
-        n_menuitem_bol(P, menu_placement_strings[n], b2, PI->place == n);
+		char b2[80];
+		sprintf(b2, "placement %s", placement_strings[n]);
+		POS_AutoHide == n ? n_menuitem_bol(P, menu_placement_strings[n], "autoHide", PI->autoHide) : n_menuitem_bol(P, menu_placement_strings[n], b2, PI->place == n);
+
+		if (PI->is_bar && POS_AutoHide == n)
+			n = n + 1;
     }
     return P;
 }
@@ -932,19 +1039,33 @@ void BBP_n_insertmenu(struct plugin_info *PI, n_menu *m)
         n_menuitem_bol(m, "Use Slit", "useSlit", PI->useSlit);
     }
 
-    if (false == PI->useSlit || NULL == PI->hSlit)
-    {
-        n_menuitem_bol(m, "Auto Hide", "autoHide",  PI->autoHide);
-        n_menuitem_bol(m, "Always On Top", "alwaysOnTop",  PI->alwaysOnTop);
-        if (false == PI->alwaysOnTop)
-            n_menuitem_bol(m, "Raise on DeskClick", "clickRaise", PI->clickRaise);
-        n_menuitem_bol(m, "Snap To Edges", "snapWindow",  PI->snapWindow);
-        n_menuitem_bol(m, "Toggle With Plugins", "pluginToggle",  PI->pluginToggle);
-        n_menuitem_nop(m, NULL);
-        n_menuitem_bol(m, "Transparency", "alpha.enabled",  PI->alphaEnabled);
-        n_menuitem_int(m, "Alpha Value", "alpha.value",  PI->alphaValue, 0, 255);
-    }
+	if (false == PI->no_icons)
+	{
+		n_menuitem_int(m, "Icon Saturation", "icon.saturation",  eightScale_down(PI->saturation), 0, 8);
+		n_menuitem_int(m, "Icon Hue", "icon.hue",  eightScale_down(PI->hue), 0, 8);
+	}
+}
+
+n_menu * BBP_n_windowmenu(struct plugin_info *PI, n_menu *m)
+{
+	n_menu *R = n_submenu(m, "Window");
+
+  if (false == PI->useSlit || NULL == PI->hSlit)
+  {
+      n_menuitem_bol(m, "Always On Top", "alwaysOnTop",  PI->alwaysOnTop);
+      n_menuitem_bol(m, "Auto Hide", "autoHide",  PI->autoHide);
+      if (false == PI->alwaysOnTop)
+          n_menuitem_bol(m, "Raise on DeskClick", "clickRaise", PI->clickRaise);
+      n_menuitem_int(R, "Snap To Edge", "snapWindow",  PI->snapWindow, 0, 50);
+      n_menuitem_bol(m, "Toggle With Plugins", "pluginToggle",  PI->pluginToggle);
+      n_menuitem_nop(m, NULL);
+      n_menuitem_bol(m, "Transparency", "alpha.enabled",  PI->alphaEnabled);
+		  n_menuitem_int(R, "Alpha Value", "alpha.value",  eightScale_down(PI->alphaValue), 0, 8); // bb4win
+      //n_menuitem_int(m, "Alpha Value", "alpha.value",  PI->alphaValue, 0, 255);
+  }
     // n_menuitem_bol(m, "Visible", "visible",  PI->visible);
+
+    return R;
 }
 
 //===========================================================================
@@ -1146,13 +1267,25 @@ int BBP_handle_broam(struct plugin_info *PI, const char *temp)
         return BBP_BROAM_HANDLED;
     }
 
-    if (BBP_broam_bool(PI, temp, "snapWindow", &PI->snapWindow))
+    if (BBP_broam_int(PI, temp, "snapWindow", &PI->snapWindow))
     {
         BBP_set_window_modes(PI);
         return BBP_BROAM_HANDLED;
     }
 
     if (BBP_broam_bool(PI, temp, "alpha.enabled", &PI->alphaEnabled))
+    {
+        BBP_set_window_modes(PI);
+        return BBP_BROAM_HANDLED;
+    }
+
+    if (BBP_broam_int(PI, temp, "icon.saturation", &PI->saturation))
+    {
+        BBP_set_window_modes(PI);
+        return BBP_BROAM_HANDLED;
+    }
+
+    if (BBP_broam_int(PI, temp, "icon.hue", &PI->hue))
     {
         BBP_set_window_modes(PI);
         return BBP_BROAM_HANDLED;
@@ -1190,6 +1323,14 @@ int BBP_handle_broam(struct plugin_info *PI, const char *temp)
     {
         char temp[MAX_PATH];
         BBP_edit_file(set_my_path(PI->hInstance, temp, "readme.txt"));
+        return BBP_BROAM_HANDLED;
+    }
+
+    if (!_stricmp(temp, "LoadDocs"))
+    {
+        char docspath[MAX_PATH];
+		locate_file(PI->hInstance, docspath, PI->class_name, "html");
+        BBExecute(NULL, "open", docspath, NULL, NULL, SW_SHOWNORMAL, false);
         return BBP_BROAM_HANDLED;
     }
 
@@ -1367,10 +1508,9 @@ LRESULT CALLBACK BBP_WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPar
 
         case WM_WINDOWPOSCHANGING:
             if (PI->is_moving) {
-                if (PI->snapWindow
-                 && false == PI->inSlit
+               if (false == PI->inSlit
                  && 0 == (0x8000 & GetAsyncKeyState(VK_SHIFT)))
-                    SnapWindowToEdge((WINDOWPOS*)lParam, 10,
+                    SnapWindowToEdge((WINDOWPOS*)lParam, PI->snapWindow,
                         PI->is_sizing ? SNAP_FULLSCREEN|SNAP_SIZING
                         : SNAP_FULLSCREEN
                         );
@@ -1389,6 +1529,7 @@ LRESULT CALLBACK BBP_WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPar
                 PI->height = wp->cy;
                 InvalidateRect(hwnd, NULL, FALSE);
             }
+			SnapWindowToEdge((WINDOWPOS*)lParam, PI->snapWindow, true);
             goto pass_nothing;
 
         case WM_ENTERSIZEMOVE:
@@ -1575,9 +1716,6 @@ int BBP_Init_Plugin(plugin_info *PI)
         if (s) PI->broam_key_len_common = s - PI->broam_key + 1;
     }
 
-    PI->is_alpha = 255;
-    PI->visible = true;
-
     if (0 == class_info_register(PI->class_name, PI->hInstance))
         return 0;
 
@@ -1602,6 +1740,11 @@ int BBP_Init_Plugin(plugin_info *PI)
         class_info_decref(PI->class_name);
         return 0;
     }
+
+	// Transparency is only supported under Windows 2000/XP...
+	PI->usingWin2kPlus = GetOSVersion() >= 50;
+    PI->is_alpha = *(BYTE *)GetSettingPtr(SN_MENUALPHA);
+    PI->visible = true;
 
     BBP_set_window_modes(PI);
     return 1;

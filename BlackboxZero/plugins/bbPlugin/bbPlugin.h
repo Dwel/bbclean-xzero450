@@ -5,8 +5,12 @@
 
   Copyright © 2004-2009 grischka
   http://bb4win.sf.net/bblean
+  Copyright © 2008-2009 The Blackbox for Windows Development Team
 
-  bbLean is free software, released under the GNU General Public License
+  http://developer.berlios.de/projects/bblean
+  http://bb4win.sourceforge.net
+
+  bb4win_mod and bbLean are free software, released under the GNU General Public License
   (GPL version 2).
 
   http://www.fsf.org/licenses/gpl.html
@@ -42,20 +46,25 @@ struct plugin_info
     int ypos;
     int width;
     int height;
+	int snapWindow;
 
     bool useSlit;
     bool alwaysOnTop;
     bool autoHide;
+	bool usingWin2kPlus;
     bool alphaEnabled;
     BYTE alphaValue;
 
+	int saturation;
+	int hue;
+
     bool clickRaise;
-    bool snapWindow;
     bool pluginToggle;
     bool visible;
 
     bool orient_vertical;
     bool is_bar;
+	bool no_icons;
 
     // state vars
     bool inSlit;
@@ -124,6 +133,7 @@ enum Plugin_Positions
     POS_BottomRight   ,
 
     POS_CenterLeft    ,
+	POS_AutoHide	  ,
     POS_CenterRight   ,
     POS_Center        ,
 
@@ -187,6 +197,8 @@ BBP_DLL_EXPORT const char * BBP_read_value(plugin_info *PI, const char *rcs, LON
 BBP_DLL_EXPORT void BBP_edit_file(const char *path);
 BBP_DLL_EXPORT int BBP_bbversion(void);
 
+BBP_DLL_EXPORT int GetOSVersion(void);
+
 #define BBP_clear(_struct,_first)\
     memset(&_first, 0, sizeof(*_struct)-((char*)&_struct->_first-(char*)_struct))
 
@@ -207,6 +219,7 @@ BBP_DLL_EXPORT void n_disable_lastitem(n_menu *m);
 BBP_DLL_EXPORT void BBP_n_insertmenu(plugin_info *PI, n_menu *m);
 BBP_DLL_EXPORT n_menu *BBP_n_placementmenu(plugin_info *PI, n_menu *m);
 BBP_DLL_EXPORT n_menu *BBP_n_orientmenu(plugin_info *PI, n_menu *m);
+BBP_DLL_EXPORT n_menu *BBP_n_windowmenu(plugin_info *PI, n_menu *m);
 BBP_DLL_EXPORT bool BBP_broam_int(plugin_info *PI, const char *temp, const char *key, int *ip);
 BBP_DLL_EXPORT bool BBP_broam_string(plugin_info *PI, const char *temp, const char *key, const char **ps);
 BBP_DLL_EXPORT bool BBP_broam_bool(plugin_info *PI, const char *temp, const char *key, bool *ip);

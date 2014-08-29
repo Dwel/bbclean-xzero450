@@ -29,10 +29,10 @@
 #include "BBApi.h"
 #include "win0x500.h"
 #include "bblib.h"
-#include "bbPlugin+.h"
-#include "drawico+.h"
+#include "bbPlugin.h"
+#include "drawico.h"
 #ifndef NO_TIPS
-#include "tooltips+.h"
+#include "tooltips.h"
 #endif
 
 #include <shellapi.h>
