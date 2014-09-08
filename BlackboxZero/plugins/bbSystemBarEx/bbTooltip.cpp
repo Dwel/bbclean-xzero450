@@ -20,8 +20,9 @@
 
 #define VC_EXTRALEAN
 
-#include "../../blackbox/BBApi.h"
 #include "bbTooltip.h"
+#include <blackbox/BB.h>
+#include <blackbox/BBApi.h>
 //#include <shellapi.h>
 
 //-----------------------------------------------------------------------------

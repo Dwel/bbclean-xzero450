@@ -12,6 +12,9 @@
  or FITNESS FOR A PARTICULAR PURPOSE.  Please see the GNU General Public
  License for more details:  [http://www.fsf.org/licenses/gpl.html].
  --------------------------------------------------------------------------------*/
+#pragma once
+#include <blackbox/BB.h>
+#include <blackbox/BBApi.h>
 
 struct bbTooltipInfo
 {
@@ -117,8 +120,8 @@ private:
 };
 
 //#define _CopyRect(lprcDst, lprcSrc) (*lprcDst) = (*lprcSrc)
-#define _OffsetRect(lprc, dx, dy) (*lprc).left += (dx), (*lprc).right += (dx), (*lprc).top += (dy), (*lprc).bottom += (dy)
-#define _CopyOffsetRect(lprcDst,lprcSrc,dx,dy) (*(lprcDst)).left = (*(lprcSrc)).left + (dx), (*(lprcDst)).right = (*(lprcSrc)).right + (dx), (*(lprcDst)).top = (*(lprcSrc)).top + (dy), (*(lprcDst)).bottom = (*(lprcSrc)).bottom + (dy)
+//#define _OffsetRect(lprc, dx, dy) (*lprc).left += (dx), (*lprc).right += (dx), (*lprc).top += (dy), (*lprc).bottom += (dy)
+//#define _CopyOffsetRect(lprcDst,lprcSrc,dx,dy) (*(lprcDst)).left = (*(lprcSrc)).left + (dx), (*(lprcDst)).right = (*(lprcSrc)).right + (dx), (*(lprcDst)).top = (*(lprcSrc)).top + (dy), (*(lprcDst)).bottom = (*(lprcSrc)).bottom + (dy)
 //void DrawTextWithShadow(HDC hdc, LPSTR text, RECT r, unsigned int format, COLORREF textColor, COLORREF shadowColor, bool shadow);
 //COLORREF CreateShadowColor(StyleItem* styleItem, COLORREF color, COLORREF colorTo, COLORREF textColor);
 //---------------------------------------------

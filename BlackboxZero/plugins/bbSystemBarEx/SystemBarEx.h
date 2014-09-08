@@ -122,7 +122,7 @@ extern "C"
 #define TASK_RISE_TIMER 4
 
 
-#define _OffsetRect(lprc, dx, dy) (*lprc).left += (dx), (*lprc).right += (dx), (*lprc).top += (dy), (*lprc).bottom += (dy)
+//#define _OffsetRect(lprc, dx, dy) (*lprc).left += (dx), (*lprc).right += (dx), (*lprc).top += (dy), (*lprc).bottom += (dy)
 
 //---------------------------------------------------------------------------
 
