@@ -433,6 +433,83 @@ int bbWC2MB(const WCHAR *src, char *str, int len)
     return 0;
 }
 
+int BBDrawTextAltW (HDC hDC, LPCWSTR lpString, int nCount, RECT *lpRect, unsigned uFormat, StyleItem* pG)
+{
+	if (pG->ShadowXY){ // draw shadow
+		RECT rcShadow;
+		int x = pG->ShadowX;
+		int y = pG->ShadowY;
+		SetTextColor(hDC, pG->ShadowColor);
+		if (pG->FontShadow){ // draw shadow with outline
+			for (int i = 0; i <= 2; i++){
+				for (int j = 0; j <= 2; j++){
+					if (!((i | j) & 0x2)) continue;
+					_CopyOffsetRect(&rcShadow, lpRect, i, j);
+					DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
+				}
+			}
+		}
+		else{
+			_CopyOffsetRect(&rcShadow, lpRect, x, y);
+			DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
+		}
+	}
+	if (pG->FontShadow){ // draw outline
+		RECT rcOutline;
+		SetTextColor(hDC, pG->OutlineColor);
+		for (int i = -1; i <= 1; i++){
+			for (int j = -1; j <= 1; j++){
+				if (!(i | j)) continue;
+				_CopyOffsetRect(&rcOutline, lpRect, i, j);
+				DrawTextW(hDC, lpString, -1, &rcOutline, uFormat);
+			}
+		}
+	}
+	// draw text
+	SetTextColor(hDC, pG->TextColor);
+	return DrawTextW(hDC, lpString, -1, lpRect, uFormat);
+}
+
+int BBDrawTextAlt (HDC hDC, const char * lpString, int nCount, RECT * lpRect, unsigned uFormat, StyleItem * pG)
+{
+	int i, j;
+
+	if (pG->ShadowXY){ // draw shadow
+		RECT rcShadow;
+		int x = pG->ShadowX;
+		int y = pG->ShadowY;
+		SetTextColor(hDC, pG->ShadowColor);
+		if (pG->FontShadow){ // draw shadow with outline
+			for (i = 0; i < 3; i++){
+				for (j = 0; j < 3; j++){
+					if (!((i | j) & 0x2)) continue;
+					_CopyOffsetRect(&rcShadow, lpRect, i - x, j - y);
+					DrawText(hDC, lpString, -1, &rcShadow, uFormat);
+				}
+			}
+		}
+		else{
+			_CopyOffsetRect(&rcShadow, lpRect, x, y);
+			DrawText(hDC, lpString, -1, &rcShadow, uFormat);
+		}
+	}
+	if (pG->FontShadow){ // draw outline
+		RECT rcOutline;
+		SetTextColor(hDC, pG->OutlineColor);
+		for (i = -1; i < 2; i++){
+			for (j = -1; j < 2; j++){
+				if (!(i | j)) continue;
+				_CopyOffsetRect(&rcOutline, lpRect, i, j);
+				DrawText(hDC, lpString, -1, &rcOutline, uFormat);
+			}
+		}
+	}
+	// draw text
+	SetTextColor(hDC, pG->TextColor);
+	return DrawText(hDC, lpString, -1, lpRect, uFormat);
+}
+
+
 //===========================================================================
 
 typedef struct pixinfo {

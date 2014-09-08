@@ -756,7 +756,9 @@ extern "C" {
     API_EXPORT HFONT CreateStyleFont (StyleItem const * si);
 
 	/* Draw text with shadow, etc. */
-	API_EXPORT int BBDrawText(HDC hDC, const char *lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem * si);
+	API_EXPORT int BBDrawText (HDC hDC, const char * lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem * si);
+	API_EXPORT int BBDrawTextAlt( HDC hDC, const char * lpString, RECT * lpRect, unsigned uFormat, StyleItem * pG);
+	API_EXPORT int BBDrawTextAltW (HDC hDC, LPCWSTR lpString, RECT * lpRect, unsigned uFormat, StyleItem * pG);
 
 
     /* ------------------------------------ */
