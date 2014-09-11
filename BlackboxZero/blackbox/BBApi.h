@@ -894,9 +894,9 @@ extern "C" {
        changes with tasks */
 
     /* get the size */
-    API_EXPORT int GetTaskListSize(void);
+    //API_EXPORT int GetTaskListSize(void);
     /* get a task's HWND by index [0..GetTaskListSize()] */
-    API_EXPORT HWND GetTask(int index);
+    //API_EXPORT HWND GetTask(int index);
     /* get the index of the currently active task */
     API_EXPORT int GetActiveTask(void);
     /* Get the workspace number for a task */
@@ -920,7 +920,7 @@ extern "C" {
     } tasklist;
 
     /* Direct access: get the internal TaskList. */
-    API_EXPORT const struct tasklist *GetTaskListPtr(void);
+    //API_EXPORT const struct tasklist *GetTaskListPtr(void);
 
     /* ------------------------------------ */
     /* Workspace (aka Desktop) Information */
@@ -938,7 +938,7 @@ extern "C" {
     } DesktopInfo;
 
     /* Get current Desktop information: */
-    API_EXPORT void GetDesktopInfo(DesktopInfo *deskInfo);
+    //API_EXPORT void GetDesktopInfo(DesktopInfo *deskInfo);
 
     /* ------------------------------------ */
     /* often used structure */
@@ -962,10 +962,10 @@ extern "C" {
     } taskinfo;
 
     /* get workspace and original position/size for window */
-    API_EXPORT bool GetTaskLocation(HWND hwnd, struct taskinfo *pti);
+    //API_EXPORT bool GetTaskLocation(HWND hwnd, struct taskinfo *pti);
 
     /* set workspace and/or position for window */
-    API_EXPORT bool SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags);
+    //API_EXPORT bool SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags);
     /* where flags are any combination of: */
     #define BBTI_SETDESK    1 /* move window to desk as specified */
     #define BBTI_SETPOS     2 /* move window to x/ypos as specified */

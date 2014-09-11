@@ -18,77 +18,59 @@
   for more details.
 
   ========================================================================== */
-
-#ifndef _BBVWM_H_
-#define _BBVWM_H_
+#pragma once
 
 struct winlist;
 
 //=========================================================
 // Init/exit
 
-void vwm_init(void);
-void vwm_reconfig(bool force);
-void vwm_exit(void);
+void vwm_init ();
+void vwm_reconfig (bool force);
+void vwm_exit ();
 
 //=========================================================
 // update the list
 
-void vwm_update_winlist(void);
-struct winlist* vwm_add_window(HWND hwnd);
+void vwm_update_winlist ();
+winlist * vwm_add_window (HWND hwnd);
 
 //=========================================================
 // set workspace
 
-void vwm_switch(int newdesk);
-void vwm_gather(void);
+void vwm_switch (int newdesk);
+void vwm_gather ();
 
 //=========================================================
 // Set window properties
 
-bool vwm_set_desk(HWND hwnd, int desk, bool switchto);
-bool vwm_set_location(HWND hwnd, struct taskinfo *t, unsigned flags);
-bool vwm_set_sticky(HWND hwnd, bool set);
-bool vwm_set_onbg(HWND hwnd, bool set);
-bool vwm_lower_window(HWND hwnd);
+bool vwm_set_desk (HWND hwnd, int desk, bool switchto);
+bool vwm_set_location (HWND hwnd, taskinfo * t, unsigned flags);
+bool vwm_set_sticky (HWND hwnd, bool set);
+bool vwm_set_onbg (HWND hwnd, bool set);
+bool vwm_lower_window (HWND hwnd);
 
 // Workaround for BBPager:
-bool vwm_set_workspace(HWND hwnd, int desk);
+bool vwm_set_workspace (HWND hwnd, int desk);
 
 //=========================================================
 // status infos about windows
 
-int vwm_get_desk(HWND hwnd);
-bool vwm_get_location(HWND hwnd, struct taskinfo *t);
+int vwm_get_desk (HWND hwnd);
+bool vwm_get_location (HWND hwnd, taskinfo * t);
 
-bool vwm_get_status(HWND hwnd, int what);
 // values for "what":
-#define VWM_MOVED  1
-#define VWM_HIDDEN 2
-#define VWM_STICKY 3
-#define VWM_ICONIC 4
-#define VWM_ONBG   5
+enum E_VwmStatus {
+    VWM_MOVED  = 1,
+    VWM_HIDDEN,
+    VWM_STICKY,
+    VWM_ICONIC,
+    VWM_ONBG
+};
+bool vwm_get_status (HWND hwnd, E_VwmStatus what);
 
 //=========================================================
 // required variables/functions from elswhere:
-
-// total number of desktops
-extern int nScreens;
-
-// current desktop
-extern int currentScreen;
-extern int lastScreen;
-
 // vwm options
 extern bool Settings_altMethod, Settings_styleXPFix;
 
-// from workspaces.cpp
-extern bool check_sticky_name(HWND hwnd);
-extern bool check_onbg_name(HWND hwnd);
-extern bool check_sticky_plugin(HWND hwnd);
-extern void workspaces_set_desk(void);
-extern void send_desk_refresh(void);
-extern void send_task_refresh(void);
-
-//=========================================================
-#endif //def _BBVWM_H_

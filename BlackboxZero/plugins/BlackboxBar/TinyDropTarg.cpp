@@ -171,7 +171,7 @@ void TinyDropTarget::handle_task_timer(void)
     if (NULL == task_over)
         return;
 
-    if (task_over == GetTask(GetActiveTask()))
+    if (task_over == getWorkspaces().GetTask(getWorkspaces().GetActiveTask()))
         return;
 
     DWORD ThreadID1 = GetWindowThreadProcessId(GetForegroundWindow(), NULL);

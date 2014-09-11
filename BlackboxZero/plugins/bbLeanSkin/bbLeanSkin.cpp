@@ -31,6 +31,8 @@
 #include "engine/hookinfo.h"
 #include "bblib.h"
 #include "bbversion.h"
+#include "BB.h"
+#include "Workspaces.h"
 
 // info
 const char szVersion     [] = "bbLeanSkin "BBLEAN_VERSION;
@@ -174,7 +176,7 @@ char *find_config_file(char *rcpath, const char *file)
 void send_stickyinfo_to_tasks(void)
 {
     const struct tasklist *tl;
-    for (tl = GetTaskListPtr(); tl; tl = tl->next)
+    for (tl = getWorkspaces().GetTaskListPtr(); tl; tl = tl->next)
         PostMessage(m_hwnd, BB_TASKSUPDATE, (WPARAM)tl->hwnd, TASKITEM_ADDED);
 }
 

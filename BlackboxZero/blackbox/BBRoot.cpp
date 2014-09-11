@@ -25,6 +25,7 @@
 #include "BB.h"
 #include "Settings.h"
 #include "bbroot.h"
+#include "Workspaces.h"
 #define ST static
 
 //===========================================================================
@@ -56,8 +57,8 @@ HBITMAP make_root_bmp(const char *command)
         HDC hdc_desk, buf;
         HGDIOBJ B0;
 
-        width = VScreenWidth;
-        height = VScreenHeight;
+        width = getWorkspaces().GetVScreenWidth();
+        height = getWorkspaces().GetVScreenHeight();
         rect.left = rect.top = 0, rect.right = width, rect.bottom = height;
 
         hwnd_desk = GetDesktopWindow();
@@ -122,9 +123,9 @@ static HBITMAP read_bitmap(const char* path, bool delete_after)
         HDC hdc_old = CreateCompatibleDC(hdc_desk);
         HGDIOBJ old_bmp = SelectObject(hdc_old, bmp);
         HDC hdc_new = CreateCompatibleDC(hdc_desk);
-        HBITMAP bmp_new = CreateCompatibleBitmap(hdc_desk, VScreenWidth, VScreenHeight);
+        HBITMAP bmp_new = CreateCompatibleBitmap(hdc_desk, getWorkspaces().GetVScreenWidth(), getWorkspaces().GetVScreenHeight());
         SelectObject(hdc_new, bmp_new);
-        StretchBlt(hdc_new, 0, 0, VScreenWidth, VScreenHeight, hdc_old, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
+        StretchBlt(hdc_new, 0, 0, getWorkspaces().GetVScreenWidth(), getWorkspaces().GetVScreenHeight(), hdc_old, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
         DeleteDC(hdc_new);
         DeleteObject(SelectObject(hdc_old, old_bmp));
         DeleteDC(hdc_old);

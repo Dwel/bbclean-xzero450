@@ -28,6 +28,7 @@
 #include "tooltips.h"
 #include "drawico.h"
 #include "bbshell.h"
+#include "Workspaces.h"
 
 #define MODE_FOLDER 0
 #define MODE_TRAY 1
@@ -122,18 +123,5 @@ winStruct *get_winstruct(Desk *f, int index);
 
 void free_task_list(void);
 void new_task_list(void);
-
-// ---------------------------------------------
-/* experimental: */
-typedef BOOL (*TASKENUMPROC)(const struct tasklist *, LPARAM);
-void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam);
-
-/* experimental: */
-typedef BOOL (*DESKENUMPROC)(const struct DesktopInfo *, LPARAM);
-void EnumDesks (DESKENUMPROC lpEnumFunc, LPARAM lParam);
-
-/* experimental: */
-typedef BOOL (*TRAYENUMPROC)(const struct systemTray *, LPARAM);
-void EnumTray (TRAYENUMPROC lpEnumFunc, LPARAM lParam);
 
 // ---------------------------------------------

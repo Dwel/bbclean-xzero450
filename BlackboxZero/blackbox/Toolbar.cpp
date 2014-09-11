@@ -314,7 +314,7 @@ ST void Toolbar_setlabel(void)
     DesktopInfo DI;
     HWND hwnd;
 
-    GetDesktopInfo (& DI);
+    getWorkspaces().GetDesktopInfo(DI);
     strcpy(Toolbar_WorkspaceName, DI.name);
     if (Toolbar_ShowingExternalLabel)
         return;

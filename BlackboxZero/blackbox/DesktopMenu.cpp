@@ -28,7 +28,7 @@
 struct en { Menu *m; int desk; HWND hwndTop; int flags, i, n; };
 enum e_flags { e_alltasks = 1 };
 
-static BOOL task_enum_func(struct tasklist *tl, LPARAM lParam)
+static BOOL task_enum_func(tasklist const * tl, LPARAM lParam)
 {
     struct en* en = (struct en *)lParam;
     bool is_top = tl->hwnd == en->hwndTop;
@@ -61,8 +61,8 @@ static BOOL task_enum_func(struct tasklist *tl, LPARAM lParam)
 static int fill_task_folder(Menu *m, int desk, int flags)
 {
     struct en en;
-    en.m = m, en.desk = desk, en.hwndTop = GetActiveTaskWindow(), en.flags = flags, en.i = en.n = 0;
-    EnumTasks(task_enum_func, (LPARAM)&en);
+    en.m = m, en.desk = desk, en.hwndTop = getWorkspaces().GetActiveTaskWindow(), en.flags = flags, en.i = en.n = 0;
+    getWorkspaces().EnumTasks(task_enum_func, (LPARAM)&en);
     return en.n;
 }
 
@@ -86,7 +86,7 @@ Menu * MakeTaskFolder(int n, bool popup)
     DesktopInfo DI;
     struct string_node *sn;
 
-    GetDesktopInfo(&DI);
+    getWorkspaces().GetDesktopInfo(DI);
     if (n < 0 || n >= DI.ScreensX)
         return NULL;
 
@@ -110,7 +110,7 @@ Menu* MakeDesktopMenu(int mode, bool popup)
             return i;
         m = MakeNamedMenu(NLS0("Workspaces"), "Core_tasks_workspaces", popup);
     }
-    GetDesktopInfo(&DI);
+    getWorkspaces().GetDesktopInfo(DI);
     for (n = 0, d = DI.ScreensX, sl = DI.deskNames; n < d; ++n, sl = sl->next) {
         if (mode == 0) {
             char buf[100];
@@ -176,7 +176,7 @@ Menu *MakeRecoverMenu(bool popup)
 
 void ShowRecoverMenu(void)
 {
-    Workspaces_GatherWindows();
+    getWorkspaces().GatherWindows();
     if (Settings_altMethod) {
         ShowMenu(MakeRecoverMenu(true));
     } else {
