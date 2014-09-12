@@ -287,7 +287,7 @@ struct barinfo : plugin_info
     void set_screen_info(void);
     void set_clock_string (void);
     void update_windowlabel(void);
-    int get_text_width(const char *cp);
+    int get_text_width(const char *cp, StyleItem * si);
 
     void update(int);
 
@@ -736,12 +736,12 @@ void barinfo::make_cfg()
 
 //===========================================================================
 
-int barinfo::get_text_width(const char *cp)
+int barinfo::get_text_width(const char *cp, StyleItem * si)
 {
     HDC hdc = GetDC(hwnd);
     RECT s = {0,0,0,0};
     HGDIOBJ oldfont = SelectObject(hdc, hFont);
-    bbDrawText(hdc, cp, &s, DT_CALCRECT|DT_NOPREFIX, 0);
+	BBDrawTextAlt(hdc, cp, -1, &s, DT_CALCRECT | DT_NOPREFIX, si);
     SelectObject(hdc, oldfont);
     ReleaseDC(hwnd, hdc);
     return s.right;
@@ -756,7 +756,7 @@ void barinfo::set_screen_info(void)
     labelWidth = 0;
     struct string_node *p;
     dolist (p, DI.deskNames)
-        labelWidth = imax(get_text_width(p->str), labelWidth);
+        labelWidth = imax(get_text_width(p->str, I), labelWidth);
 }
 
 //===========================================================================
@@ -816,7 +816,7 @@ void barinfo::set_clock_string (void)
 		bbWC2MB(result, clockTimeTips, sizeof clockTimeTips);
 	}
 
-    clockWidth = get_text_width(clockTime);
+    clockWidth = get_text_width(clockTime, I);
 
     SYSTEMTIME lt;
     GetLocalTime(&lt);

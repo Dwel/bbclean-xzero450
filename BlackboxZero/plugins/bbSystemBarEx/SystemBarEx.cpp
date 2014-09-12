@@ -16,6 +16,7 @@
 #include "SystemBarEx.h"
 #include <blackbox/BB.h>
 #include <blackbox/BBApi.h>
+#include <blackbox/DrawText.h>
 
 // @NOTE: copy from file windef.h from mingw64
 // this is a mingw64 specific thing, elsewhere the min max is defined

@@ -20,6 +20,7 @@
 /* read7write rc files with cache */
 #pragma once
 #include "bblib.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {

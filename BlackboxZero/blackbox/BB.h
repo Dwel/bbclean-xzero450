@@ -52,6 +52,7 @@
 #define SIZEOFPART(s,e) (offsetof(s,e) + sizeof(((s*)0)->e))
 
 #ifdef __BBCORE__
+#include "DrawText.h"
 // ==============================================================
 /* global variables */
 
@@ -128,7 +129,7 @@ void arrow_bullet (HDC buf, int x, int y, int d);
 //void draw_line_h (HDC hDC, int x1, int x2, int y, int w, COLORREF C);
 char * replace_arg1 (const char * fmt, const char * in);
 COLORREF Settings_MapShadowColor (StyleItem *si, StyleItem *ri);
-void BBDrawText(HDC hDC, LPCTSTR lpString, LPRECT rc, UINT uFormat, StyleItem * pSI);
+//void BBDrawText(HDC hDC, LPCTSTR lpString, LPRECT rc, UINT uFormat, StyleItem * pSI);
 
 /* other */
 int BBMessageBox (int flg, const char * fmt, ...);
@@ -199,18 +200,5 @@ void EnumPlugins (PLUGINENUMPROC lpEnumFunc, LPARAM lParam);
 
 #endif /*def __BBCORE__ */
 
-inline void _CopyOffsetRect(RECT * dst, RECT const * src, int dx, int dy)
-{
-	dst->left = src->left + dx;
-	dst->right = src->right + dx;
-	dst->top = src->top + dy;
-	dst->bottom = src->bottom + dy;
-}
-inline void _OffsetRect(RECT * lprc, int dx, int dy)
-{
-	lprc->left += dx;
-	lprc->right += dx;
-	lprc->top += dy;
-	lprc->bottom += dy;
-}
+
 

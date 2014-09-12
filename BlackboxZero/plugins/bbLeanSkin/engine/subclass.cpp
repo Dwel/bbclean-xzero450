@@ -33,11 +33,14 @@
 #include "hookinfo.h"
 #include "subclass.h"
 #include "drawico.h"
+#include "DrawText.h"
 #include "BImage.cpp" // @TODO: remove @NOTE: when in CMakeList it is a problem for eclipse to read makefiles
 
 #define array_count(ary) (sizeof(ary) / sizeof(ary[0]))
 //@FIXME: grr, dup from BB.h... fix it mojmir
-#define _CopyOffsetRect(lprcDst, lprcSrc, dx, dy) (*lprcDst).left = (*lprcSrc).left + (dx), (*lprcDst).right = (*lprcSrc).right + (dx), (*lprcDst).top = (*lprcSrc).top + (dy), (*lprcDst).bottom = (*lprcSrc).bottom + (dy)
+//#define _CopyOffsetRect(lprcDst, lprcSrc, dx, dy) (*lprcDst).left = (*lprcSrc).left + (dx), (*lprcDst).right = (*lprcSrc).right + (dx), (*lprcDst).top = (*lprcSrc).top + (dy), (*lprcDst).bottom = (*lprcSrc).bottom + (dy)
+
+bool Settings_UTF8Encoding; // ugh
 
 //===========================================================================
 void get_workarea(HWND hwnd, RECT *w, RECT *s)
@@ -120,7 +123,7 @@ void SnapWindowToEdge(WinInfo *WI, WINDOWPOS* pwPos, int nDist)
 
 //===========================================================================
 
-int BBDrawTextAltW(HDC hDC, LPCWSTR lpString, RECT *lpRect, unsigned uFormat, StyleItem* pG){
+/*int BBDrawTextAltW(HDC hDC, LPCWSTR lpString, RECT *lpRect, unsigned uFormat, StyleItem* pG){
 
 	if (pG->ShadowXY){ // draw shadow
 		RECT rcShadow;
@@ -155,9 +158,9 @@ int BBDrawTextAltW(HDC hDC, LPCWSTR lpString, RECT *lpRect, unsigned uFormat, St
     // draw text
     SetTextColor(hDC, pG->TextColor);
     return DrawTextW(hDC, lpString, -1, lpRect, uFormat);
-}
+}*/
 
-int BBDrawTextAlt(HDC hDC, const char *lpString, RECT *lpRect, unsigned uFormat, StyleItem * pG){
+/*int BBDrawTextAlt(HDC hDC, const char *lpString, RECT *lpRect, unsigned uFormat, StyleItem * pG){
 	int i, j;
 
 	if (pG->ShadowXY){ // draw shadow
@@ -193,7 +196,7 @@ int BBDrawTextAlt(HDC hDC, const char *lpString, RECT *lpRect, unsigned uFormat,
     // draw text
     SetTextColor(hDC, pG->TextColor);
     return DrawText(hDC, lpString, -1, lpRect, uFormat);
-}
+}*/
 
 void get_rect(HWND hwnd, RECT *rp)
 {
@@ -517,6 +520,7 @@ int get_window_icon(HWND hwnd, HICON *picon)
 #define get_ico(hwnd) NULL
 #endif
 
+extern int BBDrawTextAltW(HDC hDC, LPCWSTR lpString, int nCount, RECT *lpRect, unsigned uFormat, StyleItem* pG);
 //-----------------------------------------------------------------
 
 void PaintAll(struct WinInfo* WI)
@@ -706,7 +710,7 @@ void PaintAll(struct WinInfo* WI)
 
     if (WI->is_unicode) {
         GetWindowTextW(WI->hwnd, wTitle, array_count(wTitle));
-        BBDrawTextAltW(hdc, wTitle, &rc,
+        BBDrawTextAltW(hdc, wTitle, -1, &rc,
             mSkin.Justify
             | DT_SINGLELINE
             | DT_NOPREFIX
@@ -716,7 +720,7 @@ void PaintAll(struct WinInfo* WI)
             );
     } else {
         GetWindowText(WI->hwnd, (char*)wTitle, array_count(wTitle));
-        BBDrawTextAlt(hdc, (char*)wTitle, &rc,
+		BBDrawTextAlt(hdc, (char*)wTitle, -1, &rc,
             mSkin.Justify
             | DT_SINGLELINE
             | DT_NOPREFIX

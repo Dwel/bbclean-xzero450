@@ -19,8 +19,8 @@
 
   ========================================================================== */
 
-#ifndef _STYLESTRUCT_H_
-#define _STYLESTRUCT_H_
+#pragma once
+#include "StyleItem.h"
 
 /* Note: Do not change this structure. New items may be appended
    at the end, though. */
@@ -89,4 +89,3 @@ typedef struct StyleStruct
 
 #define STYLESTRUCTSIZE ((SIZEOFPART(StyleStruct, Slit)+3) & ~3)
 
-#endif //ndef _STYLESTRUCT_H_

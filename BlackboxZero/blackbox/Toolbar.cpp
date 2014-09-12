@@ -376,10 +376,10 @@ ST bool check_mouse(HWND hwnd)
     return FALSE != PtInRect(&rct, pt);
 }
 
-ST int get_text_extend(HDC hdc, const char *cp)
+ST int get_text_extend(HDC hdc, const char *cp, StyleItem * pSI)
 {
     RECT s = {0,0,0,0};
-    bbDrawText(hdc, cp, &s, DT_CALCRECT|DT_NOPREFIX, 0);
+	BBDrawTextAlt(hdc, cp, -1, &s, DT_CALCRECT | DT_NOPREFIX, pSI);
     return s.right;
 }
 
@@ -387,8 +387,8 @@ ST int get_text_extend(HDC hdc, const char *cp)
 ST void PaintToolbar(HDC hdc, RECT *rcPaint)
 {
     RECT r;
-    StyleItem *pSI;
-    struct button *btn;
+    StyleItem *pSI = 0;
+    struct button *btn = 0;
 
     HDC buf;
     HGDIOBJ bufother, other_font;
@@ -407,11 +407,11 @@ ST void PaintToolbar(HDC hdc, RECT *rcPaint)
         Toolbar_hFont = CreateStyleFont(&mStyle.Toolbar);
     other_font = SelectObject(buf, Toolbar_hFont);
 
-    size = 6 + get_text_extend(buf, Toolbar_CurrentTime);
+	size = 6 + get_text_extend(buf, Toolbar_CurrentTime, &mStyle.ToolbarClock);
     if (tbClockW < size)
         tbClockW = size + 2*tbLabelIndent;
 
-    size = get_text_extend(buf, Toolbar_WorkspaceName);
+	size = get_text_extend(buf, Toolbar_WorkspaceName, &mStyle.Toolbar);
     tbLabelW = size + 2*tbLabelIndent;
 
     // The widest sets the width!
@@ -504,7 +504,7 @@ ST void PaintToolbar(HDC hdc, RECT *rcPaint)
     r.right -= tbLabelIndent;
     //bbDrawText(buf, Toolbar_WorkspaceName, &r, justify, pSI->TextColor);
 	/* BlackboxZero 1.5.2012 */
-	BBDrawText(buf, Toolbar_WorkspaceName, -1, &r, justify, pSI);
+	BBDrawTextAlt(buf, Toolbar_WorkspaceName, -1, &r, justify, pSI);
 
     // Paint window label background...
     r.right = (r.left = tbWinLabelX) + tbWinLabelW;
@@ -514,7 +514,7 @@ ST void PaintToolbar(HDC hdc, RECT *rcPaint)
     r.right -= tbLabelIndent;
     //bbDrawText(buf, Toolbar_CurrentWindow, &r, justify, pSI->TextColor);
 	/* BlackboxZero 1.5.2012 */
-	BBDrawText(buf, Toolbar_CurrentWindow, -1, &r, justify, pSI);
+	BBDrawTextAlt(buf, Toolbar_CurrentWindow, -1, &r, justify, pSI);
 
     // Paint clock background...
     r.right = (r.left = tbClockX) + tbClockW;
@@ -524,7 +524,7 @@ ST void PaintToolbar(HDC hdc, RECT *rcPaint)
     r.right -= tbLabelIndent;
     //bbDrawText(buf, Toolbar_CurrentTime, &r, justify, pSI->TextColor);
 	/* BlackboxZero 1.5.2012 */
-	BBDrawText(buf, Toolbar_CurrentTime, -1, &r, justify, pSI);
+	BBDrawTextAlt(buf, Toolbar_CurrentTime, -1, &r, justify, pSI);
 
     //====================
 

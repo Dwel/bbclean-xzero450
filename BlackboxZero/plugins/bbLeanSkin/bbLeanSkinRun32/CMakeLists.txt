@@ -11,6 +11,7 @@ add_library(bbLeanSkinEng32
   ../engine/hookctl.cpp
   ../engine/subclass.cpp
   ../../bbPlugin/drawico.cpp # FIXME: required DrawIconSatnHue
+  ../../../blackbox/DrawText.cpp # FIXME: this begins to be nasty :/
 )
 
 #FIXME: the paths are bit messed, this is a hotfix

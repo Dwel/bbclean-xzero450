@@ -854,7 +854,7 @@ void Menu::Validate()
 
     // title item
     if (false == m_bNoTitle) {
-        pItem->Measure(hDC, &size);
+        pItem->Measure(hDC, &size, &mStyle.MenuTitle);
         w1 = size.cx;
     }
 
@@ -863,7 +863,7 @@ void Menu::Validate()
 
     while (NULL != (pItem = pItem->next))
     {
-        pItem->Measure(hDC, &size);
+		pItem->Measure(hDC, &size, &mStyle.MenuTitle);
         pItem->m_nHeight = size.cy;
         if (size.cx > w2)
             w2 = size.cx;

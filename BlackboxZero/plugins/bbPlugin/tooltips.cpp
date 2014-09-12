@@ -25,6 +25,7 @@
 #include "win0x500.h"
 #include "bblib.h"
 #include "bbPlugin.h"
+#include "DrawText.h"
 
 static HWND hToolTips;
 static bool usingNT;
@@ -286,9 +287,9 @@ private:
         HFONT hFont2 = CreateStyleFont(&F);
 
         HGDIOBJ otherfont = SelectObject(buf, hFont1);
-        bbDrawText(buf, icon.balloon.szInfoTitle, r1, flags, TC);
+		BBDrawTextAlt(buf, icon.balloon.szInfoTitle, -1, r1, flags, &F);
         SelectObject(buf, hFont2);
-        bbDrawText(buf, icon.balloon.szInfo, r2, flags, TC);
+		BBDrawTextAlt(buf, icon.balloon.szInfo, -1, r2, flags, &F);
         SelectObject(buf, otherfont);
         DeleteObject(hFont1);
         DeleteObject(hFont2);

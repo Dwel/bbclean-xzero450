@@ -23,6 +23,7 @@
 #include "bbTooltip.h"
 #include <blackbox/BB.h>
 #include <blackbox/BBApi.h>
+#include <blackbox/DrawText.h>
 //#include <shellapi.h>
 
 //-----------------------------------------------------------------------------

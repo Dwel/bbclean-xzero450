@@ -389,54 +389,7 @@
 #define BBLS_REFRESH            4
 #define BBLS_SETONBG            7
 
-/* =========================================================================== */
-/* StyleItem */
-
-typedef struct StyleItem
-{
-    /* 0.0.80 */
-    int bevelstyle;
-    int bevelposition;
-    int type;
-    bool parentRelative;
-    bool interlaced;
-
-    /* 0.0.90 */
-    COLORREF Color;
-    COLORREF ColorTo;
-    COLORREF TextColor;
-    int FontHeight;
-    int FontWeight;
-    int Justify;
-    int validated;
-
-    char Font[128];
-
-    /* bbLean 1.16 */
-    int nVersion;
-    int marginWidth;
-    int borderWidth;
-    COLORREF borderColor;
-    COLORREF foregroundColor;
-    COLORREF disabledColor;
-    bool bordered;
-    bool FontShadow; /* xoblite */
-
-	/* BlackboxZero 1.4.2012 */
-	union
-	{
-		struct { char ShadowX; char ShadowY; };
-		unsigned short ShadowXY;
-	};
-	COLORREF ShadowColor;
-	COLORREF OutlineColor;
-    COLORREF ColorSplitTo;
-    COLORREF ColorToSplitTo;
-	/* BlackboxZero 1.4.2012 */
-
-    char reserved[82]; /* keep sizeof(StyleItem) = 300 */
-
-} StyleItem;
+#include "StyleItem.h"
 
 #define picColor TextColor
 #define VALID_TEXTCOLOR 8
@@ -756,16 +709,15 @@ extern "C" {
     API_EXPORT HFONT CreateStyleFont (StyleItem const * si);
 
 	/* Draw text with shadow, etc. */
-	API_EXPORT int BBDrawText (HDC hDC, const char * lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem * si);
-	API_EXPORT int BBDrawTextAlt( HDC hDC, const char * lpString, RECT * lpRect, unsigned uFormat, StyleItem * pG);
-	API_EXPORT int BBDrawTextAltW (HDC hDC, LPCWSTR lpString, RECT * lpRect, unsigned uFormat, StyleItem * pG);
+	//API_EXPORT int BBDrawText (HDC hDC, const char * lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem * si);
+	//API_EXPORT int BBDrawTextW (HDC hDC, LPCWSTR lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem * si);
 
 
     /* ------------------------------------ */
     /* UTF-8 support */
 
     /* Draw a textstring with color, possibly translating from UTF-8 */
-    API_EXPORT void bbDrawText(HDC hDC, const char *text, RECT *p_rect, unsigned just, COLORREF c);
+    //API_EXPORT void bbDrawText(HDC hDC, const char *text, RECT *p_rect, unsigned just, COLORREF c);
     /* convert from Multibyte string to WCHAR */
     API_EXPORT int bbMB2WC(const char *src, WCHAR *wchar_buffer, int wchar_len);
     /* convert from WCHAR to Multibyte string */

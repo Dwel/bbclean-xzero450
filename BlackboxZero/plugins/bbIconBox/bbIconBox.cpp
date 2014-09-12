@@ -22,6 +22,7 @@
 
 #include "bbIconBox.h"
 #include "bbversion.h"
+#include "DrawText.h"
 
 const char szVersion     [] = "bbIconBox "BBLEAN_VERSION;
 const char szAppName     [] = "bbIconBox";
@@ -1056,14 +1057,14 @@ void icon_box::paint_text(HDC hdc, RECT *r, StyleItem *pSI, StyleItem *pTC, bool
      if (false == centerd)
      {
          RECT s = {0,0,0,0};
-         BBDrawText(hdc, text, -1, &s, DT_LEFT|DT_EXPANDTABS|DT_CALCRECT, pSI);
+         BBDrawTextAlt(hdc, text, -1, &s, DT_LEFT|DT_EXPANDTABS|DT_CALCRECT, pSI);
          if (s.right < r->right - r->left)
              just = pSI->Justify;
          else
              just = DT_LEFT;
      }
 
-     BBDrawText(hdc, text, -1, r, just | DT_VCENTER | DT_SINGLELINE | DT_EXPANDTABS, pSI);
+     BBDrawTextAlt(hdc, text, -1, r, just | DT_VCENTER | DT_SINGLELINE | DT_EXPANDTABS, pSI);
      DeleteObject (SelectObject(hdc, oldfont));
 }
 

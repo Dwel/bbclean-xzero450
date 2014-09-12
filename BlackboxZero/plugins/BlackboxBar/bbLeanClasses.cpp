@@ -22,7 +22,7 @@
 */
 
 //#include "bbLeanBar.h"
-//#include "bbLeanClasses.h"
+#include "DrawText.h"
 
 // possible bar items
 enum BARITEMS
@@ -417,8 +417,8 @@ public:
         char buf[8];
         strncpy(buf, tl->caption, 8);
         buf[7] = 0;
-        bbDrawText(m_bar->hdcPaint, buf, &s1, DT_CALCRECT|DT_NOPREFIX, 0);
-        bbDrawText(m_bar->hdcPaint, tl->caption, &s2, DT_CALCRECT|DT_NOPREFIX, 0);
+		BBDrawTextAlt(m_bar->hdcPaint, buf, -1, &s1, DT_CALCRECT | DT_NOPREFIX, pSI);
+		BBDrawTextAlt(m_bar->hdcPaint, tl->caption, -1, &s2, DT_CALCRECT | DT_NOPREFIX, pSI);
 
         int o, f, i;
         o = f = 0;
@@ -433,7 +433,7 @@ public:
         ThisWin.right   -= i;
         int s = ThisWin.right - ThisWin.left;
 
-        BBDrawText(m_bar->hdcPaint, tl->caption, -1, &ThisWin,
+        BBDrawTextAlt(m_bar->hdcPaint, tl->caption, -1, &ThisWin,
             (s > s1.right ? TBJustify : DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX),
             pSI
             );
@@ -708,7 +708,7 @@ public:
         r.right = mr.right - i;
         r.top   = mr.top;
         r.bottom = mr.bottom;
-        BBDrawText(m_bar->hdcPaint, m_text, -1, &r, TBJustify, pSI);
+        BBDrawTextAlt(m_bar->hdcPaint, m_text, -1, &r, TBJustify, pSI);
         SelectObject(m_bar->hdcPaint, oldfont);
 
     }
