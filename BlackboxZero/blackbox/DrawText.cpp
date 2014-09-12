@@ -10,15 +10,16 @@
 int DrawTextUTF8(HDC hDC, const char *s, int nCount, RECT *p, unsigned format)
 {
     WCHAR wstr[1000];
-    SIZE size;
-    int x, y, n, r;
+    //SIZE size;
+    //int x, y, n, r;
 
-    n = MultiByteToWideChar(CP_UTF8, 0, s, nCount, wstr, array_count(wstr));
+    int n = MultiByteToWideChar(CP_UTF8, 0, s, nCount, wstr, array_count(wstr));
     if (n) --n;
 
+	return DrawTextW(hDC, wstr, n, p, format);
+
 	//@NOTE mojmir: everybody is using NT these days
-    //if (g_usingNT)
-    return DrawTextW(hDC, wstr, n, p, format);
+    //if (!g_usingNT)
 
     /*GetTextExtentPoint32W(hDC, wstr, n, &size);
     if (format & DT_CALCRECT) {
@@ -150,16 +151,19 @@ int BBDrawTextAltW (HDC hDC, LPCWSTR lpString, int nCount, RECT *lpRect, unsigne
 	return DrawTextW(hDC, lpString, -1, lpRect, uFormat);
 }
 
-int BBDrawTextAltA (HDC hDC, const char * lpString, int nCount, RECT * lpRect, unsigned uFormat, StyleItem * pG)
+int BBDrawTextAltA (HDC hDC, const char * lpString, int nCount, RECT * lpRect, unsigned uFormat, StyleItem * si)
 {
+	bool bShadow = (si->validated & V_SHADOWCOLOR) && (si->ShadowColor != (CLR_INVALID));
+	bool bOutline = (si->validated & V_OUTLINECOLOR) && (si->OutlineColor != (CLR_INVALID));
+
 	int i, j;
 
-	if (pG->ShadowXY){ // draw shadow
+	if (bShadow){ // draw shadow
 		RECT rcShadow;
-		int x = pG->ShadowX;
-		int y = pG->ShadowY;
-		SetTextColor(hDC, pG->ShadowColor);
-		if (pG->FontShadow){ // draw shadow with outline
+		int x = si->ShadowX;
+		int y = si->ShadowY;
+		SetTextColor(hDC, si->ShadowColor);
+		if (si->FontShadow){ // draw shadow with outline
 			for (i = 0; i < 3; i++){
 				for (j = 0; j < 3; j++){
 					if (!((i | j) & 0x2)) continue;
@@ -173,9 +177,9 @@ int BBDrawTextAltA (HDC hDC, const char * lpString, int nCount, RECT * lpRect, u
 			bbDrawText(hDC, lpString, &rcShadow, uFormat); // utf8 support
 		}
 	}
-	if (pG->FontShadow){ // draw outline
+	if (bOutline){ // draw outline
 		RECT rcOutline;
-		SetTextColor(hDC, pG->OutlineColor);
+		SetTextColor(hDC, si->OutlineColor);
 		for (i = -1; i < 2; i++){
 			for (j = -1; j < 2; j++){
 				if (!(i | j)) continue;
@@ -185,7 +189,7 @@ int BBDrawTextAltA (HDC hDC, const char * lpString, int nCount, RECT * lpRect, u
 		}
 	}
 	// draw text
-	SetTextColor(hDC, pG->TextColor);
+	SetTextColor(hDC, si->TextColor);
 	return DrawText(hDC, lpString, -1, lpRect, uFormat);
 }
 
