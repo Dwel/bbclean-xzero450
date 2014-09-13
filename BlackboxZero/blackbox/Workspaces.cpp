@@ -136,7 +136,7 @@ void Workspaces_Init(int nostartup)
     WS_LoadOnBGNamesList();
     Workspaces_GetScreenMetrics();
     vwm_init();
-    if (nostartup)
+    if (!nostartup)
         init_tasks();
 }
 
