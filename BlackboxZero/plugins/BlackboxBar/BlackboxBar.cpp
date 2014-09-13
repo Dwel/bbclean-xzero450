@@ -323,7 +323,7 @@ struct barinfo : plugin_info
                 return TRUE;
         }
 
-        struct tasklist *item = new struct tasklist;
+        struct tasklist *item = c_new(struct tasklist); // @NOTE: has to be c_new, it is deleted by m_free
         *item = *tl;
         cons_node(&PI->taskList, item);
         return TRUE;
