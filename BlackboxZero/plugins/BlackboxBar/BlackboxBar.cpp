@@ -1024,9 +1024,17 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
             SendMessage(BBhwnd, BB_UNREGISTERMESSAGE, (WPARAM)hwnd, (LPARAM)msgs);
             SetDesktopMargin(hwnd, 0, 0);
             delete pLeanBar;
+			pLeanBar = 0;
             delete pBuff;
-            if (hFont) DeleteObject(hFont), hFont = NULL;
+			pBuff = 0;
+            if (hFont)
+				DeleteObject(hFont), hFont = NULL;
             this->reset_tbinfo();
+			if (I)
+			{
+				delete I;
+				I = 0;
+			}
             break;
 
         //=============================================
