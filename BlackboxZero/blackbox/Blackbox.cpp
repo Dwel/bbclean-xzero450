@@ -1863,9 +1863,9 @@ DWORD WINAPI RunStartupThread (void * pv)
 	RunEntriesIn (HKEY_CURRENT_USER, "Run", 0);
 	for (int i = 0; i < array_count(startuptable); ++i)
 	{
-		char folder[MAX_PATH];
+		char folder[1024];
 		folder[0] = 0;
-		if (sh_getfolderpath(folder, startuptable[i]) && folder[0])
+		if (sh_getfolderpath(folder, sizeof(folder)/sizeof(*folder), startuptable[i]) && folder[0])
 			RunFolderContents(folder);
 	}
 	RunEntriesIn (HKEY_CURRENT_USER, "RunOnce", RE_ONCE);
