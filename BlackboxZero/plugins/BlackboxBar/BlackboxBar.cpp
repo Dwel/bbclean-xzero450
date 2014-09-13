@@ -38,6 +38,7 @@
 #include <shellapi.h>
 #include <shlobj.h>
 #include <time.h>
+#include "Workspaces.h"
 
 #ifndef ASFW_ANY
 #define ASFW_ANY ((DWORD)-1)
@@ -116,11 +117,10 @@ struct plugin_info * g_PI = 0;
 
 //====================
 
-typedef BOOL (*TASKENUMPROC)(const struct tasklist *, LPARAM);
 void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam)
 {
     const struct tasklist *tl;
-    dolist (tl, GetTaskListPtr())
+    dolist (tl, getWorkspaces().GetTaskListPtr())
         if (FALSE == lpEnumFunc(tl, lParam))
             break;
 }
@@ -750,7 +750,7 @@ int barinfo::get_text_width(const char *cp, StyleItem * si)
 void barinfo::set_screen_info(void)
 {
     DesktopInfo DI;
-    GetDesktopInfo(&DI);
+    getWorkspaces().GetDesktopInfo(DI);
     currentScreen = DI.number;
     strcpy(screenName, DI.name);
     labelWidth = 0;

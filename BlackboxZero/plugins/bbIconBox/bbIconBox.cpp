@@ -23,6 +23,7 @@
 #include "bbIconBox.h"
 #include "bbversion.h"
 #include "DrawText.h"
+#include <Workspaces.h>
 
 const char szVersion     [] = "bbIconBox "BBLEAN_VERSION;
 const char szAppName     [] = "bbIconBox";
@@ -151,7 +152,7 @@ void move_window(HWND taskwnd, int desk)
     } else if (BBP_bbversion() < 1170) {
         taskinfo ti;
         ti.desk = desk;
-        SetTaskLocation(taskwnd, &ti, BBTI_SETDESK|BBTI_SWITCHTO);
+        getWorkspaces().SetTaskLocation(taskwnd, &ti, BBTI_SETDESK|BBTI_SWITCHTO);
         PostMessage(BBhwnd, BB_BRINGTOFRONT, 0, (LPARAM)taskwnd);
     } else {
         PostMessage(BBhwnd, BB_MOVEWINDOWTON, desk, (LPARAM)taskwnd);
@@ -166,7 +167,7 @@ void send_window(HWND taskwnd, int desk)
     } else if (BBP_bbversion() < 1170) {
         taskinfo ti;
         ti.desk = desk;
-        SetTaskLocation(taskwnd, &ti, BBTI_SETDESK);
+        getWorkspaces().SetTaskLocation(taskwnd, &ti, BBTI_SETDESK);
     } else {
         PostMessage(BBhwnd, BB_SENDWINDOWTON, desk, (LPARAM)taskwnd);
     }
@@ -507,7 +508,7 @@ struct task_box : icon_box
     void FillFolder(void)
     {
         DesktopInfo DI;
-        GetDesktopInfo (&DI);
+        getWorkspaces().GetDesktopInfo(DI);
         currentDesk = DI.number;
 
         task_enum te = { &my_Folder.items, my_Folder.desk, iconWidth };
@@ -915,7 +916,7 @@ void handle_task_timer(HWND task_over)
 {
     if (NULL == task_over)
         return;
-    if (task_over == GetTask(GetActiveTask()))
+    if (task_over == getWorkspaces().GetTask(getWorkspaces().GetActiveTask()))
         return;
     DWORD ThreadID1 = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
     DWORD ThreadID2 = GetCurrentThreadId();
@@ -1730,7 +1731,7 @@ void icon_box::show_menu(bool popup)
     n_menuitem_cmd(sub2, "All Workspaces", "@bbIconBox.create TASK");
     n_menuitem_nop(sub2, NULL);
 
-    GetDesktopInfo(&D);
+    getWorkspaces().GetDesktopInfo(D);
     for (n = 0; n < D.ScreensX; ++n) {
         sprintf(b1, "Workspace %d", 1+n);
         sprintf(b2, "@bbIconBox.create TASK%d", 1+n);
@@ -1814,7 +1815,7 @@ void icon_box::show_menu(bool popup)
     sub = n_submenu(main, "New");
     sub2 = n_submenu(sub, "Task");
 	n_menuitem_cmd(sub2, "All", "@bbIconBox.create TASK");
-    GetDesktopInfo(&D);
+    getWorkspaces().GetDesktopInfo(D);
     for (n = 0; n < D.ScreensX; ++n) {
         sprintf(b1, "Workspace %d", 1+n);
         sprintf(b2, "@bbIconBox.create TASK%d", 1+n);

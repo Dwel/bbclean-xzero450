@@ -25,6 +25,7 @@
 #include "BBApi.h"
 #include "win0x500.h"
 #include "bblib.h"
+#include "Workspaces.h"
 
 #define ST static
 
@@ -236,7 +237,7 @@ bool ShowSysmenu(HWND Window, HWND Owner, RECT *pRect, const char *plugin_broam)
     title = buff;
 #endif
 
-    GetDesktopInfo(&info);
+    getWorkspaces().GetDesktopInfo(info);
     workspace = GetTaskWorkspace(Window);
     is_in_current = info.number == workspace;
 

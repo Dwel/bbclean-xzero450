@@ -23,6 +23,7 @@
 #include "Settings.h"
 #include "bbshell.h"
 #include "bbrc.h"
+#include "workspaces.h"
 #include "styleprops.h"
 #include <tlhelp32.h>
 
@@ -1329,4 +1330,11 @@ int GetAppByWindow(HWND hwnd, char* processName)
     return strlen(processName);
 }
 
+void MakeSticky (HWND hwnd) { return getWorkspaces().MakeSticky(hwnd); }
+void RemoveSticky (HWND hwnd) { return getWorkspaces().RemoveSticky(hwnd); }
+bool CheckSticky (HWND hwnd) { return getWorkspaces().CheckSticky(hwnd); }
+
+void MakeOnBG (HWND hwnd) { return getWorkspaces().MakeOnBG(hwnd); }
+void RemoveOnBG (HWND hwnd) { return getWorkspaces().RemoveOnBG(hwnd); }
+bool CheckOnBG (HWND hwnd) { return getWorkspaces().CheckOnBG(hwnd); }
 //===========================================================================

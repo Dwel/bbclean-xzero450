@@ -8,6 +8,8 @@
 #include "BBApi.h"
 #include <shellapi.h>
 #include <stdlib.h>
+#include "BB.h"
+#include "Workspaces.h"
 
 //Parent Include
 #include "WindowMaster.h"
@@ -861,7 +863,7 @@ void window_menu_context(Menu *m, control *c)
 
 		if(!w->is_onallworkspaces){
 			DesktopInfo di;
-			GetDesktopInfo(&di);
+			getWorkspaces().GetDesktopInfo(di);
 			make_menuitem_int(m, "Workspace", config_getfull_control_setwindowprop_s(c, szWPworkspacenumber), w->workspacenumber, 0, di.ScreensX - 1);
 
 		}
@@ -1745,14 +1747,14 @@ int window_message_setproperty(control *c, int tokencount, char *tokens[])
 			{
 				needs_stickyupdate = true;
 				DesktopInfo di;
-				GetDesktopInfo(&di);
+				getWorkspaces().GetDesktopInfo(di);
 				w->workspacenumber = di.number ;
 			}
 		else
 		if (!_stricmp(tokens[4], szWPworkspacenumber))
 			{
 				DesktopInfo di;
-				GetDesktopInfo(&di);
+				getWorkspaces().GetDesktopInfo(di);
 				if (config_set_int(tokens[5], &w->workspacenumber, 0, di.ScreensX - 1 )){
 					needs_stickyupdate = true;
 				}

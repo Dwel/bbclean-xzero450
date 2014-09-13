@@ -14,6 +14,7 @@
  --------------------------------------------------------------------------------*/
 #include "sbex.h"
 #include "SystemBarEx.h"
+#include "Workspaces.h"
 #include <blackbox/BB.h>
 #include <blackbox/BBApi.h>
 #include <blackbox/DrawText.h>
@@ -467,7 +468,7 @@ bool SameRect( RECT *newRect, RECT oldRect ) {
 void HoverRaiseTask( int MouseX, int MouseY) {
 	bool found = false;
 	HWND temp = NULL;
-	//tasklist *t1 = GetTaskListPtr();
+	//tasklist *t1 = getWorkspaces().GetTaskListPtr();
 
 	pTaskTmp = TaskbarList->next;
 	do {
@@ -599,7 +600,7 @@ LRESULT CALLBACK SystemBarExWndProc(HWND hwnd, UINT message, WPARAM wParam, LPAR
                         break;
 
                     case TASKITEM_MODIFIED:
-                        ActiveTaskHwnd = GetTask(GetActiveTask());
+                        ActiveTaskHwnd = getWorkspaces().GetTask(getWorkspaces().GetActiveTask());
                         goto ico_inv1;
 
                     case TASKITEM_ADDED:
@@ -613,7 +614,7 @@ LRESULT CALLBACK SystemBarExWndProc(HWND hwnd, UINT message, WPARAM wParam, LPAR
                 }
             } else {
                 ActiveTaskHwndOld = ActiveTaskHwnd;
-                ActiveTaskHwnd = GetTask(GetActiveTask());
+                ActiveTaskHwnd = getWorkspaces().GetTask(getWorkspaces().GetActiveTask());
                 if (ToggleInfo.test(TI_FLASH_TASKS)) {
                     HWND h = (HWND)wParam;
                     if (pTaskTmp = TaskbarList->next)
@@ -926,7 +927,7 @@ end_task_menu:  bSystemBarExHidden = false;
             else if (!_stricmp(broam_temp, "RefreshMargin")) {
                 SetScreenMargin(true);
                 pF_TV_RB f = ToggleInfo.test(TI_TASKS_IN_CURRENT_WORKSPACE) ? retW: retT;
-                if (!pTbInfo->autoHide && (p_TaskList = GetTaskListPtr()))
+                if (!pTbInfo->autoHide && (p_TaskList = getWorkspaces().GetTaskListPtr()))
                     do if (f() && IsZoomed(p_TaskList->hwnd)) {
                         PostMessage(p_TaskList->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
                         PostMessage(p_TaskList->hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
@@ -1564,7 +1565,7 @@ void windowAll(unsigned dNow) {
 	pF_WINALL f1 = (dNow == SW_RESTORE) ? winAll_1: winAll_2;
 	pF_TV_RB f = ToggleInfo.test(TI_TASKS_IN_CURRENT_WORKSPACE) ? retW: retT;
 	
-	p_TaskList = GetTaskListPtr();  // check this, maybe?
+	p_TaskList = getWorkspaces().GetTaskListPtr();  // check this, maybe?
 	do if (f()) f1(p_TaskList->hwnd, dNow);
 	while (p_TaskList = p_TaskList->next);
 }
@@ -3088,7 +3089,7 @@ bool retW_TIn() {
 
 inline void UpdateTaskbarLists() {
     pF_TV_RB f, f2, f3;
-    tasklist const *t1 = GetTaskListPtr();
+    tasklist const *t1 = getWorkspaces().GetTaskListPtr();
     if (ToggleInfo.test(TI_TASKS_IN_CURRENT_WORKSPACE))
         f = retW, f2 = retW_TI, f3 = retW_TIn;
     else
@@ -3453,7 +3454,7 @@ void SetFullNormal(bool isAll) {
     width = r.right - r.left;
     height = r.bottom - r.top;
     if (isAll) {
-        p_TaskList = GetTaskListPtr();
+        p_TaskList = getWorkspaces().GetTaskListPtr();
         pF_TV_RB f = ToggleInfo.test(TI_TASKS_IN_CURRENT_WORKSPACE) ? retW: retT;
         do if (f() && !IsIconic(p_TaskList->hwnd))
             fullNorm(p_TaskList->hwnd, &r, width, height);
@@ -3932,7 +3933,7 @@ bool BackgroundItem::PaintWindowLabel() {
     pText = 0;
     if (*WindowLabelText)
         pText = WindowLabelText;
-    else if (p_TaskList = GetTaskListPtr())
+    else if (p_TaskList = getWorkspaces().GetTaskListPtr())
         do if (p_TaskList->hwnd == ActiveTaskHwnd) {
             pText = p_TaskList->caption;
             break;

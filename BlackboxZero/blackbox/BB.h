@@ -164,22 +164,6 @@ void set_focus_model(const char *fm_string);
 bool Menu_IsA(HWND hwnd);
 
 // ==============================================================
-/* Some enumeration function */
-
-typedef BOOL (*TASKENUMPROC)(struct tasklist *, LPARAM);
-void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam);
-
-typedef BOOL (*DESKENUMPROC)(struct DesktopInfo *, LPARAM);
-void EnumDesks (DESKENUMPROC lpEnumFunc, LPARAM lParam);
-
-typedef BOOL (*TRAYENUMPROC)(struct systemTray *, LPARAM);
-void EnumTray (TRAYENUMPROC lpEnumFunc, LPARAM lParam);
-
-struct PluginList;
-typedef BOOL (*PLUGINENUMPROC)(struct PluginList *, LPARAM);
-void EnumPlugins (PLUGINENUMPROC lpEnumFunc, LPARAM lParam);
-
-// ==============================================================
 /* Native Language Support (see code in utils.cpp) */
 
 #define BBOPT_SUPPORT_NLS
@@ -202,3 +186,18 @@ void EnumPlugins (PLUGINENUMPROC lpEnumFunc, LPARAM lParam);
 
 
 
+// ==============================================================
+/* Some enumeration function */
+
+typedef BOOL (*TASKENUMPROC)(tasklist const *, LPARAM);
+void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam);
+
+typedef BOOL (*DESKENUMPROC)(DesktopInfo const *, LPARAM);
+void EnumDesks (DESKENUMPROC lpEnumFunc, LPARAM lParam);
+
+typedef BOOL (*TRAYENUMPROC)(systemTray const *, LPARAM);
+void EnumTray (TRAYENUMPROC lpEnumFunc, LPARAM lParam);
+
+struct PluginList;
+typedef BOOL (*PLUGINENUMPROC)(PluginList const *, LPARAM);
+void EnumPlugins (PLUGINENUMPROC lpEnumFunc, LPARAM lParam);

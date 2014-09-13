@@ -1579,7 +1579,7 @@ one_more:
             case VK_ESCAPE:
                 if (0 == (menu_root()->m_flags & BBMENU_HWND)) {
                     Menu_All_Hide();
-                    focus_top_window();
+                    getWorkspaces().FocusTopWindow();
                 } else {
                     menu_root()->Hide();
                 }
@@ -1901,7 +1901,7 @@ bool Menu_ToggleCheck(const char *menu_id)
 
     if (m->has_focus_in_chain()) {
         Menu_All_Hide();
-        focus_top_window();
+        getWorkspaces().FocusTopWindow();
         return true;
     }
 
