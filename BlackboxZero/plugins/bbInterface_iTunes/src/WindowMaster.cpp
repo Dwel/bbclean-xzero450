@@ -116,84 +116,83 @@ int window_shutdown()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int window_create(control *c)
 {
-	window *windowpointer;
-	windowpointer = new window;
+	window * w = new window;
 
 	//Set up window properties
-	windowpointer->controlptr = c;
-	c->windowptr = windowpointer; 
+	w->controlptr = c;
+	c->windowptr = w; 
 
 	//Default settings
-	windowpointer->x = 10;
-	windowpointer->y = 10;
-	windowpointer->width = 100;
-	windowpointer->height = 100;
-	windowpointer->is_visible = true;
-	windowpointer->is_ontop = true;
-	windowpointer->is_toggledwithplugins = true;
-	windowpointer->is_onallworkspaces = true;
-	windowpointer->is_detectfullscreen = false;
-	windowpointer->is_bordered = true;
-	windowpointer->style = STYLETYPE_TOOLBAR;
-	windowpointer->styleptr = 0;
-	windowpointer->has_custom_style = false;
-	windowpointer->font = NULL;
-	windowpointer->use_custom_font = false;
-	strcpy(windowpointer->Fontname,"");
-	windowpointer->FontHeight = 0;
-	windowpointer->FontWeight = FW_NORMAL;
-	windowpointer->nosavevalue = 0;
+	w->x = 10;
+	w->y = 10;
+	w->width = 100;
+	w->height = 100;
+	w->is_visible = true;
+	w->is_ontop = true;
+	w->is_toggledwithplugins = true;
+	w->is_onallworkspaces = true;
+	w->is_detectfullscreen = false;
+	w->is_bordered = true;
+	w->style = STYLETYPE_TOOLBAR;
+	w->styleptr = 0;
+	w->has_custom_style = false;
+	w->font = NULL;
+	w->use_custom_font = false;
+	strncpy(w->Fontname, "", sizeof(w->Fontname) / sizeof(w->Fontname));
+	w->FontHeight = 0;
+	w->FontWeight = FW_NORMAL;
+	w->nosavevalue = 0;
 
-	windowpointer->makeinvisible = MAKEINVISIBLE_NEVER;
-	windowpointer->autohide = false;
-	windowpointer->useslit = false;
-	windowpointer->is_slitted = false;
-	windowpointer->is_transparent = false;
-	windowpointer->transparency = 100;
-	windowpointer->workspacenumber = 0;
+	w->makeinvisible = MAKEINVISIBLE_NEVER;
+	w->autohide = false;
+	w->useslit = false;
+	w->is_slitted = false;
+	w->is_transparent = false;
+	w->transparency = 100;
+	w->workspacenumber = 0;
 
 	// other initialisation
-	windowpointer->bitmap = NULL;
-	windowpointer->is_moving = false;
-	windowpointer->is_autohidden = false;
+	w->bitmap = NULL;
+	w->is_moving = false;
+	w->is_autohidden = false;
 
 	//set button only properties
 	if(c->controltypeptr->id == CONTROL_ID_BUTTON || c->controltypeptr->id ==CONTROL_ID_SWITCHBUTTON){
-		windowpointer->is_button = true;
-		windowpointer->bstyleptr = new struct ButtonStyleInfo;
-		windowpointer->bstyleptr->style = STYLETYPE_DEFAULT;
-		windowpointer->bstyleptr->styleptr = 0;
-		windowpointer->bstyleptr->has_custom_style = false;
-		windowpointer->bstyleptr->use_custom_font = false;
-		windowpointer->bstyleptr->font = NULL;
-		strcpy(windowpointer->bstyleptr->Fontname,"");
-		windowpointer->bstyleptr->FontHeight = 0;
-		windowpointer->bstyleptr->FontWeight = FW_NORMAL;
-		windowpointer->bstyleptr->nosavevalue = 0;
+		w->is_button = true;
+		w->bstyleptr = new struct ButtonStyleInfo;
+		w->bstyleptr->style = STYLETYPE_DEFAULT;
+		w->bstyleptr->styleptr = 0;
+		w->bstyleptr->has_custom_style = false;
+		w->bstyleptr->use_custom_font = false;
+		w->bstyleptr->font = NULL;
+		strcpy(w->bstyleptr->Fontname,"");
+		w->bstyleptr->FontHeight = 0;
+		w->bstyleptr->FontWeight = FW_NORMAL;
+		w->bstyleptr->nosavevalue = 0;
 	}else{
-		windowpointer->is_button = false;
+		w->is_button = false;
 	}
 	if(c->controltypeptr->id == CONTROL_ID_SLIDER){
-		windowpointer->is_slider = true;
-		windowpointer->sstyleptr = new struct SliderStyleInfo;
-		windowpointer->sstyleptr->style = STYLETYPE_TOOLBAR;
-		windowpointer->sstyleptr->styleptr = 0;
-		windowpointer->sstyleptr->has_custom_style = false;
-		windowpointer->sstyleptr->draw_inner = false;
-		windowpointer->sstyleptr->in_style = STYLETYPE_INSET;
-		windowpointer->sstyleptr->in_styleptr = 0;
-		windowpointer->sstyleptr->in_has_custom_style = false;
+		w->is_slider = true;
+		w->sstyleptr = new struct SliderStyleInfo;
+		w->sstyleptr->style = STYLETYPE_TOOLBAR;
+		w->sstyleptr->styleptr = 0;
+		w->sstyleptr->has_custom_style = false;
+		w->sstyleptr->draw_inner = false;
+		w->sstyleptr->in_style = STYLETYPE_INSET;
+		w->sstyleptr->in_styleptr = 0;
+		w->sstyleptr->in_has_custom_style = false;
 	}else{
-		windowpointer->is_slider = false;
+		w->is_slider = false;
 	}
 	//Load settings
 	void *datafetch;
 	//Get the default height
 	datafetch = (c->controltypeptr->func_getdata)(c, DATAFETCH_INT_DEFAULTHEIGHT);
-	if (datafetch) windowpointer->height = *((int *) datafetch);
+	if (datafetch) w->height = *((int *) datafetch);
 
 	datafetch = (c->controltypeptr->func_getdata)(c, DATAFETCH_INT_DEFAULTWIDTH);
-	if (datafetch) windowpointer->width = *((int *) datafetch);
+	if (datafetch) w->width = *((int *) datafetch);
 
 	// Setup creation params
 	UINT exStyle;
@@ -219,10 +218,10 @@ int window_create(control *c)
 		szAppName,                      // our window class name
 		NULL,                           // NULL -> does not show up in task manager!
 		Style,                          // window parameters
-		windowpointer->x,               // x position
-		windowpointer->y,               // y position
-		windowpointer->width,           // window width
-		windowpointer->height,          // window height
+		w->x,               // x position
+		w->y,               // y position
+		w->width,           // window width
+		w->height,          // window height
 		hwnd_parent,                    // parent window
 		NULL,                           // no menu
 		plugin_instance_plugin,         // hInstance of .dll
@@ -235,12 +234,12 @@ int window_create(control *c)
 		if (!plugin_suppresserrors)
 			BBMessageBox(0, "Error creating window", szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
 
-		delete windowpointer;
+		delete w;
 		c->windowptr = NULL;
 		return 1;
 	}
 
-	window_update(windowpointer, false, true, false, true);
+	window_update(w, false, true, false, true);
 	if (c->parentptr) SetWindowPos(hwnd, HWND_TOP, 0,0,0,0, SWP_NOSIZE|SWP_NOMOVE|SWP_NOSENDCHANGING);
 
 	//No errors
@@ -1130,7 +1129,7 @@ void window_save()
 
 LRESULT CALLBACK window_event(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	control *controlpointer = (control *)GetWindowLong(hwnd, 0);
+	control *controlpointer = (control *)GetWindowLongPtr(hwnd, 0);
 	bool is_locked_frame(control *c);
 
 	if (NULL == controlpointer)
@@ -1140,7 +1139,7 @@ LRESULT CALLBACK window_event(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			// ---------------------------------------------------
 			// bind the window to the control structure
 			controlpointer = (control*)((CREATESTRUCT*)lParam)->lpCreateParams;
-			SetWindowLong(hwnd, 0, (LONG) controlpointer);
+			SetWindowLongPtr(hwnd, 0, (LONG_PTR) controlpointer);
 			controlpointer->windowptr->hwnd = hwnd;
 		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -2505,7 +2504,7 @@ void window_make_child(window *w, window *pw)
 	RECT r; GetWindowRect(hwnd, &r);
 
 	SetParent(hwnd, parent_hwnd);
-	SetWindowLong(hwnd, GWL_STYLE, (GetWindowLong(hwnd, GWL_STYLE) & ~(WS_POPUP|WS_CHILD)) | (parent_hwnd ? WS_CHILD : WS_POPUP));
+	SetWindowLongPtr(hwnd, GWL_STYLE, (GetWindowLongPtr(hwnd, GWL_STYLE) & ~(WS_POPUP|WS_CHILD)) | (parent_hwnd ? WS_CHILD : WS_POPUP));
 
 	if (parent_hwnd)
 	{

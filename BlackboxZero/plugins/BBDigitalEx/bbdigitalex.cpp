@@ -1411,12 +1411,12 @@ void setStatus()
 						{
 							if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 							{
-								SetWindowLong(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+								SetWindowLongPtr(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 								BBSetLayeredWindowAttributes(hwndBBDigitalEx, 0xFF00FF, (unsigned char)alpha, LWA_COLORKEY|LWA_ALPHA);
 							}
 							else
 							{
-							SetWindowLong(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+							SetWindowLongPtr(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 							BBSetLayeredWindowAttributes(hwndBBDigitalEx, NULL, (unsigned char)alpha, LWA_ALPHA);
 							}
 						}
@@ -1424,15 +1424,15 @@ void setStatus()
 						{
 							if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 							{
-								SetWindowLong(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+								SetWindowLongPtr(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 								BBSetLayeredWindowAttributes(hwndBBDigitalEx, 0xFF00FF, (unsigned char)alpha, LWA_COLORKEY);
 							}
 							else
-							SetWindowLong(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+							SetWindowLongPtr(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 						}
 							
 					}
-					else if((transparency)||(fullTrans)) SetWindowLong(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+					else if((transparency)||(fullTrans)) SetWindowLongPtr(hwndBBDigitalEx, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
 	InvalidateRect(hwndBBDigitalEx, NULL, false);		
 }

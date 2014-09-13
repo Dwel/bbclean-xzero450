@@ -23,11 +23,11 @@
 #include "bblib.h"
 #include "bbPlugin.h"
 
-#ifndef GetWindowLongPtr
+/*#ifndef GetWindowLongPtr
 #define LONG_PTR LONG
 #define GetWindowLongPtr GetWindowLong
 #define SetWindowLongPtr SetWindowLong
-#endif
+#endif*/
 
 #ifdef __cplusplus
 #define _THIS
@@ -53,14 +53,14 @@ bool SetFullTransparency(HWND hwnd, BYTE alpha)
 		qSetLayeredWindowAttributes=(BOOL(WINAPI*)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUser32, "SetLayeredWindowAttributes");
     if (NULL == qSetLayeredWindowAttributes) return false;
 
-    LONG wStyle1, wStyle2;
-    wStyle1 = wStyle2 = GetWindowLong(hwnd, GWL_EXSTYLE);
+    LONG_PTR wStyle1, wStyle2;
+    wStyle1 = wStyle2 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
     if (alpha < 255) wStyle2 |= WS_EX_LAYERED;
     else wStyle2 &= ~WS_EX_LAYERED;
 
     if (wStyle2 != wStyle1)
-        SetWindowLong(hwnd, GWL_EXSTYLE, wStyle2);
+        SetWindowLongPtr(hwnd, GWL_EXSTYLE, wStyle2);
 
     if (wStyle2 & WS_EX_LAYERED)
 		return 0 != qSetLayeredWindowAttributes(hwnd, 0, alpha, LWA_COLORKEY);
@@ -720,7 +720,7 @@ void BBP_set_window_modes(plugin_info *PI)
             }
         }
 
-        if (WS_CHILD & GetWindowLong(PI->hwnd, GWL_STYLE))
+        if (WS_CHILD & GetWindowLongPtr(PI->hwnd, GWL_STYLE))
         {
             flags |= SWP_NOZORDER;
             hwnd_after = NULL;

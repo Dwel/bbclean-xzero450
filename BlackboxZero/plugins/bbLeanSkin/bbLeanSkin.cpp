@@ -1244,7 +1244,7 @@ static BOOL CALLBACK SkinEnumProc(HWND hwnd, LPARAM lParam)
     if (NULL == pInfo)
     {
         if (BBLS_LOAD == lParam
-            && WS_CAPTION == (WS_CAPTION & GetWindowLong(hwnd, GWL_STYLE)))
+            && WS_CAPTION == (WS_CAPTION & GetWindowLongPtr(hwnd, GWL_STYLE)))
         {
             //dbg_printf("post %08x", hwnd);
             PostMessage(hwnd, bbSkinMsg, lParam, 0);

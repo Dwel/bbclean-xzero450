@@ -136,7 +136,7 @@ int beginPlugin(HINSTANCE hPluginInstance)
 		 * IF you decide to allow yourself to be unloaded from the slit, then you would
 		 * do the oppisite, remove CHILD and add POPUP
 		 */
-		SetWindowLong(hwndPlugin, GWL_STYLE, (GetWindowLong(hwndPlugin, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+		SetWindowLongPtr(hwndPlugin, GWL_STYLE, (GetWindowLongPtr(hwndPlugin, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
 
 		// Make your parent window BBSlit
 		SetParent(hwndPlugin, hSlit);
@@ -161,7 +161,7 @@ int beginPlugin(HINSTANCE hPluginInstance)
 	{
 		if (transparency && !inSlit)
 		{
-			SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+			SetWindowLongPtr(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 			BBSetLayeredWindowAttributes(hwndPlugin, NULL, (unsigned char)transparencyAlpha, LWA_ALPHA);
 			//BBSetLayeredWindowAttributes(hwndPlugin, NULL, (unsigned char)"160", LWA_ALPHA);
 		}
@@ -178,7 +178,7 @@ BlackboxZero 1.14.2012
 #endif
 
 	// Set magicDWord to make the window sticky (same magicDWord that is used by LiteStep)...
-	SetWindowLong(hwndPlugin, GWL_USERDATA, magicDWord);
+	SetWindowLongPtr(hwndPlugin, GWLP_USERDATA, magicDWord);
 	// Make the window AlwaysOnTop?
 	if (alwaysOnTop) SetWindowPos(hwndPlugin, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 	// Show the window and force it to update...
@@ -711,12 +711,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						if (transparency)
 						{
 							transparency = false;
-							SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+							SetWindowLongPtr(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 						}
 						else
 						{
 							transparency = true;
-							SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+							SetWindowLongPtr(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 							BBSetLayeredWindowAttributes(hwndPlugin, NULL, (unsigned char)transparencyAlpha, LWA_ALPHA);
 						}
 
@@ -1180,14 +1180,14 @@ void ToggleSlit()
 		// We are in the slit, so lets unload and get out..
 		if (snapWindowOld) snapWindow = true;
 		//SetParent(hwndPlugin, NULL);
-		//SetWindowLong(hwndPlugin, GWL_STYLE, (GetWindowLong(hwndPlugin, GWL_STYLE) & ~WS_CHILD) | WS_POPUP);
+		//SetWindowLongPtr(hwndPlugin, GWL_STYLE, (GetWindowLongPtr(hwndPlugin, GWL_STYLE) & ~WS_CHILD) | WS_POPUP);
 		SendMessage(hSlit, SLIT_REMOVE, NULL, (LPARAM)hwndPlugin);
 		inSlit = false;
 
 		//turn trans back on?
 		if (transparency && usingWin2kXP)
 		{
-			SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+			SetWindowLongPtr(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 			BBSetLayeredWindowAttributes(hwndPlugin, NULL, (unsigned char)transparencyAlpha, LWA_ALPHA);
 		}
 
@@ -1206,10 +1206,10 @@ void ToggleSlit()
 		xpos2 = xpos; ypos2 = ypos;
 
 		//turn trans off
-		SetWindowLong(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+		SetWindowLongPtr(hwndPlugin, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
 		//SetParent(hwndPlugin, hSlit);
-		//SetWindowLong(hwndPlugin, GWL_STYLE, (GetWindowLong(hwndPlugin, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+		//SetWindowLongPtr(hwndPlugin, GWL_STYLE, (GetWindowLongPtr(hwndPlugin, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
 		SendMessage(hSlit, SLIT_ADD, NULL, (LPARAM)hwndPlugin);
 		inSlit = true;
 	}

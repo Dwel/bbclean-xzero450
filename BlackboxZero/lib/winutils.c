@@ -220,7 +220,7 @@ void SetOnTop (HWND hwnd)
 {
     if (IsWindow(hwnd)
      && IsWindowVisible(hwnd)
-     && !(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST))
+     && !(GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST))
         SetWindowPos(hwnd,
             HWND_TOP,
             0, 0, 0, 0,

@@ -240,8 +240,7 @@ LRESULT CALLBACK Menu::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
     if (WM_NCCREATE == uMsg)
     {
         // bind window to the c++ structure
-        SetWindowLongPtr(hwnd, 0,
-            (LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
+        SetWindowLongPtr(hwnd, 0, (LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }

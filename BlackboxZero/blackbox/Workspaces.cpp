@@ -230,7 +230,7 @@ void Workspaces::send_desk_refresh () const
 LRESULT Workspaces::Command (UINT msg, WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd = (HWND)lParam;
-    LONG style;
+    LONG_PTR style;
 
     switch (msg)
     {
@@ -356,7 +356,7 @@ LRESULT Workspaces::Command (UINT msg, WPARAM wParam, LPARAM lParam)
                     if (NULL == hwnd)
                         break;
                     SetWindowPos(hwnd,
-                        (GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST)
+                        (GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST)
                         ? HWND_NOTOPMOST : HWND_TOPMOST,
                         0, 0, 0, 0,
                         SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
@@ -438,7 +438,7 @@ LRESULT Workspaces::Command (UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
             }
 
-            style = GetWindowLong(hwnd, GWL_STYLE);
+            style = GetWindowLongPtr(hwnd, GWL_STYLE);
             switch (msg)
             {
                 case BB_WINDOWCLOSE:
@@ -546,7 +546,7 @@ void Workspaces::SwitchToBBWnd () const
 void get_rect (HWND hwnd, RECT * rp)
 {
     GetWindowRect(hwnd, rp);
-    if (WS_CHILD & GetWindowLong(hwnd, GWL_STYLE))
+    if (WS_CHILD & GetWindowLongPtr(hwnd, GWL_STYLE))
     {
         HWND pw = GetParent(hwnd);
         ScreenToClient(pw, (LPPOINT)&rp->left);
@@ -569,12 +569,12 @@ int get_shade_height (HWND hwnd)
         return shade;
 
     int border = GetSystemMetrics(
-        (WS_SIZEBOX & GetWindowLong(hwnd, GWL_STYLE))
+        (WS_SIZEBOX & GetWindowLongPtr(hwnd, GWL_STYLE))
         ? SM_CYFRAME
         : SM_CYFIXEDFRAME);
 
     int caption = GetSystemMetrics(
-        (WS_EX_TOOLWINDOW & GetWindowLong(hwnd, GWL_EXSTYLE))
+        (WS_EX_TOOLWINDOW & GetWindowLongPtr(hwnd, GWL_EXSTYLE))
         ? SM_CYSMCAPTION
         : SM_CYCAPTION);
 
@@ -826,7 +826,7 @@ void Workspaces::MakeOnBG (HWND hwnd)
         vwm_set_onbg(hwnd, true);
 
         ShowWindow(hwnd, SW_HIDE);
-        SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_TOOLWINDOW); // hide window from alt-tab tasklist
+        SetWindowLongPtr(hwnd, GWL_EXSTYLE, WS_EX_TOOLWINDOW); // hide window from alt-tab tasklist
         ShowWindow(hwnd, SW_SHOW);
         send_bbls_command(hwnd, BBLS_SETONBG, 1);
         //dbg_window(hwnd, "[+app]");
@@ -846,11 +846,11 @@ void Workspaces::RemoveOnBG (HWND hwnd)
 
     } else if (vwm_set_onbg(hwnd, false)) {
 
-        LONG const flags = GetWindowLong(hwnd, GWL_EXSTYLE);
+        LONG_PTR const flags = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
         if (WS_EX_TOOLWINDOW & flags)
         {
             ShowWindow(hwnd, SW_HIDE);
-            SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_APPWINDOW);
+            SetWindowLongPtr(hwnd, GWL_EXSTYLE, WS_EX_APPWINDOW);
             ShowWindow(hwnd, SW_SHOW);
         }
         send_bbls_command(hwnd, BBLS_SETONBG, 0);

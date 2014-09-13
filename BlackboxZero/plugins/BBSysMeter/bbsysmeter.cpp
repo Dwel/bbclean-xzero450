@@ -131,7 +131,7 @@ int beginPlugin(HINSTANCE hPluginInstance)
 	setStatus();	
 	// Register to receive Blackbox messages...
 	SendMessage(hwndBlackbox, BB_REGISTERMESSAGE, (WPARAM)hwndBBSysMeter, (LPARAM)msgs);
-	const long magicDWord = 0x49474541;
+	const LONG_PTR magicDWord = 0x49474541;
 #if !defined _WIN64
 	// Set magicDWord to make the window sticky (same magicDWord that is used by LiteStep)...
 	SetWindowLong(hwndBBSysMeter, GWL_USERDATA, magicDWord);
@@ -1700,12 +1700,12 @@ void setStatus()
 						{
 							if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 							{
-								SetWindowLong(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+								SetWindowLongPtr(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 								BBSetLayeredWindowAttributes(hwndBBSysMeter, 0xFF00FF, (unsigned char)alpha, LWA_COLORKEY|LWA_ALPHA);
 							}
 							else
 							{
-							SetWindowLong(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+							SetWindowLongPtr(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 							BBSetLayeredWindowAttributes(hwndBBSysMeter, NULL, (unsigned char)alpha, LWA_ALPHA);
 							}
 						}
@@ -1713,15 +1713,15 @@ void setStatus()
 						{
 							if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 							{
-								SetWindowLong(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+								SetWindowLongPtr(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 								BBSetLayeredWindowAttributes(hwndBBSysMeter, 0xFF00FF, (unsigned char)alpha, LWA_COLORKEY);
 							}
 							else
-							SetWindowLong(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+							SetWindowLongPtr(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 						}
 							
 					}
-					else if((transparency)||(fullTrans)) SetWindowLong(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+					else if((transparency)||(fullTrans)) SetWindowLongPtr(hwndBBSysMeter, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
 	InvalidateRect(hwndBBSysMeter, NULL, false);		
 }

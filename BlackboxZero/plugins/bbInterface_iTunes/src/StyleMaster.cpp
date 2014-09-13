@@ -196,20 +196,20 @@ void style_set_transparency(HWND hwnd, BYTE transvalue, bool transback)
 {
 	if (pSetLayeredWindowAttributes)
 	{
-		LONG s = GetWindowLong(hwnd, GWL_EXSTYLE);
+		LONG_PTR s = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 		UINT flags = 0;
 		if (transback) flags |= LWA_COLORKEY;
 		if (transvalue < 255) flags |= LWA_ALPHA;
 		if (flags)
 		{
 			if (0 == (s & WS_EX_LAYERED))
-				SetWindowLong(hwnd, GWL_EXSTYLE, s | WS_EX_LAYERED);
+				SetWindowLongPtr(hwnd, GWL_EXSTYLE, s | WS_EX_LAYERED);
 			pSetLayeredWindowAttributes(hwnd, transback ? TRANSCOLOUR : 0, transvalue, flags);
 		}
 		else
 		{
 			if (0 != (s & WS_EX_LAYERED))
-				SetWindowLong(hwnd, GWL_EXSTYLE, s & ~WS_EX_LAYERED);
+				SetWindowLongPtr(hwnd, GWL_EXSTYLE, s & ~WS_EX_LAYERED);
 		}
 	}
 }
@@ -220,7 +220,7 @@ void style_set_transparency(HWND hwnd, BYTE transvalue, bool transback)
 void style_check_transparency_workaround(HWND hwnd)
 {
 	HWND pw = GetParent(hwnd);
-	if (pw && (WS_EX_LAYERED & GetWindowLong(pw, GWL_EXSTYLE)))
+	if (pw && (WS_EX_LAYERED & GetWindowLongPtr(pw, GWL_EXSTYLE)))
 		InvalidateRect(hwnd, NULL, FALSE);
 }
 

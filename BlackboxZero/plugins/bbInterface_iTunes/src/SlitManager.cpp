@@ -73,7 +73,7 @@ bool plugin_getset_show_state(PluginInfo *PI, char *module_name, int state)
 		if (NULL == p) return 3 == state;
 
 		if (false == result && state >= 2)
-			show = !(WS_VISIBLE & GetWindowLong(p->hwnd, GWL_STYLE));
+			show = !(WS_VISIBLE & GetWindowLongPtr(p->hwnd, GWL_STYLE));
 
 		if (3 == state) return !show;
 
@@ -115,7 +115,7 @@ LRESULT CALLBACK subclass_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	extern bool plugin_snapwindows;
 
 	HWND hSlit = GetParent(hwnd);
-	control *c = (control *)GetWindowLong(hSlit, 0);
+	control *c = (control *)GetWindowLongPtr(hSlit, 0);
 	controltype_label_details *details = (controltype_label_details *) c->controldetails;
 	PluginInfo *PI = details->plugin_info;
 
@@ -261,8 +261,8 @@ int SlitWndProc(control *c, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				*pp = p, p->next = NULL;
 
 				SetParent(p->hwnd, hwnd);
-				SetWindowLong(p->hwnd, GWL_STYLE, (GetWindowLong(p->hwnd, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
-				p->wp = (WNDPROC)SetWindowLongPtr(p->hwnd, -4 /*GWL_WNDPROC*/, (LONG)subclass_WndProc);
+				SetWindowLongPtr(p->hwnd, GWL_STYLE, (GetWindowLongPtr(p->hwnd, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+				p->wp = (WNDPROC)SetWindowLongPtr(p->hwnd, -4 /*GWL_WNDPROC*/, (LONG_PTR)subclass_WndProc);
 
 				get_sizes(pp, (HWND)lParam);
 				set_plugin_position(p);
@@ -279,9 +279,9 @@ int SlitWndProc(control *c, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					PluginInfo *p = *pp;
 					if (IsWindow(p->hwnd))
 					{
-						SetWindowLongPtr(p->hwnd, -4 /*GWL_WNDPROC*/, (LONG)p->wp);
+						SetWindowLongPtr(p->hwnd, -4 /*GWL_WNDPROC*/, (LONG_PTR)p->wp);
 						SetParent(p->hwnd, NULL);
-						SetWindowLong(p->hwnd, GWL_STYLE, (GetWindowLong(p->hwnd, GWL_STYLE) & ~WS_CHILD) | WS_POPUP);
+						SetWindowLongPtr(p->hwnd, GWL_STYLE, (GetWindowLongPtr(p->hwnd, GWL_STYLE) & ~WS_CHILD) | WS_POPUP);
 					}
 					*pp = p->next;
 					delete p;

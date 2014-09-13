@@ -201,7 +201,7 @@ void SnapWindowToEdge(WinInfo *WI, WINDOWPOS* pwPos, int nDist)
 void get_rect(HWND hwnd, RECT *rp)
 {
     GetWindowRect(hwnd, rp);
-    if (WS_CHILD & GetWindowLong(hwnd, GWL_STYLE))
+    if (WS_CHILD & GetWindowLongPtr(hwnd, GWL_STYLE))
     {
         HWND pw = GetParent(hwnd);
         ScreenToClient(pw, (LPPOINT)&rp->left);
@@ -840,8 +840,8 @@ bool set_region(WinInfo *WI)
 {
     HWND hwnd = WI->hwnd;
 
-    WI->style = GetWindowLong(hwnd, GWL_STYLE);
-    WI->exstyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+    WI->style = GetWindowLongPtr(hwnd, GWL_STYLE);
+    WI->exstyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
     WI->is_ontop = 0 != (WI->exstyle & WS_EX_TOPMOST);
     WI->is_zoomed = FALSE != IsZoomed(hwnd);

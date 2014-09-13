@@ -618,7 +618,7 @@ static UINT_PTR APIENTRY OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARA
     {
         // center 'open file' dialog on screen
         RECT r, w;
-        if (WS_CHILD & GetWindowLong(hdlg, GWL_STYLE))
+        if (WS_CHILD & GetWindowLongPtr(hdlg, GWL_STYLE))
             hdlg = GetParent(hdlg);
         GetWindowRect(hdlg, &r);
         GetMonitorRect(hdlg, &w, GETMON_WORKAREA|GETMON_FROM_WINDOW);

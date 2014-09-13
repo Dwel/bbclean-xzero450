@@ -105,7 +105,7 @@ int beginPlugin(HINSTANCE hPluginInstance)
 	// Register to receive Blackbox messages...
 	SendMessage(hwndBlackbox, BB_REGISTERMESSAGE, (WPARAM)hwndBBMessageBox, (LPARAM)msgs);
 
-  const long magicDWord = 0x49474541;
+  const LONG_PTR magicDWord = 0x49474541;
 #if !defined _WIN64
   // Set magicDWord to make the window sticky (same magicDWord that is used by LiteStep)...
   SetWindowLong(hwndBBMessageBox, GWL_USERDATA, magicDWord);
@@ -979,7 +979,7 @@ void setStatus()
 							}
 							else
 						*///	{
-							SetWindowLong(hwndBBMessageBox, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+							SetWindowLongPtr(hwndBBMessageBox, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 							BBSetLayeredWindowAttributes(hwndBBMessageBox, NULL, (unsigned char)alpha, LWA_ALPHA);
 							//}
 						}
@@ -991,7 +991,7 @@ void setStatus()
 						//		BBSetLayeredWindowAttributes(hwndBBMessageBox, 0x202020, (unsigned char)alpha, LWA_COLORKEY);
 						//	}
 						//	else
-							SetWindowLong(hwndBBMessageBox, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+							SetWindowLongPtr(hwndBBMessageBox, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 						}
 							
 					//}

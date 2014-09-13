@@ -103,7 +103,7 @@ int beginPlugin(HINSTANCE hPluginInstance)
 	// Register to receive Blackbox messages...
 	SendMessage(hwndBlackbox, BB_REGISTERMESSAGE, (WPARAM)hwndBBXO, (LPARAM)msgs);
 
-  const long magicDWord = 0x49474541;
+  const LONG_PTR magicDWord = 0x49474541;
 #if !defined _WIN64
   // Set magicDWord to make the window sticky (same magicDWord that is used by LiteStep)...
   SetWindowLong(hwndBBXO, GWL_USERDATA, magicDWord);

@@ -797,7 +797,7 @@ bool detect_fullscreen_window(){
 
 bool search_fullscreen_app(){	
 	HWND fg_hwnd = GetForegroundWindow();
-	LONG style = GetWindowLong(fg_hwnd, GWL_STYLE);
+	LONG_PTR style = GetWindowLongPtr(fg_hwnd, GWL_STYLE);
 	if (WS_CAPTION == (style & WS_CAPTION))
 		return false;
 	RECT s;

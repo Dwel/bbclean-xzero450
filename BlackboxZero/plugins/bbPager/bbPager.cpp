@@ -212,7 +212,7 @@ extern "C"
 			* IF you decide to allow yourself to be unloaded from the slit, then you would
 			* do the oppisite, remove CHILD and add POPUP
 			*/
-			SetWindowLong(hwndBBPager, GWL_STYLE, (GetWindowLong(hwndBBPager, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+			SetWindowLongPtr(hwndBBPager, GWL_STYLE, (GetWindowLongPtr(hwndBBPager, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
 
 			// Make your parent window BBSlit
 			SetParent(hwndBBPager, hSlit);
@@ -1361,7 +1361,7 @@ void ToggleSlit()
 		//turn trans back on?
 		if (transparency && usingWin2kXP)
 		{
-			SetWindowLong(hwndBBPager, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+			SetWindowLongPtr(hwndBBPager, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 			SetTransparency(hwndBBPager, (unsigned char)transparencyAlpha);
 		}
 
@@ -1385,10 +1385,10 @@ void ToggleSlit()
 		xpos = position.x; ypos = position.y;
 
 		//turn trans off
-		SetWindowLong(hwndBBPager, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+		SetWindowLongPtr(hwndBBPager, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
 		//SetParent(hwndBBPager, hSlit);
-		//SetWindowLong(hwndBBPager, GWL_STYLE, (GetWindowLong(hwndBBPager, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+		//SetWindowLongPtr(hwndBBPager, GWL_STYLE, (GetWindowLongPtr(hwndBBPager, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
 		SendMessage(hSlit, SLIT_ADD, 0, (LPARAM)hwndBBPager);
 		inSlit = true;
 	}
@@ -1583,16 +1583,16 @@ bool IsValidWindow(HWND hWnd)
 		return false;
 
 	// if it is a WS_CHILD or not WS_VISIBLE, fail it
-	LONG nStyle;
-	nStyle = GetWindowLong(hWnd, GWL_STYLE);	
+	LONG_PTR nStyle;
+	nStyle = GetWindowLongPtr(hWnd, GWL_STYLE);	
 	if ((nStyle & WS_CHILD) || !(nStyle & WS_VISIBLE))
 		return false;
 	
 	// *** below is commented out because trillian is a toolwindow
 	// *** and perhaps miranda (and other systray things?)
 	// if the window is a WS_EX_TOOLWINDOW fail it
-	nStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-	if ((nStyle & WS_EX_TOOLWINDOW) && (GetWindowLong(hWnd, GWL_STYLE) & WS_POPUP))
+	nStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+	if ((nStyle & WS_EX_TOOLWINDOW) && (GetWindowLongPtr(hWnd, GWL_STYLE) & WS_POPUP))
 		return false;
 
 	// if it has a parent, fail
@@ -1938,7 +1938,7 @@ void DropWindow()
 			GetWindowText(moveWin.window, temp, 32);
 			strcat(temp, "...");
 
-			if (!GetWindowLong(moveWin.window, WS_VISIBLE) && dropDesktop == currentDesktop)
+			if (!GetWindowLongPtr(moveWin.window, WS_VISIBLE) && dropDesktop == currentDesktop)
 				ShowWindow(moveWin.window, SW_SHOW);
 
 			if (moveWin.active || dropDesktop == currentDesktop)

@@ -72,13 +72,13 @@ winlist * vwm_add_window (HWND hwnd)
 
     if (NULL == wl)
     {
-        LONG ex_style;
+        LONG_PTR ex_style;
         DWORD threadid;
 
         if (hidden)
             return NULL;
 
-        ex_style = GetWindowLong(hwnd, GWL_EXSTYLE);
+        ex_style = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
         threadid = GetWindowThreadProcessId(hwnd, NULL);
 
         // exclude blackbox menu drop shadows
@@ -168,8 +168,8 @@ void vwm_update_winlist ()
         char buffer[100];
         char appName[100];
         GetClassName(wl->hwnd, buffer, sizeof buffer);
-        LONG style = GetWindowLong(wl->hwnd, GWL_STYLE);
-        LONG exstyle = GetWindowLong(wl->hwnd, GWL_EXSTYLE);
+        LONG_PTR style = GetWindowLongPtr(wl->hwnd, GWL_STYLE);
+        LONG_PTR exstyle = GetWindowLongPtr(wl->hwnd, GWL_EXSTYLE);
         GetAppByWindow(wl->hwnd, appName);
         dbg_printf("hw:%x ws:%d mv:%d hi:%d ic:%d st:%d <%s> (wst:%08x wex:%08x %s)",
             wl->hwnd, wl->desk, wl->moved, wl->hidden, wl->iconic, wl->sticky, buffer, style, exstyle, appName);

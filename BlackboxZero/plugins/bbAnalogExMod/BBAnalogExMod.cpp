@@ -587,11 +587,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// Set an attribute of the window
 				if(setAttr){
 					if(!inSlit){
-						SetWindowLong(hwnd, GWL_EXSTYLE,
-								GetWindowLong(hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+						SetWindowLongPtr(hwnd, GWL_EXSTYLE,
+								GetWindowLongPtr(hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 
-						SetWindowLong(hwnd, GWL_EXSTYLE ,
-								GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+						SetWindowLongPtr(hwnd, GWL_EXSTYLE ,
+								GetWindowLongPtr(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 					}
 					DragAcceptFiles(hwnd, true);
 					if(!inSlit) SetWindowPos( hwnd,
@@ -800,8 +800,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					// (Back) into the slit..
 					inSlit = true;
-					SetWindowLong(hwndBBAnalogExMod, GWL_EXSTYLE,
-                                                      GetWindowLong(hwndBBAnalogExMod, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+					SetWindowLongPtr(hwndBBAnalogExMod, GWL_EXSTYLE,
+                                                      GetWindowLongPtr(hwndBBAnalogExMod, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 					SendMessage(hSlit, SLIT_ADD, NULL, (LPARAM)hwndBBAnalogExMod);
 				}
 				GetStyleSettings();

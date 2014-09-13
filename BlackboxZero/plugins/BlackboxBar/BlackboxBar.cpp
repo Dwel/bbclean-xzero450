@@ -890,13 +890,13 @@ bool barinfo::check_fullscreen_window(void)
     bool covers;
 
     char class_name[80];
-    DWORD wstyle;
+    LONG_PTR wstyle;
 
     hwnd = GetForegroundWindow();
     if (NULL == hwnd)
         return false;
 
-    wstyle = GetWindowLong(hwnd, GWL_STYLE);
+    wstyle = GetWindowLongPtr(hwnd, GWL_STYLE);
     /* consider captionless windows only */
     if (WS_CAPTION == (wstyle & WS_CAPTION))
         return false;

@@ -506,7 +506,7 @@ public:
                     && false == sysmenu_exists()
                     && tl->wkspc == currentScreen
                     && a2
-                    && (WS_MINIMIZEBOX & GetWindowLong(Window, GWL_STYLE)))
+                    && (WS_MINIMIZEBOX & GetWindowLongPtr(Window, GWL_STYLE)))
                     goto minimize;
 
                 if (gesture && m_bar->gesture_lock) {
