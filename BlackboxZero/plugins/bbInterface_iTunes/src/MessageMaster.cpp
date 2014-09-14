@@ -500,7 +500,7 @@ void free_string(char **s)
 	if (*s)
 	{
 		//dbg_printf("free_str: %s", *s);
-		delete *s;
+		delete [] *s;
 		*s = NULL;
 	}
 }
