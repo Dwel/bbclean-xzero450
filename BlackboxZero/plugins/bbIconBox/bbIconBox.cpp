@@ -1773,7 +1773,7 @@ void icon_box::show_menu(bool popup)
 
 #pragma message(Reminder "Unmerged bb4win code on (too difficult for friday)!") 
 
-    n_menu *main, *sub, *sub2;
+    n_menu *main = 0, *sub = 0, *sub2 = 0;
     char b0[80], b1[80], b2[80];
     DesktopInfo D;
     int n;
