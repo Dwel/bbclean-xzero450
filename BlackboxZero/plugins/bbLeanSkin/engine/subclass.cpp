@@ -33,14 +33,14 @@
 #include "hookinfo.h"
 #include "subclass.h"
 #include "drawico.h"
-#include "DrawText.h"
+#include "../../../blackbox/DrawText.cpp"
+
 #include "BImage.cpp" // @TODO: remove @NOTE: when in CMakeList it is a problem for eclipse to read makefiles
 
-#define array_count(ary) (sizeof(ary) / sizeof(ary[0]))
 //@FIXME: grr, dup from BB.h... fix it mojmir
 //#define _CopyOffsetRect(lprcDst, lprcSrc, dx, dy) (*lprcDst).left = (*lprcSrc).left + (dx), (*lprcDst).right = (*lprcSrc).right + (dx), (*lprcDst).top = (*lprcSrc).top + (dy), (*lprcDst).bottom = (*lprcSrc).bottom + (dy)
-
-bool Settings_UTF8Encoding; // ugh
+//#include "DrawText.h"
+bool Settings_UTF8Encoding = false; // ugh
 
 //===========================================================================
 void get_workarea(HWND hwnd, RECT *w, RECT *s)
@@ -520,7 +520,6 @@ int get_window_icon(HWND hwnd, HICON *picon)
 #define get_ico(hwnd) NULL
 #endif
 
-extern int BBDrawTextAltW(HDC hDC, LPCWSTR lpString, int nCount, RECT *lpRect, unsigned uFormat, StyleItem* pG);
 //-----------------------------------------------------------------
 
 void PaintAll(struct WinInfo* WI)
@@ -709,7 +708,7 @@ void PaintAll(struct WinInfo* WI)
     wTitle[0] = 0;
 
     if (WI->is_unicode) {
-        GetWindowTextW(WI->hwnd, wTitle, array_count(wTitle));
+		GetWindowTextW(WI->hwnd, wTitle, sizeof(wTitle) / sizeof(*wTitle));
         BBDrawTextAltW(hdc, wTitle, -1, &rc,
             mSkin.Justify
             | DT_SINGLELINE
@@ -719,7 +718,7 @@ void PaintAll(struct WinInfo* WI)
             pG
             );
     } else {
-        GetWindowText(WI->hwnd, (char*)wTitle, array_count(wTitle));
+		GetWindowText(WI->hwnd, (char*)wTitle, sizeof(wTitle) / sizeof(*wTitle));
 		BBDrawTextAlt(hdc, (char*)wTitle, -1, &rc,
             mSkin.Justify
             | DT_SINGLELINE

@@ -78,6 +78,14 @@
   #define DLL_EXPORT __declspec(dllexport)
 #endif
 
+#ifdef __BBCORE__
+#	define API_EXPORT DLL_EXPORT
+#else
+#	define API_EXPORT
+#endif
+
+//#include "DrawText.h"
+
 /*------------------------------------------ */
 /* plain C support */
 
@@ -459,12 +467,6 @@ enum SN_INDEX {
 
 /*=========================================================================== */
 /* Plugin API */
-
-#ifdef __BBCORE__
-  #define API_EXPORT DLL_EXPORT
-#else
-  #define API_EXPORT
-#endif
 
 #ifdef __cplusplus
 extern "C" {

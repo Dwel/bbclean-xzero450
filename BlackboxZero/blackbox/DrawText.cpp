@@ -1,19 +1,14 @@
 #include "DrawText.h"
 #include "Settings.h"
-#include "bbrc.h"
-#include <time.h>
-#include <shlobj.h>
-#include <shellapi.h>
-#include <malloc.h>
 
 //===========================================================================
 int DrawTextUTF8(HDC hDC, const char *s, int nCount, RECT *p, unsigned format)
 {
-    WCHAR wstr[1000];
+    WCHAR wstr[1024];
     //SIZE size;
     //int x, y, n, r;
 
-    int n = MultiByteToWideChar(CP_UTF8, 0, s, nCount, wstr, array_count(wstr));
+	int n = MultiByteToWideChar(CP_UTF8, 0, s, nCount, wstr, sizeof(wstr) / sizeof(*wstr));
     if (n) --n;
 
 	return DrawTextW(hDC, wstr, n, p, format);
