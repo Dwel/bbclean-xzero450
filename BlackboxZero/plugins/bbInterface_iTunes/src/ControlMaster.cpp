@@ -1117,7 +1117,8 @@ bool control_is_valid_name(char *name)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 control* control_get(const char *name, module* deflt)
 {
-	char* mname = new_string(name);
+	char mname[512];
+	strncpy(mname, name, 512);
 	char* cname = strchr(mname,':');
 	module* m;
 	if (cname)
