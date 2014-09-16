@@ -2,6 +2,8 @@
 #include "settings.h"
 #include "styles.h"
 #include <tchar.h>
+#include <string>
+#include <vector>
 
 #define BBFOOMP_UPDATE_TIMER 1
 #define BB_BRINGTOFRONT 10504
@@ -1232,6 +1234,61 @@ void Transparency ()
 	}
 }
 
+/// detect foobar2000
+struct FindWindowData
+{
+	FindWindowData(TCHAR const * windowTitle)
+		: WindowTitle(windowTitle)
+		, ResultHandle(0)
+	{}
+
+	std::basic_string<TCHAR> WindowTitle;
+	HWND ResultHandle;
+};
+
+BOOL CALLBACK FindWindowImpl (HWND hWnd, LPARAM lParam)
+{
+	FindWindowData * p = reinterpret_cast<FindWindowData*>(lParam);
+	if (!p)
+		return FALSE;
+
+	int const length = GetWindowTextLength(hWnd) + 1;
+	if (length > 0)
+	{
+		std::vector<TCHAR> buffer(std::size_t(length), 0);
+		if (GetWindowText(hWnd, &buffer[0], length))
+		{
+			if (_tcsstr(&buffer[0], p->WindowTitle.c_str()))
+			{
+				p->ResultHandle = hWnd;
+				return FALSE; // Finish enumerating we found what we need
+			}
+		}
+	}
+	return TRUE; // Continue enumerating
+}
+
+// Returns the window handle when found if it returns 0 GetLastError() will return more information
+HWND FindWindowStart(TCHAR const * windowTitle)
+{
+	if (!windowTitle)
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return 0;
+	}
+
+	FindWindowData data(windowTitle);
+	if (!EnumWindows(FindWindowImpl, (LONG_PTR)&data) && data.ResultHandle != 0)
+	{
+		SetLastError(ERROR_SUCCESS);
+		return data.ResultHandle;
+	}
+
+	// Return ERROR_FILE_NOT_FOUND in GetLastError
+	SetLastError(ERROR_FILE_NOT_FOUND);
+	return 0;
+}
+
 //===========================================================================
 void Finfo::update ()
 {
@@ -1260,6 +1317,11 @@ void Finfo::update ()
 	else if (FooHandle = FindWindow(TEXT("{E7076D1C-A7BF-4f39-B771-BCBE88F2A2A8}"), NULL)) // Foobar 9.1 with Coloumns UI
 	{
 		foobar_v9 = true;
+		GetWindowText(FooHandle, song_title, sizeof(song_title));
+	}
+	else if (FooHandle = FindWindowStart(TEXT("[foobar2000 ")))
+	{
+		//foobar_v10 = true;
 		GetWindowText(FooHandle, song_title, sizeof(song_title));
 	}
 	else // If there is no handle (foobar is not on), then display the NoInfoText var.
