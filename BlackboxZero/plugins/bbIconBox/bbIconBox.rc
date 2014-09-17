@@ -9,8 +9,8 @@ bbIconBox.id.4: task3
 bbIconBox.id.5: Desktop
 
 bbIconBox.Desktop.placement: Right
-bbIconBox.Desktop.position.x: 1009
-bbIconBox.Desktop.position.y: 90
+bbIconBox.Desktop.position.x: 0
+bbIconBox.Desktop.position.y: 0
 bbIconBox.Desktop.useSlit: false
 bbIconBox.Desktop.alwaysOnTop: false
 bbIconBox.Desktop.AutoHide: false
@@ -19,11 +19,11 @@ bbIconBox.Desktop.snapWindow: true
 bbIconBox.Desktop.pluginToggle: true
 bbIconBox.Desktop.alpha.enabled: false
 bbIconBox.Desktop.alpha.value: 8
-bbIconBox.Desktop.orientation: horizontal
+bbIconBox.Desktop.orientation: vertical
 bbIconBox.Desktop.path: DESKTOP
 bbIconBox.Desktop.title: Desktop
 bbIconBox.Desktop.rows: 4
-bbIconBox.Desktop.columns: 3
+bbIconBox.Desktop.columns: 2
 bbIconBox.Desktop.icon.size: 16
 bbIconBox.Desktop.icon.saturation: 80
 bbIconBox.Desktop.icon.hue: 60
