@@ -79,14 +79,6 @@ extern char defaultrc_path[];
 
 #include "bbversion.h"
 
-#ifdef BBTINY
-#define BBAPPNAME "bbTiny"
-#define BBAPPVERSION "bbLean "BBLEAN_VERSION" (Tiny)"
-#else
-#define BBAPPNAME "BlackboxZero"
-#define BBAPPVERSION "BlackboxZero "BBLEAN_VERSION
-#endif
-
 /* Blackbox window timers */
 #define BB_RUNSTARTUP_TIMER     1
 #define BB_ENDSTARTUP_TIMER     2
