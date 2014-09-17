@@ -19,7 +19,28 @@
 
   ========================================================================== */
 
-#include "BB.h"
+// !!!!!!
+// @NOTE: CANNOT include "windows.h" in .rc files on 32bit rc compiler.
+// So the values are copied from windows headers right now
+//#include "BB.h"
+#define DS_SYSMODAL         0x02L
+#define DS_MODALFRAME       0x80L   /* Can be combined with WS_CAPTION  */
+#define DS_SETFOREGROUND    0x200L  /* not in win3.1 */
+#define DS_CONTROL          0x0400L
+#define DS_CENTER           0x0800L
+#define DS_CENTERMOUSE      0x1000L
+#define DS_CONTEXTHELP      0x2000L
+#define WS_POPUP            0x80000000L
+#define WS_CAPTION          0x00C00000L     /* WS_BORDER | WS_DLGFRAME  */
+#define WS_EX_TOOLWINDOW        0x00000080L
+#define ES_AUTOHSCROLL      0x0080L
+#define WS_TABSTOP          0x00010000L
+#define WS_BORDER           0x00800000L
+#define IDOK                1
+#define IDCANCEL            2
+#define BS_FLAT             0x00008000L
+// !!!!!!
+#include <bbversion.h>
 
 #define RT_MANIFEST 24
 #define CREATEPROCESS_MANIFEST_RESOURCE_ID  1
