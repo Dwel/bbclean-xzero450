@@ -122,7 +122,8 @@ ST void Desk_SetPosition(void)
     SetWindowPos(
         hDesktopWnd,
         HWND_BOTTOM,
-        VScreenX, VScreenY, VScreenWidth, VScreenHeight,
+        getWorkspaces().GetVScreenX(), getWorkspaces().GetVScreenY(),
+        getWorkspaces().GetVScreenWidth(), getWorkspaces().GetVScreenHeight(),
         SWP_NOACTIVATE|SWP_NOSENDCHANGING
         );
 }

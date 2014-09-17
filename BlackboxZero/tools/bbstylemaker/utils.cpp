@@ -63,7 +63,7 @@ ST UINT_PTR APIENTRY OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lP
     if (WM_INITDIALOG == uiMsg) {
         // center dialog on screen
         RECT r, w;
-        if (WS_CHILD & GetWindowLong(hdlg, GWL_STYLE))
+        if (WS_CHILD & GetWindowLongPtr(hdlg, GWL_STYLE))
             hdlg = GetParent(hdlg);
         GetWindowRect(hdlg, &r);
         GetWindowRect(GetParent(hdlg), &w);

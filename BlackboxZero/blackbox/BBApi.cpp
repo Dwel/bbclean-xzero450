@@ -23,6 +23,7 @@
 #include "Settings.h"
 #include "bbshell.h"
 #include "bbrc.h"
+#include "workspaces.h"
 #include "styleprops.h"
 #include <tlhelp32.h>
 
@@ -640,13 +641,13 @@ bool IsAppWindow(HWND hwnd)
         return false;
     
     // if it is a WS_CHILD or not WS_VISIBLE, fail it
-    if ((GetWindowLong(hwnd, GWL_STYLE)
+    if ((GetWindowLongPtr(hwnd, GWL_STYLE)
             & (WS_CHILD|WS_VISIBLE|WS_DISABLED))
         != WS_VISIBLE)
         return false;
 
     // if the window is a WS_EX_TOOLWINDOW fail it
-    if ((GetWindowLong(hwnd, GWL_EXSTYLE)
+    if ((GetWindowLongPtr(hwnd, GWL_EXSTYLE)
             & (WS_EX_TOOLWINDOW|WS_EX_APPWINDOW))
         == WS_EX_TOOLWINDOW)
         return false;
@@ -675,20 +676,20 @@ BOOL (WINAPI *pSetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 
 bool SetTransparency(HWND hwnd, BYTE alpha)
 {
-    LONG wStyle1, wStyle2;
+    LONG_PTR wStyle1, wStyle2;
 
     //dbg_window(hwnd, "alpha %d", alpha);
     if (!have_imp(pSetLayeredWindowAttributes))
         return false;
 
-    wStyle1 = wStyle2 = GetWindowLong(hwnd, GWL_EXSTYLE);
+    wStyle1 = wStyle2 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
     if (alpha < 255)
         wStyle2 |= WS_EX_LAYERED;
     else
         wStyle2 &= ~WS_EX_LAYERED;
 
     if (wStyle2 != wStyle1)
-        SetWindowLong(hwnd, GWL_EXSTYLE, wStyle2);
+        SetWindowLongPtr(hwnd, GWL_EXSTYLE, wStyle2);
 
     if (wStyle2 & WS_EX_LAYERED)
         return 0 != pSetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA);
@@ -1004,7 +1005,7 @@ void SnapWindowToEdge(WINDOWPOS* wp, LPARAM nDist, UINT flags, ...)
     self = wp->hwnd;
     parent = NULL;
 
-    if (WS_CHILD & GetWindowLong(self, GWL_STYLE))
+    if (WS_CHILD & GetWindowLongPtr(self, GWL_STYLE))
         parent = GetParent(self);
 
     // ------------------------------------------------------
@@ -1114,7 +1115,7 @@ void SnapWindowToEdge(WINDOWPOS* wp, LPARAM nDist, UINT flags, ...)
 ST BOOL CALLBACK SnapEnumProc(HWND hwnd, LPARAM lParam)
 {
     struct snap_info *si = (struct snap_info *)lParam;
-    LONG style = GetWindowLong(hwnd, GWL_STYLE);
+    LONG_PTR style = GetWindowLongPtr(hwnd, GWL_STYLE);
 
     if (hwnd != si->self && (style & WS_VISIBLE))
     {
@@ -1329,4 +1330,14 @@ int GetAppByWindow(HWND hwnd, char* processName)
     return strlen(processName);
 }
 
+void MakeSticky (HWND hwnd) { return getWorkspaces().MakeSticky(hwnd); }
+void RemoveSticky (HWND hwnd) { return getWorkspaces().RemoveSticky(hwnd); }
+bool CheckSticky (HWND hwnd) { return getWorkspaces().CheckSticky(hwnd); }
+
+void MakeOnBG (HWND hwnd) { return getWorkspaces().MakeOnBG(hwnd); }
+void RemoveOnBG (HWND hwnd) { return getWorkspaces().RemoveOnBG(hwnd); }
+bool CheckOnBG (HWND hwnd) { return getWorkspaces().CheckOnBG(hwnd); }
+
+const struct tasklist * GetTaskListPtr() { return getWorkspaces().GetTaskListPtr(); }
+bool SetTaskLocation (HWND hwnd, struct taskinfo const *pti, UINT flags) { return getWorkspaces().SetTaskLocation(hwnd, pti, flags); }
 //===========================================================================

@@ -345,7 +345,7 @@ void ContextItem::DrawItem(HDC buf, int w, int h, bool active)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void ContextItem::Measure(HDC hDC, SIZE *size)
+void ContextItem::Measure(HDC hDC, SIZE *size, StyleItem * pSI)
 {
     MEASUREITEMSTRUCT mai;
     int w, h;
@@ -359,7 +359,7 @@ void ContextItem::Measure(HDC hDC, SIZE *size)
 
     if (0==(m_type & MFT_OWNERDRAW))
     {
-        MenuItem::Measure(hDC, size);
+        MenuItem::Measure(hDC, size, pSI);
         return;
     }
 

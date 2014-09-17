@@ -196,7 +196,7 @@ void parse_font(StyleItem *si, const char *font)
 // Purpose: Create a Font, possible substitutions have been already applied.
 //===========================================================================
 
-HFONT CreateStyleFont(StyleItem *pSI)
+HFONT CreateStyleFont(StyleItem const * pSI)
 {
 #ifdef PARSEFONT_AFTER
     StyleItem SI = *pSI;

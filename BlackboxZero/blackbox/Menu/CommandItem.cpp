@@ -176,11 +176,11 @@ IntegerItem::IntegerItem(const char* pszCommand, int value, int minval, int maxv
     m_ItemID = MENUITEM_ID_INT;
 }
 
-void IntegerItem::Measure(HDC hDC, SIZE *size)
+void IntegerItem::Measure(HDC hDC, SIZE *size, StyleItem * pSI)
 {
     if (Settings_menu.showBroams)
     {
-        MenuItem::Measure(hDC, size);
+        MenuItem::Measure(hDC, size, pSI);
         m_Justify = MENUITEM_STANDARD_JUSTIFY;
     }
     else
@@ -200,7 +200,7 @@ void IntegerItem::Measure(HDC hDC, SIZE *size)
             );
         replace_str(&m_pszTitle, buf);
 
-        MenuItem::Measure(hDC, size);
+		MenuItem::Measure(hDC, size, &mStyle.MenuTitle); // @FIXME: mojmir
         if (size->cx > m_oldsize+5 || size->cx < m_oldsize-5)
             m_oldsize = size->cx;
         size->cx = m_oldsize + 5;
@@ -411,9 +411,9 @@ void StringItem::Paint(HDC hDC)
     SendMessage(hText, EM_SETRECT, 0, (LPARAM)&r);
 }
 
-void StringItem::Measure(HDC hDC, SIZE *size)
+void StringItem::Measure(HDC hDC, SIZE *size, StyleItem * pSI)
 {
-    MenuItem::Measure(hDC, size);
+    MenuItem::Measure(hDC, size, pSI);
     if (false == Settings_menu.showBroams)
     {
         size->cx = imax(size->cx + 20, 120);

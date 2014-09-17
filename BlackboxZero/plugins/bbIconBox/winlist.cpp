@@ -22,6 +22,7 @@
 
 #include "bbIconBox.h"
 #include <commctrl.h>
+#include <Workspaces.h>
 
 inline static int ratioX(Desk *f, int virt_x)
 { return f->mon_rect.left + virt_x * (f->mon_rect.right - f->mon_rect.left) / f->v_rect.right; }
@@ -61,7 +62,7 @@ static BOOL TaskEnumFunc(const struct tasklist *p, LPARAM lParam)
         winStruct ws;
         memset(&ws, 0, sizeof ws);
 
-        if (false == GetTaskLocation(hwnd, &ws.info))
+        if (false == getWorkspaces().GetTaskLocation(hwnd, &ws.info))
             break;
 
         if (GetMonitorRect(hwnd, NULL, GETMON_FROM_WINDOW) != f->mon)

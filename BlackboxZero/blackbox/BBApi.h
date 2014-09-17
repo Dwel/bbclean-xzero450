@@ -56,9 +56,35 @@
   #define DLL_EXPORT
 #endif
 
+#if defined _MSC_VER
+// Statements like: 
+// #pragma message(Reminder "Fix this problem!")
+// Which will cause messages like:
+// C:\Source\Project\main.cpp(47): Reminder: Fix this problem!
+// to show up during compiles. Note that you can NOT use the
+// words "error" or "warning" in your reminders, since it will
+// make the IDE think it should abort execution. You can double
+// click on these messages and jump to the line in question.
+#define Stringize( L ) #L
+#define MakeString( M, L ) M(L)
+#define $Line \
+  MakeString( Stringize, __LINE__ )
+#define Reminder \
+  __FILE__ "(" $Line ") : Reminder: "
+
+#endif
+
 #ifndef DLL_EXPORT
   #define DLL_EXPORT __declspec(dllexport)
 #endif
+
+#ifdef __BBCORE__
+#	define API_EXPORT DLL_EXPORT
+#else
+#	define API_EXPORT
+#endif
+
+//#include "DrawText.h"
 
 /*------------------------------------------ */
 /* plain C support */
@@ -371,54 +397,7 @@
 #define BBLS_REFRESH            4
 #define BBLS_SETONBG            7
 
-/* =========================================================================== */
-/* StyleItem */
-
-typedef struct StyleItem
-{
-    /* 0.0.80 */
-    int bevelstyle;
-    int bevelposition;
-    int type;
-    bool parentRelative;
-    bool interlaced;
-
-    /* 0.0.90 */
-    COLORREF Color;
-    COLORREF ColorTo;
-    COLORREF TextColor;
-    int FontHeight;
-    int FontWeight;
-    int Justify;
-    int validated;
-
-    char Font[128];
-
-    /* bbLean 1.16 */
-    int nVersion;
-    int marginWidth;
-    int borderWidth;
-    COLORREF borderColor;
-    COLORREF foregroundColor;
-    COLORREF disabledColor;
-    bool bordered;
-    bool FontShadow; /* xoblite */
-
-	/* BlackboxZero 1.4.2012 */
-	union
-	{
-		struct { char ShadowX; char ShadowY; };
-		unsigned short ShadowXY;
-	};
-	COLORREF ShadowColor;
-	COLORREF OutlineColor;
-    COLORREF ColorSplitTo;
-    COLORREF ColorToSplitTo;
-	/* BlackboxZero 1.4.2012 */
-
-    char reserved[82]; /* keep sizeof(StyleItem) = 300 */
-
-} StyleItem;
+#include "StyleItem.h"
 
 #define picColor TextColor
 #define VALID_TEXTCOLOR 8
@@ -488,12 +467,6 @@ enum SN_INDEX {
 
 /*=========================================================================== */
 /* Plugin API */
-
-#ifdef __BBCORE__
-  #define API_EXPORT DLL_EXPORT
-#else
-  #define API_EXPORT
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -735,17 +708,18 @@ extern "C" {
     /* Draw a Pixmap for buttons, menu bullets, checkmarks ... */
     API_EXPORT void bbDrawPix(HDC hDC, RECT *p_rect, COLORREF picColor, int style);
     /* Create a font handle from styleitem, with parsing and substitution. */
-    API_EXPORT HFONT CreateStyleFont(StyleItem * si);
+    API_EXPORT HFONT CreateStyleFont (StyleItem const * si);
 
 	/* Draw text with shadow, etc. */
-	API_EXPORT int BBDrawText(HDC hDC, const char *lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem * si);
+	//API_EXPORT int BBDrawText (HDC hDC, const char * lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem * si);
+	//API_EXPORT int BBDrawTextW (HDC hDC, LPCWSTR lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem * si);
 
 
     /* ------------------------------------ */
     /* UTF-8 support */
 
     /* Draw a textstring with color, possibly translating from UTF-8 */
-    API_EXPORT void bbDrawText(HDC hDC, const char *text, RECT *p_rect, unsigned just, COLORREF c);
+    //API_EXPORT void bbDrawText(HDC hDC, const char *text, RECT *p_rect, unsigned just, COLORREF c);
     /* convert from Multibyte string to WCHAR */
     API_EXPORT int bbMB2WC(const char *src, WCHAR *wchar_buffer, int wchar_len);
     /* convert from WCHAR to Multibyte string */
@@ -874,9 +848,9 @@ extern "C" {
        changes with tasks */
 
     /* get the size */
-    API_EXPORT int GetTaskListSize(void);
+    //API_EXPORT int GetTaskListSize(void);
     /* get a task's HWND by index [0..GetTaskListSize()] */
-    API_EXPORT HWND GetTask(int index);
+    //API_EXPORT HWND GetTask(int index);
     /* get the index of the currently active task */
     API_EXPORT int GetActiveTask(void);
     /* Get the workspace number for a task */
@@ -900,7 +874,7 @@ extern "C" {
     } tasklist;
 
     /* Direct access: get the internal TaskList. */
-    API_EXPORT const struct tasklist *GetTaskListPtr(void);
+    API_EXPORT const struct tasklist * GetTaskListPtr (); // @NOTE: bbpager uses that @FIXME
 
     /* ------------------------------------ */
     /* Workspace (aka Desktop) Information */
@@ -918,7 +892,7 @@ extern "C" {
     } DesktopInfo;
 
     /* Get current Desktop information: */
-    API_EXPORT void GetDesktopInfo(DesktopInfo *deskInfo);
+    //API_EXPORT void GetDesktopInfo(DesktopInfo *deskInfo);
 
     /* ------------------------------------ */
     /* often used structure */
@@ -942,10 +916,10 @@ extern "C" {
     } taskinfo;
 
     /* get workspace and original position/size for window */
-    API_EXPORT bool GetTaskLocation(HWND hwnd, struct taskinfo *pti);
+    //API_EXPORT bool GetTaskLocation(HWND hwnd, struct taskinfo *pti);
 
     /* set workspace and/or position for window */
-    API_EXPORT bool SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags);
+    API_EXPORT bool SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags); // @NOTE: bbpager uses that @FIXME
     /* where flags are any combination of: */
     #define BBTI_SETDESK    1 /* move window to desk as specified */
     #define BBTI_SETPOS     2 /* move window to x/ypos as specified */

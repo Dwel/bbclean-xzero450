@@ -22,6 +22,7 @@
 
 #include "bbIconBox.h"
 #include "drawico.h"
+#include "Workspaces.h"
 
 #ifndef TTF_TRACK
 #define TTF_TRACK 0x0020
@@ -103,7 +104,7 @@ void EnumDesks (DESKENUMPROC lpEnumFunc, LPARAM lParam)
 {
     DesktopInfo info;
     info.deskNames = NULL;
-    GetDesktopInfo(&info);
+    getWorkspaces().GetDesktopInfo(info);
     string_node *p = info.deskNames;
     for (int n = 0; n < info.ScreensX; n++)
     {
@@ -125,7 +126,7 @@ void EnumDesks (DESKENUMPROC lpEnumFunc, LPARAM lParam)
 void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam)
 {
     const struct tasklist *tl;
-    dolist (tl, GetTaskListPtr())
+    dolist (tl, getWorkspaces().GetTaskListPtr())
         if (FALSE == lpEnumFunc(tl, lParam))
             break;
 }

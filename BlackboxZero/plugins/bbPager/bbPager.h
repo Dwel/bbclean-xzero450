@@ -241,10 +241,10 @@ void DisplayMenu ();
 
 void ToggleSlit ();
 
-bool AddBBWindow (tasklist * tl);
+bool AddBBWindow(tasklist const * tl);
 
-bool BBPager_SetTaskLocation (HWND hwnd, struct taskinfo *pti, UINT flags);
-tasklist * BBPager_GetTaskListPtr ();
+bool BBPager_SetTaskLocation (HWND hwnd, taskinfo const *pti, UINT flags);
+tasklist const * BBPager_GetTaskListPtr(void);
 
 //===========================================================================
 

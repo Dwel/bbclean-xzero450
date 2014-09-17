@@ -6,37 +6,24 @@
 
   http://bb4win.sourceforge.net/bblean
   http://developer.berlios.de/projects/bblean
+  http://blackbox4windows.com
 
   bbLean is free software, released under the GNU General Public License
-  (GPL version 2). For details see:
-
-  http://www.fsf.org/licenses/gpl.html
+  (GPL version 2). For details see: http://www.fsf.org/licenses/gpl.html
 
   This program is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
   or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
   for more details.
-
   ========================================================================== */
-
 /* BB.h - global defines aside from the plugin-api */
-
-#ifndef _BB_H_
-#define _BB_H_
-
-// ==============================================================
-/* optional defines */
-
-/* menu icon support, sketchy */
-// #define BBOPT_MENUICONS
-
-// ==============================================================
+#pragma once
 
 /* Always includes */
 #include "BBApi.h"
 #include "win0x500.h"       // some later windows APIs
 #include "bblib.h"
-#include <assert.h>
+#include <cassert>
 #define NO_INTSHCUT_GUIDS // Don't include internet shortcut GUIDs
 #define NO_SHDOCVW_GUIDS // Don't include 'FolderItem' with shlobj.h
 
@@ -64,10 +51,8 @@
 
 #define SIZEOFPART(s,e) (offsetof(s,e) + sizeof(((s*)0)->e))
 
-#define _OffsetRect(lprc, dx, dy) *lprc.left += (dx), *lprc.right += (dx), *lprc.top += (dy), *lprc.bottom += (dy)
-//#define _CopyOffsetRect(lprcDst,lprcSrc,dx,dy) (*(lprcDst)).left = (*(lprcSrc)).left + (dx), (*(lprcDst)).right = (*(lprcSrc)).right + (dx), (*(lprcDst)).top = (*(lprcSrc)).top + (dy), (*(lprcDst)).bottom = (*(lprcSrc)).bottom + (dy)
-
 #ifdef __BBCORE__
+#include "DrawText.h"
 // ==============================================================
 /* global variables */
 
@@ -81,10 +66,10 @@ extern bool g_usingNT, g_usingXP, g_usingVista, g_usingWin7;
 extern bool g_underExplorer;
 extern bool g_multimon;
 extern bool g_bbactive;
-extern BOOL (WINAPI* pSwitchToThisWindow)(HWND, int);
-extern BOOL (WINAPI* pTrackMouseEvent)(LPTRACKMOUSEEVENT lpEventTrack);
-extern BOOL (WINAPI* pAllowSetForegroundWindow)(DWORD dwProcessId);
-extern DWORD (WINAPI* pGetLongPathName)(LPCTSTR lpszShortPath, LPTSTR lpszLongPath, DWORD cchBuffer);
+extern BOOL (WINAPI* pSwitchToThisWindow) (HWND, int);
+extern BOOL (WINAPI* pTrackMouseEvent) (LPTRACKMOUSEEVENT lpEventTrack);
+extern BOOL (WINAPI* pAllowSetForegroundWindow) (DWORD dwProcessId);
+extern DWORD (WINAPI* pGetLongPathName) (LPCTSTR lpszShortPath, LPTSTR lpszLongPath, DWORD cchBuffer);
 
 extern char pluginrc_path[];
 extern char defaultrc_path[];
@@ -93,14 +78,6 @@ extern char defaultrc_path[];
 /* definitions */
 
 #include "bbversion.h"
-
-#ifdef BBTINY
-#define BBAPPNAME "bbTiny"
-#define BBAPPVERSION "bbLean "BBLEAN_VERSION" (Tiny)"
-#else
-#define BBAPPNAME "BlackboxZero"
-#define BBAPPVERSION "BlackboxZero "BBLEAN_VERSION
-#endif
 
 /* Blackbox window timers */
 #define BB_RUNSTARTUP_TIMER     1
@@ -121,35 +98,38 @@ extern char defaultrc_path[];
 // ==============================================================
 /* workspaces and tasks */
 
-struct hwnd_list { struct hwnd_list *next; HWND hwnd; };
-void get_window_icon(HWND hwnd, HICON *picon);
-void get_window_text(HWND hwnd, char *buffer, int size);
+struct hwnd_list
+{
+    struct hwnd_list * next;
+		HWND hwnd;
+};
+void get_window_icon (HWND hwnd, HICON * picon);
+void get_window_text (HWND hwnd, char * buffer, int size);
 
 // ==============================================================
 /* BBApi.cpp - some (non api) utils */
 
-BOOL BBExecute_string(const char *s, int flags);
-int BBExecute_pidl(const char* verb, const void *pidl);
+BOOL BBExecute_string (const char * s, int flags);
+int BBExecute_pidl (const char * verb, const void * pidl);
 
 /* drawing */
-void read_pix(void);
-void reset_pix(void);
-void unregister_fonts(void);
-void register_fonts(void);
+void read_pix ();
+void reset_pix ();
+void unregister_fonts ();
+void register_fonts ();
 void arrow_bullet (HDC buf, int x, int y, int d);
-//void draw_line_h(HDC hDC, int x1, int x2, int y, int w, COLORREF C);
-char *replace_arg1(const char *fmt, const char *in);
-COLORREF Settings_MapShadowColor(StyleItem *si, StyleItem *ri);
-#define _CopyOffsetRect(lprcDst, lprcSrc, dx, dy) (*lprcDst).left = (*lprcSrc).left + (dx), (*lprcDst).right = (*lprcSrc).right + (dx), (*lprcDst).top = (*lprcSrc).top + (dy), (*lprcDst).bottom = (*lprcSrc).bottom + (dy)
-void BBDrawText(HDC hDC, LPCTSTR lpString, LPRECT rc, UINT uFormat, StyleItem * pSI);
+//void draw_line_h (HDC hDC, int x1, int x2, int y, int w, COLORREF C);
+char * replace_arg1 (const char * fmt, const char * in);
+COLORREF Settings_MapShadowColor (StyleItem *si, StyleItem *ri);
+//void BBDrawText(HDC hDC, LPCTSTR lpString, LPRECT rc, UINT uFormat, StyleItem * pSI);
 
 /* other */
-int BBMessageBox(int flg, const char *fmt, ...);
-BOOL BBRegisterClass (const char *classname, WNDPROC wndproc, int flags);
+int BBMessageBox (int flg, const char * fmt, ...);
+BOOL BBRegisterClass (const char * classname, WNDPROC wndproc, int flags);
 #define BBCS_VISIBLE 1
 #define BBCS_EXTRA 2
 #define BBCS_DROPSHADOW 4
-int EditBox(const char *caption, const char *message, const char *initvalue, char *buffer);
+int EditBox (const char * caption, const char * message, const char * initvalue, char * buffer);
 int GetOSVersion(void);
 
 /* Logging */
@@ -176,41 +156,40 @@ void set_focus_model(const char *fm_string);
 bool Menu_IsA(HWND hwnd);
 
 // ==============================================================
-/* Some enumeration function */
-
-typedef BOOL (*TASKENUMPROC)(struct tasklist *, LPARAM);
-void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam);
-
-typedef BOOL (*DESKENUMPROC)(struct DesktopInfo *, LPARAM);
-void EnumDesks (DESKENUMPROC lpEnumFunc, LPARAM lParam);
-
-typedef BOOL (*TRAYENUMPROC)(struct systemTray *, LPARAM);
-void EnumTray (TRAYENUMPROC lpEnumFunc, LPARAM lParam);
-
-struct PluginList;
-typedef BOOL (*PLUGINENUMPROC)(struct PluginList *, LPARAM);
-void EnumPlugins (PLUGINENUMPROC lpEnumFunc, LPARAM lParam);
-
-// ==============================================================
 /* Native Language Support (see code in utils.cpp) */
 
 #define BBOPT_SUPPORT_NLS
-
 #ifdef BBOPT_SUPPORT_NLS
-const char *nls1(const char *p);
-const char *nls2a(const char *i, const char *p);
-const char *nls2b(const char *p);
-void free_nls(void);
-# define NLS0(S) S
-# define NLS1(S) nls1(S)
-# define NLS2(I,S) nls2b(I S)
+	const char *nls1(const char *p);
+	const char *nls2a(const char *i, const char *p);
+	const char *nls2b(const char *p);
+	void free_nls(void);
+#	define NLS0(S) S
+#	define NLS1(S) nls1(S)
+#	define NLS2(I,S) nls2b(I S)
 #else
-# define free_nls()
-# define NLS0(S) S
-# define NLS1(S) (S)
-# define NLS2(I,S) (S)
+#	define free_nls()
+#	define NLS0(S) S
+#	define NLS1(S) (S)
+#	define NLS2(I,S) (S)
 #endif
 
-// ==============================================================
 #endif /*def __BBCORE__ */
-#endif /*ndef _BB_H_ */
+
+
+
+// ==============================================================
+/* Some enumeration function */
+
+typedef BOOL (*TASKENUMPROC)(tasklist const *, LPARAM);
+void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam);
+
+typedef BOOL (*DESKENUMPROC)(DesktopInfo const *, LPARAM);
+void EnumDesks (DESKENUMPROC lpEnumFunc, LPARAM lParam);
+
+typedef BOOL (*TRAYENUMPROC)(systemTray const *, LPARAM);
+void EnumTray (TRAYENUMPROC lpEnumFunc, LPARAM lParam);
+
+struct PluginList;
+typedef BOOL (*PLUGINENUMPROC)(PluginList const *, LPARAM);
+void EnumPlugins (PLUGINENUMPROC lpEnumFunc, LPARAM lParam);

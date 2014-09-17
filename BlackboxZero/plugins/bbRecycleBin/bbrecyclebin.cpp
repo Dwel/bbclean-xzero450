@@ -459,8 +459,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				else if(hSlit){
 					// (Back) into the slit..
 					inSlit = true;
-					SetWindowLong(hwndPlugin, GWL_EXSTYLE,
-                                                      GetWindowLong(hwndPlugin, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+					SetWindowLongPtr(hwndPlugin, GWL_EXSTYLE,
+                                                      GetWindowLongPtr(hwndPlugin, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 					SendMessage(hSlit, SLIT_ADD, 0, (LPARAM)hwndPlugin);
 				}
 				setAttr = true;
@@ -1012,11 +1012,11 @@ void OnPaint(HWND hwnd)
 	// Set an attribute of the window
 	if(setAttr){
 		if(!inSlit){
-			SetWindowLong(hwnd, GWL_EXSTYLE,
-                                      GetWindowLong(hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+			SetWindowLongPtr(hwnd, GWL_EXSTYLE,
+                                      GetWindowLongPtr(hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 
-			SetWindowLong(hwnd, GWL_EXSTYLE ,
-                                      GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+			SetWindowLongPtr(hwnd, GWL_EXSTYLE ,
+                                      GetWindowLongPtr(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 		}
 		DragAcceptFiles(hwnd, true);
 		if(!inSlit) SetWindowPos( hwnd,

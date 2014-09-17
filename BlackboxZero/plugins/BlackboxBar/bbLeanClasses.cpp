@@ -22,7 +22,7 @@
 */
 
 //#include "bbLeanBar.h"
-//#include "bbLeanClasses.h"
+#include "DrawText.h"
 
 // possible bar items
 enum BARITEMS
@@ -360,7 +360,7 @@ public:
         StyleItem *pSI;
 
         if (lit) pSI = &ATaskStyle;
-        else pSI = m_bar->transparent ? I : &NTaskStyle;
+        else pSI = m_bar->alphaEnabled ? I : &NTaskStyle;
 
         if (m_bar->TaskStyle == 1)
             draw_icons(tl, lit, pSI);
@@ -417,8 +417,8 @@ public:
         char buf[8];
         strncpy(buf, tl->caption, 8);
         buf[7] = 0;
-        bbDrawText(m_bar->hdcPaint, buf, &s1, DT_CALCRECT|DT_NOPREFIX, 0);
-        bbDrawText(m_bar->hdcPaint, tl->caption, &s2, DT_CALCRECT|DT_NOPREFIX, 0);
+		BBDrawTextAlt(m_bar->hdcPaint, buf, -1, &s1, DT_CALCRECT | DT_NOPREFIX, pSI);
+		BBDrawTextAlt(m_bar->hdcPaint, tl->caption, -1, &s2, DT_CALCRECT | DT_NOPREFIX, pSI);
 
         int o, f, i;
         o = f = 0;
@@ -433,7 +433,7 @@ public:
         ThisWin.right   -= i;
         int s = ThisWin.right - ThisWin.left;
 
-        BB_DrawText(m_bar->hdcPaint, tl->caption, -1, &ThisWin,
+        BBDrawTextAlt(m_bar->hdcPaint, tl->caption, -1, &ThisWin,
             (s > s1.right ? TBJustify : DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX),
             pSI
             );
@@ -506,7 +506,7 @@ public:
                     && false == sysmenu_exists()
                     && tl->wkspc == currentScreen
                     && a2
-                    && (WS_MINIMIZEBOX & GetWindowLong(Window, GWL_STYLE)))
+                    && (WS_MINIMIZEBOX & GetWindowLongPtr(Window, GWL_STYLE)))
                     goto minimize;
 
                 if (gesture && m_bar->gesture_lock) {
@@ -698,7 +698,7 @@ public:
     void draw()
     {
         StyleItem *pSI = (StyleItem*)GetSettingPtr(m_Style);
-		pSI->TextColor = m_bar->transparent ? (pSI->TextColor < 0x101010 ? 0x444444 : pSI->TextColor) : pSI->TextColor;
+		pSI->TextColor = m_bar->alphaEnabled ? (pSI->TextColor < 0x101010 ? 0x444444 : pSI->TextColor) : pSI->TextColor;
         m_bar->pBuff->MakeStyleGradient(m_bar->hdcPaint,  &mr, pSI, pSI->bordered);
         SetBkMode(m_bar->hdcPaint, TRANSPARENT);
         HGDIOBJ oldfont = SelectObject(m_bar->hdcPaint, m_bar->hFont);
@@ -708,7 +708,7 @@ public:
         r.right = mr.right - i;
         r.top   = mr.top;
         r.bottom = mr.bottom;
-        BB_DrawText(m_bar->hdcPaint, m_text, -1, &r, TBJustify, pSI);
+        BBDrawTextAlt(m_bar->hdcPaint, m_text, -1, &r, TBJustify, pSI);
         SelectObject(m_bar->hdcPaint, oldfont);
 
     }

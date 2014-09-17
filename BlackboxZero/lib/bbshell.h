@@ -54,7 +54,7 @@ BBLIB_EXPORT LPITEMIDLIST get_folder_pidl(const char *path);
 /* Get pidl from path, no parsing */
 BBLIB_EXPORT LPITEMIDLIST sh_getpidl(struct IShellFolder *pSF, const char *path);
 /* Get path from csidl, replacement for SHGetFolderPath */
-BBLIB_EXPORT int sh_getfolderpath(char* szPath, UINT csidl);
+BBLIB_EXPORT int sh_getfolderpath(char * szPath, size_t n, UINT csidl);
 /* parsing SPECIAL folders and convert to string again, defaults to basepath */
 BBLIB_EXPORT char *replace_shellfolders_from_base(char *buffer, const char *path, int search_path, const char *basepath);
 /* parsing SPECIAL folders and convert to string again, defaults to blackbox directory */

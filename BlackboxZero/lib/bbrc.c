@@ -617,7 +617,7 @@ ST struct lin_list *search_line(
     return tl;
 }
 
-void translate_new(char *buffer, int bufsize, char **pkey, int *pklen, int syntax)
+void translate_new(char *buffer, size_t bufsize, char **pkey, int *pklen, int syntax)
 {
     static const char *pairs [] =
     {

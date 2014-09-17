@@ -34,6 +34,7 @@ set(blackbox_SOURCES
 	ConfigMenu.cpp
 	Desk.cpp
 	DesktopMenu.cpp
+  DrawText.cpp
 	MessageManager.cpp
 	Settings.cpp
 	Toolbar.cpp

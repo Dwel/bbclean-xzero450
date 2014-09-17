@@ -240,8 +240,7 @@ LRESULT CALLBACK Menu::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
     if (WM_NCCREATE == uMsg)
     {
         // bind window to the c++ structure
-        SetWindowLongPtr(hwnd, 0,
-            (LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
+        SetWindowLongPtr(hwnd, 0, (LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
@@ -854,7 +853,7 @@ void Menu::Validate()
 
     // title item
     if (false == m_bNoTitle) {
-        pItem->Measure(hDC, &size);
+        pItem->Measure(hDC, &size, &mStyle.MenuTitle);
         w1 = size.cx;
     }
 
@@ -863,7 +862,7 @@ void Menu::Validate()
 
     while (NULL != (pItem = pItem->next))
     {
-        pItem->Measure(hDC, &size);
+		pItem->Measure(hDC, &size, &mStyle.MenuTitle);
         pItem->m_nHeight = size.cy;
         if (size.cx > w2)
             w2 = size.cx;
@@ -1579,7 +1578,7 @@ one_more:
             case VK_ESCAPE:
                 if (0 == (menu_root()->m_flags & BBMENU_HWND)) {
                     Menu_All_Hide();
-                    focus_top_window();
+                    getWorkspaces().FocusTopWindow();
                 } else {
                     menu_root()->Hide();
                 }
@@ -1901,7 +1900,7 @@ bool Menu_ToggleCheck(const char *menu_id)
 
     if (m->has_focus_in_chain()) {
         Menu_All_Hide();
-        focus_top_window();
+        getWorkspaces().FocusTopWindow();
         return true;
     }
 

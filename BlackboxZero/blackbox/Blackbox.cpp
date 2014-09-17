@@ -505,7 +505,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	SystemParametersInfo(SPI_GETDRAGFULLWINDOWS, 0, &g_save_opaquemove, 0);
 
 	/* get screenwidth/height */
-	Workspaces_GetScreenMetrics();
+	getWorkspaces().GetScreenMetrics();
 
 	MessageManager_Init();
 
@@ -518,7 +518,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		WS_POPUP|WS_DISABLED,
 		// sizes are assigned for cursor behaviour with
 		// AutoRaise Focus on winME, win2k
-		VScreenX, VScreenY, VScreenWidth, VScreenHeight,
+		getWorkspaces().GetVScreenX(), getWorkspaces().GetVScreenY(), getWorkspaces().GetVScreenWidth(), getWorkspaces().GetVScreenHeight(),
 		NULL,
 		NULL,
 		hMainInstance,
@@ -545,7 +545,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		}
 	} EXCEPT((
 		/* On crash: gather windows, then pass it to the OS */
-		Workspaces_GatherWindows(),
+		getWorkspaces().GatherWindows(),
 		EXCEPTION_CONTINUE_SEARCH))
 	{ }
 	TRACE_MSG(trace::e_Info, trace::CTX_BBCore, "Main message loop terminated...");
@@ -593,7 +593,7 @@ void startup_blackbox ()
 	register_fonts();
 	Settings_ReadStyleSettings();
 	set_misc_options();
-	Workspaces_Init(g_nostartup);
+	getWorkspaces().Init(g_nostartup);
 	Desk_Init();
 	Menu_Init();
 	start_plugins();
@@ -615,8 +615,8 @@ void shutdown_blackbox ()
 	Tray_Exit();
 	Menu_Exit();
 	Desk_Exit();
-	Workspaces_GatherWindows();
-	Workspaces_Exit();
+	getWorkspaces().GatherWindows();
+	getWorkspaces().Exit();
 	set_focus_model("");
 	set_opaquemove(g_save_opaquemove);
 	SystemParametersInfo(SPI_SETWORKAREA, 0, (PVOID)&g_OldDT, 0);
@@ -635,7 +635,7 @@ void reconfigure_blackbox ()
 	Settings_ReadStyleSettings();
 
 	set_misc_options();
-	Workspaces_Reconfigure();
+	getWorkspaces().Reconfigure();
 	Menu_Reconfigure();
 	Menu_All_Redraw(0);
 
@@ -839,7 +839,7 @@ bb_quit:
 			// dbg_printf("BB_DESKCLICK %d %d", wParam, lParam);
 			if (0 == lParam) { // left down
 				bool e = Menu_Exists(false);
-				SwitchToBBWnd();
+				getWorkspaces().SwitchToBBWnd();
 				PostMessage(hwnd, BB_HIDEMENU, 0, 0);
 				if (e) break; // there are menus to hide, so we stop for now
 				Menu_All_BringOnTop(); // raise menus
@@ -952,7 +952,7 @@ bb_quit:
 		case BB_WINDOWCLOSE:
 		case BB_WINDOWMOVE:
 		case BB_WINDOWSIZE:
-			r = Workspaces_Command(uMsg, wParam, lParam);
+			r = getWorkspaces().Command(uMsg, wParam, lParam);
 			if (r != -1) return r;
 			goto dispatch_bb_message;
 
@@ -1010,7 +1010,7 @@ bb_quit:
 			break;
 
 		case WM_QUERYENDSESSION:
-			Workspaces_GatherWindows();
+			getWorkspaces().GatherWindows();
 			return TRUE;
 
 		case WM_CLOSE:
@@ -1099,7 +1099,7 @@ bb_quit:
 					MessageManager_Send(BB_WINKEY, 0, 0);
 					break;
 			}
-			Workspaces_TaskProc(wParam, (HWND)lParam);
+			getWorkspaces().TaskProc(wParam, (HWND)lParam);
 			if (uMsg)
 				MessageManager_Send(uMsg, lParam, wParam);
 			break;
@@ -1173,7 +1173,7 @@ void ShowAppnames ()
 	int l = 4096;
 	int x = 0;
 	char * msg = static_cast<char *>(c_alloc(l));
-	for (int i = 0; NULL != (hwnd_task = GetTask(i)); i++)
+	for (int i = 0; NULL != (hwnd_task = getWorkspaces().GetTask(i)); i++)
 	{
 		char appname[MAX_PATH];
 		char caption[60];
@@ -1445,7 +1445,7 @@ int exec_core_broam (const char * broam)
 		lParam = atoi(core_args);
 	else
 	if (action->m_flag & e_lptask)
-		lParam = (LPARAM)GetTask(atoi(core_args)-1);
+		lParam = (LPARAM)getWorkspaces().GetTask(atoi(core_args)-1);
 
 	switch (action->m_flag & e_mask)
 	{
@@ -1514,7 +1514,7 @@ int exec_core_broam (const char * broam)
 		{
 			HWND hwnd;
 			if (sscanf(core_args, "%p", &hwnd))
-				ToggleWindowVisibility(hwnd);
+				getWorkspaces().ToggleWindowVisibility(hwnd);
 			break;
 		}
 		case e_Test:
@@ -1755,7 +1755,7 @@ int ShutdownWindows (int mode, int no_msg)
 			return 0;
 	}
 
-	Workspaces_GatherWindows();
+	getWorkspaces().GatherWindows();
 	DWORD tid;
 	CloseHandle(CreateThread(NULL, 0, ShutdownThread, (LPVOID)mode, 0, &tid));
 	return 1;
@@ -1863,9 +1863,9 @@ DWORD WINAPI RunStartupThread (void * pv)
 	RunEntriesIn (HKEY_CURRENT_USER, "Run", 0);
 	for (int i = 0; i < array_count(startuptable); ++i)
 	{
-		char folder[MAX_PATH];
+		char folder[1024];
 		folder[0] = 0;
-		if (sh_getfolderpath(folder, startuptable[i]) && folder[0])
+		if (sh_getfolderpath(folder, sizeof(folder)/sizeof(*folder), startuptable[i]) && folder[0])
 			RunFolderContents(folder);
 	}
 	RunEntriesIn (HKEY_CURRENT_USER, "RunOnce", RE_ONCE);

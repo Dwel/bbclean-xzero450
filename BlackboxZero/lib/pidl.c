@@ -276,8 +276,20 @@ LPITEMIDLIST sh_getpidl (struct IShellFolder *pSF, const char *path)
 /* Purpose:     replacement for SHGetFolderPath, get path from CSIDL_ */
 /* ----------------------------------------------------------------------- */
 
-int sh_getfolderpath(char* szPath, UINT csidl)
+int sh_getfolderpath (char * szPath, size_t n, UINT csidl)
 {
+    // @FIXME *sigh* this function is not on Win XP.. resolve somehow later
+    /*LPITEMIDLIST item;
+    if (SUCCEEDED(SHGetSpecialFolderLocation(NULL, csidl, &item)))
+    {
+        WCHAR wpath[1024];
+        BOOL result = FALSE;
+        MultiByteToWideChar(CP_ACP, 0, szPath, -1, wpath, 1024);
+		    result = SHGetPathFromIDListEx(item, wpath, n, GPFIDL_DEFAULT);
+        SHMalloc_Free(item);
+        return FALSE != result;
+    }
+    return false;*/
     LPITEMIDLIST item;
     if (SUCCEEDED(SHGetSpecialFolderLocation(NULL, csidl, &item)))
     {

@@ -22,6 +22,8 @@
 
 #include "bbIconBox.h"
 #include "bbversion.h"
+#include "DrawText.h"
+#include <Workspaces.h>
 
 const char szVersion     [] = "bbIconBox "BBLEAN_VERSION;
 const char szAppName     [] = "bbIconBox";
@@ -44,6 +46,7 @@ LPCSTR pluginInfo(int field)
         case 4: return szInfoRelDate;
         case 5: return szInfoLink;
         case 6: return szInfoEmail;
+		    //case 8: return szInfoUpdateURL;
     }
 }
 
@@ -149,7 +152,7 @@ void move_window(HWND taskwnd, int desk)
     } else if (BBP_bbversion() < 1170) {
         taskinfo ti;
         ti.desk = desk;
-        SetTaskLocation(taskwnd, &ti, BBTI_SETDESK|BBTI_SWITCHTO);
+        getWorkspaces().SetTaskLocation(taskwnd, &ti, BBTI_SETDESK|BBTI_SWITCHTO);
         PostMessage(BBhwnd, BB_BRINGTOFRONT, 0, (LPARAM)taskwnd);
     } else {
         PostMessage(BBhwnd, BB_MOVEWINDOWTON, desk, (LPARAM)taskwnd);
@@ -164,7 +167,7 @@ void send_window(HWND taskwnd, int desk)
     } else if (BBP_bbversion() < 1170) {
         taskinfo ti;
         ti.desk = desk;
-        SetTaskLocation(taskwnd, &ti, BBTI_SETDESK);
+        getWorkspaces().SetTaskLocation(taskwnd, &ti, BBTI_SETDESK);
     } else {
         PostMessage(BBhwnd, BB_SENDWINDOWTON, desk, (LPARAM)taskwnd);
     }
@@ -194,12 +197,14 @@ struct icon_box : public plugin_info
     bool drawBorder;
     bool drawTitle;
     bool toolTips;
+	int stylePtr;
 
     // runtime variables
     int titleHeight;
     int titleBorder;
     int frameBorder;
     int frameMargin;
+	int frameBevelWidth;
     int iconPadding;
     int folderSize;
 
@@ -255,7 +260,7 @@ struct icon_box : public plugin_info
 
     void about_box()
     {
-        BBP_messagebox(this, MB_OK, "%s - © %s %s\n", szVersion, szCopyright, szInfoEmail);
+		BBP_messagebox(this, MB_OK, "%s - %s\n\n © %s\n\n %s\t%s", szVersion, szInfoRelDate, szCopyright, szInfoLink, szInfoEmail);
     }
 
     LRESULT wnd_proc(HWND hwnd, UINT message,
@@ -265,6 +270,7 @@ struct icon_box : public plugin_info
     bool GetRCSettings(void);
     void Paint(HDC hdc);
     void show_menu(bool f);
+	void show_broams_menu(bool f);
     void write_rc(void *v);
     void common_broam(const char *temp);
 
@@ -502,12 +508,69 @@ struct task_box : icon_box
     void FillFolder(void)
     {
         DesktopInfo DI;
-        GetDesktopInfo (&DI);
+        getWorkspaces().GetDesktopInfo(DI);
         currentDesk = DI.number;
 
         task_enum te = { &my_Folder.items, my_Folder.desk, iconWidth };
         EnumTasks(task_enum_func, (LPARAM)&te);
     }
+
+	void show_broams_menu(bool popup)
+	{
+		n_menu *broamsMenu;
+
+		broamsMenu = n_makemenu("bbIconBox Broams");
+
+		n_menuitem_cmd(broamsMenu, "Rollup", "@BBCore.Shade");
+		n_menuitem_cmd(broamsMenu, "Lower", "@BBCore.Lower");
+		n_menuitem_cmd(broamsMenu, "Minimise", "@BBCore.Minimize");
+		n_menuitem_cmd(broamsMenu, "Close", "@BBCore.Close");
+
+		n_menuitem_nop(broamsMenu, NULL);
+
+		n_menuitem_cmd(broamsMenu, "Max Height", "@BBCore.MaximizeVertical");
+		n_menuitem_cmd(broamsMenu, "Max Width", "@BBCore.MaximizeHorizontal");
+		n_menuitem_cmd(broamsMenu, "Full Maximise", "@BBCore.Maximize");
+		//if (BBVERSION_WIN == BBVersion)
+		{
+			n_menuitem_cmd(broamsMenu, "Minimise To Tray",	"@BBCore.MinimizeToTray");
+			n_menuitem_nop(broamsMenu, NULL);
+		}
+
+		n_menuitem_cmd(broamsMenu, "Make Sticky", "@BBCore.StickWindow");
+		//if (BBVERSION_WIN == BBVersion)
+			n_menuitem_cmd(broamsMenu, "Always On Top", "@BBCore.AlwaysOnTop");
+
+		n_menuitem_nop(broamsMenu, NULL);
+
+		n_menuitem_cmd(broamsMenu, "Next Window Left", "@BBCore.NextWindow");
+		n_menuitem_cmd(broamsMenu, "Next Window Right", "@BBCore.PrevWindow");
+
+		n_menuitem_nop(broamsMenu, NULL);
+
+		n_menuitem_cmd(broamsMenu, "Move Window Left", "@BBCore.MoveWindowLeft");
+		n_menuitem_cmd(broamsMenu, "Left Workspace", "@BBCore.LeftWorkspace");
+		n_menuitem_cmd(broamsMenu, "Move Window Right", "@BBCore.MoveWindowRight");
+		n_menuitem_cmd(broamsMenu, "Right Workspace", "@BBCore.RightWorkspace");
+
+		/*n_menuitem_nop(broamsMenu, NULL);*/
+
+
+		n_menuitem_nop(broamsMenu, NULL);
+
+		n_menuitem_cmd(broamsMenu, "Minimize All", "@BBCore.MinimizeAll");
+		n_menuitem_cmd(broamsMenu, "Restore All", "@BBCore.RestoreAll");
+		n_menuitem_cmd(broamsMenu, "Cascade", "@BBCore.Cascade");
+		n_menuitem_cmd(broamsMenu, "Tile Horizontal", "@BBCore.TileHorizontal");
+		n_menuitem_cmd(broamsMenu, "Tile Vertical", "@BBCore.TileVertical");
+
+		n_menuitem_nop(broamsMenu, NULL);
+
+		n_menuitem_cmd(broamsMenu, "Edit Settings", "@bbIconBox.editRc");
+		n_menuitem_cmd(broamsMenu, "Documentation", "@bbIconBox.LoadDocs");
+		n_menuitem_cmd(broamsMenu, "About", "@bbIconBox.about");
+		n_showmenu(this, broamsMenu, popup, 0);
+	}
 
     LPCITEMIDLIST do_dragover(Item *icon)
     {
@@ -585,6 +648,8 @@ struct task_box : icon_box
 
                 if (shift_pressed)
                     zoom_window(taskwnd);
+				if (wParam & MK_RBUTTON) 
+					show_broams_menu(true);
                 else
                     activate_window(taskwnd);
                 SetTimer(hwnd, TASK_ACTIVATE_TIMER, 200, NULL);
@@ -789,7 +854,7 @@ struct folder_box : icon_box
 
     void FillFolder(void)
     {
-        ::LoadFolder(&this->my_Folder, this->iconWidth, this->hwnd);
+        ::LoadFolder(&this->my_Folder, this->iconWidth, !this->auto_hidden, this->hwnd);
     }
 
     LPCITEMIDLIST do_dragover(Item *icon)
@@ -851,7 +916,7 @@ void handle_task_timer(HWND task_over)
 {
     if (NULL == task_over)
         return;
-    if (task_over == GetTask(GetActiveTask()))
+    if (task_over == getWorkspaces().GetTask(getWorkspaces().GetActiveTask()))
         return;
     DWORD ThreadID1 = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
     DWORD ThreadID2 = GetCurrentThreadId();
@@ -993,14 +1058,14 @@ void icon_box::paint_text(HDC hdc, RECT *r, StyleItem *pSI, StyleItem *pTC, bool
      if (false == centerd)
      {
          RECT s = {0,0,0,0};
-         DrawText(hdc, text, -1, &s, DT_LEFT|DT_EXPANDTABS|DT_CALCRECT);
+         BBDrawTextAlt(hdc, text, -1, &s, DT_LEFT|DT_EXPANDTABS|DT_CALCRECT, pSI);
          if (s.right < r->right - r->left)
              just = pSI->Justify;
          else
              just = DT_LEFT;
      }
 
-     DrawText(hdc, text, -1, r, just | DT_VCENTER | DT_SINGLELINE | DT_EXPANDTABS);
+     BBDrawTextAlt(hdc, text, -1, r, just | DT_VCENTER | DT_SINGLELINE | DT_EXPANDTABS, pSI);
      DeleteObject (SelectObject(hdc, oldfont));
 }
 
@@ -1011,6 +1076,7 @@ void icon_box::paint_icon(HDC hdc, Item *icon, bool active, bool sunken)
     RECT r;
     GetIconRect(icon->index, &iconRect);
 
+    ///// bbzero code
     StyleItem *A, *N;
     if (titleHeight) {
         N = (StyleItem*)GetSettingPtr(SN_MENUFRAME);
@@ -1040,6 +1106,46 @@ void icon_box::paint_icon(HDC hdc, Item *icon, bool active, bool sunken)
             CreateBorder(hdc, &r, N->borderColor, d);
         }
     }
+    ///// bbzero code
+
+#pragma message(Reminder "Unmerged bb4win code (too difficult for friday)!") 
+/*
+    StyleItem *A, *N;
+	int i = SN_TOOLBARWINDOWLABEL;
+
+	switch (this->stylePtr)
+	{
+	case SN_TOOLBARBUTTONP:
+		i = SN_TOOLBARBUTTON;
+		break;
+	case SN_TOOLBARWINDOWLABEL:
+		i = SN_TOOLBAR;
+		break;
+	case SN_MENUFRAME:
+		i = SN_MENUHILITE;
+		break;
+	case SN_MENUHILITE:
+		i = SN_MENUFRAME;
+	}
+
+	N = (StyleItem*)GetSettingPtr(this->stylePtr);
+	A = (StyleItem*)GetSettingPtr(i);
+
+	if (A->parentRelative)
+		A = (StyleItem*)GetSettingPtr(SN_TOOLBAR);
+
+	if (sunken)
+	{
+		StyleItem SI, *H;
+		SI = *A, H = &SI;
+        const int d = 2;
+
+        r = iconRect;
+        InflateRect(&r, d, d);
+
+			MakeStyleGradient(hdc, &r, H, false);
+	}
+*/
 
     if (icon->hIcon)
     {
@@ -1173,6 +1279,7 @@ int icon_box::MouseEvent(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, 
 
 void icon_box::GetStyleSettings()
 {
+    ///// bbzero code
     // Get the path to the current style file.
     StyleItem *Frame;
 
@@ -1202,6 +1309,58 @@ void icon_box::GetStyleSettings()
     frameBorder = drawBorder ? Frame->borderWidth : 0;
     frameMargin = frameBorder + Frame->marginWidth + 2;
     iconPadding = 3;
+
+    ///// bbzero code
+
+#pragma message(Reminder "Unmerged bb4win code (too difficult for friday)!") 
+#if 0
+	bool newMetrics = false;
+	if (NOT_XOBLITE)
+	{
+        void *p = GetSettingPtr(SN_NEWMETRICS); //SN_NEWMETRICS aka SN_ISSTYLE070
+        newMetrics = HIWORD(p) ? *(bool*)p : NULL!=p;
+	}
+	else 
+	{
+		// Get the path to the current style file...
+		char style[MAX_PATH]; char temp[64]; 
+		strcpy(style, stylePath());
+		strcpy(temp, ReadString(style, "menu.frame.appearance:", "no"));
+		if (strlen(temp) != 2) newMetrics = true;
+	}
+	
+	StyleItem *T = (StyleItem*)GetSettingPtr(this->stylePtr);
+
+	frameBorder = drawBorder ? (newMetrics ? T->borderWidth : *(int*)GetSettingPtr(SN_BORDERWIDTH)) : 0;
+	frameBevelWidth   = newMetrics ? T->marginWidth : *(int*)GetSettingPtr(SN_BEVELWIDTH);
+
+	iconPadding = 3;
+	frameMargin = frameBorder + frameBevelWidth + 2;
+
+	if (drawTitle || autoHide)
+	{
+		int i = SN_TOOLBAR;
+
+		switch (this->stylePtr)
+		{
+		case SN_MENUTITLE:
+			i = SN_MENUFRAME;
+		case SN_MENUFRAME:
+			i = SN_MENUTITLE;
+		case SN_MENUHILITE:
+			i = SN_MENUTITLE;
+		}
+
+		T = (StyleItem*)GetSettingPtr(i);
+
+		HFONT hFont = CreateStyleFont(T);
+		int tfh = get_fontheight(hFont);
+		DeleteObject(hFont);
+
+		titleHeight = tfh + 2 * frameBevelWidth + frameBorder;
+		titleBorder = frameBorder;
+	}
+#endif
 }
 
 // ----------------------------------------------
@@ -1221,8 +1380,29 @@ void icon_box::write_rc(void *v)
     } while ((++p)->key);
 
 }
+
+const char *style_strings[] = {
+	"not used"			,
+	"Toolbar"          ,
+
+	"Toolbar Button"    ,
+	"Toolbar Button Pressed"	,
+	"Toolbar Label"   ,
+
+	"Toolbar Window Label"    ,
+	"Toolbar Clock"		,
+	"Menu Title"     ,
+
+	"Menu Frame"        ,
+	"Menu Hilite"      ,
+	NULL
+};
+
 bool icon_box::GetRCSettings(void)
 {
+	const char *style_string = BBP_read_string(this, NULL, "style", "Toolbar");
+	stylePtr        = get_string_index(style_string, style_strings);
+
     struct rc *p = m_rc;
     do
     {
@@ -1330,6 +1510,15 @@ void icon_box::process_broam(const char *temp, int f)
         return;
     }
 
+	if (!_memicmp(temp, "style.", 6))
+	{
+		temp += 6;
+		BBP_write_string(this, "style", temp);
+		UpdateMetrics();
+		this->GetRCSettings();
+		return;
+	}
+
     if (!_stricmp(temp, "remove"))
     {
         PostMessage(hwnd, BBIB_DELETE, 0, 0);
@@ -1408,18 +1597,98 @@ void icon_box::common_broam(const char *temp)
         PostMessage(p->hwnd, BBIB_UPDATE, 0, 0);
 }
 
+const char *name_strings[] = {
+	"My Computer"          ,
+
+	"Personal"  ,
+	"Recycle Bin"    ,
+	"Start Menu"   ,
+
+	"Templates"    ,
+	"App Data"		,
+	"Startup"   ,
+
+	"IE Temp Files"     ,
+	"Printers"        ,
+	"Recent"      ,
+
+	"Send To"           ,
+	"Fonts"          ,
+	"Cookies"         ,
+
+	"Control Panel"     ,
+	"Wallpaper"     ,
+	"Profile"        ,
+
+	"Program Files"      ,
+	"SysDir"           ,
+	"WinDir"          ,
+
+	"Themes"     ,
+	"Music"         ,
+	"Pictures"           ,
+
+	//"Resources"          ,
+	"Video"           ,
+	NULL
+};
+
+const char *path_strings[] = {
+	"DRIVES"          ,
+
+	"PERSONAL|COMMON_DOCUMENTS"  ,
+	"BITBUCKET"    ,
+	"PROGRAMS|COMMON_PROGRAMS|STARTMENU|COMMON_STARTMENU"   ,
+
+	"TEMPLATES|COMMON_TEMPLATES"    ,
+	"APPDATA|COMMON_APPDATA|LOCAL_APPDATA"		 ,
+	"STARTUP|COMMON_STARTUP|ALTSTARTUP|COMMON_ALTSTARTUP"   ,
+
+	"INTERNET_CACHE"     ,
+	"PRINTERS|PRINTHOOD"        ,
+	"RECENT"      ,
+
+	"SENDTO"           ,
+	"FONTS"          ,
+	"COOKIES"         ,
+
+	"CONTROLS|ADMINTOOLS|COMMON_ADMINTOOLS"     ,
+	"WINDOWS\\Web\\Wallpaper"          ,
+	"PROFILE"        ,
+
+	"PROGRAM_FILES|PROGRAM_FILES_COMMON"      ,
+	"SYSTEM"           ,
+	"WINDOWS"          ,
+
+	"WINDOWS\\Resources\\Themes"          ,
+	"MUSIC|COMMON_MUSIC"         ,
+	"MYPICTURES|COMMON_PICTURES"           ,
+
+	//"RESOURCES|RESOURCES_LOCALIZED"          , // returns DESKTOP
+	"VIDEO|COMMON_VIDEO"           ,
+	NULL
+};
+
 // ----------------------------------------------
 // Function: show_menu
 
 void icon_box::show_menu(bool popup)
 {
+    ///// bbzero code
+#if 0
     n_menu *main, *sub, *sub2;
-    char b1[80], b2[80];
+    char b0[80], b1[80], b2[80];
     DesktopInfo D;
     int n;
+	int s = GetOSVersion();
+	bool NineX = s < 50;
+	bool TwoK = s < 51;
+	bool VistaPlus = s > 59;
+	bool Bit64 = s % 10 > 4;
 
     main = n_makemenu(m_name);
     BBP_n_orientmenu(this, main);
+
     if (orient_vertical) n_menuitem_int(main, "Columns", "columns", columns, 1, 32);
     else n_menuitem_int(main, "Rows", "rows", rows, 1, 32);
     n_menuitem_int(main, "Icon Size", "icon.size", iconWidth, 12, 64);
@@ -1462,7 +1731,7 @@ void icon_box::show_menu(bool popup)
     n_menuitem_cmd(sub2, "All Workspaces", "@bbIconBox.create TASK");
     n_menuitem_nop(sub2, NULL);
 
-    GetDesktopInfo(&D);
+    getWorkspaces().GetDesktopInfo(D);
     for (n = 0; n < D.ScreensX; ++n) {
         sprintf(b1, "Workspace %d", 1+n);
         sprintf(b2, "@bbIconBox.create TASK%d", 1+n);
@@ -1486,10 +1755,136 @@ void icon_box::show_menu(bool popup)
         }
     }
 #endif
+
+    if (false == this->inSlit)
+	{
+		n_menuitem_nop(main, NULL);
+		BBP_n_windowmenu(this, main);
+		BBP_n_placementmenu(this, main);
+	}
+
     n_menuitem_nop(main, NULL);
     n_menuitem_cmd(main, "Edit Settings",  "@bbIconBox.editRC");
     n_menuitem_cmd(main, "About", "@bbIconBox.about");
     n_showmenu(this, main, popup, 0);
+#endif
+
+    ///// bbzero code
+
+#pragma message(Reminder "Unmerged bb4win code on (too difficult for friday)!") 
+
+    n_menu *main = 0, *sub = 0, *sub2 = 0;
+    char b0[80], b1[80], b2[80];
+    DesktopInfo D;
+    int n;
+	int s = GetOSVersion();
+	bool NineX = s < 50;
+	bool TwoK = s < 51;
+	bool VistaPlus = s > 59;
+	bool Bit64 = s % 10 > 4;
+
+    main = n_makemenu(m_name);
+    BBP_n_orientmenu(this, main);
+
+    if (orient_vertical) n_menuitem_int(main, "Columns", "columns", columns, 1, 120);
+    else n_menuitem_int(main, "Rows", "rows", rows, 1, 120);
+    n_menuitem_bol(sub, "Draw Title", "drawTitle", drawTitle);
+    if (drawTitle) n_menuitem_str(sub, "Title Text", "title", m_title);
+    if (false == is_single_task)
+        n_menuitem_bol(sub, "Border", "drawBorder", drawBorder);
+    n_menuitem_bol(sub, "Tooltips", "toolTips", toolTips);
+    n_menuitem_nop(sub, NULL);
+
+
+	sub = n_submenu(main, "Format");
+    BBP_n_insertmenu(this, sub);
+    n_menuitem_int(sub, "Icon Size", "icon.size", iconWidth, 12, 64);
+
+	sub = n_submenu(main, "Style");
+	for (n = 1; n < SN_MENUBULLET; ++n)
+	{
+		if (SN_TOOLBARLABEL == n)
+			n = n + 1;
+		if (SN_MENUTITLE == n)
+			n_menuitem_nop(sub, NULL);
+		sprintf(b2, "style.%s", style_strings[n]);
+		n_menuitem_bol(sub, style_strings[n], b2, stylePtr == n);
+	}
+
+	n_menuitem_nop(main, NULL);
+    sub = n_submenu(main, "New");
+    sub2 = n_submenu(sub, "Task");
+	n_menuitem_cmd(sub2, "All", "@bbIconBox.create TASK");
+    getWorkspaces().GetDesktopInfo(D);
+    for (n = 0; n < D.ScreensX; ++n) {
+        sprintf(b1, "Workspace %d", 1+n);
+        sprintf(b2, "@bbIconBox.create TASK%d", 1+n);
+        n_menuitem_cmd(sub2, b1, b2);
+    }
+
+    n_menuitem_cmd(sub, "Tray", "@bbIconBox.create TRAY");
+#ifdef INCLUDE_MODE_PAGER
+    n_menuitem_cmd(sub, "Pager", "@bbIconBox.create PAGER");
+#endif
+    /*if (!NOT_XOBLITE) {
+        n_menuitem_str(sub2, "Path", "@bbIconBox.create", "");
+    } else {*/
+    n_menuitem_cmd(sub, "Browse ...", "@bbIconBox.create.browse");
+    //}
+
+	n_menuitem_nop(sub, NULL);
+    n_menuitem_cmd(sub2, "Desktop", "@bbIconBox.create DESKTOP");
+    n_menuitem_cmd(sub2, "Quick Launch", "@bbIconBox.create APPDATA\\Microsoft\\Internet Explorer\\Quick Launch");
+
+	n_menuitem_cmd(sub, VistaPlus ? "Links" : "IE Links", VistaPlus ? "@bbIconBox.create FAVORITES\\LINKS|COMMON_OEM_LINKS|PROFILE\\LINKS" : "@bbIconBox.create FAVORITES\\LINKS|COMMON_OEM_LINKS");
+	n_menuitem_nop(sub, NULL);	
+	n_menuitem_cmd(sub, "Favorites", "@bbIconBox.create FAVORITES|COMMON_FAVORITES");
+	n_menuitem_cmd(sub, "Net Connections", "@bbIconBox.create NETWORK|NETHOOD|CONNECTIONS");
+	sub2 = n_submenu(sub, "Other Paths");
+	//n = 0; int o = NineX ? 14 : TwoK ? 19 : ((BBVERSION_WIN == BBVersion) && VistaPlus) ? 23 : 20;
+  n = 0; int o = NineX ? 14 : TwoK ? 19 : (VistaPlus) ? 23 : 20;
+	for (; n < o; n++)
+	{
+		if ((n > 0) && (n % 3 == 0))
+			n_menuitem_nop(sub2, NULL);
+
+		sprintf(b0, "@bbIconBox.create %s", path_strings[n]);
+		n_menuitem_cmd(sub2, name_strings[n], b0);
+	}
+	if (Bit64)
+	{
+		//if (BBVERSION_WIN != BBVersion) 
+			n_menuitem_nop(sub2, NULL);	
+		n_menuitem_cmd(sub2, "Program Files X86", "@bbIconBox.create PROGRAM_FILESX86|PROGRAM_FILES_COMMONX86");
+		n_menuitem_cmd(sub2, "SysDir X86", "@bbIconBox.create SYSTEMX86");
+	}
+
+#if 0
+    n_menuitem_cmd(main, "Remove This", "remove");
+    n_menuitem_nop(main, NULL);
+#else
+    sub = n_submenu(main, "Remove");
+    plugin_info *p; dolist (p, g_PI) {
+        const char *name = ((icon_box*)p)->m_name;
+        if (*name) {
+            sprintf(b2, "@bbIconBox.remove %s", name);
+            n_menuitem_cmd(sub, name, b2);
+        }
+    }
+#endif
+
+    if (false == this->inSlit)
+	{
+		n_menuitem_nop(main, NULL);
+		BBP_n_windowmenu(this, main);
+		BBP_n_placementmenu(this, main);
+	}
+
+    n_menuitem_nop(main, NULL);
+    n_menuitem_cmd(main, "Edit Settings",  "@bbIconBox.editRC");
+    n_menuitem_cmd(main, "About", "@bbIconBox.about");
+    n_showmenu(this, main, popup, 0);
+
 }
 
 // ----------------------------------------------
@@ -1590,6 +1985,119 @@ void icon_box::paint_background(HDC hdc)
 
     this->Paint(hdc);
     ClearToolTips(hwnd);
+
+    ///// bbzero code
+
+#pragma message(Reminder "Unmerged bb4win code on (too difficult for friday)!") 
+#if 0
+    RECT r = {0, 0, this->width, this->height };
+
+	int i = SN_TOOLBAR;
+
+	switch (this->stylePtr)
+	{
+	case SN_MENUTITLE:
+		i = SN_MENUFRAME;
+		break;
+	case SN_MENUFRAME:
+		i = SN_MENUTITLE;
+		break;
+	case SN_MENUHILITE:
+		i = SN_MENUTITLE;
+	}
+
+	StyleItem *MT = (StyleItem*)GetSettingPtr(i);
+	StyleItem *T = (StyleItem*)GetSettingPtr(this->stylePtr);
+
+	StyleItem *S = new StyleItem;
+	S->ColorTo = S->Color = 0;
+	S->type = B_SOLID;
+	S->bevelstyle = BEVEL_FLAT;
+	S->bevelposition = BEVEL1;
+	S->borderColor = MT->Color;
+	S->borderWidth = 1;
+
+	int frame_border = frameBorder + frameBevelWidth;
+    int title_height = this->titleHeight;
+    int title_border = this->titleBorder;
+
+    if (no_items) {
+        title_height += frame_border - title_border;
+        title_border = frame_border;
+    }
+
+    if (this->is_single_task && this->my_Folder.desk-1 != currentDesk)
+    {
+        if (title_height)
+            title_height += (no_items?2:1)*frame_border;
+        frame_border = 0;
+    }
+
+	r.top = this->titleHeight;
+	if (r.top && MT->parentRelative) r.top = 0;
+
+	if (T->parentRelative)
+		T = (StyleItem*)GetSettingPtr(SN_TOOLBAR);
+
+	bool flatBevel = false;
+	if (T->bevelstyle == BEVEL_FLAT)
+	{
+		flatBevel = true;
+		T->bevelstyle = BEVEL_SUNKEN;
+	}
+
+	if (this->transparent)
+		MakeStyleGradient(hdc, &r, S, this->autoHide);
+	else
+		MakeStyleGradient(hdc, &r, T, drawBorder);
+
+	r.left  += frame_border;
+	r.top   += frame_border;
+	r.right   -= frame_border;
+	r.bottom  -= frame_border;
+
+	if (flatBevel)
+		T->bevelstyle = BEVEL_FLAT;
+
+	if (this->transparent)
+		MakeStyleGradient(hdc, &r, S, this->autoHide);
+	else
+		MakeStyleGradient(hdc, &r, T, drawBorder);
+
+	if (title_height)
+	{
+		/*int margin = this->iconPadding + title_border;*/
+		r.top = 0;
+		r.bottom = title_height;
+		r.top = r.left = 0;
+		r.right  = this->width;
+		r.bottom = title_height;
+
+		int margin = imax(T->marginWidth, 2);
+
+		if (false == MT->parentRelative)
+			MakeStyleGradient(hdc, &r, MT, drawBorder);
+
+		if (title_border && false == no_items) {
+			if (MT->parentRelative)
+			{
+				r.left += margin;
+				r.right -= margin;
+			}
+			CreateBorder(hdc, &r, MT->borderColor, title_border);
+		}
+
+		if (m_title[0]) {
+			r.left += margin;
+			r.right -= margin;
+			this->paint_text(hdc, &r, MT, MT, false, m_title);
+		}
+	}
+
+	if (this->is_visible)
+		this->Paint(hdc);
+	ClearToolTips(hwnd);
+#endif
 }
 
 // ----------------------------------------------
@@ -1599,6 +2107,8 @@ LRESULT icon_box::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
         return *ret;
 
     int index;
+	bool autoHiding = this->autoHide;
+	bool hideChanged;
 
     switch (message)
     {       
@@ -1699,6 +2209,14 @@ LRESULT icon_box::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             this->UpdateMetrics();
             break;
 
+        //=============================================
+        case BB_TOGGLETRAY:
+			/*if (this->my_Folder.mode == MODE_TRAY)*/ {
+				this->toggled_hidden = false == this->toggled_hidden;
+				BBP_set_window_modes(this);
+				break;
+			}
+
         //====================
 
         // If Blackbox sends a reconfigure message, load the new style settings and update window...
@@ -1785,6 +2303,8 @@ LRESULT icon_box::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 
         //====================
         case WM_MOUSELEAVE:
+			hideChanged = this->autoHide != autoHiding;
+
             this->MouseEvent(hwnd, message, wParam, lParam, 3);
             if (this->my_Folder.mode == MODE_TRAY)
                 this->capturedIcon = 0;
@@ -1793,8 +2313,19 @@ LRESULT icon_box::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             if (this->activeIcon && 0 == this->capturedIcon)
             {
                 this->activeIcon = 0;
+				if (hideChanged || autoHiding)
+				{
+					GetStyleSettings();
+					goto update;
+				}
                 InvalidateRect(hwnd, NULL, FALSE);
             }
+			else
+			if (hideChanged || autoHiding)
+			{
+				GetStyleSettings();
+				goto update;
+			}
             break;
 
         case WM_TIMER:

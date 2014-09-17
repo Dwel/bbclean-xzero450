@@ -491,7 +491,7 @@ LRESULT slit_info::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
             /* if (!IsBadStringPtr((const char*)wParam, 80))
                 ... */
             p->hwnd = (HWND)lParam;
-            SetWindowLong(p->hwnd, GWL_STYLE, (GetWindowLong(p->hwnd, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+            SetWindowLongPtr(p->hwnd, GWL_STYLE, (GetWindowLongPtr(p->hwnd, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
             SetParent(p->hwnd, hwnd);
             SetTimer(hwnd, 2, 20, NULL);
             break;
@@ -504,8 +504,8 @@ LRESULT slit_info::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
             if (p) {
                 if (IsWindow(p->hwnd)) {
                     SetParent(p->hwnd, NULL);
-                    SetWindowLong(p->hwnd, GWL_STYLE,
-                        (GetWindowLong(p->hwnd, GWL_STYLE) & ~WS_CHILD) | WS_POPUP);
+                    SetWindowLongPtr(p->hwnd, GWL_STYLE,
+                        (GetWindowLongPtr(p->hwnd, GWL_STYLE) & ~WS_CHILD) | WS_POPUP);
                 }
                 *pp = p->next;
                 m_free(p);

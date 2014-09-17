@@ -486,7 +486,7 @@ int exec_cfg_command(const char *argument)
 	} else if (v == &Settings_menu.dropShadows) {
 		Menu_Exit(), Menu_Init();
 	} else if (v == &Settings_UTF8Encoding) {
-		Workspaces_GetCaptions();
+		getWorkspaces().GetCaptions();
 		Tray_SetEncoding();
 		PostMessage(BBhwnd, BB_REDRAWGUI, BBRG_MENU|BBRG_FOLDER, 0);
 	}

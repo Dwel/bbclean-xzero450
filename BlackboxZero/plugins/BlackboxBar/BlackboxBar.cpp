@@ -29,15 +29,16 @@
 #include "BBApi.h"
 #include "win0x500.h"
 #include "bblib.h"
-#include "bbPlugin+.h"
-#include "drawico+.h"
+#include "bbPlugin.h"
+#include "drawico.h"
 #ifndef NO_TIPS
-#include "tooltips+.h"
+#include "tooltips.h"
 #endif
 
 #include <shellapi.h>
 #include <shlobj.h>
 #include <time.h>
+#include "Workspaces.h"
 
 #ifndef ASFW_ANY
 #define ASFW_ANY ((DWORD)-1)
@@ -100,12 +101,12 @@ ST StyleItem ATaskStyle;
 
 int TBJustify;
 
-StyleItem *I;
-ST int styleBevelWidth;
-ST int styleBorderWidth;
+StyleItem * I = 0;
+ST int styleBevelWidth = 0;
+ST int styleBorderWidth = 0;
 ST COLORREF styleBorderColor;
 
-struct plugin_info *g_PI;
+struct plugin_info * g_PI = 0;
 
 //====================
 #define NIF_INFO 0x00000010
@@ -116,11 +117,10 @@ struct plugin_info *g_PI;
 
 //====================
 
-typedef BOOL (*TASKENUMPROC)(const struct tasklist *, LPARAM);
 void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam)
 {
     const struct tasklist *tl;
-    dolist (tl, GetTaskListPtr())
+    dolist (tl, getWorkspaces().GetTaskListPtr())
         if (FALSE == lpEnumFunc(tl, lParam))
             break;
 }
@@ -128,7 +128,7 @@ void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam)
 //===========================================================================
 // Plugin support for ShadowColor & OutlineColor
 
-int BB_DrawText(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uFormat, StyleItem * pSI)
+/*int BB_DrawText(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uFormat, StyleItem * pSI)
 {
 		int (*pBBDrawText)(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uFormat, StyleItem * pSI);
 		*(FARPROC*)&pBBDrawText = GetProcAddress((HINSTANCE)GetModuleHandle(NULL), "BBDrawText");
@@ -137,7 +137,7 @@ int BB_DrawText(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uForma
 		else
 			DrawText(hDC, lpString, -1, rc, uFormat);
 		return 1;
-}
+}*/
 
 //===========================================================================
 
@@ -165,20 +165,24 @@ struct barinfo : plugin_info
 
     // configuration
     int  widthPercent           ;
+    int  minHeight              ;
     bool reverseTasks           ;
+    int  saturationValue        ;
+    int  hueIntensity           ;
     int iconSize	            ;
 	bool arrowBullets           ;
     char strftimeFormat[60]     ;
-	bool clockTips				;
-	char strftimeTipsFormat[60]	;
     bool taskSysmenu            ;
     int TaskStyle               ;
     int taskMaxWidth            ;
     bool currentOnly            ;
     bool task_with_border       ;
     bool autoFullscreenHide     ;
-    bool setDesktopMargin		;
+    bool setDesktopMargin       ;
     bool sendToSwitchTo         ;
+    bool sendToGesture          ;
+	bool clockTips				;
+	char strftimeTipsFormat[60]	;
 
 	// clock click
 	char clkBtn1Click[MAX_PATH]	;
@@ -283,7 +287,7 @@ struct barinfo : plugin_info
     void set_screen_info(void);
     void set_clock_string (void);
     void update_windowlabel(void);
-    int get_text_width(const char *cp);
+    int get_text_width(const char *cp, StyleItem * si);
 
     void update(int);
 
@@ -319,7 +323,7 @@ struct barinfo : plugin_info
                 return TRUE;
         }
 
-        struct tasklist *item = new struct tasklist;
+        struct tasklist *item = c_new(struct tasklist); // @NOTE: has to be c_new, it is deleted by m_free
         *item = *tl;
         cons_node(&PI->taskList, item);
         return TRUE;
@@ -657,6 +661,7 @@ void barinfo::make_cfg()
 {
     struct config c [] = {
     {  "widthPercent" ,     R_INT, (void*)72,             &widthPercent },
+    {  "minHeight" ,        R_INT, (void*)12,             &minHeight },
     {  "tasks.style" ,      R_INT, (void*)2,              &TaskStyle },
     {  "tasks.reverse" ,    R_BOL, (void*)false,          &reverseTasks },
     {  "tasks.current" ,    R_BOL, (void*)false,          &currentOnly },
@@ -664,10 +669,12 @@ void barinfo::make_cfg()
     {  "tasks.drawBorder" , R_BOL, (void*)false,          &task_with_border },
     {  "tasks.maxWidth" ,   R_INT, (void*)100,            &taskMaxWidth },
 
+    {  "icon.saturation" ,  R_INT, (void*)0,              &saturationValue },
+    {  "icon.hue" ,         R_INT, (void*)60,             &hueIntensity },
+
     {  "strftimeFormat" ,   R_STR, (void*)"%a %d %H:%M",  &strftimeFormat },
     {  "clock.tips" ,       R_BOL, (void*)true,           &clockTips },
     {  "strftimeTipsFormat",R_STR, (void*)"%Y-%m-%d %a",  &strftimeTipsFormat },
-
 	{  "clock.Btn1Click" ,   R_STR, (void*)"",  &clkBtn1Click },
     {  "clock.Btn2Click" ,   R_STR, (void*)"",  &clkBtn2Click },
     {  "clock.Btn3Click" ,   R_STR, (void*)"",  &clkBtn3Click },
@@ -686,8 +693,8 @@ void barinfo::make_cfg()
 
     struct pmenu m [] = {
     { "Width Percent",          "widthPercent",     CFG_INT, &widthPercent  },
+    { "Min. Height",            "minHeight",        CFG_INT, &minHeight },
     { "",                       "",                 CFG_WIN, NULL },
-    { "Icon Size",				"iconSize",         CFG_INT, &iconSize  },
     { "",                       "",                 0, &nobool  },
     { "Tasks",                  "", CFG_SUB, NULL },
     //--------
@@ -695,13 +702,18 @@ void barinfo::make_cfg()
     { "Icons only",             "tbStyle 1",        CFG_INT2|CFG_TASK|1<<8, &TaskStyle },
     { "Text and Icons",         "tbStyle 2",        CFG_INT2|CFG_TASK|2<<8, &TaskStyle },
     { "",                       "",                 CFG_TASK, &nobool  },
-    { "Reversed",               "reversedTasks",    CFG_TASK, &reverseTasks  },
     { "Max. Width %",           "taskMaxWidth",     CFG_TASK|CFG_INT, &taskMaxWidth },
+    { "Reversed",               "reversedTasks",    CFG_TASK, &reverseTasks  },
     { "Current Only",           "currentOnly",      CFG_TASK, &currentOnly },
     { "System Menu",            "sysMenu",          CFG_TASK, &taskSysmenu },
     { "Force Border",           "drawBorder",       CFG_TASK, &task_with_border },
 
+    { "Icons",                  "", CFG_SUB, NULL },
     //--------
+    { "Icon Size",				"iconSize",         CFG_INT, &iconSize  },
+    //{ "Max. Icon Size",         "maxIconSize",      CFG_INT, &maxIconSize },
+    { "Saturation",             "iconSaturation",   CFG_INT|CFG_255, &saturationValue  },
+    { "Hue",                    "iconHue",          CFG_INT|CFG_255, &hueIntensity  },
 
     { "Clock",                  "", CFG_SUB, NULL },
     { "Clock Format",           "clockFormat",      CFG_CLOCK|CFG_STR, &strftimeFormat  },
@@ -715,6 +727,7 @@ void barinfo::make_cfg()
     { "Set Desktop Margin",   "setDesktopMargin",     0, &setDesktopMargin  },
     { "SendTo Switches Workspace", "sendToSwitchTo",       0, &sendToSwitchTo  },
     { "Arrow Bullets",			"arrowBullets",       0, &arrowBullets  },
+    { "Mouse Gesture Moves Task", "sendToGesture",       0, &sendToGesture  },
 
     { NULL,NULL,0,NULL }
     };
@@ -723,12 +736,12 @@ void barinfo::make_cfg()
 
 //===========================================================================
 
-int barinfo::get_text_width(const char *cp)
+int barinfo::get_text_width(const char *cp, StyleItem * si)
 {
     HDC hdc = GetDC(hwnd);
     RECT s = {0,0,0,0};
     HGDIOBJ oldfont = SelectObject(hdc, hFont);
-    bbDrawText(hdc, cp, &s, DT_CALCRECT|DT_NOPREFIX, 0);
+	BBDrawTextAlt(hdc, cp, -1, &s, DT_CALCRECT | DT_NOPREFIX, si);
     SelectObject(hdc, oldfont);
     ReleaseDC(hwnd, hdc);
     return s.right;
@@ -737,13 +750,13 @@ int barinfo::get_text_width(const char *cp)
 void barinfo::set_screen_info(void)
 {
     DesktopInfo DI;
-    GetDesktopInfo(&DI);
+    getWorkspaces().GetDesktopInfo(DI);
     currentScreen = DI.number;
     strcpy(screenName, DI.name);
     labelWidth = 0;
     struct string_node *p;
     dolist (p, DI.deskNames)
-        labelWidth = imax(get_text_width(p->str), labelWidth);
+        labelWidth = imax(get_text_width(p->str, I), labelWidth);
 }
 
 //===========================================================================
@@ -803,7 +816,7 @@ void barinfo::set_clock_string (void)
 		bbWC2MB(result, clockTimeTips, sizeof clockTimeTips);
 	}
 
-    clockWidth = get_text_width(clockTime);
+    clockWidth = get_text_width(clockTime, I);
 
     SYSTEMTIME lt;
     GetLocalTime(&lt);
@@ -877,13 +890,13 @@ bool barinfo::check_fullscreen_window(void)
     bool covers;
 
     char class_name[80];
-    DWORD wstyle;
+    LONG_PTR wstyle;
 
     hwnd = GetForegroundWindow();
     if (NULL == hwnd)
         return false;
 
-    wstyle = GetWindowLong(hwnd, GWL_STYLE);
+    wstyle = GetWindowLongPtr(hwnd, GWL_STYLE);
     /* consider captionless windows only */
     if (WS_CAPTION == (wstyle & WS_CAPTION))
         return false;
@@ -970,8 +983,8 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
             {
                 int h = bbLeanBarLineHeight[i];
                 r.bottom = r.top + h;
-                StyleItem *T = this->transparent ? I : (StyleItem *)GetSettingPtr(SN_TOOLBAR);
-                this->pBuff->MakeStyleGradient(buf, &r, T, T->bordered);
+                StyleItem *T = this->alphaEnabled ? I : (StyleItem *)GetSettingPtr(SN_TOOLBAR);
+                /*this->pBuff->*/MakeStyleGradient(buf, &r, T, T->bordered);
                 r.top += h - styleBorderWidth;
             }
 
@@ -979,9 +992,7 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
             p_rcPaint = &ps.rcPaint;
             this->pLeanBar->draw();
             this->pLeanBar->settip();
-            /*this->pBuff->
-				
-				();*/
+            //this->pBuff->ClearBitmaps();
 
             BitBltRect(hdc, buf, &ps.rcPaint);
             DeleteObject(SelectObject(buf, other));
@@ -1012,10 +1023,18 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
         case WM_DESTROY:
             SendMessage(BBhwnd, BB_UNREGISTERMESSAGE, (WPARAM)hwnd, (LPARAM)msgs);
             SetDesktopMargin(hwnd, 0, 0);
-            delete this->pLeanBar;
-            delete this->pBuff;
-            if (hFont) DeleteObject(hFont), hFont = NULL;
+            delete pLeanBar;
+			pLeanBar = 0;
+            delete pBuff;
+			pBuff = 0;
+            if (hFont)
+				DeleteObject(hFont), hFont = NULL;
             this->reset_tbinfo();
+			if (I)
+			{
+				delete I;
+				I = 0;
+			}
             break;
 
         //=============================================
@@ -1368,7 +1387,7 @@ void barinfo::GetStyleSettings()
     StyleItem * C = (StyleItem *)GetSettingPtr(SN_TOOLBARCLOCK);
     StyleItem * B = (StyleItem *)GetSettingPtr(SN_TOOLBARBUTTON);
 
-	if (this->transparent && T->TextColor < 0x101010) 
+	if (this->alphaEnabled && T->TextColor < 0x101010) 
 		 T->TextColor = 0x444444;
 
     NTaskStyle = *T;
@@ -1429,23 +1448,24 @@ void barinfo::GetStyleSettings()
 
     int lbl_max = labelH - iconMargin;
 
-    if (lbl_max >= 16) {
+    if (iconSize >= 16 || lbl_max >= 16) {
         // with icons>=16 we give up button symmetrie
         // for the sake of icon symmetrie
         lbl_max = imax(lbl_max & ~1, 16);
     }
+    lbl_max = imax(lbl_max, minHeight);
 
-    TASK_ICON_SIZE = iconSize <= 16 ? imin(lbl_max, 16) : iconSize;
+    TASK_ICON_SIZE = imin(lbl_max, iconSize);
 
     lbl_max += iconMargin;;
-    labelH = imax(lbl_max, iconSize);
+    labelH = lbl_max;
     buttonH = labelH + 2*(B->marginWidth-L->marginWidth);
     lbl_max += margin;
 
     int bar_max = imax(labelH, buttonH) + margin;
     int tray_max = bar_max - margin;
-
-    TRAY_ICON_SIZE = imin(tray_max, 16);
+	
+    TRAY_ICON_SIZE = imin(tray_max, iconSize);
 
     // calculate the bar height(s)
     BarLines = 0;
@@ -1736,8 +1756,8 @@ DLL_EXPORT void endPlugin(HINSTANCE hPluginInstance)
         delete g_PI;
 
     if (NULL == g_PI) {
-        exit_bb_balloon();
 #ifndef NO_TIPS
+        exit_bb_balloon();
         ExitToolTips();
 #endif
 #ifndef NO_DROP

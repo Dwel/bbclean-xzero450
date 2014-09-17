@@ -319,7 +319,7 @@ public:
     MenuItem(const char* pszTitle);
     virtual ~MenuItem();
 
-    virtual void Measure(HDC hDC, SIZE *size);
+    virtual void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
     virtual void Paint(HDC hDC);
     virtual void Invoke(int button);
     virtual void Mouse(HWND hw, UINT nMsg, DWORD, DWORD);
@@ -531,7 +531,7 @@ public:
     void Mouse(HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam);
     void Invoke(int button);
     void ItemTimer(UINT nTimer);
-    void Measure(HDC hDC, SIZE *size);
+	void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
     void Key(UINT nMsg, WPARAM wParam);
     void set_next_value(void);
 
@@ -553,7 +553,7 @@ public:
     ~StringItem();
 
     void Paint(HDC hDC);
-    void Measure(HDC hDC, SIZE *size);
+	void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
     void Invoke(int button);
 
     static LRESULT CALLBACK EditProc(HWND hText, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -624,7 +624,7 @@ public:
     ContextItem(Menu *m, char* pszTitle, int id, DWORD data, UINT type);
     ~ContextItem();
     void Paint(HDC hDC);
-    void Measure(HDC hDC, SIZE *size);
+	void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
     void Invoke(int button);
     void DrawItem(HDC hdc, int w, int h, bool active);
 private:

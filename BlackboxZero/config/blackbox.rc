@@ -54,4 +54,4 @@ session.imageDither: true
 
 # - menu & style -
 session.menufile: menu.rc
-session.styleFile: styles\lean_blue
+session.styleFile: styles\nightBlue.style

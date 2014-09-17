@@ -1033,12 +1033,12 @@ void SetWindowModes(void)
 	if(usingWin2kXP){
 		if(!inSlit){
 			// Add the WS_EX_LAYERED atribute to the window.
-			SetWindowLong(hwndPlugin, GWL_EXSTYLE , GetWindowLong(hwndPlugin, GWL_EXSTYLE) | WS_EX_LAYERED);
+			SetWindowLongPtr(hwndPlugin, GWL_EXSTYLE , GetWindowLongPtr(hwndPlugin, GWL_EXSTYLE) | WS_EX_LAYERED);
 			// Make it transparent...
 			BBSetLayeredWindowAttributes(hwndPlugin, NULL, (transparency) ? (unsigned char)alpha : 255, LWA_ALPHA);
 		}else{
 			// Remove the WS_EX_LAYERED atribute to the window, cos we in di slit!
-			SetWindowLong(hwndPlugin, GWL_EXSTYLE, GetWindowLong(hwndPlugin, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+			SetWindowLongPtr(hwndPlugin, GWL_EXSTYLE, GetWindowLongPtr(hwndPlugin, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 		}
 	}
 	InvalidateRect(hwndPlugin, NULL, false);

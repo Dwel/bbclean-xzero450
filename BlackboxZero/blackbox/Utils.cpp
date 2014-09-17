@@ -293,105 +293,7 @@ int EditBox(
 }
 
 //===========================================================================
-int DrawTextUTF8(HDC hDC, const char *s, int nCount, RECT *p, unsigned format)
-{
-    WCHAR wstr[1000];
-    SIZE size;
-    int x, y, n, r;
-
-    n = MultiByteToWideChar(CP_UTF8, 0, s, nCount, wstr, array_count(wstr));
-    if (n) --n;
-
-    if (g_usingNT)
-        return DrawTextW(hDC, wstr, n, p, format);
-
-    GetTextExtentPoint32W(hDC, wstr, n, &size);
-    if (format & DT_CALCRECT) {
-        p->right = p->left + size.cx;
-        p->bottom = p->top + size.cy;
-        return 1;
-    }
-
-    if (format & DT_RIGHT)
-        x = imax(p->left, p->right - size.cx);
-    else if (format & DT_CENTER)
-        x = imax(p->left, (p->left + p->right - size.cx) / 2);
-    else
-        x = p->left;
-
-    if (format & DT_BOTTOM)
-        y = imax(p->top, p->bottom - size.cy);
-    else if (format & DT_VCENTER)
-        y = imax(p->top, (p->top + p->bottom - size.cy) / 2);
-    else
-        y = p->top;
-
-    //SetTextAlign(hDC, TA_LEFT | TA_TOP);
-    r = ExtTextOutW(hDC, x, y, ETO_CLIPPED, p, wstr, n, NULL);
-    return r;
-}
-
-//===========================================================================
-// API: bbDrawText
-
-void bbDrawText(HDC hDC, const char *text, RECT *p_rect, unsigned format, COLORREF c)
-{
-    if (0 == (format & DT_CALCRECT))
-        SetTextColor(hDC, c);
-
-    if (Settings_UTF8Encoding)
-        DrawTextUTF8(hDC, text, -1, p_rect, format);
-    else
-        DrawText(hDC, text, -1, p_rect, format);
-}
-
-int BBDrawText(HDC hDC, const char *lpString, int nCount, LPRECT lpRect, UINT uFormat, StyleItem* pSI){
-    bool bShadow = (pSI->validated & V_SHADOWCOLOR) && (pSI->ShadowColor != (CLR_INVALID));
-    bool bOutline = (pSI->validated & V_OUTLINECOLOR) && (pSI->OutlineColor != (CLR_INVALID));
-	
-	if (bShadow){ // draw shadow
-        RECT rcShadow;
-		rcShadow.top = lpRect->top + pSI->ShadowY;
-		rcShadow.bottom = lpRect->bottom + pSI->ShadowY;
-		rcShadow.left = lpRect->left + pSI->ShadowX;
-		rcShadow.right = lpRect->right + pSI->ShadowX;
-
-        //SetTextColor(hDC, pSI->ShadowColor);
-		bbDrawText(hDC, lpString, &rcShadow, uFormat, pSI->ShadowColor);
-    }
-	
-    if (bOutline){ // draw outline
-			//Draw the outline
-	        RECT rcOutline;
-	        _CopyOffsetRect(&rcOutline, lpRect, 1, 0);
-	        //SetTextColor(hDC, pSI->OutlineColor);
-			
-			bbDrawText(hDC, lpString, &rcOutline, uFormat, pSI->OutlineColor);
-			_OffsetRect(&rcOutline,   0,  1);
-			bbDrawText(hDC, lpString, &rcOutline, uFormat, pSI->OutlineColor);
-			_OffsetRect(&rcOutline,  -1,  0);
-			bbDrawText(hDC, lpString, &rcOutline, uFormat, pSI->OutlineColor);
-			_OffsetRect(&rcOutline,  -1,  0);
-			bbDrawText(hDC, lpString, &rcOutline, uFormat, pSI->OutlineColor);
-			_OffsetRect(&rcOutline,   0, -1);
-			bbDrawText(hDC, lpString, &rcOutline, uFormat, pSI->OutlineColor);
-			_OffsetRect(&rcOutline,   0, -1);
-			bbDrawText(hDC, lpString, &rcOutline, uFormat, pSI->OutlineColor);
-			_OffsetRect(&rcOutline,   1,  0);
-			bbDrawText(hDC, lpString, &rcOutline, uFormat, pSI->OutlineColor);
-			_OffsetRect(&rcOutline,   1,  0);
-			bbDrawText(hDC, lpString, &rcOutline, uFormat, pSI->OutlineColor);
-		//}
-    }
-    // draw text
-    //SetTextColor(hDC, pSI->TextColor);
-    bbDrawText(hDC, lpString, lpRect, uFormat, pSI->TextColor);
-	return 1;//FIXME: Supposed to be DrawText(); - Should probably not call into bbDrawText to do the dirty work
-}
-
-//===========================================================================
 // API: bbMB2WC
-
 int bbMB2WC(const char *src, WCHAR *wstr, int len)
 {
     int x, n;
@@ -413,7 +315,6 @@ int bbMB2WC(const char *src, WCHAR *wstr, int len)
 
 //===========================================================================
 // API: bbWC2MB
-
 int bbWC2MB(const WCHAR *src, char *str, int len)
 {
     int x, n;

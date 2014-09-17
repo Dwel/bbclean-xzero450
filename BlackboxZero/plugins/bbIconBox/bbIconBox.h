@@ -28,6 +28,7 @@
 #include "tooltips.h"
 #include "drawico.h"
 #include "bbshell.h"
+#include "Workspaces.h"
 
 #define MODE_FOLDER 0
 #define MODE_TRAY 1
@@ -58,6 +59,8 @@ struct Item
     bool active;
     bool is_folder;
     char szTip [MAX_TIPTEXT];
+
+	//struct _ITEMIDLIST *pidl; // from bb4win
 };
 
 struct Folder
@@ -85,7 +88,7 @@ struct Desk
 };
 
 void ClearFolder(Folder*);
-void LoadFolder(Folder *pFolder, int iconsize, HWND hwnd);
+void LoadFolder(Folder *pFolder, int iconsize,  bool is_visible, HWND hwnd);
 
 // ---------------------------------------------
 // DropTarget.cpp
@@ -93,7 +96,6 @@ void LoadFolder(Folder *pFolder, int iconsize, HWND hwnd);
 class CDropTarget *init_drop_targ(HWND hwnd);
 void exit_drop_targ (class CDropTarget *m_dropTarget);
 LPCITEMIDLIST indrag_get_pidl(HWND hwnd, POINT *);
-
 
 // ---------------------------------------------
 // utils.cpp
@@ -121,18 +123,5 @@ winStruct *get_winstruct(Desk *f, int index);
 
 void free_task_list(void);
 void new_task_list(void);
-
-// ---------------------------------------------
-/* experimental: */
-typedef BOOL (*TASKENUMPROC)(const struct tasklist *, LPARAM);
-void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam);
-
-/* experimental: */
-typedef BOOL (*DESKENUMPROC)(const struct DesktopInfo *, LPARAM);
-void EnumDesks (DESKENUMPROC lpEnumFunc, LPARAM lParam);
-
-/* experimental: */
-typedef BOOL (*TRAYENUMPROC)(const struct systemTray *, LPARAM);
-void EnumTray (TRAYENUMPROC lpEnumFunc, LPARAM lParam);
 
 // ---------------------------------------------

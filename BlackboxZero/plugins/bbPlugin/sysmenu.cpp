@@ -25,6 +25,7 @@
 #include "BBApi.h"
 #include "win0x500.h"
 #include "bblib.h"
+#include "Workspaces.h"
 
 #define ST static
 
@@ -35,7 +36,7 @@ ST HMENU get_sysmenu(HWND Window)
 {
     BOOL iconic = IsIconic(Window);
     BOOL zoomed = IsZoomed(Window);
-    LONG style = GetWindowLong(Window, GWL_STYLE);
+    LONG_PTR style = GetWindowLongPtr(Window, GWL_STYLE);
     //LONG exstyle = GetWindowLong(Window, GWL_EXSTYLE);
 
     HMENU systemMenu = NULL;
@@ -225,8 +226,8 @@ bool ShowSysmenu(HWND Window, HWND Owner, RECT *pRect, const char *plugin_broam)
 
     HMENU systemMenu = get_sysmenu(Window);
     BOOL iconic = IsIconic(Window);
-    LONG style = GetWindowLong(Window, GWL_STYLE);
-    LONG exstyle = GetWindowLong(Window, GWL_EXSTYLE);
+    LONG_PTR style = GetWindowLongPtr(Window, GWL_STYLE);
+    LONG_PTR exstyle = GetWindowLongPtr(Window, GWL_EXSTYLE);
 
 #if 0
     char buff[32];
@@ -236,7 +237,7 @@ bool ShowSysmenu(HWND Window, HWND Owner, RECT *pRect, const char *plugin_broam)
     title = buff;
 #endif
 
-    GetDesktopInfo(&info);
+    getWorkspaces().GetDesktopInfo(info);
     workspace = GetTaskWorkspace(Window);
     is_in_current = info.number == workspace;
 

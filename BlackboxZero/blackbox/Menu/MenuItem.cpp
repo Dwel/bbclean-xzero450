@@ -298,11 +298,11 @@ const char* MenuItem::GetDisplayString(void)
 
 //===========================================================================
 
-void MenuItem::Measure(HDC hDC, SIZE *size)
+void MenuItem::Measure(HDC hDC, SIZE *size, StyleItem * pSI)
 {
     const char *title = GetDisplayString();
     RECT r = { 0, 0, 0, 0 };
-    bbDrawText(hDC, title, &r, DT_MENU_MEASURE_STANDARD, 0);
+	BBDrawTextAlt(hDC, title, -1, &r, DT_MENU_MEASURE_STANDARD, pSI);
     size->cx = r.right;
     size->cy = MenuInfo.nItemHeight;
 
@@ -343,7 +343,7 @@ void MenuItem::Paint(HDC hDC)
         // draw menu item text
         //bbDrawText(hDC, GetDisplayString(), &rc, j | DT_MENU_STANDARD, TC);
 		/* BlackboxZero 1.5.2012 */
-		BBDrawText(hDC, GetDisplayString(), -1, &rc, j | DT_MENU_STANDARD, pSI);
+		BBDrawTextAlt(hDC, GetDisplayString(), -1, &rc, j | DT_MENU_STANDARD, pSI);
     }
 
 //#ifdef BBOPT_MENUICONS

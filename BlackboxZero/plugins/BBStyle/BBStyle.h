@@ -49,7 +49,7 @@ using namespace std;
 
 //===========================================================================
 
-const long magicDWord = 0x49474541; // BlackboxZero 1.14.2012
+const LONG_PTR magicDWord = 0x49474541; // BlackboxZero 1.14.2012
 
 HINSTANCE hInstance;
 HWND hwndPlugin, hwndBlackbox;

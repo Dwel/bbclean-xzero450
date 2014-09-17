@@ -105,7 +105,7 @@ int beginPlugin(HINSTANCE hPluginInstance)
 	// Register to receive Blackbox messages...
 	SendMessage(hwndBlackbox, BB_REGISTERMESSAGE, (WPARAM)hwndBBRSS, (LPARAM)msgs);
 
-	const long magicDWord = 0x49474541;
+	const LONG_PTR magicDWord = 0x49474541;
 #if !defined _WIN64
 	// Set magicDWord to make the window sticky (same magicDWord that is used by LiteStep)...
 	SetWindowLong(hwndBBRSS, GWL_USERDATA, magicDWord);
@@ -1470,12 +1470,12 @@ void setStatus()
 						{
 							if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 							{
-								SetWindowLong(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+								SetWindowLongPtr(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 								BBSetLayeredWindowAttributes(hwndBBRSS, 0xFF00FF, (unsigned char)alpha, LWA_COLORKEY|LWA_ALPHA);
 							}
 							else
 							{
-							SetWindowLong(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+							SetWindowLongPtr(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 							BBSetLayeredWindowAttributes(hwndBBRSS, NULL, (unsigned char)alpha, LWA_ALPHA);
 							}
 						}
@@ -1483,15 +1483,15 @@ void setStatus()
 						{
 							if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 							{
-								SetWindowLong(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+								SetWindowLongPtr(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 								BBSetLayeredWindowAttributes(hwndBBRSS, 0xFF00FF, (unsigned char)alpha, LWA_COLORKEY);
 							}
 							else
-							SetWindowLong(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+							SetWindowLongPtr(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 						}
 							
 					}
-					else if((transparency)||(fullTrans)) SetWindowLong(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+					else if((transparency)||(fullTrans)) SetWindowLongPtr(hwndBBRSS, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
 	InvalidateRect(hwndBBRSS, NULL, false);		
 }

@@ -54,7 +54,7 @@ void TitleItem::Paint(HDC hDC)
     //bbDrawText(hDC, GetDisplayString(), &rect, justify, pSI->TextColor);
 	/* BlackboxZero 1.5.2012 */
 	if (pSI->FontHeight > 1)
-		BBDrawText(hDC, GetDisplayString(), -1, &rect, justify, pSI);
+		BBDrawTextAlt(hDC, GetDisplayString(), -1, &rect, justify, pSI);
 }
 
 //===========================================================================
@@ -152,7 +152,7 @@ void MenuGrip::Paint(HDC hDC)
     just = just & ~DT_VCENTER | DT_BOTTOM;
   }
 
-  BBDrawText(hDC, GetDisplayString(), -1, &rect, just, pSI);
+  BBDrawTextAlt(hDC, GetDisplayString(), -1, &rect, just, pSI);
 }
 
 void MenuGrip::Mouse(HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam)

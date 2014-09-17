@@ -56,7 +56,7 @@ struct WinInfo
     HWND hwnd;
     LRESULT (WINAPI *pCallWindowProc)(WNDPROC,HWND,UINT,WPARAM,LPARAM);
     WNDPROC wpOrigWindowProc;
-    LONG style, exstyle;
+    LONG_PTR style, exstyle;
 
     struct SizeInfo S;
     struct GdiInfo gdiobjs[NUMOFGDIOBJS];

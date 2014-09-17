@@ -75,9 +75,10 @@ bool inSlit = false;	//Are we loaded in the slit? (default of no)
 HWND hSlit;				//The Window Handle to the Slit (for if we are loaded)
 
 // Compatibility
-bool (*BBPager_STL)(HWND, struct taskinfo *, UINT) = NULL;
-tasklist* (*BBPager_GTLP)(void) = NULL;
-struct tasklist *tl;
+bool (*BBPager_STL)(HWND, taskinfo const *, UINT) = NULL;
+tasklist const * (*BBPager_GTLP)(void) = NULL;
+tasklist const * tl = 0;
+bool is_xoblite, usingAltMethod;
 
 //bool loggerOn = true;
 
@@ -1275,7 +1276,7 @@ void ToggleSlit()
 		SetWindowLong(g_RuntimeState.m_hwndBBPager, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
 		//SetParent(hwndBBPager, hSlit);
-		//SetWindowLong(hwndBBPager, GWL_STYLE, (GetWindowLong(hwndBBPager, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
+		//SetWindowLongPtr(hwndBBPager, GWL_STYLE, (GetWindowLongPtr(hwndBBPager, GWL_STYLE) & ~WS_POPUP) | WS_CHILD);
 		SendMessage(hSlit, SLIT_ADD, 0, (LPARAM)g_RuntimeState.m_hwndBBPager);
 		inSlit = true;
 	}
@@ -1399,7 +1400,7 @@ BOOL CALLBACK CheckTaskEnumProc_AltMethod (HWND window, LPARAM lParam)
 	return 1;
 }
 
-bool AddBBWindow (tasklist * tl)
+bool AddBBWindow(tasklist const *tl)
 {
 	Settings const & s = getSettings();
 	HWND window = tl->hwnd;
@@ -1458,8 +1459,8 @@ bool IsValidWindow (HWND hWnd)
 	// *** below is commented out because trillian is a toolwindow
 	// *** and perhaps miranda (and other systray things?)
 	// if the window is a WS_EX_TOOLWINDOW fail it
-	nStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-	if ((nStyle & WS_EX_TOOLWINDOW) && (GetWindowLong(hWnd, GWL_STYLE) & WS_POPUP))
+	nStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+	if ((nStyle & WS_EX_TOOLWINDOW) && (GetWindowLongPtr(hWnd, GWL_STYLE) & WS_POPUP))
 		return false;
 
 	// if it has a parent, fail
@@ -2362,7 +2363,7 @@ void ClearToolTips(void)
 
 //===========================================================================
 
-bool BBPager_SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags)
+bool BBPager_SetTaskLocation(HWND hwnd, taskinfo const *pti, UINT flags)
 {
 	if (NULL == BBPager_STL)
 	{
@@ -2373,7 +2374,7 @@ bool BBPager_SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags)
 	return ( 1 == BBPager_STL(hwnd, pti, flags) );
 }
 
-tasklist* BBPager_GetTaskListPtr(void)
+tasklist const * BBPager_GetTaskListPtr()
 {
 	if (NULL == BBPager_GTLP)
 	{

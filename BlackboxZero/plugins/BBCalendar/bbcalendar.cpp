@@ -2027,12 +2027,12 @@ void setStatus()
 						{
 							if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 							{
-								SetWindowLong(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+								SetWindowLongPtr(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 								BBSetLayeredWindowAttributes(hwndBBCalendar, 0xff00ff, (unsigned char)alpha, LWA_COLORKEY|LWA_ALPHA);
 							}
 							else
 							{
-							SetWindowLong(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+							SetWindowLongPtr(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 							BBSetLayeredWindowAttributes(hwndBBCalendar, NULL, (unsigned char)alpha, LWA_ALPHA);
 							}
 						}
@@ -2040,15 +2040,15 @@ void setStatus()
 						{
 							if (fullTrans && (dwId == VER_PLATFORM_WIN32_NT)&&(dwMajorVer > 4))
 							{
-								SetWindowLong(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
+								SetWindowLongPtr(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 								BBSetLayeredWindowAttributes(hwndBBCalendar, 0xff00ff, (unsigned char)alpha, LWA_COLORKEY);
 							}
 							else
-							SetWindowLong(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+							SetWindowLongPtr(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 						}
 							
 					}
-					else if((transparency)||(fullTrans)) SetWindowLong(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+					else if((transparency)||(fullTrans)) SetWindowLongPtr(hwndBBCalendar, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
 
 

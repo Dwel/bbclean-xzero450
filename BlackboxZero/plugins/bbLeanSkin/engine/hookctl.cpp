@@ -1,10 +1,12 @@
 /*
  ============================================================================
 
+  This file is part of the bbLeanSkin+ source code.
   This file is part of the bbLeanSkin source code.
   Copyright © 2003-2009 grischka (grischka@users.sourceforge.net)
 
   bbLeanSkin is a plugin for Blackbox for Windows
+  bbLeanSkin+ is a plugin for Blackbox for Windows
 
   http://bb4win.sourceforge.net/bblean
   http://bb4win.sourceforge.net/
@@ -178,7 +180,7 @@ char *sprint_window(char *buffer, size_t max_ln, HWND hwnd, const char *msg)
 #endif
         //" - %08x %08x"
         , msg, caption, sFileName, sClassName
-        //, GetWindowLong(hwnd, GWL_STYLE), GetWindowLong(hwnd, GWL_EXSTYLE),
+        //, GetWindowLongPtr(hwnd, GWL_STYLE), GetWindowLongPtr(hwnd, GWL_EXSTYLE),
         );
     return buffer;
 }
@@ -222,7 +224,7 @@ int match (const char *str, const char *pat)
 //===========================================================================
 int HookWindow(HWND hwnd, int early)
 {
-    LONG lStyle = GetWindowLong(hwnd, GWL_STYLE);
+    LONG_PTR lStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
 
     // if it does not have a caption, there is nothing to skin.
     if (WS_CAPTION != (lStyle & WS_CAPTION))
@@ -231,7 +233,7 @@ int HookWindow(HWND hwnd, int early)
         return 0;
     }
 
-    LONG lExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+	LONG_PTR lExStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
     // child windows are excluded unless they have a sysmenu or are MDI clients
     if ((lStyle & WS_CHILD)

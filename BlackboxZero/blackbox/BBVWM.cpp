@@ -21,11 +21,12 @@
 
 #include "BB.h"
 #include "BBVWM.h"
+#include "Workspaces.h"
 
 #define ST static
 #define SCREEN_DIST 10
 
-typedef struct winlist
+struct winlist
 {
     struct winlist *next;
     HWND hwnd;
@@ -45,7 +46,8 @@ typedef struct winlist
 
     DWORD threadid;
     HWND root;
-} winlist;
+};
+winlist g_Winlist;
 
 ST bool vwm_alt_method;
 ST bool vwm_styleXPFix;
@@ -59,9 +61,9 @@ ST bool is_shadow(HWND hwnd, LONG ex_style, DWORD threadid);
 //=========================================================
 // helper functions
 
-winlist* vwm_add_window(HWND hwnd)
+winlist * vwm_add_window (HWND hwnd)
 {
-    if (check_sticky_plugin(hwnd))
+    if (getWorkspaces().CheckStickyPlugin(hwnd))
         return NULL;
 
     bool const hidden = FALSE == IsWindowVisible(hwnd);
@@ -70,13 +72,13 @@ winlist* vwm_add_window(HWND hwnd)
 
     if (NULL == wl)
     {
-        LONG ex_style;
+        LONG_PTR ex_style;
         DWORD threadid;
 
         if (hidden)
             return NULL;
 
-        ex_style = GetWindowLong(hwnd, GWL_EXSTYLE);
+        ex_style = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
         threadid = GetWindowThreadProcessId(hwnd, NULL);
 
         // exclude blackbox menu drop shadows
@@ -86,7 +88,7 @@ winlist* vwm_add_window(HWND hwnd)
         wl = c_new(winlist);
         cons_node (&vwm_WL, wl);
         wl->hwnd = hwnd;
-        wl->desk = wl->prev_desk = currentScreen;
+        wl->desk = wl->prev_desk = getWorkspaces().GetScreenCurrent();
 
         // store some infos used with 'belongs_to_app(...)'
         wl->threadid = threadid;
@@ -97,8 +99,8 @@ winlist* vwm_add_window(HWND hwnd)
             wl->istool = true;
 
         // check whether its listed in 'StickyWindows.ini'
-        wl->sticky_app = check_sticky_name(hwnd);
-        wl->onbg = check_onbg_name(hwnd);
+        wl->sticky_app = getWorkspaces().CheckStickyName(hwnd);
+        wl->onbg = getWorkspaces().CheckOnBgName(hwnd);
     }
 
     wl->hidden = hidden;
@@ -112,7 +114,7 @@ winlist* vwm_add_window(HWND hwnd)
     return wl;
 }
 
-ST BOOL CALLBACK win_enum_proc(HWND hwnd, LPARAM lParam)
+ST BOOL CALLBACK win_enum_proc (HWND hwnd, LPARAM lParam)
 {
     vwm_add_window(hwnd);
     return TRUE;
@@ -121,7 +123,7 @@ ST BOOL CALLBACK win_enum_proc(HWND hwnd, LPARAM lParam)
 //=========================================================
 // update the list
 
-void vwm_update_winlist(void)
+void vwm_update_winlist ()
 {
     winlist *wl, **wlp, *app;
 
@@ -166,8 +168,8 @@ void vwm_update_winlist(void)
         char buffer[100];
         char appName[100];
         GetClassName(wl->hwnd, buffer, sizeof buffer);
-        LONG style = GetWindowLong(wl->hwnd, GWL_STYLE);
-        LONG exstyle = GetWindowLong(wl->hwnd, GWL_EXSTYLE);
+        LONG_PTR style = GetWindowLongPtr(wl->hwnd, GWL_STYLE);
+        LONG_PTR exstyle = GetWindowLongPtr(wl->hwnd, GWL_EXSTYLE);
         GetAppByWindow(wl->hwnd, appName);
         dbg_printf("hw:%x ws:%d mv:%d hi:%d ic:%d st:%d <%s> (wst:%08x wex:%08x %s)",
             wl->hwnd, wl->desk, wl->moved, wl->hidden, wl->iconic, wl->sticky, buffer, style, exstyle, appName);
@@ -197,10 +199,10 @@ ST void fix_window(int *left, int *top, int width, int height)
     RECT x, d, w;
     int x0, y0, dx, dy;
 
-    x0 = VScreenX;
-    y0 = VScreenY;
-    dx = VScreenWidth;
-    dy = VScreenHeight;
+    x0 = getWorkspaces().GetVScreenX();
+    y0 = getWorkspaces().GetVScreenY();
+    dx = getWorkspaces().GetVScreenWidth();
+    dy = getWorkspaces().GetVScreenHeight();
     d.right = (d.left = x0) + dx,
     d.bottom = (d.top = y0) + dy;
     w.right = (w.left = *left) + width,
@@ -217,8 +219,8 @@ ST void fix_window(int *left, int *top, int width, int height)
 ST void center_window(int *left, int *top, int width, int height)
 {
     int x0, dx, w2;
-    x0 = VScreenX - SCREEN_DIST;
-    dx = VScreenWidth + SCREEN_DIST;
+    x0 = getWorkspaces().GetVScreenX() - SCREEN_DIST;
+    dx = getWorkspaces().GetVScreenWidth() + SCREEN_DIST;
     w2 = width/2;
     while (*left+w2 < x0) *left += dx;
     while (*left+w2 >= x0+dx) *left -= dx;
@@ -304,15 +306,15 @@ ST void defer_windows(int newdesk)
     gather = newdesk < 0;
 
     if (gather)
-        newdesk = currentScreen;
+        newdesk = getWorkspaces().GetScreenCurrent();
 
-    if (newdesk >= nScreens)
-        newdesk = nScreens-1;
+    if (newdesk >= getWorkspaces().GetScreenCount())
+        newdesk = getWorkspaces().GetScreenCount() - 1;
 
-    deskchanged = currentScreen != newdesk;
+    deskchanged = getWorkspaces().GetScreenCurrent() != newdesk;
     if (deskchanged)
-        lastScreen = currentScreen;
-    currentScreen = newdesk;
+        getWorkspaces().SetScreenLast(getWorkspaces().GetScreenCurrent());
+    getWorkspaces().SetScreenCurrent(newdesk);
     winmoved = false;
 
     if (vwm_WL) {
@@ -333,8 +335,8 @@ ST void defer_windows(int newdesk)
                     goto next;
             }
 
-            if (wl->desk >= nScreens)
-                wl->desk = nScreens-1;
+            if (wl->desk >= getWorkspaces().GetScreenCount())
+                wl->desk = getWorkspaces().GetScreenCount() - 1;
 
             left = wl->rect.left;
             top = wl->rect.top;
@@ -367,7 +369,7 @@ ST void defer_windows(int newdesk)
             } else {
                 if (wl->moved) {
                     // windows on other WS's are moved
-                    int dx = VScreenWidth + SCREEN_DIST;
+                    int dx = getWorkspaces().GetVScreenWidth() + SCREEN_DIST;
                     if (vwm_styleXPFix)
                         left += dx * 2; // move 2 screens to the right
                     else
@@ -404,12 +406,12 @@ ST void defer_windows(int newdesk)
     }
 
     // update wkspc members in the tasklist
-    workspaces_set_desk();
+    getWorkspaces().workspaces_set_desk();
     // send notifications
     if (deskchanged)
-        send_desk_refresh();
+        getWorkspaces().send_desk_refresh();
     if (winmoved)
-        send_task_refresh();
+        getWorkspaces().send_task_refresh();
 }
 
 //=========================================================
@@ -426,7 +428,7 @@ ST void explicit_move(winlist *wl)
             );
 }
 
-ST bool set_location_helper(HWND hwnd, struct taskinfo *t, unsigned flags)
+ST bool set_location_helper(HWND hwnd, taskinfo const * t, unsigned flags)
 {
     winlist *wl;
     int dx, dy, new_desk, switch_desk, window_desk;
@@ -440,15 +442,15 @@ ST bool set_location_helper(HWND hwnd, struct taskinfo *t, unsigned flags)
     dy = t->ypos - wl->rect.top;
     new_desk = t->desk;
     if (flags & (BBTI_SWITCHTO|BBTI_SETDESK))
-        if (new_desk < 0 || new_desk >= nScreens)
+        if (new_desk < 0 || new_desk >= getWorkspaces().GetScreenCount())
             return false;
 
-    switch_desk = flags & BBTI_SWITCHTO ? new_desk : currentScreen;
+    switch_desk = flags & BBTI_SWITCHTO ? new_desk : getWorkspaces().GetScreenCurrent();
     window_desk = flags & BBTI_SETDESK ? new_desk : wl->desk;
     move_before = switch_desk == window_desk;
 
     check_appwindows(wl);
-    defer = switch_desk != currentScreen;
+    defer = switch_desk != getWorkspaces().GetScreenCurrent();
 
     dolist (wl, vwm_WL)
         if (wl->check) {
@@ -490,7 +492,7 @@ ST bool set_location_helper(HWND hwnd, struct taskinfo *t, unsigned flags)
 
 void vwm_switch(int new_desk)
 {
-    if (new_desk < 0 || new_desk >= nScreens)
+    if (new_desk < 0 || new_desk >= getWorkspaces().GetScreenCount())
         return;
     vwm_update_winlist();
     defer_windows(new_desk);
@@ -510,7 +512,7 @@ void vwm_gather(void)
 //=========================================================
 // Set window properties
 
-bool vwm_set_location(HWND hwnd, struct taskinfo *t, unsigned flags)
+bool vwm_set_location(HWND hwnd, struct taskinfo const *t, unsigned flags)
 {
     vwm_update_winlist();
     return set_location_helper(hwnd, t, flags);
@@ -521,7 +523,7 @@ bool vwm_set_desk(HWND hwnd, int new_desk, bool switchto)
     struct taskinfo t;
     unsigned flags;
 
-    if (new_desk < 0 || new_desk >= nScreens)
+    if (new_desk < 0 || new_desk >= getWorkspaces().GetScreenCount())
         return false;
 
     t.desk = new_desk;
@@ -595,7 +597,7 @@ bool vwm_lower_window(HWND hwnd)
 int vwm_get_desk(HWND hwnd)
 {
     winlist *wl = (winlist*)assoc(vwm_WL, hwnd);
-    return wl ? wl->desk : currentScreen;
+    return wl ? wl->desk : getWorkspaces().GetScreenCurrent();
 }
 
 bool vwm_get_location(HWND hwnd, struct taskinfo *t)
@@ -615,7 +617,7 @@ bool vwm_get_location(HWND hwnd, struct taskinfo *t)
                 return false;
         }
     }
-    t->desk = wl ? wl->desk : currentScreen;
+    t->desk = wl ? wl->desk : getWorkspaces().GetScreenCurrent();
     t->xpos = p->left;
     t->ypos = p->top;
     t->width = p->right - p->left;
@@ -623,19 +625,26 @@ bool vwm_get_location(HWND hwnd, struct taskinfo *t)
     return true;
 }
 
-bool vwm_get_status(HWND hwnd, int what)
+bool vwm_get_status(HWND hwnd, E_VwmStatus what)
 {
     winlist *wl;
     wl = (winlist*)assoc(vwm_WL, hwnd);
-    if (wl) switch (what) {
-        case VWM_MOVED:  return wl->moved;
-        case VWM_STICKY: return wl->sticky_app;
-        case VWM_HIDDEN: return wl->hidden;
-        case VWM_ICONIC: return wl->iconic;
-        case VWM_ONBG:   return wl->onbg;
-    } else switch (what) {
-        case VWM_STICKY: return check_sticky_name(hwnd);
+    if (wl)
+    {
+        switch (what)
+        {
+          case VWM_MOVED:  return wl->moved;
+          case VWM_STICKY: return wl->sticky_app;
+          case VWM_HIDDEN: return wl->hidden;
+          case VWM_ICONIC: return wl->iconic;
+          case VWM_ONBG:   return wl->onbg;
+        }
     }
+    else
+        switch (what)
+        {
+            case VWM_STICKY: return getWorkspaces().CheckStickyName(hwnd);
+        }
     return false;
 }
 
@@ -646,7 +655,7 @@ void vwm_init(void)
 {
     vwm_alt_method = Settings_altMethod;
     vwm_styleXPFix = Settings_styleXPFix;
-    vwm_enabled = nScreens > 1;
+    vwm_enabled = getWorkspaces().GetScreenCount() > 1;
 }
 
 void vwm_exit(void)
@@ -674,18 +683,18 @@ void vwm_reconfig(bool defer)
     }
 
     dolist (wl, vwm_WL)
-        if (wl->desk >= nScreens)
+        if (wl->desk >= getWorkspaces().GetScreenCount())
             defer = true;
 
-    if (currentScreen >= nScreens) {
-        currentScreen = nScreens - 1;
+    if (getWorkspaces().GetScreenCurrent() >= getWorkspaces().GetScreenCount()) {
+        getWorkspaces().SetScreenCurrent(getWorkspaces().GetScreenCount() - 1);
         defer = true;
     }
 
     if (defer)
-        vwm_switch(currentScreen);
+        vwm_switch(getWorkspaces().GetScreenCurrent());
 
-    vwm_enabled = nScreens > 1;
+    vwm_enabled = getWorkspaces().GetScreenCount() > 1;
 }
 
 //=========================================================
