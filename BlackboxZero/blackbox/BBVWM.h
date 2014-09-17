@@ -45,7 +45,7 @@ void vwm_gather ();
 // Set window properties
 
 bool vwm_set_desk (HWND hwnd, int desk, bool switchto);
-bool vwm_set_location (HWND hwnd, taskinfo * t, unsigned flags);
+bool vwm_set_location (HWND hwnd, taskinfo const * t, unsigned flags);
 bool vwm_set_sticky (HWND hwnd, bool set);
 bool vwm_set_onbg (HWND hwnd, bool set);
 bool vwm_lower_window (HWND hwnd);

@@ -1337,4 +1337,7 @@ bool CheckSticky (HWND hwnd) { return getWorkspaces().CheckSticky(hwnd); }
 void MakeOnBG (HWND hwnd) { return getWorkspaces().MakeOnBG(hwnd); }
 void RemoveOnBG (HWND hwnd) { return getWorkspaces().RemoveOnBG(hwnd); }
 bool CheckOnBG (HWND hwnd) { return getWorkspaces().CheckOnBG(hwnd); }
+
+const struct tasklist * GetTaskListPtr() { return getWorkspaces().GetTaskListPtr(); }
+bool SetTaskLocation (HWND hwnd, struct taskinfo const *pti, UINT flags) { return getWorkspaces().SetTaskLocation(hwnd, pti, flags); }
 //===========================================================================
