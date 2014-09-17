@@ -918,12 +918,12 @@ void readStyle(void)
         0
     };
 
-    void *p;
+    void *p = 0;
     bool is_style070;
     bool safeTitle = false;
-    const short *s;
+    const short *s = 0;
     short id, flags;
-    int tfh, fontheight, fontCollar;
+    int tfh = 0, fontheight = 0, fontCollar = 0;
     StyleItem *pG;
     windowGradients *wG;
     char style[MAX_PATH], temp1[32], temp2[32];

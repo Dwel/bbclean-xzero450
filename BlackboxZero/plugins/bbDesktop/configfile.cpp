@@ -206,7 +206,7 @@ string ConfigFile::GetItemByKey(string key)
 	string line;
 	string linekey;
 	string linedata;
-    int linepos;
+  size_t linepos;
 	// Go over every item in the list until one is found
 	for(int i = 0; i < (int)mConfigEntries.size(); i++)
 	{

@@ -213,7 +213,7 @@ namespace {
 	int utf8_encode (wchar_t const * wstr, char * buff, size_t buff_sz)
 	{
 		size_t const w_size = wcslen(wstr);
-		int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, w_size, NULL, 0, NULL, NULL);
+		size_t size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, w_size, NULL, 0, NULL, NULL);
 		if (size_needed > buff_sz)
 			size_needed = buff_sz;
 		int const n = WideCharToMultiByte(CP_UTF8, 0, wstr, w_size, buff, size_needed, NULL, NULL);
@@ -227,7 +227,7 @@ namespace {
 	int utf8_decode (char const * str, wchar_t * buff, size_t buff_sz)
 	{
 		size_t const size = strlen(str);
-		int size_needed = MultiByteToWideChar(CP_UTF8, 0, str, size, NULL, 0);
+		size_t size_needed = MultiByteToWideChar(CP_UTF8, 0, str, size, NULL, 0);
 		if (size_needed > buff_sz)
 			size_needed = buff_sz;
 		int const n = MultiByteToWideChar(CP_UTF8, 0, str, size, buff, size_needed);

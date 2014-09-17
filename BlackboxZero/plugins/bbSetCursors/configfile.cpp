@@ -72,7 +72,7 @@ bool ConfigFile::Save(string filename)
 		ofstream rcfile(lFileName.c_str());
 		if (rcfile.is_open())
 		{
-			for(int i = 0; i < mConfigEntries.size(); i++)
+			for(size_t i = 0; i < mConfigEntries.size(); i++)
 			{
 				rcfile << mConfigEntries[i] << endl;
 			}
@@ -204,7 +204,7 @@ string ConfigFile::GetItemByKey(string key)
 	string linedata;
     long linepos;
 	// Go over every item in the list until one is found
-	for(int i = 0; i < mConfigEntries.size(); i++)
+	for(size_t i = 0; i < mConfigEntries.size(); i++)
 	{
 		line = mConfigEntries[i];
 		linepos = line.find(":");
@@ -228,7 +228,7 @@ bool ConfigFile::SetItemByKey(string key, string value)
 	string linedata;
     long linepos;
 	// Go over every item in the list until one is found
-	for(int i = 0; i < mConfigEntries.size(); i++)
+	for(size_t i = 0; i < mConfigEntries.size(); i++)
 	{
 		line = mConfigEntries[i];
 		linepos = line.find(":");

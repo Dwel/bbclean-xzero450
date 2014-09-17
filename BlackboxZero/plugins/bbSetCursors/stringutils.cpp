@@ -20,7 +20,7 @@ using namespace std;
   */
 std::string strlower(std::string str)
 {
-    for (int i = 0; i < str.length(); i++)
+    for (size_t i = 0; i < str.length(); i++)
     {
         str[i] = tolower (str[i]);
     }
