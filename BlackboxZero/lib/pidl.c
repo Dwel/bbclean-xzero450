@@ -281,7 +281,10 @@ int sh_getfolderpath (char * szPath, size_t n, UINT csidl)
     LPITEMIDLIST item;
     if (SUCCEEDED(SHGetSpecialFolderLocation(NULL, csidl, &item)))
     {
-		BOOL result = SHGetPathFromIDListEx(item, szPath, n, GPFIDL_DEFAULT);
+        WCHAR wpath[1024];
+        BOOL result = FALSE;
+        MultiByteToWideChar(CP_ACP, 0, szPath, -1, wpath, 1024);
+		    result = SHGetPathFromIDListEx(item, wpath, n, GPFIDL_DEFAULT);
         SHMalloc_Free(item);
         return FALSE != result;
     }
