@@ -92,7 +92,7 @@ public:
     void send_task_refresh () const;
     void workspaces_set_desk ();
     API_EXPORT bool GetTaskLocation(HWND hwnd, taskinfo * t);
-    API_EXPORT bool SetTaskLocation (HWND hwnd, taskinfo * t, UINT flags);
+    API_EXPORT bool SetTaskLocation (HWND hwnd, taskinfo const * t, UINT flags);
     void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam);
 
 protected:

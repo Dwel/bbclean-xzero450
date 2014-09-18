@@ -428,7 +428,7 @@ ST void explicit_move(winlist *wl)
             );
 }
 
-ST bool set_location_helper(HWND hwnd, struct taskinfo *t, unsigned flags)
+ST bool set_location_helper(HWND hwnd, taskinfo const * t, unsigned flags)
 {
     winlist *wl;
     int dx, dy, new_desk, switch_desk, window_desk;
@@ -512,7 +512,7 @@ void vwm_gather(void)
 //=========================================================
 // Set window properties
 
-bool vwm_set_location(HWND hwnd, struct taskinfo *t, unsigned flags)
+bool vwm_set_location(HWND hwnd, struct taskinfo const *t, unsigned flags)
 {
     vwm_update_winlist();
     return set_location_helper(hwnd, t, flags);

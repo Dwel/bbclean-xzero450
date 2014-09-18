@@ -1545,7 +1545,7 @@ bool Workspaces::GetTaskLocation(HWND hwnd, taskinfo * t)
 // API: SetTaskLocation - move a window and it's popups to another desktop and/or position
 //===========================================================================
 
-bool Workspaces::SetTaskLocation (HWND hwnd, taskinfo * t, UINT flags)
+bool Workspaces::SetTaskLocation (HWND hwnd, taskinfo const * t, UINT flags)
 {
     bool is_top = hwnd == activeTaskWindow;
     if (false == vwm_set_location(hwnd, t, flags))

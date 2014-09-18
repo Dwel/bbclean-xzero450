@@ -874,7 +874,7 @@ extern "C" {
     } tasklist;
 
     /* Direct access: get the internal TaskList. */
-    //API_EXPORT const struct tasklist *GetTaskListPtr(void);
+    API_EXPORT const struct tasklist * GetTaskListPtr (); // @NOTE: bbpager uses that @FIXME
 
     /* ------------------------------------ */
     /* Workspace (aka Desktop) Information */
@@ -919,7 +919,7 @@ extern "C" {
     //API_EXPORT bool GetTaskLocation(HWND hwnd, struct taskinfo *pti);
 
     /* set workspace and/or position for window */
-    //API_EXPORT bool SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags);
+    API_EXPORT bool SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags); // @NOTE: bbpager uses that @FIXME
     /* where flags are any combination of: */
     #define BBTI_SETDESK    1 /* move window to desk as specified */
     #define BBTI_SETPOS     2 /* move window to x/ypos as specified */

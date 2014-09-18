@@ -125,9 +125,9 @@ bool inSlit = false;	//Are we loaded in the slit? (default of no)
 HWND hSlit;				//The Window Handle to the Slit (for if we are loaded)
 
 // Compatibility
-bool (*BBPager_STL)(HWND, struct taskinfo *, UINT) = NULL;
-tasklist* (*BBPager_GTLP)(void) = NULL;
-struct tasklist *tl;
+bool (*BBPager_STL)(HWND, taskinfo const *, UINT) = NULL;
+tasklist const * (*BBPager_GTLP)(void) = NULL;
+tasklist const * tl = 0;
 bool is_xoblite, usingAltMethod;
 
 //bool loggerOn = true;
@@ -1514,7 +1514,7 @@ BOOL CALLBACK CheckTaskEnumProc_AltMethod(HWND window, LPARAM lParam)
 	return 1;
 }
 
-bool AddBBWindow(tasklist *tl)
+bool AddBBWindow(tasklist const *tl)
 {
 	int height, width, bbdesk;
 	RECT desk;
@@ -2496,7 +2496,7 @@ void ClearToolTips(void)
 
 //===========================================================================
 
-bool BBPager_SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags)
+bool BBPager_SetTaskLocation(HWND hwnd, taskinfo const *pti, UINT flags)
 {
 	if (NULL == BBPager_STL) 
 	{
@@ -2507,7 +2507,7 @@ bool BBPager_SetTaskLocation(HWND hwnd, struct taskinfo *pti, UINT flags)
 	return ( 1 == BBPager_STL(hwnd, pti, flags) );
 }
 
-tasklist* BBPager_GetTaskListPtr(void)
+tasklist const * BBPager_GetTaskListPtr()
 {
 	if (NULL == BBPager_GTLP) 
 	{
