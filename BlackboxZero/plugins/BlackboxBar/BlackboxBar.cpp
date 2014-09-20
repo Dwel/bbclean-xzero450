@@ -22,8 +22,8 @@
 */
 
 #ifdef BBTINY
-#define NO_DROP
-#define NO_TIPS
+#	define NO_DROP
+#	define NO_TIPS
 #endif
 
 #include "BBApi.h"
@@ -32,7 +32,7 @@
 #include "bbPlugin.h"
 #include "drawico.h"
 #ifndef NO_TIPS
-#include "tooltips.h"
+#	include "tooltips.h"
 #endif
 
 #include <shellapi.h>
@@ -40,26 +40,23 @@
 #include <time.h>
 #include "Workspaces.h"
 
-#ifndef ASFW_ANY
-#define ASFW_ANY ((DWORD)-1)
-#endif
-
 #ifndef MK_ALT
-#define MK_ALT 32
+#	define MK_ALT 32
 #endif
 
 #define ST static
 
 #define MY_BROAM "@bbLeanBar"
+//#define MY_BROAM "@BlackBoxBar"
 
 #ifdef BBTINY
-const char szVersion	 [] = "bbLeanBar+ 1.17t";
-const char szInfoVersion [] = "1.17t";
+const char szVersion	 [] = "BlackboxBar 1.18t";
+const char szInfoVersion [] = "1.18t";
 #else
-const char szVersion	 [] = "bbLeanBar+ 1.17";
-const char szInfoVersion [] = "7.11";
+const char szVersion	 [] = "BlackboxBar 1.18";
+const char szInfoVersion [] = "1.18";
 #endif
-const char szAppName	 [] = "bbLeanBar";
+const char szAppName	 [] = "BlackboxBar";
 const char szInfoAuthor  [] = "grischka|TheDevTeam";
 const char szInfoRelDate [] = __DATE__;
 const char szInfoLink	 [] = "http://bb4win.sourceforge.net/bblean";
@@ -67,25 +64,27 @@ const char szInfoEmail	 [] = "grischka@users.sourceforge.net";
 const char szCopyright	 [] = "2003-2009 grischka";
 
 //===========================================================================
-bool ShowSysmenu(HWND TaskWnd, HWND BarWnd, RECT *pRect, const char *plugin_broam);
-bool exec_sysmenu_command(const char *temp, bool sendToSwitchTo);
-bool sysmenu_exists();
+bool ShowSysmenu (HWND TaskWnd, HWND BarWnd, RECT * pRect, const char * plugin_broam);
+bool exec_sysmenu_command (const char * temp, bool sendToSwitchTo);
+bool sysmenu_exists ();
 
-extern "C" API_EXPORT
-void bbDrawPix(HDC hDC, RECT *p_rect, COLORREF picColor, int style);
+extern "C" API_EXPORT void bbDrawPix (HDC hDC, RECT * p_rect, COLORREF picColor, int style);
 
 #ifndef NO_DROP
-ST class TinyDropTarget *init_drop_targ(HWND hwnd);
-ST void exit_drop_targ(class TinyDropTarget *m_TinyDropTarget);
+ST class TinyDropTarget * init_drop_targ (HWND hwnd);
+ST void exit_drop_targ (TinyDropTarget * tinyDropTarget);
 #endif
 
-#define CLOCK_TIMER 2
-#define LANGUAGE_TIMER 3
-#define LABEL_TIMER 4
-#define TASK_RISE_TIMER 5
-#define TASKLOCK_TIMER 6
-#define GESTURE_TIMER 7
-#define CHECK_FULLSCREEN_TIMER 8
+enum E_BarTimers
+{
+	CLOCK_TIMER = 2,
+	LANGUAGE_TIMER = 3,
+	LABEL_TIMER = 4,
+	TASK_RISE_TIMER = 5,
+	TASKLOCK_TIMER = 6,
+	GESTURE_TIMER = 7,
+	CHECK_FULLSCREEN_TIMER = 8
+};
 
 // flags for invalidation
 #define UPD_DRAW 0x180
@@ -93,7 +92,7 @@ ST void exit_drop_targ(class TinyDropTarget *m_TinyDropTarget);
 
 //====================
 HWND BBhwnd;
-ST int currentScreen;
+ST int currentScreen = 0;
 ST char screenName[80];
 
 ST StyleItem NTaskStyle;
@@ -106,7 +105,7 @@ ST int styleBevelWidth = 0;
 ST int styleBorderWidth = 0;
 ST COLORREF styleBorderColor;
 
-struct plugin_info * g_PI = 0;
+plugin_info * g_PI = 0;
 
 //====================
 #define NIF_INFO 0x00000010
@@ -126,30 +125,28 @@ void EnumTasks (TASKENUMPROC lpEnumFunc, LPARAM lParam)
 }
 
 //===========================================================================
-// Plugin support for ShadowColor & OutlineColor
-
-/*int BB_DrawText(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uFormat, StyleItem * pSI)
-{
-		int (*pBBDrawText)(HDC hDC, const char *lpString, int nCount, RECT *rc, UINT uFormat, StyleItem * pSI);
-		*(FARPROC*)&pBBDrawText = GetProcAddress((HINSTANCE)GetModuleHandle(NULL), "BBDrawText");
-		if (pBBDrawText)
-			return pBBDrawText(hDC, lpString, -1, rc, uFormat, pSI);
-		else
-			DrawText(hDC, lpString, -1, rc, uFormat);
-		return 1;
-}*/
-
-//===========================================================================
 
 #include "BuffBmp.cpp"
 #ifndef NO_DROP
-#include "TinyDropTarg.cpp"
+#	include "TinyDropTarg.cpp"
 #endif
 
 //===========================================================================
 
-struct config { const char *str; int mode; const void *def; const void *ptr; };
-struct pmenu { const char *displ; const char *msg; int f; const void *ptr; };
+struct config
+{
+	const char * str;
+	int mode;
+	const void * def;
+	const void * ptr;
+};
+struct pmenu
+{
+	const char * displ;
+	const char * msg;
+	int f;
+	const void * ptr;
+};
 
 struct barinfo : plugin_info
 {
@@ -276,35 +273,35 @@ struct barinfo : plugin_info
 	// --------------------------------------------------------------
 	// class methods
 
-	void process_broam(const char *temp, int f);
-	LRESULT wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *ret);
-	void show_menu(bool);
-	void desktop_margin_fn (void);
-	void pos_changed(void);
-	void set_tbinfo(void);
-	void reset_tbinfo(void);
+	void process_broam (const char * temp, int f);
+	LRESULT wnd_proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT * ret);
+	void show_menu (bool);
+	void desktop_margin_fn ();
+	void pos_changed ();
+	void set_tbinfo ();
+	void reset_tbinfo ();
 
-	void set_screen_info(void);
-	void set_clock_string (void);
-	void update_windowlabel(void);
-	int get_text_width(const char *cp, StyleItem * si);
+	void set_screen_info ();
+	void set_clock_string ();
+	void update_windowlabel ();
+	int get_text_width (const char * cp, StyleItem * si);
 
-	void update(int);
+	void update (int);
 
-	void post_trayicon_message(UINT wParam);
-	bool check_fullscreen_window(void);
-	void GetRCSettings();
-	void WriteRCSettings();
-	void GetStyleSettings();
-	void make_cfg();
+	void post_trayicon_message (UINT wParam);
+	bool check_fullscreen_window ();
+	void GetRCSettings ();
+	void WriteRCSettings ();
+	void GetStyleSettings ();
+	void make_cfg ();
 
 	// --------------------------------------------------------------
 	// tasklist support - wrapper for the GetTask... functions
 	// to implement the 'current tasks only' feature
 
-	const struct tasklist *GetTaskListPtrEx(void) { return taskList; }
+	const struct tasklist * GetTaskListPtrEx () { return taskList; }
 
-	static BOOL task_enum_func(const struct tasklist *tl, LPARAM lParam)
+	static BOOL task_enum_func (const tasklist * tl, LPARAM lParam)
 	{
 		struct barinfo *PI = (struct barinfo *)lParam;
 
@@ -323,41 +320,43 @@ struct barinfo : plugin_info
 				return TRUE;
 		}
 
-		struct tasklist *item = c_new(struct tasklist); // @NOTE: has to be c_new, it is deleted by m_free
+		tasklist * item = c_new(tasklist); // @NOTE: has to be c_new, it is deleted by m_free
 		*item = *tl;
 		cons_node(&PI->taskList, item);
 		return TRUE;
 	}
 
-	void DelTasklist(void)
+	void DelTasklist ()
 	{
 		freeall(&taskList);
 	}
 
-	void NewTasklist(void)
+	void NewTasklist ()
 	{
 		DelTasklist();
 		EnumTasks(task_enum_func, (LPARAM)this);
 		reverse_list(&taskList);
 	}
 
-	struct tasklist * GetTaskPtrEx(int pos)
+	tasklist * GetTaskPtrEx (int pos)
 	{
-		struct tasklist *tl = taskList; int i = 0;
+		tasklist * tl = taskList;
+		int i = 0;
 		while (tl) { if (pos == i) break; i++, tl = tl->next; }
 		return tl;
 	}
 
-	int GetTaskListSizeEx(void)
+	int GetTaskListSizeEx ()
 	{
-		struct tasklist *tl = taskList; int i = 0;
+		tasklist * tl = taskList;
+		int i = 0;
 		while (tl) { i++, tl = tl->next; }
 		return i;
 	}
 
-	HWND GetTaskWindowEx(int i)
+	HWND GetTaskWindowEx (int i)
 	{
-		struct tasklist *tl = GetTaskPtrEx(i);
+		tasklist * tl = GetTaskPtrEx(i);
 		return tl ? tl->hwnd : NULL;
 	}
 
@@ -373,8 +372,9 @@ struct barinfo : plugin_info
 	// hWnd and uId are to identify the icon for lookup, index is
 	// its orignal index in the core's list, true for hidden means the
 	// icon is not shown unless trayShowAll is true.
-	struct trayNode {
-		struct trayNode *next;
+	struct trayNode
+	{
+		trayNode * next;
 		bool hidden;
 		bool mark;
 		bool tip_checked;
@@ -386,18 +386,18 @@ struct barinfo : plugin_info
 
 	// another list for the info as loaded from/saved to bbleanbar.rc
 	struct traySave {
-		struct traySave *next;
+		traySave * next;
 		unsigned uID;
 		char class_name[CLASS_NAME_MAX];
 	};
 
-	traySave *traySaveList;
-	trayNode *trayList;
+	traySave * traySaveList;
+	trayNode * trayList;
 	int trayVisiblesCount;
 	bool trayShowAll;
 
 	// clean up everything with the tray wrapper
-	void DelTraylist(void)
+	void DelTraylist ()
 	{
 		freeall(&trayList);
 		freeall(&traySaveList);
@@ -407,12 +407,12 @@ struct barinfo : plugin_info
 	// these three are the wrappers that replace the
 	// previous plain implementation
 
-	int GetTraySizeEx(void)
+	int GetTraySizeEx ()
 	{
 		return trayVisiblesCount;
 	}
 
-	systemTray *GetTrayIconEx(int i)
+	systemTray * GetTrayIconEx (int i)
 	{
 		return GetTrayIcon(RealTrayIndex(i));
 	}
@@ -420,9 +420,10 @@ struct barinfo : plugin_info
 	// -----------------------------------------------
 
 	// get icon node from index, counting only visibles
-	trayNode *GetTrayNode(int vis_index)
+	trayNode * GetTrayNode (int vis_index)
 	{
-		trayNode *tn; int n = vis_index;
+		trayNode * tn;
+		int n = vis_index;
 		dolist (tn, trayList)
 			if (false == tn->hidden || trayShowAll)
 				if (n-- == 0)
@@ -431,17 +432,17 @@ struct barinfo : plugin_info
 	}
 
 	// get real index from visibles index
-	int RealTrayIndex(int vis_index)
+	int RealTrayIndex (int vis_index)
 	{
 		trayNode *tn = GetTrayNode(vis_index);
 		return tn ? tn->index : -1;
 	}
 
 	// build / refresh secondary trayList
-	void NewTraylist(void)
+	void NewTraylist ()
 	{
-		struct trayNode *tn, **ptn;
-		struct traySave *sn;
+		trayNode * tn, ** ptn;
+		traySave * sn;
 		int n, ts;
 
 		if (false == this->has_tray)
@@ -1315,7 +1316,7 @@ void barinfo::GetRCSettings()
 			"WindowLabel"	,
 			"Space",
 			"CurrentOnlyButton" ,
-			"TaskStyleButton" ,
+			"TaskStyleBstruct utton" ,
 			"WorkspaceButtonL"	,
 			"WorkspaceButtonR"	,
 			"WindowButtonL"  ,
