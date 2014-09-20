@@ -109,75 +109,100 @@ void bbDrawText (HDC hDC, const char *text, RECT *p_rect, unsigned format)
     return 1; //FIXME: Supposed to be DrawText(); - Should probably not call into bbDrawText to do the dirty work
 }*/
 
-int BBDrawTextAltW (HDC hDC, LPCWSTR lpString, int nCount, RECT *lpRect, unsigned uFormat, StyleItem* pG)
+int BBDrawTextAltW (HDC hDC, LPCWSTR lpString, int nCount, RECT *lpRect, unsigned uFormat, StyleItem* si)
 {
-	if (pG->ShadowXY){ // draw shadow
-		RECT rcShadow;
-		int x = pG->ShadowX;
-		int y = pG->ShadowY;
-		SetTextColor(hDC, pG->ShadowColor);
-		if (pG->FontShadow){ // draw shadow with outline
-			for (int i = 0; i <= 2; i++){
-				for (int j = 0; j <= 2; j++){
+	bool const bShadow = (si->validated & V_SHADOWCOLOR) && (si->ShadowColor != (CLR_INVALID));
+	if (bShadow)
+	{
+		// draw shadow
+		int const x = si->ShadowX;
+		int const y = si->ShadowY;
+		SetTextColor(hDC, si->ShadowColor);
+		if (si->FontShadow)
+		{
+			// draw shadow with outline
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 0; j < 3; j++)
+				{
 					if (!((i | j) & 0x2)) continue;
+					RECT rcShadow;
 					_CopyOffsetRect(&rcShadow, lpRect, i, j);
 					DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
 				}
 			}
 		}
-		else{
+		else
+		{
+			RECT rcShadow;
 			_CopyOffsetRect(&rcShadow, lpRect, x, y);
 			DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
 		}
 	}
-	if (pG->FontShadow){ // draw outline
-		RECT rcOutline;
-		SetTextColor(hDC, pG->OutlineColor);
-		for (int i = -1; i <= 1; i++){
-			for (int j = -1; j <= 1; j++){
+
+	bool const bOutline = (si->validated & V_OUTLINECOLOR) && (si->OutlineColor != (CLR_INVALID));
+	if (bOutline)
+	{
+		// draw outline
+		SetTextColor(hDC, si->OutlineColor);
+		for (int i = -1; i < 2; i++)
+		{
+			for (int j = -1; j < 2; j++)
+			{
 				if (!(i | j)) continue;
+				RECT rcOutline;
 				_CopyOffsetRect(&rcOutline, lpRect, i, j);
 				DrawTextW(hDC, lpString, -1, &rcOutline, uFormat);
 			}
 		}
 	}
 	// draw text
-	SetTextColor(hDC, pG->TextColor);
+	SetTextColor(hDC, si->TextColor);
 	return DrawTextW(hDC, lpString, -1, lpRect, uFormat);
 }
 
 int BBDrawTextAltA (HDC hDC, const char * lpString, int nCount, RECT * lpRect, unsigned uFormat, StyleItem * si)
 {
-	bool bShadow = (si->validated & V_SHADOWCOLOR) && (si->ShadowColor != (CLR_INVALID));
-	bool bOutline = (si->validated & V_OUTLINECOLOR) && (si->OutlineColor != (CLR_INVALID));
-
-	int i, j;
-
-	if (bShadow){ // draw shadow
-		RECT rcShadow;
-		int x = si->ShadowX;
-		int y = si->ShadowY;
+	bool const bShadow = (si->validated & V_SHADOWCOLOR) && (si->ShadowColor != (CLR_INVALID));
+	if (bShadow)
+	{
+		// draw shadow
+		int const x = si->ShadowX;
+		int const y = si->ShadowY;
 		SetTextColor(hDC, si->ShadowColor);
-		if (si->FontShadow){ // draw shadow with outline
-			for (i = 0; i < 3; i++){
-				for (j = 0; j < 3; j++){
+		if (si->FontShadow)
+		{
+			// draw shadow with outline
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 0; j < 3; j++)
+				{
+					RECT rcShadow;
 					if (!((i | j) & 0x2)) continue;
 					_CopyOffsetRect(&rcShadow, lpRect, i - x, j - y);
 					bbDrawText(hDC, lpString, &rcShadow, uFormat); // utf8 support
 				}
 			}
 		}
-		else{
+		else
+		{
+			RECT rcShadow;
 			_CopyOffsetRect(&rcShadow, lpRect, x, y);
 			bbDrawText(hDC, lpString, &rcShadow, uFormat); // utf8 support
 		}
 	}
-	if (bOutline){ // draw outline
-		RECT rcOutline;
+
+	bool const bOutline = (si->validated & V_OUTLINECOLOR) && (si->OutlineColor != (CLR_INVALID));
+	if (bOutline)
+	{
+		// draw outline
 		SetTextColor(hDC, si->OutlineColor);
-		for (i = -1; i < 2; i++){
-			for (j = -1; j < 2; j++){
+		for (int i = -1; i < 2; i++)
+		{
+			for (int j = -1; j < 2; j++)
+			{
 				if (!(i | j)) continue;
+				RECT rcOutline;
 				_CopyOffsetRect(&rcOutline, lpRect, i, j);
 				bbDrawText(hDC, lpString, &rcOutline, uFormat); // utf8 support
 			}
