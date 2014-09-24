@@ -21,6 +21,8 @@
 
 #include "BBApi.h"
 #include "BImage.h"
+#include <cassert>
+#include <algorithm>
 
 #ifndef BI_HIBITS
 /* byte to fill into bits 24-31 */
@@ -261,10 +263,12 @@ static void bevel(struct bimage *bi, bool sunken, int pos)
 }
 
 //====================
-inline int tobyte2(int v) {
-    return ((v<0)?0:(v>255)?255:v);
+inline int tobyte2 (int v)
+{
+    return (v < 0) ? 0 : (v > 255) ? 255 : v;
 }
-inline static void table_fn(struct bimage *bi, unsigned char *p, int length, bool invert)
+
+inline static void table_fn (struct bimage * bi, unsigned char * p, int length, bool invert)
 {
     unsigned char *c = p;
     int i, end, d;
@@ -339,10 +343,8 @@ inline static void table_fn_mirror(struct bimage *bi, unsigned char *p, int leng
 	}
 }
 
-inline static void table_fn_wave(struct bimage *bi, unsigned char *p, int length, bool vertical, COLORREF colour_from, COLORREF colour_to)
+inline static void table_fn_wave(struct bimage *bi, unsigned char *p, size_t buff_sz, int length, bool vertical, COLORREF colour_from, COLORREF colour_to)
 {
-	unsigned char *c = p;
-	int i, e, d;
 
 	unsigned char splitBlue = vertical ? bi->to_blue : bi->from_blue; 
 	unsigned char splitGreen = vertical ? bi->to_green : bi->from_green; 
@@ -361,15 +363,20 @@ inline static void table_fn_wave(struct bimage *bi, unsigned char *p, int length
 		bi->delta_red = colour_from < colour_to ? bi->diff_red : -bi->diff_red;
 	}
 
-	i =  length - 1, d = e = -1;
-	while (i != e)
-	{
-		c[0] = tobyte2(splitBlue + (int)bi->delta_blue  * i / length);
-		c[1] = tobyte2(splitGreen + (int)bi->delta_green * i / length);
-		c[2] = tobyte2(splitRed + (int)bi->delta_red   * i / length);
-		c[3] = 0;
-		c += 4; i += d;
-	}
+  {
+    int i = length - 1, d = -1, e = -1;
+    unsigned char * c = p;
+    while (i != e)
+    {
+      assert(c + 3 < p + buff_sz);
+      c[0] = tobyte2(splitBlue + (int)bi->delta_blue  * i / length);
+      c[1] = tobyte2(splitGreen + (int)bi->delta_green * i / length);
+      c[2] = tobyte2(splitRed + (int)bi->delta_red   * i / length);
+      c[3] = 0;
+      c += 4;
+      i += d;
+    }
+  }
 
 	if (vertical)
 	{
@@ -392,16 +399,20 @@ inline static void table_fn_wave(struct bimage *bi, unsigned char *p, int length
 		bi->delta_red = colour_from < colour_to ? -bi->diff_red : bi->diff_red;
 	}
 
-	c = p + length * 4;
-	i = 0, d = 1, e = length;
+  {
+    unsigned char * c = p + length * 4;
+    int i = 0, d = 1, e = length;
     while (i != e)
     {
-		c[0] = tobyte2(splitBlue + (int)bi->delta_blue  * i / length);
-		c[1] = tobyte2(splitGreen + (int)bi->delta_green * i / length);
-		c[2] = tobyte2(splitRed + (int)bi->delta_red   * i / length);
-		c[3] = 0;
-		c += 4; i += d;
+      assert(c + 3 < p + buff_sz);
+      c[0] = tobyte2(splitBlue + (int)bi->delta_blue  * i / length);
+      c[1] = tobyte2(splitGreen + (int)bi->delta_green * i / length);
+      c[2] = tobyte2(splitRed + (int)bi->delta_red   * i / length);
+      c[3] = 0;
+      c += 4;
+      i += d;
     }
+  }
 }
 
 
@@ -492,17 +503,10 @@ inline static void elli_fn(struct bimage *bi, unsigned char *c, int x, int y)
 // -------------------------------------
 struct bimage *bimage_create(int width, int height,  StyleItem *si)
 {
-    int byte_size;
-    int table_size;
-    bool sunken, interlaced;
-
     unsigned long *s, *d = 0, c, *e, *f;
     int x, y, z, i;
     unsigned char r2, g2, b2;
     unsigned char *p;
-
-    COLORREF color_from, color_to, cr_tmp;
-    int type;
 
     struct bimage *bi = NULL;
 
@@ -511,14 +515,13 @@ struct bimage *bimage_create(int width, int height,  StyleItem *si)
     if (height < 2 && ++height < 2)
         return bi;
 
-    byte_size = (width * height) * BBP;
-    table_size = width + height;
+    int const byte_size = (width * height) * BBP;
+    int table_size = width + height;
     if (table_size < SQR)
         table_size = SQR;
 
-    bi = (struct bimage *)malloc(
-        sizeof(struct bimage)-1 + byte_size + table_size * BBP
-        );
+    size_t const ln = sizeof(struct bimage)-1 + byte_size + table_size * BBP;
+    bi = (struct bimage *)malloc(ln);
 
     if (NULL == bi)
         return bi;
@@ -528,11 +531,11 @@ struct bimage *bimage_create(int width, int height,  StyleItem *si)
     bi->xtab = bi->pixels + byte_size;
     bi->ytab = bi->xtab + width * BBP;
 
-    color_from = si->Color;
-    color_to = si->ColorTo;
-    type = si->type;
-    sunken = si->bevelstyle == BEVEL_SUNKEN;
-    interlaced = si->interlaced;
+    COLORREF color_from = si->Color;
+    COLORREF color_to = si->ColorTo;
+    int type = si->type;
+    bool const sunken = si->bevelstyle == BEVEL_SUNKEN;
+    bool const interlaced = si->interlaced;
 
     if (false == option_070) {
         // backwards compatibility stuff
@@ -541,7 +544,7 @@ struct bimage *bimage_create(int width, int height,  StyleItem *si)
             type = B_HORIZONTAL;
         }
         if (sunken && type >= B_PIPECROSS && type <= B_PYRAMID) {
-            cr_tmp = color_to, color_to = color_from, color_from = cr_tmp;
+            std::swap(color_to, color_from);
         }
     }
 
@@ -605,7 +608,7 @@ struct bimage *bimage_create(int width, int height,  StyleItem *si)
 			break;
 		
 		case B_WAVEHORIZONTAL:
-			table_fn_wave(bi, bi->xtab, (width & 1)?((width+1)/2):(width/2), false, si->Color, si->ColorTo);
+			table_fn_wave(bi, bi->xtab, ln, (width & 1)?((width+1)/2):(width/2), false, si->Color, si->ColorTo);
 			break;
 
 		case B_MIRRORHORIZONTAL:
@@ -626,7 +629,7 @@ struct bimage *bimage_create(int width, int height,  StyleItem *si)
 			break;
 			
 		case B_WAVEVERTICAL:
-			table_fn_wave(bi, bi->ytab, (height & 1)?((height+1)/2):(height/2), true, si->Color, si->ColorTo);
+			table_fn_wave(bi, bi->ytab, ln, (height & 1)?((height+1)/2):(height/2), true, si->Color, si->ColorTo);
 			break;
 		
 		case B_MIRRORVERTICAL:
