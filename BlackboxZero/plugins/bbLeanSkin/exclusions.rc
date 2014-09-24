@@ -97,6 +97,8 @@ squidcam.exe
 wxdevcpp.exe
 
 # vista issues
-# devenv.exe
 nlite.exe
 taskmgr.exe
+
+# additions from 2014
+devenv.exe
