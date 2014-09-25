@@ -173,6 +173,7 @@ struct RuntimeState
 	HWND m_hwndBlackbox;
 	int m_currentDesktop;
 	int m_desktops;
+	int m_desktopsY;
 	int m_winCount;
 	bool m_usingAltMethod;
 	bool m_is_xoblite;
@@ -187,6 +188,7 @@ struct RuntimeState
 		, m_hwndBlackbox(0)
 		, m_currentDesktop(0)
 		, m_desktops(-1)
+		, m_desktopsY(-1)
 		, m_winCount(0)
 		, m_usingAltMethod(false)
 		, m_is_xoblite(false)

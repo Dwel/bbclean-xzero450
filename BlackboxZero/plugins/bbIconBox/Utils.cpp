@@ -106,7 +106,7 @@ void EnumDesks (DESKENUMPROC lpEnumFunc, LPARAM lParam)
     info.deskNames = NULL;
     getWorkspaces().GetDesktopInfo(info);
     string_node *p = info.deskNames;
-    for (int n = 0; n < info.ScreensX; n++)
+    for (int n = 0; n < info.nScreensX; n++)
     {
         DesktopInfo DI;
         DI.number = n;

@@ -187,7 +187,9 @@ void Workspaces::get_desktop_info (DesktopInfo & deskInfo, int i) const
     deskInfo.isCurrent = i == currentScreen;
     deskInfo.number = i;
     deskInfo.name[0] = 0;
-    deskInfo.ScreensX = nScreens;
+    deskInfo.nScreens = nScreens;
+	deskInfo.nScreensX = nScreensX;
+	deskInfo.nScreensY = nScreensY;
     deskInfo.deskNames = deskNames;
     string_node * sp = (string_node *) nth_node(deskNames, i);
     if (sp)

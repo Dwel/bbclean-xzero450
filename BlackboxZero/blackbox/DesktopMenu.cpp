@@ -87,7 +87,7 @@ Menu * MakeTaskFolder(int n, bool popup)
     struct string_node *sn;
 
     getWorkspaces().GetDesktopInfo(DI);
-    if (n < 0 || n >= DI.ScreensX)
+    if (n < 0 || n >= DI.nScreens)
         return NULL;
 
     sn = (struct string_node *)nth_node(DI.deskNames, n);
@@ -111,7 +111,7 @@ Menu* MakeDesktopMenu(int mode, bool popup)
         m = MakeNamedMenu(NLS0("Workspaces"), "Core_tasks_workspaces", popup);
     }
     getWorkspaces().GetDesktopInfo(DI);
-    for (n = 0, d = DI.ScreensX, sl = DI.deskNames; n < d; ++n, sl = sl->next) {
+    for (n = 0, d = DI.nScreens, sl = DI.deskNames; n < d; ++n, sl = sl->next) {
         if (mode == 0) {
             char buf[100];
             MenuItem *fi;

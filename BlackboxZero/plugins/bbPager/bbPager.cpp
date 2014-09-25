@@ -2136,6 +2136,7 @@ void UpdatePosition()
 	// Size of pager
 	
 	g_RuntimeState.m_desktops = 0; // reset number of desktops
+	g_RuntimeState.m_desktopsY = 0;
 	desktopName.clear();
 	SendMessage(g_RuntimeState.m_hwndBlackbox, BB_LISTDESKTOPS, (WPARAM)g_RuntimeState.m_hwndBBPager, 0);
 	// currentDesktop gives current desktop number starting at _0_ !

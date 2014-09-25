@@ -1816,7 +1816,7 @@ void icon_box::show_menu(bool popup)
     sub2 = n_submenu(sub, "Task");
 	n_menuitem_cmd(sub2, "All", "@bbIconBox.create TASK");
     getWorkspaces().GetDesktopInfo(D);
-    for (n = 0; n < D.ScreensX; ++n) {
+    for (n = 0; n < D.nScreensX; ++n) {
         sprintf(b1, "Workspace %d", 1+n);
         sprintf(b2, "@bbIconBox.create TASK%d", 1+n);
         n_menuitem_cmd(sub2, b1, b2);

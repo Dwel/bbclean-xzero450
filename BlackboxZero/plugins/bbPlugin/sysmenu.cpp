@@ -245,7 +245,7 @@ bool ShowSysmenu(HWND Window, HWND Owner, RECT *pRect, const char *plugin_broam)
     n = 0;
     m = MakeNamedMenu(title, getsysmenu_id(temp, &id), true);
 
-    if (info.ScreensX > 1)
+    if (info.nScreensX > 1)
     {
         //bool is_sticky = 0 != SendMessage(BBhwnd, BB_WORKSPACE, BBWS_ISSTICKY, (LPARAM)Window);
         bool is_sticky = CheckSticky(Window);
@@ -253,7 +253,7 @@ bool ShowSysmenu(HWND Window, HWND Owner, RECT *pRect, const char *plugin_broam)
         {
             Menu *s = MakeNamedMenu("Send To", getsysmenu_id(temp, &id), true);
             string_node *p = info.deskNames;
-            for (n = 0; p && n < info.ScreensX; ++n, p = p->next)
+            for (n = 0; p && n < info.nScreensX; ++n, p = p->next)
             {
                 sprintf(broam, sysBroam, Window, n+0x1000);
                 MakeMenuItem(s, p->str, broam, workspace == n);

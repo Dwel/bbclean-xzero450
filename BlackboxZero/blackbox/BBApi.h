@@ -887,7 +887,9 @@ extern "C" {
         char name[32];  /* name of the desktop */
         bool isCurrent; /* if it's the current desktop */
         int number;     /* desktop number */
-        int ScreensX;   /* total number of screens */
+        int nScreens;   /* total number of screens nScreens = (x * y) */
+		int nScreensX;   /* x screens */
+		int nScreensY;   /* y screens */
         struct string_node *deskNames; /* list of all names */
     } DesktopInfo;
 
