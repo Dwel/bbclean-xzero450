@@ -964,11 +964,11 @@ bool BBP_read_window_modes(struct plugin_info *PI, const char *rcfile)
     //PI->alphaValue           = (BYTE)BBP_read_int(PI,  "alpha.value",  192);
     PI->alphaValue      = (BYTE)eightScale_up(BBP_read_int(PI,  "alpha.value",  *(int *)GetSettingPtr(SN_MENUALPHA))); // bb4win
     PI->orient_vertical = PI->is_bar || 0 == _stricmp("vertical", BBP_read_string(PI, NULL, "orientation", "vertical"));
-	if (false == PI->no_icons)
-	{
-		PI->saturation		= eightScale_up(BBP_read_int(PI,  "icon.saturation", 3));
-		PI->hue				= eightScale_up(BBP_read_int(PI,  "icon.hue", 2));
-	}
+    if (false == PI->no_icons)
+    {
+        PI->saturation      = eightScale_up(BBP_read_int(PI,  "icon.saturation", 3));
+        PI->hue             = eightScale_up(BBP_read_int(PI,  "icon.hue", 2));
+    }
     if (NULL == place_string) {
         BBP_write_window_modes(PI);
         return false;
@@ -987,11 +987,11 @@ void BBP_write_window_modes(struct plugin_info *PI)
     write_rc(PI, &PI->pluginToggle);
     write_rc(PI, &PI->alphaEnabled);
     write_rc(PI, &PI->alphaValue);
-	if (false == PI->no_icons)
-	{
-		write_rc(PI, &PI->saturation);
-		write_rc(PI, &PI->hue);
-	}
+    if (false == PI->no_icons)
+    {
+        write_rc(PI, &PI->saturation);
+        write_rc(PI, &PI->hue);
+    }
     if (false == PI->is_bar)
         write_rc(PI, &PI->orient_vertical);
 }
@@ -1005,21 +1005,21 @@ n_menu * BBP_n_placementmenu(struct plugin_info *PI, n_menu *m)
     n_menu *P; int n, last;
     P = n_submenu(m, "Placement");
     last = PI->is_bar ? POS_TopRight : POS_Center;
-	for (n = 1; n <= last; n++)
-	{
-		if (POS_TopLeft == n || POS_CenterLeft == n)
-		{
-			n_menuitem_nop(P, NULL);
-			if (PI->is_bar && POS_CenterLeft == n)
-				n = n + 1;
-		}
+    for (n = 1; n <= last; n++)
+    {
+        if (POS_TopLeft == n || POS_CenterLeft == n)
+        {
+            n_menuitem_nop(P, NULL);
+            if (PI->is_bar && POS_CenterLeft == n)
+                n = n + 1;
+        }
 
-		char b2[80];
-		sprintf(b2, "placement %s", placement_strings[n]);
-		POS_AutoHide == n ? n_menuitem_bol(P, menu_placement_strings[n], "autoHide", PI->autoHide) : n_menuitem_bol(P, menu_placement_strings[n], b2, PI->place == n);
+        char b2[80];
+        sprintf(b2, "placement %s", placement_strings[n]);
+        POS_AutoHide == n ? n_menuitem_bol(P, menu_placement_strings[n], "autoHide", PI->autoHide) : n_menuitem_bol(P, menu_placement_strings[n], b2, PI->place == n);
 
-		if (PI->is_bar && POS_AutoHide == n)
-			n = n + 1;
+        if (PI->is_bar && POS_AutoHide == n)
+            n = n + 1;
     }
     return P;
 }
@@ -1039,32 +1039,31 @@ void BBP_n_insertmenu(struct plugin_info *PI, n_menu *m)
         n_menuitem_bol(m, "Use Slit", "useSlit", PI->useSlit);
     }
 
-	if (false == PI->no_icons)
-	{
-		n_menuitem_int(m, "Icon Saturation", "icon.saturation",  eightScale_down(PI->saturation), 0, 8);
-		n_menuitem_int(m, "Icon Hue", "icon.hue",  eightScale_down(PI->hue), 0, 8);
-	}
+    if (false == PI->no_icons)
+    {
+        n_menuitem_int(m, "Icon Saturation", "icon.saturation",  eightScale_down(PI->saturation), 0, 8);
+        n_menuitem_int(m, "Icon Hue", "icon.hue",  eightScale_down(PI->hue), 0, 8);
+    }
 }
 
-n_menu * BBP_n_windowmenu(struct plugin_info *PI, n_menu *m)
+n_menu * BBP_n_windowmenu (plugin_info * PI, n_menu * m)
 {
-	n_menu *R = n_submenu(m, "Window");
+     n_menu * R = n_submenu(m, "Window");
 
-  if (false == PI->useSlit || NULL == PI->hSlit)
-  {
-      n_menuitem_bol(m, "Always On Top", "alwaysOnTop",  PI->alwaysOnTop);
-      n_menuitem_bol(m, "Auto Hide", "autoHide",  PI->autoHide);
-      if (false == PI->alwaysOnTop)
-          n_menuitem_bol(m, "Raise on DeskClick", "clickRaise", PI->clickRaise);
-      n_menuitem_int(R, "Snap To Edge", "snapWindow",  PI->snapWindow, 0, 50);
-      n_menuitem_bol(m, "Toggle With Plugins", "pluginToggle",  PI->pluginToggle);
-      n_menuitem_nop(m, NULL);
-      n_menuitem_bol(m, "Transparency", "alpha.enabled",  PI->alphaEnabled);
-		  n_menuitem_int(R, "Alpha Value", "alpha.value",  eightScale_down(PI->alphaValue), 0, 8); // bb4win
-      //n_menuitem_int(m, "Alpha Value", "alpha.value",  PI->alphaValue, 0, 255);
-  }
+    if (false == PI->useSlit || NULL == PI->hSlit)
+    {
+        n_menuitem_bol(m, "Always On Top", "alwaysOnTop",  PI->alwaysOnTop);
+        n_menuitem_bol(m, "Auto Hide", "autoHide",  PI->autoHide);
+        if (false == PI->alwaysOnTop)
+            n_menuitem_bol(m, "Raise on DeskClick", "clickRaise", PI->clickRaise);
+        n_menuitem_int(R, "Snap To Edge", "snapWindow",  PI->snapWindow, 0, 50);
+        n_menuitem_bol(m, "Toggle With Plugins", "pluginToggle",  PI->pluginToggle);
+        n_menuitem_nop(m, NULL);
+        n_menuitem_bol(m, "Transparency", "alpha.enabled",  PI->alphaEnabled);
+        n_menuitem_int(R, "Alpha Value", "alpha.value",  eightScale_down(PI->alphaValue), 0, 8); // bb4win
+        //n_menuitem_int(m, "Alpha Value", "alpha.value",  PI->alphaValue, 0, 255);
+    }
     // n_menuitem_bol(m, "Visible", "visible",  PI->visible);
-
     return R;
 }
 

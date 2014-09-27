@@ -29,6 +29,7 @@
 */
 
 #include "BBStyle.h"
+#include <bblib.h>
 
 // This is a must have!  The is how BBSlit knows how big it needs to be!
 #define SLIT_ADD		11001
@@ -1317,7 +1318,8 @@ void DisplayMenu()
 		}
 		MakeMenuItem(BBStyleWindowSubMenu, "Inherit Toolbar Height", "@BBStyleInternal ToggleToolbar", inheritToolbar);
 		MakeMenuItem(BBStyleWindowSubMenu, "Draw Border", "@BBStyleInternal ToggleBorder", frame.drawBorder);
-		if (usingWin2kXP && !inSlit) MakeMenuItem(BBStyleWindowSubMenu, "Transparency", "@BBStyleInternal Transparency", transparency);
+		if (usingWin2kXP && !inSlit)
+			MakeMenuItemInt(BBStyleWindowSubMenu, "Transparency", "@BBStyleInternal Transparency", eightScale_down(transparency), 0, 8);
 		if (!inSlit) MakeMenuItem(BBStyleWindowSubMenu, "Hide Window", "@BBStyleInternal ToggleWindow", hideWindow);
 		if ((hSlit = FindWindow("BBSlit", ""))) 
 			MakeMenuItem(BBStyleWindowSubMenu, "Use Slit", "@BBStyleInternal ToggleSlit", inSlit);
@@ -1727,7 +1729,8 @@ void ReadRCSettings()
 	GetRCRootCommands();*/
 
 	transparency = ReadBool(rcpath, "bbstyle.transparency:", false);
-	transparencyAlpha = ReadInt(rcpath, "bbstyle.transparency.alpha:", 200);
+	transparencyAlpha = ReadInt(rcpath, "bbstyle.transparency.alpha:", 8);
+    transparencyAlpha = eightScale_up(transparencyAlpha);
 
 	frame.drawBorder = ReadBool(rcpath, "bbstyle.drawBorder:", true);
 
@@ -1868,7 +1871,7 @@ void InitRC()
 			snapWindow = true;
 			inheritToolbar = false;
 			transparency = false;
-			transparencyAlpha = 200;
+			transparencyAlpha = 8;
 			frame.drawBorder = true;
 
 			changeTime = 5 * 60 * 1000;

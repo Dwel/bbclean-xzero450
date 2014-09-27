@@ -507,23 +507,24 @@ void SeparatorItem::Paint(HDC hDC)
 #include <shellapi.h>
 #include "../../plugins/bbPlugin/drawico.cpp"
 
-DWORD WINAPI ExtractIconAsync(LPVOID args) {
-    struct IconLoaderWorkItem* item = static_cast<struct IconLoaderWorkItem*>(args);
-    
+DWORD WINAPI ExtractIconAsync(LPVOID args)
+{
+    IconLoaderWorkItem * item = static_cast<IconLoaderWorkItem *>(args);
+
     SetEvent(item->loaderLock);
 
     HICON icon = NULL;
-    while(!item->abort) {
+    while (!item->abort) {
         icon = sh_geticon(item->pidl, item->iconSize);
 
-        if(icon || !item->retries)
+        if (icon || !item->retries)
             break;
 
         item->retries--;
         Sleep(50);
     }
 
-    if(item->abort) {
+    if (item->abort) {
         DestroyIcon(icon);
         return 2;
     }
@@ -539,21 +540,18 @@ DWORD WINAPI ExtractIconAsync(LPVOID args) {
 
 void MenuItem::DrawIcon(HDC hDC)
 {
-    int size, px, py, d;
-
-    if(!m_hIcon && m_iconLoaderWorkItem) {
+    if (!m_hIcon && m_iconLoaderWorkItem)
+    {
         WaitForSingleObject(m_iconLoaderWorkItem->iconMutex, INFINITE);
         m_hIcon = m_iconLoaderWorkItem->icon;
         ReleaseMutex(m_iconLoaderWorkItem->iconMutex);
     }
 
-    if(!m_hIcon && m_pszIcon) {
+    if (!m_hIcon && m_pszIcon)
+    {
         char path[MAX_PATH];
-        const char *p;
-        int index;
-
-        p = Tokenize(m_pszIcon, path, ",");
-        index = 0;
+        const char * p = Tokenize(m_pszIcon, path, ",");
+        int index = 0;
         if (p) {
             index = atoi(p);
             if (index)
@@ -563,8 +561,9 @@ void MenuItem::DrawIcon(HDC hDC)
         ExtractIconEx(path, index, NULL, &m_hIcon, 1);
     }
 
-    if(!m_hIcon && m_pidl_list && !m_iconLoaderWorkItem) {
-        struct IconLoaderWorkItem* item = new struct IconLoaderWorkItem;
+    if (!m_hIcon && m_pidl_list && !m_iconLoaderWorkItem)
+    {
+        IconLoaderWorkItem * item = new IconLoaderWorkItem;
         this->GetItemRect(&item->iconRect);
 
         item->icon = NULL;
@@ -582,19 +581,21 @@ void MenuItem::DrawIcon(HDC hDC)
         CloseHandle(item->loaderLock);
     }
 
-    if(!m_hIcon) {
+    if (!m_hIcon)
         return;
-    }
 
-    size = MenuInfo.nIconSize;
-    d = (m_nHeight - size) / 2;
-    px = m_nLeft + d;
-    py = m_nTop + d;
+    int const size = Settings_menu.iconSize;
+    if (size < 8)
+       return;
+
+    int const d = (m_nHeight - size) / 2;
+    int const px = m_nLeft + d;
+    int const py = m_nTop + d;
+    int const sat = eightScale_up(Settings_menu.iconSaturation);
+    int const hue = eightScale_up(Settings_menu.iconHue);
 
     DrawIconSatnHue(hDC,
-        px, py, m_hIcon,
-		Settings_menu.iconSize, Settings_menu.iconSize, 0, /* BlackboxZero 1.4.2012 */
-        NULL, DI_NORMAL,
-		false == m_bActive, Settings_menu.iconSaturation, Settings_menu.iconHue /* BlackboxZero 1.3.2012 */
+        px, py, m_hIcon, size, size, 0, NULL, DI_NORMAL,
+        false == m_bActive, sat, hue /* BlackboxZero 1.3.2012 */
         );
 }

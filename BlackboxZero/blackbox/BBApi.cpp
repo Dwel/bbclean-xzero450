@@ -676,14 +676,14 @@ BOOL (WINAPI *pSetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 
 bool SetTransparency(HWND hwnd, BYTE alpha)
 {
-    LONG_PTR wStyle1, wStyle2;
-
     //dbg_window(hwnd, "alpha %d", alpha);
     if (!have_imp(pSetLayeredWindowAttributes))
         return false;
 
-    wStyle1 = wStyle2 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-    if (alpha < 255)
+    LONG_PTR wStyle1 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+    LONG_PTR wStyle2 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+    BYTE Alpha = eightScale_up(alpha);
+    if (Alpha < 255)
         wStyle2 |= WS_EX_LAYERED;
     else
         wStyle2 &= ~WS_EX_LAYERED;
@@ -692,7 +692,7 @@ bool SetTransparency(HWND hwnd, BYTE alpha)
         SetWindowLongPtr(hwnd, GWL_EXSTYLE, wStyle2);
 
     if (wStyle2 & WS_EX_LAYERED)
-        return 0 != pSetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA);
+        return 0 != pSetLayeredWindowAttributes(hwnd, 0, Alpha, LWA_ALPHA);
 
     return true;
 }
