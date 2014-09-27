@@ -237,6 +237,8 @@ struct icon_box : public plugin_info
         { "rows",             M_INT, &rows             , (void*)4     },
         { "columns",          M_INT, &columns          , (void*)4     },
         { "icon.size",        M_INT, &iconWidth        , (void*)16    },
+        { "icon.saturation",  M_INT, &saturation       , (void*)3     },
+        { "icon.hue",         M_INT, &hue              , (void*)2     },
         { "drawTitle",        M_BOL, &drawTitle        , (void*)false },
         { "drawBorder",       M_BOL, &drawBorder       , (void*)true  },
         { "toolTips",         M_BOL, &toolTips         , (void*)true  },
@@ -1465,6 +1467,18 @@ void icon_box::process_broam(const char *temp, int f)
     }
 
     if (BBP_broam_int(this, temp, "columns", &columns))
+    {
+        UpdateMetrics();
+        return;
+    }
+
+    if (BBP_broam_int(this, temp, "icon.hue", &hue))
+    {
+        UpdateMetrics();
+        return;
+    }
+
+    if (BBP_broam_int(this, temp, "icon.saturation", &saturation))
     {
         UpdateMetrics();
         return;
