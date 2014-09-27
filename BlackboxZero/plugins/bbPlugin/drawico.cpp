@@ -80,6 +80,8 @@ void DrawIconSatnHue (
     int hueIntensity
     )
 {
+	//saturationValue = eightScale_up(saturationValue);
+	//hueIntensity = eightScale_up(hueIntensity);
     if (0 == apply_satnhue || (saturationValue >= 255 && hueIntensity <= 0)) {
         DrawIconEx(hDC, px, py, IconHop, size_x, size_y, istepIfAniCur, hbrFlickerFreeDraw, diFlags);
         return;

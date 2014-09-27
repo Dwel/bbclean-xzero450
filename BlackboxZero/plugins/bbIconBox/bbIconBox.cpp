@@ -192,8 +192,6 @@ struct icon_box : public plugin_info
     int columns;
     int iconWidth;
     int iconHeight;
-    int saturationValue;
-    int hueIntensity;
     bool drawBorder;
     bool drawTitle;
     bool toolTips;
@@ -239,8 +237,8 @@ struct icon_box : public plugin_info
         { "rows",             M_INT, &rows             , (void*)4     },
         { "columns",          M_INT, &columns          , (void*)4     },
         { "icon.size",        M_INT, &iconWidth        , (void*)16    },
-        { "icon.saturation",  M_INT, &saturationValue  , (void*)80    },
-        { "icon.hue",         M_INT, &hueIntensity     , (void*)60    },
+        { "icon.saturation",  M_INT, &saturation       , (void*)3     },
+        { "icon.hue",         M_INT, &hue              , (void*)2     },
         { "drawTitle",        M_BOL, &drawTitle        , (void*)false },
         { "drawBorder",       M_BOL, &drawBorder       , (void*)true  },
         { "toolTips",         M_BOL, &toolTips         , (void*)true  },
@@ -1149,7 +1147,7 @@ void icon_box::paint_icon(HDC hdc, Item *icon, bool active, bool sunken)
 
     if (icon->hIcon)
     {
-        DrawIconSatnHue(hdc, iconRect.left, iconRect.top, icon->hIcon, iconWidth, iconWidth, 0, NULL, DI_NORMAL, false == active, saturationValue, hueIntensity);
+        DrawIconSatnHue(hdc, iconRect.left, iconRect.top, icon->hIcon, iconWidth, iconWidth, 0, NULL, DI_NORMAL, false == active, saturation, hue);
 #if 0
         if (active && ! sunken) {
             const int d = 1;
@@ -1474,13 +1472,13 @@ void icon_box::process_broam(const char *temp, int f)
         return;
     }
 
-    if (BBP_broam_int(this, temp, "icon.hue", &hueIntensity))
+    if (BBP_broam_int(this, temp, "icon.hue", &hue))
     {
         UpdateMetrics();
         return;
     }
 
-    if (BBP_broam_int(this, temp, "icon.saturation", &saturationValue))
+    if (BBP_broam_int(this, temp, "icon.saturation", &saturation))
     {
         UpdateMetrics();
         return;
@@ -1704,8 +1702,8 @@ void icon_box::show_menu(bool popup)
     if (false == is_single_task)
         n_menuitem_bol(sub, "Border", "drawBorder", drawBorder);
     n_menuitem_bol(sub, "Tooltips", "toolTips", toolTips);
-    n_menuitem_int(sub, "Saturation", "icon.saturation", saturationValue, 0, 255);
-    n_menuitem_int(sub, "Hue", "icon.hue", hueIntensity, 0, 255);
+    n_menuitem_int(sub, "Saturation", "icon.saturation", saturation, 0, 255);
+   // n_menuitem_int(sub, "Hue", "icon.hue", hue, 0, 255);
 
     if (false == this->inSlit)
         BBP_n_placementmenu(this, main);
@@ -1767,7 +1765,7 @@ void icon_box::show_menu(bool popup)
     n_menuitem_cmd(main, "Edit Settings",  "@bbIconBox.editRC");
     n_menuitem_cmd(main, "About", "@bbIconBox.about");
     n_showmenu(this, main, popup, 0);
-#endif
+#else
 
     ///// bbzero code
 
@@ -1785,6 +1783,7 @@ void icon_box::show_menu(bool popup)
 
     main = n_makemenu(m_name);
     BBP_n_orientmenu(this, main);
+    sub = n_submenu(main, "Format");
 
     if (orient_vertical) n_menuitem_int(main, "Columns", "columns", columns, 1, 120);
     else n_menuitem_int(main, "Rows", "rows", rows, 1, 120);
@@ -1796,7 +1795,6 @@ void icon_box::show_menu(bool popup)
     n_menuitem_nop(sub, NULL);
 
 
-	sub = n_submenu(main, "Format");
     BBP_n_insertmenu(this, sub);
     n_menuitem_int(sub, "Icon Size", "icon.size", iconWidth, 12, 64);
 
@@ -1884,7 +1882,7 @@ void icon_box::show_menu(bool popup)
     n_menuitem_cmd(main, "Edit Settings",  "@bbIconBox.editRC");
     n_menuitem_cmd(main, "About", "@bbIconBox.about");
     n_showmenu(this, main, popup, 0);
-
+#endif
 }
 
 // ----------------------------------------------

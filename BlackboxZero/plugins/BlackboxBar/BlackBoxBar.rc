@@ -1,5 +1,5 @@
 # ------------------------------------------------------
-# bbLeanBar+ 1.17 - configuration
+# BlackboxBar+ 1.17 - configuration
 
 # Lines starting with # or ! are ignored
 
@@ -9,64 +9,64 @@
 # change the order of items or uncomment some of the
 # currently disabled (!) items)
 
-bbLeanBar.item: WindowLabel
-!bbLeanBar.item: WorkspaceButtonL
-bbLeanBar.item: WorkspaceButtonR
-bbLeanBar.item: WorkspaceLabel
-bbLeanBar.item: Tasks
-bbLeanBar.item: CurrentOnlyButton
-bbLeanBar.item: Tray
-bbLeanBar.item: WindowButtonL
-!bbLeanBar.item: WindowButtonR
-bbLeanBar.item: Clock
+BlackboxBar.item: WindowLabel
+!BlackboxBar.item: WorkspaceButtonL
+BlackboxBar.item: WorkspaceButtonR
+BlackboxBar.item: WorkspaceLabel
+BlackboxBar.item: Tasks
+BlackboxBar.item: CurrentOnlyButton
+BlackboxBar.item: Tray
+BlackboxBar.item: WindowButtonL
+!BlackboxBar.item: WindowButtonR
+BlackboxBar.item: Clock
 
-!bbLeanBar.item: TaskStyleButton
-!bbLeanBar.item: NewLine
-!bbLeanBar.item: Space
+!BlackboxBar.item: TaskStyleButton
+!BlackboxBar.item: NewLine
+!BlackboxBar.item: Space
 
 # ----------------
 # General Settings
-bbLeanBar.placement: TopCenter
-bbLeanBar.position.x: 128
-bbLeanBar.position.y: 0
-bbLeanBar.widthPercent: 80
-bbLeanBar.useSlit: false
-bbLeanBar.pluginToggle: true
-bbLeanBar.OnTop: true
-bbLeanBar.AutoHide: false
-bbLeanBar.autoRaise: true
-bbLeanBar.snapToEdge: 20
-bbLeanBar.arrowBullets: false
-bbLeanBar.alpha.value: 255
-bbLeanBar.transparent: false
+BlackboxBar.placement: BottomCenter
+BlackboxBar.position.x: 128
+BlackboxBar.position.y: 0
+BlackboxBar.widthPercent: 80
+BlackboxBar.useSlit: false
+BlackboxBar.pluginToggle: true
+BlackboxBar.OnTop: true
+BlackboxBar.AutoHide: false
+BlackboxBar.autoRaise: true
+BlackboxBar.snapToEdge: 20
+BlackboxBar.arrowBullets: false
+BlackboxBar.alpha.value: 8
+BlackboxBar.transparent: false
 
 # ---------
 # Task Tabs
-bbLeanBar.tasks.style: 2
-bbLeanBar.tasks.reverse: false
-bbLeanBar.tasks.current: true
-bbLeanBar.tasks.sysmenu: false
-bbLeanBar.tasks.drawBorder: false
-bbLeanBar.tasks.maxWidth: 100
+BlackboxBar.tasks.style: 2
+BlackboxBar.tasks.reverse: false
+BlackboxBar.tasks.current: true
+BlackboxBar.tasks.sysmenu: false
+BlackboxBar.tasks.drawBorder: false
+BlackboxBar.tasks.maxWidth: 100
 
 ------------
 # Icons
-bbLeanBar.icon.saturation: 95
-bbLeanBar.icon.hue: 63
-bbLeanBar.icon.size: -1
+BlackboxBar.icon.saturation: 3
+BlackboxBar.icon.hue: 2
+BlackboxBar.icon.size: 16
 
 # ------------
 # Clock-Format
-bbLeanBar.strftimeFormat: %d %a %H:%M
+BlackboxBar.strftimeFormat: %d %a %H:%M
 
 # ---------------
 # Special Options
-bbLeanBar.balloonTips: true
-bbLeanBar.autoFullscreenHide: true
-bbLeanBar.setDesktopMargin: false
-bbLeanBar.sendToSwitchTo: true
+BlackboxBar.balloonTips: true
+BlackboxBar.autoFullscreenHide: true
+BlackboxBar.setDesktopMargin: false
+BlackboxBar.sendToSwitchTo: true
 
 # -------------------------
 # hidden icons (auto saved)
-bbLeanBar.tray.hidden.count: 0
+BlackboxBar.tray.hidden.count: 0
 

@@ -15,6 +15,7 @@
 */
 
 #include "BBAnalogExMod.h"
+#include <bblib.h>
 
 char *plugin_info[] =
 {
@@ -1517,7 +1518,7 @@ void ShowMyMenu(bool popup)
 			if(!inSlit){
 			MakeMenuItem(configSubmenu, "Transparency", "@BBAnalogExModTransparency", transparency);
 			MakeMenuItem(configSubmenu, "Trans Back", "@BBAnalogExModTransBack", transBack);
-			MakeMenuItemInt(configSubmenu, "Alpha Value", "@BBAnalogExModAlphaValue", alpha, 0, 255);
+			MakeMenuItemInt(configSubmenu, "Alpha Value", "@BBAnalogExModAlphaValue", eightScale_down(alpha), 0, 8);
                         }
 
 			styleSubmenu = MakeNamedMenu("Style Type", "BBAEX_StyleType", popup);
@@ -1620,7 +1621,7 @@ void ReadRCSettings()
 	size = ReadInt(rcpath, "bbanalogexmod.size:", 100);
 	if(size < 5 || size > 300) size = 100;
 
-	alpha = ReadInt(rcpath, "bbanalogexmod.alpha:", 160);
+	alpha = (BYTE)eightScale_up(ReadInt(rcpath, "bbanalogexmod.alpha:", 5));
 	if(alpha > 255) alpha = 255;
 	inSlit = ReadBool(rcpath, "bbanalogexmod.inSlit:", false);
 	alwaysOnTop = ReadBool(rcpath, "bbanalogexmod.alwaysOnTop:", true);
@@ -1693,7 +1694,7 @@ void WriteRCSettings()
 	    	WriteInt(rcpath, "bbanalogexmod.x:", xpos);
 	    	WriteInt(rcpath, "bbanalogexmod.y:", ypos);
 		WriteInt(rcpath, "bbanalogexmod.size:", size);
-		WriteInt(rcpath, "bbanalogexmod.alpha:", alpha);
+		WriteInt(rcpath, "bbanalogexmod.alpha:", eightScale_down(alpha));
 		WriteInt(rcpath, "bbanalogexmod.region:", region);
 		WriteBool(rcpath, "bbanalogexmod.drawBorder:", drawBorder);
 		WriteInt(rcpath, "bbanalogexmod.fontSizeC:", fontSizeC);

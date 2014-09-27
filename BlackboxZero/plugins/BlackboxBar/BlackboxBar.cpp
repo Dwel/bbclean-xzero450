@@ -46,8 +46,7 @@
 
 #define ST static
 
-#define MY_BROAM "@bbLeanBar"
-//#define MY_BROAM "@BlackBoxBar"
+#define MY_BROAM "@BlackBoxBar"
 
 #ifdef BBTINY
 const char szVersion	 [] = "BlackboxBar 1.18t";
@@ -671,7 +670,7 @@ void barinfo::make_cfg()
 	{  "tasks.maxWidth" ,	R_INT, (void*)100,			  &taskMaxWidth },
 
 	{  "icon.saturation" ,	R_INT, (void*)0,			  &saturationValue },
-	{  "icon.hue" ,			R_INT, (void*)60,			  &hueIntensity },
+	{  "icon.hue" ,			R_INT, (void*)2,			  &hueIntensity },
 
 	{  "strftimeFormat" ,	R_STR, (void*)"%a %d %H:%M",  &strftimeFormat },
 	{  "clock.tips" ,		R_BOL, (void*)true,			  &clockTips },
@@ -713,8 +712,8 @@ void barinfo::make_cfg()
 	//--------
 	{ "Icon Size",				"iconSize",			CFG_INT, &iconSize	},
 	//{ "Max. Icon Size",		  "maxIconSize",	  CFG_INT, &maxIconSize },
-	{ "Saturation",				"iconSaturation",	CFG_INT|CFG_255, &saturationValue  },
-	{ "Hue",					"iconHue",			CFG_INT|CFG_255, &hueIntensity	},
+	{ "Saturation",				"iconSaturation",	CFG_INT, &saturationValue  },
+	{ "Hue",					"iconHue",			CFG_INT, &hueIntensity	},
 
 	{ "Clock",					"", CFG_SUB, NULL },
 	{ "Clock Format",			"clockFormat",		CFG_CLOCK|CFG_STR, &strftimeFormat	},

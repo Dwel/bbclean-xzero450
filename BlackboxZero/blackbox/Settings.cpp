@@ -780,8 +780,8 @@ void ReadStyle(const char *style, StyleStruct *pStyle)
     pStyle->is_070 = 0 != get_070(style);
 
 #ifndef BBSETTING_STYLEREADER_ONLY
-    pStyle->toolbarAlpha = Settings_toolbar.alphaEnabled ? Settings_toolbar.alphaValue : 255;
-    pStyle->menuAlpha = Settings_menu.alphaEnabled ? Settings_menu.alphaValue : 255;
+    pStyle->toolbarAlpha = Settings_toolbar.alphaEnabled ? Settings_toolbar.alphaValue : 8;
+    pStyle->menuAlpha = Settings_menu.alphaEnabled ? Settings_menu.alphaValue : 8;
 #endif
 
     s = StyleItems;
@@ -1059,7 +1059,7 @@ static const struct rccfg bbrc_cfg[] = {
     { "#toolbar.autoHide",         C_BOL, (void*)false,         &Settings_toolbar.autoHide },
     { "#toolbar.pluginToggle",     C_BOL, (void*)true ,         &Settings_toolbar.pluginToggle },
     { "#toolbar.alpha.enabled",    C_BOL, (void*)false,         &Settings_toolbar.alphaEnabled },
-    { "#toolbar.alpha.value",      C_INT, (void*)255,           &Settings_toolbar.alphaValue },
+    { "#toolbar.alpha.value",      C_INT, (void*)8,             &Settings_toolbar.alphaValue },
 
     { ".menu.position.x",          C_INT, (void*)100,           &Settings_menu.pos.x },
     { ".menu.position.y",          C_INT, (void*)100,           &Settings_menu.pos.y },
@@ -1079,11 +1079,11 @@ static const struct rccfg bbrc_cfg[] = {
     { ".menu.snapWindow",          C_BOL, (void*)true,          &Settings_menu.snapWindow },
     { ".menu.dropShadows",         C_BOL, (void*)false,         &Settings_menu.dropShadows },
     { ".menu.alpha.enabled",       C_BOL, (void*)false,         &Settings_menu.alphaEnabled },
-    { ".menu.alpha.value",         C_INT, (void*)255,           &Settings_menu.alphaValue },
+    { ".menu.alpha.value",         C_INT, (void*)8,             &Settings_menu.alphaValue },
 
     { ".menu.icon.size",           C_INT, (void*)16,            &Settings_menu.iconSize },
-    { ".menu.icon.saturation",     C_INT, (void*)255,           &Settings_menu.iconSaturation },
-    { ".menu.icon.hue",            C_INT, (void*)0,             &Settings_menu.iconHue },
+    { ".menu.icon.saturation",     C_INT, (void*)3,             &Settings_menu.iconSaturation },
+    { ".menu.icon.hue",            C_INT, (void*)2,             &Settings_menu.iconHue },
     { ".menu.spacing",             C_INT, (void*)0,             &Settings_menu.spacing },
     { ".menu.bullet.enabled",      C_BOL, (void*)true,          &Settings_menu.bullet_enabled },
     { ".menu.scroller.position",   C_STR, (void*)"right",       &Settings_menu.scrollerPosition }, 
