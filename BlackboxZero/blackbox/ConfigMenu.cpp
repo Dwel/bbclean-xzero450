@@ -45,7 +45,7 @@ static const struct int_item {
 	{ &Settings_snapThreshold				,	0,	  20,  0  },
 	{ &Settings_snapPadding					,  -4,	 100, -4  },
 	{ &Settings_toolbar.widthPercent		,  10,	 100, -2  },
-	{ &Settings_toolbar.alphaValue			,	0,	 255, 255 },
+	{ &Settings_toolbar.alphaValue			,	0,	   8,  8  },
 	{ &Settings_autoRaiseDelay				,	0, 10000, -1  },
 	{ &Settings_workspaces					,	1,	  16, -1  },
 	{ &Settings_workspacesX					,	1,	   4, -1  },

@@ -12,7 +12,7 @@ bbSlit.autoRaise: true
 bbSlit.pluginToggle: true
 bbSlit.snapToEdge: true
 bbSlit.alpha.enabled: false
-bbSlit.alpha.value: 192
+bbSlit.alpha.value: 8
 bbSlit.puzzle: true
 bbSlit.alignment: 2
 bbSlit.basewidth: 50

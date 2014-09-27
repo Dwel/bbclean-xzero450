@@ -2,8 +2,8 @@
 @BBInterface Plugin SetPluginProperty SnapWindows true
 @BBInterface Plugin SetPluginProperty SnapDistance 7
 @BBInterface Plugin SetPluginProperty SnapPadding 2
-@BBInterface Plugin SetPluginProperty IconSaturation 160
-@BBInterface Plugin SetPluginProperty IconHue 64
+@BBInterface Plugin SetPluginProperty IconSaturation 5
+@BBInterface Plugin SetPluginProperty IconHue 2
 @BBInterface Plugin SetPluginProperty DeskDropCommand ""
 @BBInterface Plugin SetPluginProperty GlobalOnload ""
 @BBInterface Plugin SetPluginProperty GlobalOnunload ""

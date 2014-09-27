@@ -53,17 +53,20 @@ bool SetFullTransparency(HWND hwnd, BYTE alpha)
 		qSetLayeredWindowAttributes=(BOOL(WINAPI*)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUser32, "SetLayeredWindowAttributes");
     if (NULL == qSetLayeredWindowAttributes) return false;
 
-    LONG_PTR wStyle1, wStyle2;
-    wStyle1 = wStyle2 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+	LONG_PTR wStyle1 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+	LONG_PTR wStyle2 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
-    if (alpha < 255) wStyle2 |= WS_EX_LAYERED;
-    else wStyle2 &= ~WS_EX_LAYERED;
+	BYTE Alpha = eightScale_up(alpha);
+	if (Alpha < 255)
+		wStyle2 |= WS_EX_LAYERED;
+	else
+		wStyle2 &= ~WS_EX_LAYERED;
 
     if (wStyle2 != wStyle1)
         SetWindowLongPtr(hwnd, GWL_EXSTYLE, wStyle2);
 
     if (wStyle2 & WS_EX_LAYERED)
-		return 0 != qSetLayeredWindowAttributes(hwnd, 0, alpha, LWA_COLORKEY);
+		return 0 != qSetLayeredWindowAttributes(hwnd, 0, Alpha, LWA_COLORKEY);
 
     return true;
 }
@@ -736,7 +739,7 @@ void BBP_set_window_modes(plugin_info *PI)
         SetWindowPos(PI->hwnd, hwnd_after, x, y, w, h, flags);
 
         if (PI->auto_hidden)
-            trans = 16;
+            trans = 1;
         else
         if (PI->alphaEnabled)
             trans = PI->alphaValue;
@@ -1278,21 +1281,23 @@ int BBP_handle_broam(struct plugin_info *PI, const char *temp)
         return BBP_BROAM_HANDLED;
     }
 
-    if (BBP_broam_int(PI, temp, "icon.saturation", &PI->saturation))
+    if (BBP_broam_int(PI, temp, "icon.saturation", &v))
     {
+		PI->saturation = (BYTE)eightScale_up(v);
         BBP_set_window_modes(PI);
         return BBP_BROAM_HANDLED;
     }
 
-    if (BBP_broam_int(PI, temp, "icon.hue", &PI->hue))
+    if (BBP_broam_int(PI, temp, "icon.hue", &v))
     {
+		PI->hue = (BYTE)eightScale_up(v);
         BBP_set_window_modes(PI);
         return BBP_BROAM_HANDLED;
     }
 
     if (BBP_broam_int(PI, temp, "alpha.value", &v))
     {
-        PI->alphaValue = (BYTE)v;
+        PI->alphaValue = (BYTE)eightScale_up(v);
         BBP_set_window_modes(PI);
         return BBP_BROAM_HANDLED;
     }

@@ -46,8 +46,7 @@
 
 #define ST static
 
-#define MY_BROAM "@bbLeanBar"
-//#define MY_BROAM "@BlackBoxBar"
+#define MY_BROAM "@BlackBoxBar"
 
 #ifdef BBTINY
 const char szVersion	 [] = "BlackboxBar 1.18t";
