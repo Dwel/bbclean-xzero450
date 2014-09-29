@@ -23,9 +23,14 @@ if %errorlevel% neq 0 goto TERM
 echo Renaming executable...
 
 set /p VERSION=< build.ver
-set INSTALLER_NAME="bbZero_install_%VERSION%_mojmir.exe"
+set INSTALLER_NAME="bbZero_install_%VERSION%_mojmir"
+set INSTALLER_EXT="exe"
 echo New installer name: %INSTALLER_NAME%
-ren install.exe %INSTALLER_NAME%
+ren install.exe %INSTALLER_NAME%.%INSTALLER_EXT%
+if %errorlevel% neq 0 goto TERM
+
+rem winrar a -z%OUTDIR%/comment.txt -afzip -df %OUTDIR%/%BUILD%.zip %OUTDIR%/%BUILD%
+winrar a -df %OUTDIR%/%INSTALLER_NAME%.rar %INSTALLER_NAME%.%INSTALLER_EXT%
 if %errorlevel% neq 0 goto TERM
 
 goto NOPAUSE

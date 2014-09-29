@@ -10,3 +10,4 @@ resource.res
 _projects*
 # bbversion is generated:
 BlackboxZero/blackbox/bbversion.h
+BlackboxZero/build.ver

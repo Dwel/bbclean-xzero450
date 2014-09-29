@@ -4,7 +4,7 @@
 OutFile c:\_builds\install.exe
 
 # where to install program
-InstallDir c:\bbzero_beta
+InstallDir c:\bbZero
 
 # good for debugging
 ShowInstDetails Show
