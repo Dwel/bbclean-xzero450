@@ -12,7 +12,7 @@ session.screen0.toolbar.onTop: true
 session.screen0.toolbar.autoHide: false
 session.screen0.toolbar.pluginToggle: true
 session.screen0.toolbar.alpha.enabled: false
-session.screen0.toolbar.alpha.value: 8
+session.screen0.toolbar.alpha.value: 224
 
 # - the menu -
 session.menu.position.x: 280
@@ -21,7 +21,7 @@ session.menu.maxWidth: 300
 session.menu.popupDelay: 80
 session.menu.mouseWheelFactor: 3
 session.menu.alpha.enabled: false
-session.menu.alpha.value: 7
+session.menu.alpha.value: 255
 session.menu.onTop: false
 session.menu.sticky: true
 session.menu.snapWindow: true
@@ -30,9 +30,9 @@ session.menu.openDirection: bullet
 session.menu.sortbyExtension: true
 session.menu.drawSeparators: true
 session.menu.dropShadows: true
-session.menu.icon.saturation: 3
-session.menu.icon.hue: 2
-session.menu.icon.size: 14
+session.menu.icon.saturation: 80
+session.menu.icon.hue: 60
+session.menu.icon.size: 16
 session.menu.overlap: 0
 
 # - appearance -

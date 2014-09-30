@@ -56,7 +56,8 @@ bool SetFullTransparency(HWND hwnd, BYTE alpha)
 	LONG_PTR wStyle1 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 	LONG_PTR wStyle2 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
-	BYTE Alpha = eightScale_up(alpha);
+	//BYTE Alpha = eightScale_up(alpha); // no eightscale
+	BYTE Alpha = alpha;
 	if (Alpha < 255)
 		wStyle2 |= WS_EX_LAYERED;
 	else
@@ -739,7 +740,7 @@ void BBP_set_window_modes(plugin_info *PI)
         SetWindowPos(PI->hwnd, hwnd_after, x, y, w, h, flags);
 
         if (PI->auto_hidden)
-            trans = 1;
+            trans = 16;
         else
         if (PI->alphaEnabled)
             trans = PI->alphaValue;
@@ -964,13 +965,15 @@ bool BBP_read_window_modes(struct plugin_info *PI, const char *rcfile)
     PI->pluginToggle    = BBP_read_bool(PI, "pluginToggle", true);
     PI->clickRaise      = BBP_read_bool(PI, "clickRaise", true);
     PI->alphaEnabled    = BBP_read_bool(PI, "alpha.enabled", false);
-    //PI->alphaValue           = (BYTE)BBP_read_int(PI,  "alpha.value",  192);
-    PI->alphaValue      = (BYTE)eightScale_up(BBP_read_int(PI,  "alpha.value",  *(int *)GetSettingPtr(SN_MENUALPHA))); // bb4win
-    PI->orient_vertical = PI->is_bar || 0 == _stricmp("vertical", BBP_read_string(PI, NULL, "orientation", "vertical"));
+    PI->alphaValue      = (BYTE)BBP_read_int(PI,  "alpha.value",  192);
+    //PI->alphaValue      = (BYTE)eightScale_up(BBP_read_int(PI,  "alpha.value",  *(int *)GetSettingPtr(SN_MENUALPHA))); // bb4win
+    PI->orient_vertical  = PI->is_bar || 0 == _stricmp("vertical", BBP_read_string(PI, NULL, "orientation", "vertical"));
     if (false == PI->no_icons)
     {
-        PI->saturation      = eightScale_up(BBP_read_int(PI,  "icon.saturation", 3));
-        PI->hue             = eightScale_up(BBP_read_int(PI,  "icon.hue", 2));
+        //PI->saturation      = eightScale_up(BBP_read_int(PI,  "icon.saturation", 3));
+        //PI->hue             = eightScale_up(BBP_read_int(PI,  "icon.hue", 2));
+        PI->saturation      = BBP_read_int(PI,  "icon.saturation", 80);
+        PI->hue             = BBP_read_int(PI,  "icon.hue", 60);
     }
     if (NULL == place_string) {
         BBP_write_window_modes(PI);
@@ -1044,8 +1047,10 @@ void BBP_n_insertmenu(struct plugin_info *PI, n_menu *m)
 
     if (false == PI->no_icons)
     {
-        n_menuitem_int(m, "Icon Saturation", "icon.saturation",  eightScale_down(PI->saturation), 0, 8);
-        n_menuitem_int(m, "Icon Hue", "icon.hue",  eightScale_down(PI->hue), 0, 8);
+        n_menuitem_int(m, "Icon Saturation", "icon.saturation", PI->saturation, 0, 255);
+        n_menuitem_int(m, "Icon Hue", "icon.hue",  PI->hue, 0, 255);
+        //n_menuitem_int(m, "Icon Saturation", "icon.saturation",  eightScale_down(PI->saturation), 0, 8);
+        //n_menuitem_int(m, "Icon Hue", "icon.hue",  eightScale_down(PI->hue), 0, 8);
     }
 }
 
@@ -1063,8 +1068,8 @@ n_menu * BBP_n_windowmenu (plugin_info * PI, n_menu * m)
         n_menuitem_bol(m, "Toggle With Plugins", "pluginToggle",  PI->pluginToggle);
         n_menuitem_nop(m, NULL);
         n_menuitem_bol(m, "Transparency", "alpha.enabled",  PI->alphaEnabled);
-        n_menuitem_int(R, "Alpha Value", "alpha.value",  eightScale_down(PI->alphaValue), 0, 8); // bb4win
-        //n_menuitem_int(m, "Alpha Value", "alpha.value",  PI->alphaValue, 0, 255);
+        //n_menuitem_int(R, "Alpha Value", "alpha.value",  eightScale_down(PI->alphaValue), 0, 8); // bb4win
+        n_menuitem_int(m, "Alpha Value", "alpha.value",  PI->alphaValue, 0, 255);
     }
     // n_menuitem_bol(m, "Visible", "visible",  PI->visible);
     return R;
@@ -1283,21 +1288,24 @@ int BBP_handle_broam(struct plugin_info *PI, const char *temp)
 
     if (BBP_broam_int(PI, temp, "icon.saturation", &v))
     {
-		PI->saturation = (BYTE)eightScale_up(v);
+        //PI->saturation = (BYTE)eightScale_up(v);
+        PI->saturation = (BYTE)v;
         BBP_set_window_modes(PI);
         return BBP_BROAM_HANDLED;
     }
 
     if (BBP_broam_int(PI, temp, "icon.hue", &v))
     {
-		PI->hue = (BYTE)eightScale_up(v);
+        //PI->hue = (BYTE)eightScale_up(v);
+        PI->hue = (BYTE)v;
         BBP_set_window_modes(PI);
         return BBP_BROAM_HANDLED;
     }
 
     if (BBP_broam_int(PI, temp, "alpha.value", &v))
     {
-        PI->alphaValue = (BYTE)eightScale_up(v);
+        //PI->alphaValue = (BYTE)eightScale_up(v);
+        PI->alphaValue = (BYTE)v;
         BBP_set_window_modes(PI);
         return BBP_BROAM_HANDLED;
     }

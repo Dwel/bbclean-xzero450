@@ -591,8 +591,11 @@ void MenuItem::DrawIcon(HDC hDC)
     int const d = (m_nHeight - size) / 2;
     int const px = m_nLeft + d;
     int const py = m_nTop + d;
-    int const sat = eightScale_up(Settings_menu.iconSaturation);
-    int const hue = eightScale_up(Settings_menu.iconHue);
+    int const sat = Settings_menu.iconSaturation;
+    int const hue = Settings_menu.iconHue;
+    // no eight scale
+    //int const sat = eightScale_up(Settings_menu.iconSaturation);
+    //int const hue = eightScale_up(Settings_menu.iconHue);
 
     DrawIconSatnHue(hDC,
         px, py, m_hIcon, size, size, 0, NULL, DI_NORMAL,

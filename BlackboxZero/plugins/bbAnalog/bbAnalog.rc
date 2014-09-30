@@ -8,7 +8,7 @@ bbanalog.clickRaise: true
 bbanalog.snapToEdge: true
 bbanalog.pluginToggle: true
 bbanalog.alpha.enabled: false
-bbanalog.alpha.value: 8
+bbanalog.alpha.value: 192
 bbanalog.orientation: vertical
 bbanalog.antiAliasing: true
 bbAnalog.Size: 43

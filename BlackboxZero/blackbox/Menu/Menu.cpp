@@ -784,7 +784,8 @@ void Menu::Paint()
 		else
 			S0 = SelectObject(buf, m_hBmpScroll);
 
-		int hue = eightScale_up(Settings_menu.scrollHue);
+		//int hue = eightScale_up(Settings_menu.scrollHue);
+		int hue = Settings_menu.scrollHue; // no eightscale up
 		if (hue) {
 			int x,y;
 			for (x = r.left; x < r.right; ++x)

@@ -237,8 +237,8 @@ struct icon_box : public plugin_info
         { "rows",             M_INT, &rows             , (void*)4     },
         { "columns",          M_INT, &columns          , (void*)4     },
         { "icon.size",        M_INT, &iconWidth        , (void*)16    },
-        { "icon.saturation",  M_INT, &saturation       , (void*)3     },
-        { "icon.hue",         M_INT, &hue              , (void*)2     },
+        { "icon.saturation",  M_INT, &saturation       , (void*)80    },
+        { "icon.hue",         M_INT, &hue              , (void*)60    },
         { "drawTitle",        M_BOL, &drawTitle        , (void*)false },
         { "drawBorder",       M_BOL, &drawBorder       , (void*)true  },
         { "toolTips",         M_BOL, &toolTips         , (void*)true  },
@@ -2105,8 +2105,6 @@ LRESULT icon_box::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
         return *ret;
 
     int index;
-	bool autoHiding = this->autoHide;
-	bool hideChanged;
 
     switch (message)
     {       
@@ -2301,7 +2299,11 @@ LRESULT icon_box::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 
         //====================
         case WM_MOUSELEAVE:
-			hideChanged = this->autoHide != autoHiding;
+        {
+            // these commented lines come from bb4win. some sort of optimization i guess... except it's broken
+            //bool autoHiding = this->autoHide;
+            //bool hideChanged;
+            //hideChanged = this->autoHide != autoHiding; // heh, silly
 
             this->MouseEvent(hwnd, message, wParam, lParam, 3);
             if (this->my_Folder.mode == MODE_TRAY)
@@ -2311,21 +2313,21 @@ LRESULT icon_box::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             if (this->activeIcon && 0 == this->capturedIcon)
             {
                 this->activeIcon = 0;
-				if (hideChanged || autoHiding)
-				{
-					GetStyleSettings();
-					goto update;
-				}
+                /*if (hideChanged || autoHiding)
+                {
+                    GetStyleSettings();
+                    goto update;
+                }*/
                 InvalidateRect(hwnd, NULL, FALSE);
             }
-			else
-			if (hideChanged || autoHiding)
-			{
-				GetStyleSettings();
-				goto update;
-			}
+            /*else
+            if (hideChanged || autoHiding)
+            {
+                GetStyleSettings();
+                goto update;
+            }*/
             break;
-
+        }
         case WM_TIMER:
 
             if (TASK_RISE_TIMER == wParam)
