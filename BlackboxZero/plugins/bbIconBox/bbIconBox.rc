@@ -25,9 +25,9 @@ bbIconBox.Desktop.title: Desk
 bbIconBox.Desktop.rows: 4
 bbIconBox.Desktop.columns: 2
 bbIconBox.Desktop.icon.size: 16
-bbIconBox.Desktop.icon.saturation: 2
-bbIconBox.Desktop.icon.hue: 3
-bbIconBox.Desktop.drawTitle: true
+bbIconBox.Desktop.icon.saturation: 80
+bbIconBox.Desktop.icon.hue: 60
+bbIconBox.Desktop.drawTitle: false
 bbIconBox.Desktop.drawBorder: true
 bbIconBox.Desktop.toolTips: false
 
@@ -41,15 +41,15 @@ bbIconBox.Quick+Launch.clickRaise: true
 bbIconBox.Quick+Launch.snapWindow: true
 bbIconBox.Quick+Launch.pluginToggle: true
 bbIconBox.Quick+Launch.alpha.enabled: false
-bbIconBox.Quick+Launch.alpha.value: 8
+bbIconBox.Quick+Launch.alpha.value: 192
 bbIconBox.Quick+Launch.orientation: vertical
 bbIconBox.Quick+Launch.path: APPDATA\Microsoft\Internet Explorer\Quick Launch
 bbIconBox.Quick+Launch.title: Quick
 bbIconBox.Quick+Launch.rows: 4
 bbIconBox.Quick+Launch.columns: 2
 bbIconBox.Quick+Launch.icon.size: 16
-bbIconBox.Quick+Launch.icon.saturation: 3
-bbIconBox.Quick+Launch.icon.hue: 2
+bbIconBox.Quick+Launch.icon.saturation: 80
+bbIconBox.Quick+Launch.icon.hue: 0
 bbIconBox.Quick+Launch.drawTitle: true
 bbIconBox.Quick+Launch.drawBorder: true
 bbIconBox.Quick+Launch.toolTips: false
@@ -71,8 +71,8 @@ bbIconBox.task1.title: A
 bbIconBox.task1.rows: 4
 bbIconBox.task1.columns: 2
 bbIconBox.task1.icon.size: 16
-bbIconBox.task1.icon.saturation: 3
-bbIconBox.task1.icon.hue: 2
+bbIconBox.task1.icon.saturation: 80
+bbIconBox.task1.icon.hue: 0
 bbIconBox.task1.drawTitle: true
 bbIconBox.task1.drawBorder: true
 bbIconBox.task1.toolTips: false
@@ -94,8 +94,8 @@ bbIconBox.task2.title: B
 bbIconBox.task2.rows: 4
 bbIconBox.task2.columns: 2
 bbIconBox.task2.icon.size: 16
-bbIconBox.task2.icon.saturation: 3
-bbIconBox.task2.icon.hue: 2
+bbIconBox.task2.icon.saturation: 80
+bbIconBox.task2.icon.hue: 0
 bbIconBox.task2.drawTitle: true
 bbIconBox.task2.drawBorder: true
 bbIconBox.task2.toolTips: false
@@ -117,8 +117,8 @@ bbIconBox.task3.title: C
 bbIconBox.task3.rows: 4
 bbIconBox.task3.columns: 2
 bbIconBox.task3.icon.size: 16
-bbIconBox.task3.icon.saturation: 3
-bbIconBox.task3.icon.hue: 2
+bbIconBox.task3.icon.saturation: 80
+bbIconBox.task3.icon.hue: 0
 bbIconBox.task3.drawTitle: true
 bbIconBox.task3.drawBorder: true
 bbIconBox.task3.toolTips: false

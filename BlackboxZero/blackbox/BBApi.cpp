@@ -682,7 +682,8 @@ bool SetTransparency(HWND hwnd, BYTE alpha)
 
     LONG_PTR wStyle1 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
     LONG_PTR wStyle2 = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-    BYTE Alpha = eightScale_up(alpha);
+    //BYTE Alpha = eightScale_up(alpha); // no eightscale up
+    BYTE Alpha = alpha;
     if (Alpha < 255)
         wStyle2 |= WS_EX_LAYERED;
     else

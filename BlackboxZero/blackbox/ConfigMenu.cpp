@@ -37,7 +37,7 @@ static const struct int_item {
 	{ &Settings_menu.closeDelay				,	0,	1000, -2  },/* BlackboxZero 1.3.2012 */
 	{ &Settings_menu.minWidth				,  25,	 600, -2  },/* BlackboxZero 12.17.2011 */
 	{ &Settings_menu.maxWidth				, 100,	 600, -2  },
-	{ &Settings_menu.alphaValue				,	1,	   8,  0  },
+	{ &Settings_menu.alphaValue				,	0,	 255, 255 },
 	{ (int*)&Settings_desktopMargin.left	,  -1, 10000, -1  },
 	{ (int*)&Settings_desktopMargin.right	,  -1, 10000, -1  },
 	{ (int*)&Settings_desktopMargin.top		,  -1, 10000, -1  },
@@ -45,14 +45,14 @@ static const struct int_item {
 	{ &Settings_snapThreshold				,	0,	  20,  0  },
 	{ &Settings_snapPadding					,  -4,	 100, -4  },
 	{ &Settings_toolbar.widthPercent		,  10,	 100, -2  },
-	{ &Settings_toolbar.alphaValue			,	0,	   8,  8  },
+	{ &Settings_toolbar.alphaValue			,	0,	 255, 255 },
 	{ &Settings_autoRaiseDelay				,	0, 10000, -1  },
 	{ &Settings_workspaces					,	1,	  16, -1  },
 	{ &Settings_workspacesX					,	1,	   4, -1  },
 	{ &Settings_workspacesY					,	1,	   4, -1  },
 	{ &Settings_menu.iconSize				,	0,	  32,  0  }, /* BlackboxZero 1.5.2012 */
-	{ &Settings_menu.iconSaturation			,	0,	   8,  0  }, /* BlackboxZero 1.5.2012 */
-	{ &Settings_menu.iconHue				,	0,	   8,  8  }, /* BlackboxZero 1.5.2012 */
+	{ &Settings_menu.iconSaturation			,	0,	 255, 255 }, /* BlackboxZero 1.5.2012 */
+	{ &Settings_menu.iconHue				,	0,	 255,  0  }, /* BlackboxZero 1.5.2012 */
 	{ &Settings_menu.spacing				, -50,	  50,  0  }, /* BlackboxZero 1.6.2012 */
 	{ &Settings_menu.scrollHue				,	0,	   8,  0  },
 	{ &Settings_imageDither					,	0,	   3,  0  },

@@ -37,7 +37,7 @@ BlackboxBar.AutoHide: false
 BlackboxBar.autoRaise: true
 BlackboxBar.snapToEdge: 20
 BlackboxBar.arrowBullets: false
-BlackboxBar.alpha.value: 8
+BlackboxBar.alpha.value: 255
 BlackboxBar.transparent: false
 
 # ---------
@@ -51,8 +51,8 @@ BlackboxBar.tasks.maxWidth: 100
 
 ------------
 # Icons
-BlackboxBar.icon.saturation: 3
-BlackboxBar.icon.hue: 2
+BlackboxBar.icon.saturation: 95
+BlackboxBar.icon.hue: 64
 BlackboxBar.icon.size: 16
 
 # ------------

@@ -23,7 +23,7 @@ Tray.Icon.Hue:                          70
 Tooltip.MaxWidth:                       250
 Tooltip.Distance:                       0
 Tooltip.Delay:                          0
-Tooltip.Alpha:                          8
+Tooltip.Alpha:                          255
 Tooltip.Shadow:                         0
 .DT:                                    2
 .HT:                                    0
