@@ -1832,6 +1832,7 @@ void icon_box::show_menu(bool popup)
 
 	n_menuitem_nop(sub, NULL);
     n_menuitem_cmd(sub2, "Desktop", "@bbIconBox.create DESKTOP");
+    n_menuitem_cmd(sub2, "Pinned To TaskBar", "@bbIconBox.create APPDATA\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar");
     n_menuitem_cmd(sub2, "Quick Launch", "@bbIconBox.create APPDATA\\Microsoft\\Internet Explorer\\Quick Launch");
 
 	n_menuitem_cmd(sub, VistaPlus ? "Links" : "IE Links", VistaPlus ? "@bbIconBox.create FAVORITES\\LINKS|COMMON_OEM_LINKS|PROFILE\\LINKS" : "@bbIconBox.create FAVORITES\\LINKS|COMMON_OEM_LINKS");
