@@ -117,6 +117,8 @@ void Settings::ReadRCSettings ()
 
 	if (m_frame.rows < 1) m_frame.rows = 1;
 	if (m_frame.columns < 1) m_frame.columns = 1;
+	if (m_frame.rows > 1 && m_frame.columns > 1)
+		m_position.grid = true;
 
 	//numbers on desktop enable
 	m_desktop.numbers = ReadBool(rcpath, "bbPager.desktopNumbers:", false);

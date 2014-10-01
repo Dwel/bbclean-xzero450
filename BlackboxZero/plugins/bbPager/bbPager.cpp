@@ -10,6 +10,7 @@
 */
 #include "bbPager.h"
 #include "Settings.h"
+#include <bbPlugin.h>
 #include <vector>
 #include <string>
 
@@ -113,6 +114,9 @@ extern "C"
 		// Get plugin and style settings...
 		const char *bbv = GetBBVersion();
 		g_RuntimeState.m_is_xoblite = 0 == (_memicmp(bbv, "bb", 2) + strlen(bbv) - 3);
+
+		BBP_get_rcpath(rcpath, g_RuntimeState.m_hInstance, szAppName);
+
 		s.ReadRCSettings();
 		s.GetStyleSettings();
 
@@ -2141,33 +2145,46 @@ void UpdatePosition()
 	SendMessage(g_RuntimeState.m_hwndBlackbox, BB_LISTDESKTOPS, (WPARAM)g_RuntimeState.m_hwndBBPager, 0);
 	// currentDesktop gives current desktop number starting at _0_ !
 
-	// Set window width and height based on number of desktops
-	// Takes into account of row/column setting
-	if (s.m_position.horizontal) // row/horizontal
+	if (s.m_position.grid)
 	{
-		s.m_frame.width = (unsigned int)((g_RuntimeState.m_desktops - 1) / s.m_frame.rows + 1) *
+			s.m_frame.width = (unsigned int)((g_RuntimeState.m_desktops - 1) / s.m_frame.rows + 1) *
 				(s.m_desktop.width + s.m_frame.bevelWidth) +
-				 s.m_frame.bevelWidth + (2 * s.m_frame.borderWidth);
+				s.m_frame.bevelWidth + (2 * s.m_frame.borderWidth);
 
-		if (g_RuntimeState.m_desktops < s.m_frame.rows)
-			s.m_frame.height = (unsigned int)(g_RuntimeState.m_desktops * (s.m_desktop.height + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
-							+ (2 * s.m_frame.borderWidth);
-		else
-			s.m_frame.height = (unsigned int)(s.m_frame.rows * (s.m_desktop.height + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
-							+ (2 * s.m_frame.borderWidth);
+			s.m_frame.height = (unsigned int)(((g_RuntimeState.m_desktops - 1) / s.m_frame.columns) + 1) *
+				(s.m_desktop.height + s.m_frame.bevelWidth) +
+				s.m_frame.bevelWidth + (2 * s.m_frame.borderWidth);
 	}
-	else // column/vertical
+	else
 	{
-		if (g_RuntimeState.m_desktops < s.m_frame.columns)
-			s.m_frame.width = (unsigned int)(g_RuntimeState.m_desktops * (s.m_desktop.width + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
-							+ (2 * s.m_frame.borderWidth);
-		else
-			s.m_frame.width = (unsigned int)(s.m_frame.columns * (s.m_desktop.width + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
-							+ (2 * s.m_frame.borderWidth);
+		// Set window width and height based on number of desktops
+		// Takes into account of row/column setting
+		if (s.m_position.horizontal) // row/horizontal
+		{
+			s.m_frame.width = (unsigned int)((g_RuntimeState.m_desktops - 1) / s.m_frame.rows + 1) *
+				(s.m_desktop.width + s.m_frame.bevelWidth) +
+				s.m_frame.bevelWidth + (2 * s.m_frame.borderWidth);
 
-		s.m_frame.height = (unsigned int)(((g_RuntimeState.m_desktops - 1) / s.m_frame.columns) + 1) *
-				  (s.m_desktop.height + s.m_frame.bevelWidth) +
-				  s.m_frame.bevelWidth + (2 * s.m_frame.borderWidth);
+			if (g_RuntimeState.m_desktops < s.m_frame.rows)
+				s.m_frame.height = (unsigned int)(g_RuntimeState.m_desktops * (s.m_desktop.height + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
+				+ (2 * s.m_frame.borderWidth);
+			else
+				s.m_frame.height = (unsigned int)(s.m_frame.rows * (s.m_desktop.height + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
+				+ (2 * s.m_frame.borderWidth);
+		}
+		else // column/vertical
+		{
+			if (g_RuntimeState.m_desktops < s.m_frame.columns)
+				s.m_frame.width = (unsigned int)(g_RuntimeState.m_desktops * (s.m_desktop.width + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
+				+ (2 * s.m_frame.borderWidth);
+			else
+				s.m_frame.width = (unsigned int)(s.m_frame.columns * (s.m_desktop.width + s.m_frame.bevelWidth)) + s.m_frame.bevelWidth
+				+ (2 * s.m_frame.borderWidth);
+
+			s.m_frame.height = (unsigned int)(((g_RuntimeState.m_desktops - 1) / s.m_frame.columns) + 1) *
+				(s.m_desktop.height + s.m_frame.bevelWidth) +
+				s.m_frame.bevelWidth + (2 * s.m_frame.borderWidth);
+		}
 	}
 
 	// ========================

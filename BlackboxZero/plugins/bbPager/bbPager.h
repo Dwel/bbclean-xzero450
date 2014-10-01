@@ -136,6 +136,7 @@ struct POSITION
 
 	bool vertical;
 	bool horizontal;
+	bool grid;
 	bool raised;
 	int snapWindow;
 	bool unix;
