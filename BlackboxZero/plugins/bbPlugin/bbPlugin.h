@@ -46,17 +46,17 @@ struct plugin_info
     int ypos;
     int width;
     int height;
-	int snapWindow;
+    int snapWindow;
 
     bool useSlit;
     bool alwaysOnTop;
     bool autoHide;
-	bool usingWin2kPlus;
+    bool usingWin2kPlus;
     bool alphaEnabled;
     BYTE alphaValue;
 
-	int saturation;
-	int hue;
+    int saturation;
+    int hue;
 
     bool clickRaise;
     bool pluginToggle;
@@ -64,7 +64,7 @@ struct plugin_info
 
     bool orient_vertical;
     bool is_bar;
-	bool no_icons;
+    bool no_icons;
 
     // state vars
     bool inSlit;
@@ -128,15 +128,15 @@ enum Plugin_Positions
     POS_TopCenter     ,
     POS_TopRight      ,
 
+    POS_CenterLeft    ,
+    POS_AutoHide      ,
+    POS_CenterRight   ,
+
     POS_BottomLeft    ,
     POS_BottomCenter  ,
     POS_BottomRight   ,
 
-    POS_CenterLeft    ,
-	POS_AutoHide	  ,
-    POS_CenterRight   ,
     POS_Center        ,
-
     POS_Top           ,
     POS_Bottom        ,
     POS_Left          ,
