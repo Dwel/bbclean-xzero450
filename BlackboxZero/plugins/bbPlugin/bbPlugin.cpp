@@ -1010,7 +1010,7 @@ n_menu * BBP_n_placementmenu(struct plugin_info *PI, n_menu *m)
 {
     n_menu *P; int n, last;
     P = n_submenu(m, "Placement");
-    last = PI->is_bar ? POS_BottomRight : POS_Center;
+    last = PI->is_bar ? POS_CenterRight : POS_Center;
     for (n = 1; n <= last; n++)
     {
         if (POS_TopLeft == n || POS_CenterLeft == n)

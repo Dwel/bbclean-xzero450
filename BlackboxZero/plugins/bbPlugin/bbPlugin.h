@@ -128,13 +128,13 @@ enum Plugin_Positions
     POS_TopCenter     ,
     POS_TopRight      ,
 
-    POS_CenterLeft    ,
-    POS_AutoHide      ,
-    POS_CenterRight   ,
-
     POS_BottomLeft    ,
     POS_BottomCenter  ,
     POS_BottomRight   ,
+
+    POS_CenterLeft    ,
+    POS_AutoHide      ,
+    POS_CenterRight   ,
 
     POS_Center        ,
     POS_Top           ,
