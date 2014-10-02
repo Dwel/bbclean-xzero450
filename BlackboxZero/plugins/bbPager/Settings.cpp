@@ -10,6 +10,7 @@
 */
 #include "Settings.h"
 #include "bbPager.h"
+#include <blackbox/Workspaces.h>
 
 //===========================================================================
 char rcpath[MAX_PATH];
@@ -39,7 +40,7 @@ int locate_file(HINSTANCE hInstance, char *path, const char *fname, const char *
 	return File_Exists(path);
 }
 
-const char *file_basename(const char *path)
+/*const char *file_basename(const char *path)
 {
     int nLen = strlen(path);
     while (nLen && !is_slash(path[nLen-1])) nLen--;
@@ -49,7 +50,7 @@ const char *file_basename(const char *path)
 int imin(int a, int b)
 {
     return a<b?a:b;
-}
+}*/
 
 void Settings::ReadRCSettings ()
 {
@@ -111,9 +112,14 @@ void Settings::ReadRCSettings ()
 		m_position.vertical = false;
 	}
 
+	DesktopInfo DI;
+	getWorkspaces().GetDesktopInfo(DI);
+
 	// row and column number
-	m_frame.columns = ReadInt(rcpath, "bbPager.columns:", 1);
-	m_frame.rows = ReadInt(rcpath, "bbPager.rows:", 1);
+	m_frame.columns = DI.nScreensX;
+	m_frame.rows = DI.nScreensY;
+	//m_frame.columns = ReadInt(rcpath, "bbPager.columns:", 1);
+	//m_frame.rows = ReadInt(rcpath, "bbPager.rows:", 1);
 
 	if (m_frame.rows < 1) m_frame.rows = 1;
 	if (m_frame.columns < 1) m_frame.columns = 1;
