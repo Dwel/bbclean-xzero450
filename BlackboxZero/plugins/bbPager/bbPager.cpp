@@ -1299,8 +1299,9 @@ void ToggleSlit()
 BOOL CALLBACK CheckTaskEnumProc(HWND window, LPARAM lParam)
 {
 	Settings const & s = getSettings();
-	int d, height, width, offsetX;
-	RECT desk; desk.top = desk.left = 0;
+	int d = 0, height = 0, width = 0, offsetX = 0;
+	RECT desk;
+	desk.top = desk.left = 0;
 	WinStruct winListTemp;
 
 	// Only allow 128 windows, just for speed reasons...
@@ -1312,6 +1313,8 @@ BOOL CALLBACK CheckTaskEnumProc(HWND window, LPARAM lParam)
 	{
 		// Get the virtual workspace the window is located.
 		d = getDesktop(window);
+		if (d < 0 || d >= desktopRect.size())
+			return 0;
 
 		// ... and save this information
 		winListTemp.desk = d;
@@ -1321,7 +1324,9 @@ BOOL CALLBACK CheckTaskEnumProc(HWND window, LPARAM lParam)
 		else
 			winListTemp.sticky = false;
 
-		if (getSettings().m_position.horizontal)
+		if (getSettings().m_position.grid)
+			desk = desktopRect[d];
+		else if (getSettings().m_position.horizontal)
 			desk = desktopRect[d];
 		else if (getSettings().m_position.vertical)
 			desk = desktopRect[d];
@@ -1370,7 +1375,6 @@ BOOL CALLBACK CheckTaskEnumProc(HWND window, LPARAM lParam)
 
 		g_RuntimeState.m_winList.push_back(winListTemp);
 		//winList[winCount] = winListTemp;
-		
 		// Increase number of windows by one if everything successful
 		g_RuntimeState.m_winCount++;
 	}
@@ -1483,6 +1487,8 @@ int getDesktop (HWND h)
 	Settings const & s = getSettings();
 	RECT r;
 	GetWindowRect(h, &r);
+	if (r.left == -32000 || r.top == -32000)
+		return -1; // this means minimized window
 
 	int const desktopWidth = s.m_vScreenWidth + 10;
 	int offset = 0;
@@ -1544,8 +1550,15 @@ void DisplayMenu()
 
 		// Alignment Submenu
 		BBPagerAlignSubMenu = MakeMenu("Alignment");
-			MakeMenuItem(BBPagerAlignSubMenu, "Horizontal", "@BBPager Horizontal", getSettings().m_position.horizontal);
-			MakeMenuItem(BBPagerAlignSubMenu, "Vertical", "@BBPager Vertical", getSettings().m_position.vertical);
+		    if (getSettings().m_position.grid)
+			{
+				//MakeMenuItem(BBPagerAlignSubMenu, "Horizontal", "@BBPager Horizontal", getSettings().m_position.horizontal);
+			}
+			else
+			{
+				MakeMenuItem(BBPagerAlignSubMenu, "Horizontal", "@BBPager Horizontal", getSettings().m_position.horizontal);
+				MakeMenuItem(BBPagerAlignSubMenu, "Vertical", "@BBPager Vertical", getSettings().m_position.vertical);
+			}
 		MakeSubmenu(BBPagerMenu, BBPagerAlignSubMenu, "Alignment");		
 		
 		// Position Submenu
