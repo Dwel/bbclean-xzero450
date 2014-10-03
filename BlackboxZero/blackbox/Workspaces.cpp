@@ -270,10 +270,10 @@ LRESULT Workspaces::Command (UINT msg, WPARAM wParam, LPARAM lParam)
                     DeskSwitch(NextDesk(1));
                     break;
                 case BBWS_DESKDOWN:
-                    DeskSwitch(NextDesk(-nScreensX));
+                    DeskSwitch(NextDesk(+nScreensX));
                     break;
                 case BBWS_DESKUP:
-                    DeskSwitch(NextDesk(+nScreensX));
+                    DeskSwitch(NextDesk(-nScreensX));
                     break;
 
 
