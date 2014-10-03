@@ -759,7 +759,6 @@ void BBP_set_window_modes(plugin_info *PI)
 }
 
 //===========================================================================
-
 const char *placement_strings[] = {
     "User"          ,
 
@@ -772,7 +771,6 @@ const char *placement_strings[] = {
     "BottomRight"   ,
 
     "CenterLeft"    ,
-	"AutoHide"		,
     "CenterRight"   ,
     "Center"        ,
 
@@ -797,7 +795,6 @@ const char *menu_placement_strings[] = {
     "Bottom Right"   ,
 
     "Center Left"    ,
-	"Autohide"		 ,
     "Center Right"   ,
     "Center Screen"  ,
 
@@ -805,6 +802,8 @@ const char *menu_placement_strings[] = {
     "Bottom"        ,
     "Left"          ,
     "Right"         ,
+    "CenterH" ,
+    "CenterV" ,
     NULL
 };
 
