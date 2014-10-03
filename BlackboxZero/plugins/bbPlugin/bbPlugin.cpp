@@ -1009,22 +1009,15 @@ n_menu * BBP_n_placementmenu(struct plugin_info *PI, n_menu *m)
 {
     n_menu *P; int n, last;
     P = n_submenu(m, "Placement");
-    last = PI->is_bar ? POS_CenterRight : POS_Center;
+    last = PI->is_bar ? POS_BottomRight : POS_Center;
     for (n = 1; n <= last; n++)
     {
-        if (POS_TopLeft == n || POS_CenterLeft == n)
-        {
+        if (POS_BottomLeft == n || POS_CenterLeft == n)
             n_menuitem_nop(P, NULL);
-            if (PI->is_bar && POS_CenterLeft == n)
-                n = n + 1;
-        }
 
         char b2[80];
         sprintf(b2, "placement %s", placement_strings[n]);
-        POS_AutoHide == n ? n_menuitem_bol(P, menu_placement_strings[n], "autoHide", PI->autoHide) : n_menuitem_bol(P, menu_placement_strings[n], b2, PI->place == n);
-
-        if (PI->is_bar && POS_AutoHide == n)
-            n = n + 1;
+        n_menuitem_bol(P, menu_placement_strings[n], b2, PI->place == n);
     }
     return P;
 }
