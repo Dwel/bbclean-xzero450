@@ -1,11 +1,9 @@
 project(bsetshell)
 
-set(bsetshell_SOURCES
-	bsetshell.cpp
-)
-set(bsetshell_RESOURCES
-	resource.rc
-)
+add_definitions(-DUNICODE -D_UNICODE)
+
+set(bsetshell_SOURCES bsetshell.cpp)
+set(bsetshell_RESOURCES resource.rc)
 
 set(CMAKE_RC_COMPILER_INIT windres)
 ENABLE_LANGUAGE(RC)

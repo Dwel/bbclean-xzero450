@@ -398,8 +398,6 @@ int WINAPI WinMain(
     int nShowCmd
     )
 {
-    INT_PTR result;
-
     int nArgs;
     LPTSTR * szArglist = CommandLineToArgvW(GetCommandLine(), &nArgs);
     if ( NULL == szArglist )
@@ -408,6 +406,7 @@ int WINAPI WinMain(
     if (nArgs > 1)
     {
         Init();
+        bool logout = false;
         for (int i = 1; i < nArgs; ++i)
         {
             if (szArglist[i][0] != '-')
@@ -422,13 +421,16 @@ int WINAPI WinMain(
             switch (szArglist[i][1])
             {
                 case 'l':
-                    result = 2;
+                    logout = true;
                     break;
                 case 'u':
                     is_per_user = true;
                     break;
                 case 'b':
                     is_blackbox = true;
+                    break;
+                case 'e':
+                    is_blackbox = false;
                     break;
             }
         }
@@ -437,11 +439,14 @@ int WINAPI WinMain(
 
         // Free memory allocated for CommandLineToArgvW arguments.
         LocalFree(szArglist);
-        return 0;
+
+        if (logout)
+            ExitWindowsEx(EWX_LOGOFF, 0);
+        return 1;
     }
     else
     {
-        result = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DLG1), NULL, (DLGPROC)dlgfunc, (LONG_PTR)hInstance);
+		INT_PTR const result = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DLG1), NULL, (DLGPROC)dlgfunc, (LONG_PTR)hInstance);
         if (result == -1)
         {
           DWORD r = GetLastError();
@@ -449,30 +454,30 @@ int WINAPI WinMain(
           //win_error(buff, sizeof buff);
           return 1;
         }
-    }
 
-    switch (result)
-    {
-    case 0:
-        return 1;
-    case 1:
-        message(MB_OK,
-            TEXT("'%s' has been set as shell.\n")
-            TEXT("\nTo make this work correctly, you need to run ")
-            APPNAME
-            TEXT(" as ")
-            TEXT("\nadministrator and enable individual shells too.")
-            , shellpath);
-        break;
-    case 2:
-        ExitWindowsEx(EWX_LOGOFF, 0);
-        break;
-    case 3:
-        message(MB_OK, TEXT("You will have the default system shell. Logout to apply."));
-        break;
-    case 4:
-        message(MB_OK, TEXT("'%s' has been set as shell. Logout to apply."), shellpath);
-        break;
+        switch (result)
+        {
+            case 0:
+                return 1;
+            case 1:
+                message(MB_OK,
+                    TEXT("'%s' has been set as shell.\n")
+                    TEXT("\nTo make this work correctly, you need to run ")
+                    APPNAME
+                    TEXT(" as ")
+                    TEXT("\nadministrator and enable individual shells too.")
+                    , shellpath);
+                break;
+            case 2:
+                ExitWindowsEx(EWX_LOGOFF, 0);
+                break;
+            case 3:
+                message(MB_OK, TEXT("You will have the default system shell. Logout to apply."));
+                break;
+            case 4:
+                message(MB_OK, TEXT("'%s' has been set as shell. Logout to apply."), shellpath);
+                break;
+            }
     }
     return 0;
 }

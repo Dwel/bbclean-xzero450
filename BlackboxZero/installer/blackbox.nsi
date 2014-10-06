@@ -60,10 +60,15 @@ Var GroupBox1
 Var GroupBox2
 # 'as shell' variables
 var as_shell
+var curr_user
 var ShellDialog
 Var GroupBox3
+Var GroupBox5
+Var GroupBox6
 var RadioButtonAsShell
 var RadioButtonNoShell
+var RadioButtonCurrUser
+var RadioButtonAllUser
  
 # Dummy section visible, RO means read only, user can't
 # change this. This should remain empty.
@@ -698,29 +703,56 @@ Function shellPageEnter
   nsDialogs::Create 1018
   Pop $ShellDialog
 
-  ${NSD_CreateGroupBox} 2% 2% 98% 98% "shell"
+  ${NSD_CreateGroupBox} 2% 2% 98% 48% "Choose how to install BlackBox:"
   Pop $GroupBox3
 
-  ${NSD_CreateRadioButton} 5% 33% 95% 6% "no, do NOT install as shell"
+  ${NSD_CreateRadioButton} 10% 18% 95% 6% "no, do NOT install as shell (default)"
     Pop $RadioButtonNoShell
     ${NSD_AddStyle} $RadioButtonNoShell ${WS_GROUP}
-  ${NSD_CreateRadioButton} 5% 66% 95% 6% "yes, install blackbox as default shell"
+  ${NSD_CreateRadioButton} 10% 32% 95% 6% "yes, install BlackBox as shell and replace explorer.exe"
     Pop $RadioButtonAsShell
 
   ${NSD_SetState} $RadioButtonNoShell ${BST_CHECKED}
+  ${NSD_SetState} $RadioButtonAsShell ${BST_UNCHECKED}
+
+  ${NSD_CreateGroupBox} 2% 52% 98% 98% "Choose affected user:"
+  Pop $GroupBox5
+
+  ${NSD_CreateRadioButton} 10% 68% 95% 6% "install BlackBox for current user (default)"
+    Pop $RadioButtonCurrUser
+    ${NSD_AddStyle} $RadioButtonCurrUser ${WS_GROUP}
+  ${NSD_CreateRadioButton} 10% 84% 95% 6% "install BlackBox for all users (requires admin rights)"
+    Pop $RadioButtonAllUser
+
+  ${NSD_SetState} $RadioButtonCurrUser ${BST_CHECKED}
+  ${NSD_SetState} $RadioButtonAllUser ${BST_UNCHECKED}
+
   nsDialogs::Show
 FunctionEnd
  
 Function shellPageLeave
   ${NSD_GetState} $RadioButtonAsShell $as_shell
-
-  ${If} $as_shell == ${BST_CHECKED}
-    StrCpy $as_shell 1
-  ${Else}
-    StrCpy $as_shell 0
-  ${EndIf}
+  ${NSD_GetState} $RadioButtonCurrUser $curr_user
 FunctionEnd
 
 Function .onInit
 FunctionEnd
+
+Function .OnInstSuccess
+  ${If} $as_shell == ${BST_CHECKED}
+    ${If} $curr_user == ${BST_CHECKED}
+      ExecWait "$INSTDIR\bsetshell.exe -b -u"
+    ${Else}
+      ExecWait "$INSTDIR\bsetshell.exe -b"
+    ${EndIf}
+    MessageBox mb_iconstop "BlackBox has been set as shell. Logout to apply."
+  ${Else}
+  ${EndIf}
+FunctionEnd
+
+#Function .OnInstFailed
+#    UAC::Unload ;Must call unload!
+#FunctionEnd
+
+
 
