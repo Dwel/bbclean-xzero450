@@ -46,7 +46,7 @@ LPCSTR pluginInfo(int field)
         case 4: return szInfoRelDate;
         case 5: return szInfoLink;
         case 6: return szInfoEmail;
-		    //case 8: return szInfoUpdateURL;
+            //case 8: return szInfoUpdateURL;
     }
 }
 
@@ -176,7 +176,7 @@ void send_window(HWND taskwnd, int desk)
 // ----------------------------------------------
 // The icon_box class
 
-struct icon_box : public plugin_info
+struct icon_box : plugin_info
 {
     #define FIRSTITEM m_index
 
@@ -195,14 +195,14 @@ struct icon_box : public plugin_info
     bool drawBorder;
     bool drawTitle;
     bool toolTips;
-	int stylePtr;
+    int stylePtr;
 
     // runtime variables
     int titleHeight;
     int titleBorder;
     int frameBorder;
     int frameMargin;
-	int frameBevelWidth;
+    int frameBevelWidth;
     int iconPadding;
     int folderSize;
 
@@ -227,7 +227,7 @@ struct icon_box : public plugin_info
     #define M_STR 3
 
     // class methods:
-    icon_box()
+    icon_box ()
     {
         BBP_clear(this, FIRSTITEM);
 
@@ -254,51 +254,48 @@ struct icon_box : public plugin_info
         this->next = NULL;
     }
 
-    ~icon_box();
+    ~icon_box ();
 
-    void about_box()
+    void about_box ()
     {
-		BBP_messagebox(this, MB_OK, "%s - %s\n\n © %s\n\n %s\t%s", szVersion, szInfoRelDate, szCopyright, szInfoLink, szInfoEmail);
+        BBP_messagebox(this, MB_OK, "%s - %s\n\n © %s\n\n %s\t%s", szVersion, szInfoRelDate, szCopyright, szInfoLink, szInfoEmail);
     }
 
-    LRESULT wnd_proc(HWND hwnd, UINT message,
-        WPARAM wParam, LPARAM lParam, LRESULT *ret);
-    void GetIconRect(int i, LPRECT rect);
-    void GetStyleSettings();
-    bool GetRCSettings(void);
-    void Paint(HDC hdc);
-    void show_menu(bool f);
-	void show_broams_menu(bool f);
-    void write_rc(void *v);
-    void common_broam(const char *temp);
+    LRESULT wnd_proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT * ret);
+    void GetIconRect (int i, LPRECT rect);
+    void GetStyleSettings ();
+    bool GetRCSettings (void);
+    void Paint (HDC hdc);
+    void show_menu (bool f);
+    void show_broams_menu (bool f);
+    void write_rc (void * v);
+    void common_broam (const char * temp);
 
-    int CheckMouse(POINT mousepos);
+    int CheckMouse (POINT mousepos);
 
-    void CalcMetrics(int*, int*);
-    void UpdateMetrics();
-    void process_broam(const char *temp, int f);
-    void invalidate(void);
-    void register_msg(bool);
+    void CalcMetrics (int *, int *);
+    void UpdateMetrics ();
+    void process_broam (const char *temp, int f);
+    void invalidate (void);
+    void register_msg (bool);
 
-    void paint_background(HDC hdc);
-    void paint_icon(HDC hdc, Item *icon, bool active, bool sunken);
-    void paint_text(HDC hdc, RECT *r, StyleItem *pSI, StyleItem *pTC,
-        bool centerd, const char *text);
+    void paint_background (HDC hdc);
+    void paint_icon (HDC hdc, Item *icon, bool active, bool sunken);
+    void paint_text (HDC hdc, RECT *r, StyleItem *pSI, StyleItem *pTC, bool centerd, const char *text);
 
-    void LoadFolder();
-    void ClearFolder();
+    void UpdateFolder ();
+    void LoadFolder ();
+    void ClearFolder ();
 
-    virtual void FillFolder() {}
-    Item *GetFolderIcon(int n);
+    virtual void FillFolder () { }
+    Item * GetFolderIcon (int n);
 
-    int MouseEvent(HWND hwnd, unsigned message,
-        WPARAM wParam, LPARAM lParam, int action);
+    int MouseEvent (HWND hwnd, unsigned message, WPARAM wParam, LPARAM lParam, int action);
 
-    virtual int MouseAction(HWND hwnd, unsigned message,
-        WPARAM wParam, POINT *p, int index) { return 0; }
+    virtual int MouseAction (HWND hwnd, unsigned message, WPARAM wParam, POINT * p, int index) { return 0; }
 
-    int get_other_desk(void);
-    virtual LPCITEMIDLIST do_dragover(Item *icon) { return NULL; }
+    int get_other_desk ();
+    virtual LPCITEMIDLIST do_dragover (Item *icon) { return NULL; }
 };
 
 // ----------------------------------------------
@@ -513,62 +510,62 @@ struct task_box : icon_box
         EnumTasks(task_enum_func, (LPARAM)&te);
     }
 
-	void show_broams_menu(bool popup)
-	{
-		n_menu *broamsMenu;
+    void show_broams_menu(bool popup)
+    {
+        n_menu *broamsMenu;
 
-		broamsMenu = n_makemenu("bbIconBox Broams");
+        broamsMenu = n_makemenu("bbIconBox Broams");
 
-		n_menuitem_cmd(broamsMenu, "Rollup", "@BBCore.Shade");
-		n_menuitem_cmd(broamsMenu, "Lower", "@BBCore.Lower");
-		n_menuitem_cmd(broamsMenu, "Minimise", "@BBCore.Minimize");
-		n_menuitem_cmd(broamsMenu, "Close", "@BBCore.Close");
+        n_menuitem_cmd(broamsMenu, "Rollup", "@BBCore.Shade");
+        n_menuitem_cmd(broamsMenu, "Lower", "@BBCore.Lower");
+        n_menuitem_cmd(broamsMenu, "Minimise", "@BBCore.Minimize");
+        n_menuitem_cmd(broamsMenu, "Close", "@BBCore.Close");
 
-		n_menuitem_nop(broamsMenu, NULL);
+        n_menuitem_nop(broamsMenu, NULL);
 
-		n_menuitem_cmd(broamsMenu, "Max Height", "@BBCore.MaximizeVertical");
-		n_menuitem_cmd(broamsMenu, "Max Width", "@BBCore.MaximizeHorizontal");
-		n_menuitem_cmd(broamsMenu, "Full Maximise", "@BBCore.Maximize");
-		//if (BBVERSION_WIN == BBVersion)
-		{
-			n_menuitem_cmd(broamsMenu, "Minimise To Tray",	"@BBCore.MinimizeToTray");
-			n_menuitem_nop(broamsMenu, NULL);
-		}
+        n_menuitem_cmd(broamsMenu, "Max Height", "@BBCore.MaximizeVertical");
+        n_menuitem_cmd(broamsMenu, "Max Width", "@BBCore.MaximizeHorizontal");
+        n_menuitem_cmd(broamsMenu, "Full Maximise", "@BBCore.Maximize");
+        //if (BBVERSION_WIN == BBVersion)
+        {
+            n_menuitem_cmd(broamsMenu, "Minimise To Tray",  "@BBCore.MinimizeToTray");
+            n_menuitem_nop(broamsMenu, NULL);
+        }
 
-		n_menuitem_cmd(broamsMenu, "Make Sticky", "@BBCore.StickWindow");
-		//if (BBVERSION_WIN == BBVersion)
-			n_menuitem_cmd(broamsMenu, "Always On Top", "@BBCore.AlwaysOnTop");
+        n_menuitem_cmd(broamsMenu, "Make Sticky", "@BBCore.StickWindow");
+        //if (BBVERSION_WIN == BBVersion)
+            n_menuitem_cmd(broamsMenu, "Always On Top", "@BBCore.AlwaysOnTop");
 
-		n_menuitem_nop(broamsMenu, NULL);
+        n_menuitem_nop(broamsMenu, NULL);
 
-		n_menuitem_cmd(broamsMenu, "Next Window Left", "@BBCore.NextWindow");
-		n_menuitem_cmd(broamsMenu, "Next Window Right", "@BBCore.PrevWindow");
+        n_menuitem_cmd(broamsMenu, "Next Window Left", "@BBCore.NextWindow");
+        n_menuitem_cmd(broamsMenu, "Next Window Right", "@BBCore.PrevWindow");
 
-		n_menuitem_nop(broamsMenu, NULL);
+        n_menuitem_nop(broamsMenu, NULL);
 
-		n_menuitem_cmd(broamsMenu, "Move Window Left", "@BBCore.MoveWindowLeft");
-		n_menuitem_cmd(broamsMenu, "Left Workspace", "@BBCore.LeftWorkspace");
-		n_menuitem_cmd(broamsMenu, "Move Window Right", "@BBCore.MoveWindowRight");
-		n_menuitem_cmd(broamsMenu, "Right Workspace", "@BBCore.RightWorkspace");
+        n_menuitem_cmd(broamsMenu, "Move Window Left", "@BBCore.MoveWindowLeft");
+        n_menuitem_cmd(broamsMenu, "Left Workspace", "@BBCore.LeftWorkspace");
+        n_menuitem_cmd(broamsMenu, "Move Window Right", "@BBCore.MoveWindowRight");
+        n_menuitem_cmd(broamsMenu, "Right Workspace", "@BBCore.RightWorkspace");
 
-		/*n_menuitem_nop(broamsMenu, NULL);*/
+        /*n_menuitem_nop(broamsMenu, NULL);*/
 
 
-		n_menuitem_nop(broamsMenu, NULL);
+        n_menuitem_nop(broamsMenu, NULL);
 
-		n_menuitem_cmd(broamsMenu, "Minimize All", "@BBCore.MinimizeAll");
-		n_menuitem_cmd(broamsMenu, "Restore All", "@BBCore.RestoreAll");
-		n_menuitem_cmd(broamsMenu, "Cascade", "@BBCore.Cascade");
-		n_menuitem_cmd(broamsMenu, "Tile Horizontal", "@BBCore.TileHorizontal");
-		n_menuitem_cmd(broamsMenu, "Tile Vertical", "@BBCore.TileVertical");
+        n_menuitem_cmd(broamsMenu, "Minimize All", "@BBCore.MinimizeAll");
+        n_menuitem_cmd(broamsMenu, "Restore All", "@BBCore.RestoreAll");
+        n_menuitem_cmd(broamsMenu, "Cascade", "@BBCore.Cascade");
+        n_menuitem_cmd(broamsMenu, "Tile Horizontal", "@BBCore.TileHorizontal");
+        n_menuitem_cmd(broamsMenu, "Tile Vertical", "@BBCore.TileVertical");
 
-		n_menuitem_nop(broamsMenu, NULL);
+        n_menuitem_nop(broamsMenu, NULL);
 
-		n_menuitem_cmd(broamsMenu, "Edit Settings", "@bbIconBox.editRc");
-		n_menuitem_cmd(broamsMenu, "Documentation", "@bbIconBox.LoadDocs");
-		n_menuitem_cmd(broamsMenu, "About", "@bbIconBox.about");
-		n_showmenu(this, broamsMenu, popup, 0);
-	}
+        n_menuitem_cmd(broamsMenu, "Edit Settings", "@bbIconBox.editRc");
+        n_menuitem_cmd(broamsMenu, "Documentation", "@bbIconBox.LoadDocs");
+        n_menuitem_cmd(broamsMenu, "About", "@bbIconBox.about");
+        n_showmenu(this, broamsMenu, popup, 0);
+    }
 
     LPCITEMIDLIST do_dragover(Item *icon)
     {
@@ -646,8 +643,8 @@ struct task_box : icon_box
 
                 if (shift_pressed)
                     zoom_window(taskwnd);
-				if (wParam & MK_RBUTTON) 
-					show_broams_menu(true);
+                if (wParam & MK_RBUTTON) 
+                    show_broams_menu(true);
                 else
                     activate_window(taskwnd);
                 SetTimer(hwnd, TASK_ACTIVATE_TIMER, 200, NULL);
@@ -852,7 +849,8 @@ struct folder_box : icon_box
 
     void FillFolder(void)
     {
-        ::LoadFolder(&this->my_Folder, this->iconWidth, !this->auto_hidden, this->hwnd);
+        //::LoadFolder(&this->my_Folder, this->iconWidth, !this->auto_hidden, this->hwnd);
+		::LoadFolder(&this->my_Folder, this->iconWidth, true, this->hwnd);
     }
 
     LPCITEMIDLIST do_dragover(Item *icon)
@@ -1109,40 +1107,40 @@ void icon_box::paint_icon(HDC hdc, Item *icon, bool active, bool sunken)
 #pragma message(Reminder "Unmerged bb4win code (too difficult for friday)!") 
 /*
     StyleItem *A, *N;
-	int i = SN_TOOLBARWINDOWLABEL;
+    int i = SN_TOOLBARWINDOWLABEL;
 
-	switch (this->stylePtr)
-	{
-	case SN_TOOLBARBUTTONP:
-		i = SN_TOOLBARBUTTON;
-		break;
-	case SN_TOOLBARWINDOWLABEL:
-		i = SN_TOOLBAR;
-		break;
-	case SN_MENUFRAME:
-		i = SN_MENUHILITE;
-		break;
-	case SN_MENUHILITE:
-		i = SN_MENUFRAME;
-	}
+    switch (this->stylePtr)
+    {
+    case SN_TOOLBARBUTTONP:
+        i = SN_TOOLBARBUTTON;
+        break;
+    case SN_TOOLBARWINDOWLABEL:
+        i = SN_TOOLBAR;
+        break;
+    case SN_MENUFRAME:
+        i = SN_MENUHILITE;
+        break;
+    case SN_MENUHILITE:
+        i = SN_MENUFRAME;
+    }
 
-	N = (StyleItem*)GetSettingPtr(this->stylePtr);
-	A = (StyleItem*)GetSettingPtr(i);
+    N = (StyleItem*)GetSettingPtr(this->stylePtr);
+    A = (StyleItem*)GetSettingPtr(i);
 
-	if (A->parentRelative)
-		A = (StyleItem*)GetSettingPtr(SN_TOOLBAR);
+    if (A->parentRelative)
+        A = (StyleItem*)GetSettingPtr(SN_TOOLBAR);
 
-	if (sunken)
-	{
-		StyleItem SI, *H;
-		SI = *A, H = &SI;
+    if (sunken)
+    {
+        StyleItem SI, *H;
+        SI = *A, H = &SI;
         const int d = 2;
 
         r = iconRect;
         InflateRect(&r, d, d);
 
-			MakeStyleGradient(hdc, &r, H, false);
-	}
+            MakeStyleGradient(hdc, &r, H, false);
+    }
 */
 
     if (icon->hIcon)
@@ -1312,52 +1310,52 @@ void icon_box::GetStyleSettings()
 
 #pragma message(Reminder "Unmerged bb4win code (too difficult for friday)!") 
 #if 0
-	bool newMetrics = false;
-	if (NOT_XOBLITE)
-	{
+    bool newMetrics = false;
+    if (NOT_XOBLITE)
+    {
         void *p = GetSettingPtr(SN_NEWMETRICS); //SN_NEWMETRICS aka SN_ISSTYLE070
         newMetrics = HIWORD(p) ? *(bool*)p : NULL!=p;
-	}
-	else 
-	{
-		// Get the path to the current style file...
-		char style[MAX_PATH]; char temp[64]; 
-		strcpy(style, stylePath());
-		strcpy(temp, ReadString(style, "menu.frame.appearance:", "no"));
-		if (strlen(temp) != 2) newMetrics = true;
-	}
-	
-	StyleItem *T = (StyleItem*)GetSettingPtr(this->stylePtr);
+    }
+    else 
+    {
+        // Get the path to the current style file...
+        char style[MAX_PATH]; char temp[64]; 
+        strcpy(style, stylePath());
+        strcpy(temp, ReadString(style, "menu.frame.appearance:", "no"));
+        if (strlen(temp) != 2) newMetrics = true;
+    }
+    
+    StyleItem *T = (StyleItem*)GetSettingPtr(this->stylePtr);
 
-	frameBorder = drawBorder ? (newMetrics ? T->borderWidth : *(int*)GetSettingPtr(SN_BORDERWIDTH)) : 0;
-	frameBevelWidth   = newMetrics ? T->marginWidth : *(int*)GetSettingPtr(SN_BEVELWIDTH);
+    frameBorder = drawBorder ? (newMetrics ? T->borderWidth : *(int*)GetSettingPtr(SN_BORDERWIDTH)) : 0;
+    frameBevelWidth   = newMetrics ? T->marginWidth : *(int*)GetSettingPtr(SN_BEVELWIDTH);
 
-	iconPadding = 3;
-	frameMargin = frameBorder + frameBevelWidth + 2;
+    iconPadding = 3;
+    frameMargin = frameBorder + frameBevelWidth + 2;
 
-	if (drawTitle || autoHide)
-	{
-		int i = SN_TOOLBAR;
+    if (drawTitle || autoHide)
+    {
+        int i = SN_TOOLBAR;
 
-		switch (this->stylePtr)
-		{
-		case SN_MENUTITLE:
-			i = SN_MENUFRAME;
-		case SN_MENUFRAME:
-			i = SN_MENUTITLE;
-		case SN_MENUHILITE:
-			i = SN_MENUTITLE;
-		}
+        switch (this->stylePtr)
+        {
+        case SN_MENUTITLE:
+            i = SN_MENUFRAME;
+        case SN_MENUFRAME:
+            i = SN_MENUTITLE;
+        case SN_MENUHILITE:
+            i = SN_MENUTITLE;
+        }
 
-		T = (StyleItem*)GetSettingPtr(i);
+        T = (StyleItem*)GetSettingPtr(i);
 
-		HFONT hFont = CreateStyleFont(T);
-		int tfh = get_fontheight(hFont);
-		DeleteObject(hFont);
+        HFONT hFont = CreateStyleFont(T);
+        int tfh = get_fontheight(hFont);
+        DeleteObject(hFont);
 
-		titleHeight = tfh + 2 * frameBevelWidth + frameBorder;
-		titleBorder = frameBorder;
-	}
+        titleHeight = tfh + 2 * frameBevelWidth + frameBorder;
+        titleBorder = frameBorder;
+    }
 #endif
 }
 
@@ -1380,26 +1378,26 @@ void icon_box::write_rc(void *v)
 }
 
 const char *style_strings[] = {
-	"not used"			,
-	"Toolbar"          ,
+    "not used"          ,
+    "Toolbar"          ,
 
-	"Toolbar Button"    ,
-	"Toolbar Button Pressed"	,
-	"Toolbar Label"   ,
+    "Toolbar Button"    ,
+    "Toolbar Button Pressed"    ,
+    "Toolbar Label"   ,
 
-	"Toolbar Window Label"    ,
-	"Toolbar Clock"		,
-	"Menu Title"     ,
+    "Toolbar Window Label"    ,
+    "Toolbar Clock"     ,
+    "Menu Title"     ,
 
-	"Menu Frame"        ,
-	"Menu Hilite"      ,
-	NULL
+    "Menu Frame"        ,
+    "Menu Hilite"      ,
+    NULL
 };
 
 bool icon_box::GetRCSettings(void)
 {
-	const char *style_string = BBP_read_string(this, NULL, "style", "Toolbar");
-	stylePtr        = get_string_index(style_string, style_strings);
+    const char *style_string = BBP_read_string(this, NULL, "style", "Toolbar");
+    stylePtr        = get_string_index(style_string, style_strings);
 
     struct rc *p = m_rc;
     do
@@ -1486,16 +1484,14 @@ void icon_box::process_broam(const char *temp, int f)
 
     if (BBP_broam_int(this, temp, "icon.size", &iconWidth))
     {
-        LoadFolder();
-        UpdateMetrics();
+        UpdateFolder();
         return;
     }
 
     if (BBP_broam_string(this, temp, "path", &rest))
     {
         strcpy(my_Folder.path, rest);
-        LoadFolder();
-        UpdateMetrics();
+        UpdateFolder();
         show_menu(false);
         return;
     }
@@ -1508,14 +1504,14 @@ void icon_box::process_broam(const char *temp, int f)
         return;
     }
 
-	if (!_memicmp(temp, "style.", 6))
-	{
-		temp += 6;
-		BBP_write_string(this, "style", temp);
-		UpdateMetrics();
-		this->GetRCSettings();
-		return;
-	}
+    if (!_memicmp(temp, "style.", 6))
+    {
+        temp += 6;
+        BBP_write_string(this, "style", temp);
+        UpdateMetrics();
+        this->GetRCSettings();
+        return;
+    }
 
     if (!_stricmp(temp, "remove"))
     {
@@ -1596,75 +1592,75 @@ void icon_box::common_broam(const char *temp)
 }
 
 const char *name_strings[] = {
-	"My Computer"          ,
+    "My Computer"          ,
 
-	"Personal"  ,
-	"Recycle Bin"    ,
-	"Start Menu"   ,
+    "Personal"  ,
+    "Recycle Bin"    ,
+    "Start Menu"   ,
 
-	"Templates"    ,
-	"App Data"		,
-	"Startup"   ,
+    "Templates"    ,
+    "App Data"      ,
+    "Startup"   ,
 
-	"IE Temp Files"     ,
-	"Printers"        ,
-	"Recent"      ,
+    "IE Temp Files"     ,
+    "Printers"        ,
+    "Recent"      ,
 
-	"Send To"           ,
-	"Fonts"          ,
-	"Cookies"         ,
+    "Send To"           ,
+    "Fonts"          ,
+    "Cookies"         ,
 
-	"Control Panel"     ,
-	"Wallpaper"     ,
-	"Profile"        ,
+    "Control Panel"     ,
+    "Wallpaper"     ,
+    "Profile"        ,
 
-	"Program Files"      ,
-	"SysDir"           ,
-	"WinDir"          ,
+    "Program Files"      ,
+    "SysDir"           ,
+    "WinDir"          ,
 
-	"Themes"     ,
-	"Music"         ,
-	"Pictures"           ,
+    "Themes"     ,
+    "Music"         ,
+    "Pictures"           ,
 
-	//"Resources"          ,
-	"Video"           ,
-	NULL
+    //"Resources"          ,
+    "Video"           ,
+    NULL
 };
 
 const char *path_strings[] = {
-	"DRIVES"          ,
+    "DRIVES"          ,
 
-	"PERSONAL|COMMON_DOCUMENTS"  ,
-	"BITBUCKET"    ,
-	"PROGRAMS|COMMON_PROGRAMS|STARTMENU|COMMON_STARTMENU"   ,
+    "PERSONAL|COMMON_DOCUMENTS"  ,
+    "BITBUCKET"    ,
+    "PROGRAMS|COMMON_PROGRAMS|STARTMENU|COMMON_STARTMENU"   ,
 
-	"TEMPLATES|COMMON_TEMPLATES"    ,
-	"APPDATA|COMMON_APPDATA|LOCAL_APPDATA"		 ,
-	"STARTUP|COMMON_STARTUP|ALTSTARTUP|COMMON_ALTSTARTUP"   ,
+    "TEMPLATES|COMMON_TEMPLATES"    ,
+    "APPDATA|COMMON_APPDATA|LOCAL_APPDATA"       ,
+    "STARTUP|COMMON_STARTUP|ALTSTARTUP|COMMON_ALTSTARTUP"   ,
 
-	"INTERNET_CACHE"     ,
-	"PRINTERS|PRINTHOOD"        ,
-	"RECENT"      ,
+    "INTERNET_CACHE"     ,
+    "PRINTERS|PRINTHOOD"        ,
+    "RECENT"      ,
 
-	"SENDTO"           ,
-	"FONTS"          ,
-	"COOKIES"         ,
+    "SENDTO"           ,
+    "FONTS"          ,
+    "COOKIES"         ,
 
-	"CONTROLS|ADMINTOOLS|COMMON_ADMINTOOLS"     ,
-	"WINDOWS\\Web\\Wallpaper"          ,
-	"PROFILE"        ,
+    "CONTROLS|ADMINTOOLS|COMMON_ADMINTOOLS"     ,
+    "WINDOWS\\Web\\Wallpaper"          ,
+    "PROFILE"        ,
 
-	"PROGRAM_FILES|PROGRAM_FILES_COMMON"      ,
-	"SYSTEM"           ,
-	"WINDOWS"          ,
+    "PROGRAM_FILES|PROGRAM_FILES_COMMON"      ,
+    "SYSTEM"           ,
+    "WINDOWS"          ,
 
-	"WINDOWS\\Resources\\Themes"          ,
-	"MUSIC|COMMON_MUSIC"         ,
-	"MYPICTURES|COMMON_PICTURES"           ,
+    "WINDOWS\\Resources\\Themes"          ,
+    "MUSIC|COMMON_MUSIC"         ,
+    "MYPICTURES|COMMON_PICTURES"           ,
 
-	//"RESOURCES|RESOURCES_LOCALIZED"          , // returns DESKTOP
-	"VIDEO|COMMON_VIDEO"           ,
-	NULL
+    //"RESOURCES|RESOURCES_LOCALIZED"          , // returns DESKTOP
+    "VIDEO|COMMON_VIDEO"           ,
+    NULL
 };
 
 // ----------------------------------------------
@@ -1678,11 +1674,11 @@ void icon_box::show_menu(bool popup)
     char b0[80], b1[80], b2[80];
     DesktopInfo D;
     int n;
-	int s = GetOSVersion();
-	bool NineX = s < 50;
-	bool TwoK = s < 51;
-	bool VistaPlus = s > 59;
-	bool Bit64 = s % 10 > 4;
+    int s = GetOSVersion();
+    bool NineX = s < 50;
+    bool TwoK = s < 51;
+    bool VistaPlus = s > 59;
+    bool Bit64 = s % 10 > 4;
 
     main = n_makemenu(m_name);
     BBP_n_orientmenu(this, main);
@@ -1755,11 +1751,11 @@ void icon_box::show_menu(bool popup)
 #endif
 
     if (false == this->inSlit)
-	{
-		n_menuitem_nop(main, NULL);
-		BBP_n_windowmenu(this, main);
-		BBP_n_placementmenu(this, main);
-	}
+    {
+        n_menuitem_nop(main, NULL);
+        BBP_n_windowmenu(this, main);
+        BBP_n_placementmenu(this, main);
+    }
 
     n_menuitem_nop(main, NULL);
     n_menuitem_cmd(main, "Edit Settings",  "@bbIconBox.editRC");
@@ -1775,11 +1771,11 @@ void icon_box::show_menu(bool popup)
     char b0[80], b1[80], b2[80];
     DesktopInfo D;
     int n;
-	int s = GetOSVersion();
-	bool NineX = s < 50;
-	bool TwoK = s < 51;
-	bool VistaPlus = s > 59;
-	bool Bit64 = s % 10 > 4;
+    int s = GetOSVersion();
+    bool NineX = s < 50;
+    bool TwoK = s < 51;
+    bool VistaPlus = s > 59;
+    bool Bit64 = s % 10 > 4;
 
     main = n_makemenu(m_name);
     BBP_n_orientmenu(this, main);
@@ -1798,21 +1794,21 @@ void icon_box::show_menu(bool popup)
     BBP_n_insertmenu(this, sub);
     n_menuitem_int(sub, "Icon Size", "icon.size", iconWidth, 12, 64);
 
-	sub = n_submenu(main, "Style");
-	for (n = 1; n < SN_MENUBULLET; ++n)
-	{
-		if (SN_TOOLBARLABEL == n)
-			n = n + 1;
-		if (SN_MENUTITLE == n)
-			n_menuitem_nop(sub, NULL);
-		sprintf(b2, "style.%s", style_strings[n]);
-		n_menuitem_bol(sub, style_strings[n], b2, stylePtr == n);
-	}
+    sub = n_submenu(main, "Style");
+    for (n = 1; n < SN_MENUBULLET; ++n)
+    {
+        if (SN_TOOLBARLABEL == n)
+            n = n + 1;
+        if (SN_MENUTITLE == n)
+            n_menuitem_nop(sub, NULL);
+        sprintf(b2, "style.%s", style_strings[n]);
+        n_menuitem_bol(sub, style_strings[n], b2, stylePtr == n);
+    }
 
-	n_menuitem_nop(main, NULL);
+    n_menuitem_nop(main, NULL);
     sub = n_submenu(main, "New");
     sub2 = n_submenu(sub, "Task");
-	n_menuitem_cmd(sub2, "All", "@bbIconBox.create TASK");
+    n_menuitem_cmd(sub2, "All", "@bbIconBox.create TASK");
     getWorkspaces().GetDesktopInfo(D);
     for (n = 0; n < D.nScreensX; ++n) {
         sprintf(b1, "Workspace %d", 1+n);
@@ -1830,33 +1826,33 @@ void icon_box::show_menu(bool popup)
     n_menuitem_cmd(sub, "Browse ...", "@bbIconBox.create.browse");
     //}
 
-	n_menuitem_nop(sub, NULL);
+    n_menuitem_nop(sub, NULL);
     n_menuitem_cmd(sub2, "Desktop", "@bbIconBox.create DESKTOP");
     n_menuitem_cmd(sub2, "Pinned To TaskBar", "@bbIconBox.create APPDATA\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar");
     n_menuitem_cmd(sub2, "Quick Launch", "@bbIconBox.create APPDATA\\Microsoft\\Internet Explorer\\Quick Launch");
 
-	n_menuitem_cmd(sub, VistaPlus ? "Links" : "IE Links", VistaPlus ? "@bbIconBox.create FAVORITES\\LINKS|COMMON_OEM_LINKS|PROFILE\\LINKS" : "@bbIconBox.create FAVORITES\\LINKS|COMMON_OEM_LINKS");
-	n_menuitem_nop(sub, NULL);	
-	n_menuitem_cmd(sub, "Favorites", "@bbIconBox.create FAVORITES|COMMON_FAVORITES");
-	n_menuitem_cmd(sub, "Net Connections", "@bbIconBox.create NETWORK|NETHOOD|CONNECTIONS");
-	sub2 = n_submenu(sub, "Other Paths");
-	//n = 0; int o = NineX ? 14 : TwoK ? 19 : ((BBVERSION_WIN == BBVersion) && VistaPlus) ? 23 : 20;
+    n_menuitem_cmd(sub, VistaPlus ? "Links" : "IE Links", VistaPlus ? "@bbIconBox.create FAVORITES\\LINKS|COMMON_OEM_LINKS|PROFILE\\LINKS" : "@bbIconBox.create FAVORITES\\LINKS|COMMON_OEM_LINKS");
+    n_menuitem_nop(sub, NULL);  
+    n_menuitem_cmd(sub, "Favorites", "@bbIconBox.create FAVORITES|COMMON_FAVORITES");
+    n_menuitem_cmd(sub, "Net Connections", "@bbIconBox.create NETWORK|NETHOOD|CONNECTIONS");
+    sub2 = n_submenu(sub, "Other Paths");
+    //n = 0; int o = NineX ? 14 : TwoK ? 19 : ((BBVERSION_WIN == BBVersion) && VistaPlus) ? 23 : 20;
   n = 0; int o = NineX ? 14 : TwoK ? 19 : (VistaPlus) ? 23 : 20;
-	for (; n < o; n++)
-	{
-		if ((n > 0) && (n % 3 == 0))
-			n_menuitem_nop(sub2, NULL);
+    for (; n < o; n++)
+    {
+        if ((n > 0) && (n % 3 == 0))
+            n_menuitem_nop(sub2, NULL);
 
-		sprintf(b0, "@bbIconBox.create %s", path_strings[n]);
-		n_menuitem_cmd(sub2, name_strings[n], b0);
-	}
-	if (Bit64)
-	{
-		//if (BBVERSION_WIN != BBVersion) 
-			n_menuitem_nop(sub2, NULL);	
-		n_menuitem_cmd(sub2, "Program Files X86", "@bbIconBox.create PROGRAM_FILESX86|PROGRAM_FILES_COMMONX86");
-		n_menuitem_cmd(sub2, "SysDir X86", "@bbIconBox.create SYSTEMX86");
-	}
+        sprintf(b0, "@bbIconBox.create %s", path_strings[n]);
+        n_menuitem_cmd(sub2, name_strings[n], b0);
+    }
+    if (Bit64)
+    {
+        //if (BBVERSION_WIN != BBVersion) 
+            n_menuitem_nop(sub2, NULL); 
+        n_menuitem_cmd(sub2, "Program Files X86", "@bbIconBox.create PROGRAM_FILESX86|PROGRAM_FILES_COMMONX86");
+        n_menuitem_cmd(sub2, "SysDir X86", "@bbIconBox.create SYSTEMX86");
+    }
 
 #if 0
     n_menuitem_cmd(main, "Remove This", "remove");
@@ -1873,11 +1869,11 @@ void icon_box::show_menu(bool popup)
 #endif
 
     if (false == this->inSlit)
-	{
-		n_menuitem_nop(main, NULL);
-		BBP_n_windowmenu(this, main);
-		BBP_n_placementmenu(this, main);
-	}
+    {
+        n_menuitem_nop(main, NULL);
+        BBP_n_windowmenu(this, main);
+        BBP_n_placementmenu(this, main);
+    }
 
     n_menuitem_nop(main, NULL);
     n_menuitem_cmd(main, "Edit Settings",  "@bbIconBox.editRC");
@@ -1991,32 +1987,32 @@ void icon_box::paint_background(HDC hdc)
 #if 0
     RECT r = {0, 0, this->width, this->height };
 
-	int i = SN_TOOLBAR;
+    int i = SN_TOOLBAR;
 
-	switch (this->stylePtr)
-	{
-	case SN_MENUTITLE:
-		i = SN_MENUFRAME;
-		break;
-	case SN_MENUFRAME:
-		i = SN_MENUTITLE;
-		break;
-	case SN_MENUHILITE:
-		i = SN_MENUTITLE;
-	}
+    switch (this->stylePtr)
+    {
+    case SN_MENUTITLE:
+        i = SN_MENUFRAME;
+        break;
+    case SN_MENUFRAME:
+        i = SN_MENUTITLE;
+        break;
+    case SN_MENUHILITE:
+        i = SN_MENUTITLE;
+    }
 
-	StyleItem *MT = (StyleItem*)GetSettingPtr(i);
-	StyleItem *T = (StyleItem*)GetSettingPtr(this->stylePtr);
+    StyleItem *MT = (StyleItem*)GetSettingPtr(i);
+    StyleItem *T = (StyleItem*)GetSettingPtr(this->stylePtr);
 
-	StyleItem *S = new StyleItem;
-	S->ColorTo = S->Color = 0;
-	S->type = B_SOLID;
-	S->bevelstyle = BEVEL_FLAT;
-	S->bevelposition = BEVEL1;
-	S->borderColor = MT->Color;
-	S->borderWidth = 1;
+    StyleItem *S = new StyleItem;
+    S->ColorTo = S->Color = 0;
+    S->type = B_SOLID;
+    S->bevelstyle = BEVEL_FLAT;
+    S->bevelposition = BEVEL1;
+    S->borderColor = MT->Color;
+    S->borderWidth = 1;
 
-	int frame_border = frameBorder + frameBevelWidth;
+    int frame_border = frameBorder + frameBevelWidth;
     int title_height = this->titleHeight;
     int title_border = this->titleBorder;
 
@@ -2032,72 +2028,79 @@ void icon_box::paint_background(HDC hdc)
         frame_border = 0;
     }
 
-	r.top = this->titleHeight;
-	if (r.top && MT->parentRelative) r.top = 0;
+    r.top = this->titleHeight;
+    if (r.top && MT->parentRelative) r.top = 0;
 
-	if (T->parentRelative)
-		T = (StyleItem*)GetSettingPtr(SN_TOOLBAR);
+    if (T->parentRelative)
+        T = (StyleItem*)GetSettingPtr(SN_TOOLBAR);
 
-	bool flatBevel = false;
-	if (T->bevelstyle == BEVEL_FLAT)
-	{
-		flatBevel = true;
-		T->bevelstyle = BEVEL_SUNKEN;
-	}
+    bool flatBevel = false;
+    if (T->bevelstyle == BEVEL_FLAT)
+    {
+        flatBevel = true;
+        T->bevelstyle = BEVEL_SUNKEN;
+    }
 
-	if (this->transparent)
-		MakeStyleGradient(hdc, &r, S, this->autoHide);
-	else
-		MakeStyleGradient(hdc, &r, T, drawBorder);
+    if (this->transparent)
+        MakeStyleGradient(hdc, &r, S, this->autoHide);
+    else
+        MakeStyleGradient(hdc, &r, T, drawBorder);
 
-	r.left  += frame_border;
-	r.top   += frame_border;
-	r.right   -= frame_border;
-	r.bottom  -= frame_border;
+    r.left  += frame_border;
+    r.top   += frame_border;
+    r.right   -= frame_border;
+    r.bottom  -= frame_border;
 
-	if (flatBevel)
-		T->bevelstyle = BEVEL_FLAT;
+    if (flatBevel)
+        T->bevelstyle = BEVEL_FLAT;
 
-	if (this->transparent)
-		MakeStyleGradient(hdc, &r, S, this->autoHide);
-	else
-		MakeStyleGradient(hdc, &r, T, drawBorder);
+    if (this->transparent)
+        MakeStyleGradient(hdc, &r, S, this->autoHide);
+    else
+        MakeStyleGradient(hdc, &r, T, drawBorder);
 
-	if (title_height)
-	{
-		/*int margin = this->iconPadding + title_border;*/
-		r.top = 0;
-		r.bottom = title_height;
-		r.top = r.left = 0;
-		r.right  = this->width;
-		r.bottom = title_height;
+    if (title_height)
+    {
+        /*int margin = this->iconPadding + title_border;*/
+        r.top = 0;
+        r.bottom = title_height;
+        r.top = r.left = 0;
+        r.right  = this->width;
+        r.bottom = title_height;
 
-		int margin = imax(T->marginWidth, 2);
+        int margin = imax(T->marginWidth, 2);
 
-		if (false == MT->parentRelative)
-			MakeStyleGradient(hdc, &r, MT, drawBorder);
+        if (false == MT->parentRelative)
+            MakeStyleGradient(hdc, &r, MT, drawBorder);
 
-		if (title_border && false == no_items) {
-			if (MT->parentRelative)
-			{
-				r.left += margin;
-				r.right -= margin;
-			}
-			CreateBorder(hdc, &r, MT->borderColor, title_border);
-		}
+        if (title_border && false == no_items) {
+            if (MT->parentRelative)
+            {
+                r.left += margin;
+                r.right -= margin;
+            }
+            CreateBorder(hdc, &r, MT->borderColor, title_border);
+        }
 
-		if (m_title[0]) {
-			r.left += margin;
-			r.right -= margin;
-			this->paint_text(hdc, &r, MT, MT, false, m_title);
-		}
-	}
+        if (m_title[0]) {
+            r.left += margin;
+            r.right -= margin;
+            this->paint_text(hdc, &r, MT, MT, false, m_title);
+        }
+    }
 
-	if (this->is_visible)
-		this->Paint(hdc);
-	ClearToolTips(hwnd);
+    if (this->is_visible)
+        this->Paint(hdc);
+    ClearToolTips(hwnd);
 #endif
 }
+
+void icon_box::UpdateFolder ()
+{
+    LoadFolder();
+    UpdateMetrics();
+}
+
 
 // ----------------------------------------------
 LRESULT icon_box::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *ret)
@@ -2192,27 +2195,25 @@ LRESULT icon_box::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 hwnd_now_active = (HWND)wParam;
             }
             new_task_list();
-            goto update;
+            UpdateFolder();
+            break;
 
         case BB_DESKTOPINFO:
             hwnd_last_active = hwnd_now_active = NULL;
-            goto update;
+            UpdateFolder();
+            break;
 
         case BB_TRAYUPDATE:
-            goto update;
-
-        update:
-            this->LoadFolder();
-            this->UpdateMetrics();
+            UpdateFolder();
             break;
 
         //=============================================
         case BB_TOGGLETRAY:
-			/*if (this->my_Folder.mode == MODE_TRAY)*/ {
-				this->toggled_hidden = false == this->toggled_hidden;
-				BBP_set_window_modes(this);
-				break;
-			}
+            /*if (this->my_Folder.mode == MODE_TRAY)*/ {
+                this->toggled_hidden = false == this->toggled_hidden;
+                BBP_set_window_modes(this);
+                break;
+            }
 
         //====================
 
@@ -2459,7 +2460,7 @@ int beginPluginEx(HINSTANCE hPluginInstance, HWND hSlit)
     }
 
     BBhwnd = GetBBWnd();
-	BBVersion = BBP_bbversion();
+    BBVersion = BBP_bbversion();
 
     g_hSlit = hSlit;
     g_hInstance = hPluginInstance;
