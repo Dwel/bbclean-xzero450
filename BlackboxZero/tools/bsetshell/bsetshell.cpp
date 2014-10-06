@@ -22,6 +22,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
+#include <shellapi.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <tchar.h>
 
 #define IDD_DLG1 1000
 #define IDC_RBN1 1001
@@ -34,19 +38,19 @@
 #define IDC_GRP2 1008
 #define IDC_INFO 1009
 
-#define APPNAME "bsetshell"
+#define APPNAME TEXT("bsetshell")
 
 #ifndef RC_INVOKED
 #define ST
 
-ST char szBlackbox[MAX_PATH];
-ST char shellpath[MAX_PATH];
+ST TCHAR szBlackbox[MAX_PATH];
+ST TCHAR shellpath[MAX_PATH];
 ST HWND g_hDlg;
 
-ST bool is_usingNT;
-ST bool is_admin;
-ST bool is_per_user;
-ST bool is_blackbox;
+ST bool is_usingNT = true;
+ST bool is_admin = true;
+ST bool is_per_user = false;
+ST bool is_blackbox = false;
 
 #ifndef KEY_WOW64_64KEY
 #define KEY_WOW64_64KEY 0x0100
@@ -61,32 +65,32 @@ ST bool is_blackbox;
 
 /* ======================================================================== */
 
-void dbg_printf (const char *fmt, ...)
+void dbg_printf(const TCHAR *fmt, ...)
 {
-    char buffer[4000];
+    TCHAR buffer[4000];
     va_list arg;
     va_start(arg, fmt);
-    vsprintf (buffer, fmt, arg);
-    strcat(buffer, "\n");
+    _vstprintf (buffer, fmt, arg);
+    _tcscat(buffer, TEXT("\n"));
     OutputDebugString(buffer);
 }
 
-int message(int flg, const char *fmt, ...)
+int message(int flg, const TCHAR *fmt, ...)
 {
-    char buffer[4000];
+    TCHAR buffer[4000];
     va_list arg;
     va_start(arg, fmt);
-    vsprintf (buffer, fmt, arg);
-    return MessageBox (g_hDlg, buffer, APPNAME, flg);
+    _vstprintf(buffer, fmt, arg);
+    return MessageBox(g_hDlg, buffer, APPNAME, flg);
 }
 
 /* ======================================================================== */
 
-ST char inimapstr       [] = "Software\\Microsoft\\Windows NT\\CurrentVersion\\IniFileMapping\\system.ini\\boot";
-ST char sys_bootOption  [] = "SYS:Microsoft\\Windows NT\\CurrentVersion\\Winlogon";
-ST char usr_bootOption  [] = "USR:Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon";
-ST char logonstr        [] = "Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon";
-ST char szExplorer      [] = "explorer.exe";
+ST TCHAR inimapstr[] = TEXT("Software\\Microsoft\\Windows NT\\CurrentVersion\\IniFileMapping\\system.ini\\boot");
+ST TCHAR sys_bootOption[] = TEXT("SYS:Microsoft\\Windows NT\\CurrentVersion\\Winlogon");
+ST TCHAR usr_bootOption[] = TEXT("USR:Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon");
+ST TCHAR logonstr[] = TEXT("Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon");
+ST TCHAR szExplorer[] = TEXT("explorer.exe");
 
 enum {
     A_RD = 1,
@@ -97,7 +101,7 @@ enum {
     A_TEST = A_WR|A_DEL
 };
 
-ST bool rw_reg(int action, HKEY root, const char *ckey, const char *cval, const char *cdata)
+ST bool rw_reg (int action, HKEY root, const TCHAR * ckey, const TCHAR *cval, const TCHAR * cdata)
 {
     HKEY k;
     LONG r;
@@ -125,7 +129,7 @@ ST bool rw_reg(int action, HKEY root, const char *ckey, const char *cval, const 
                 if (A_DW & action) {
                     r = RegSetValueEx(k, cval, 0, REG_DWORD, (const BYTE*)&cdata, sizeof(DWORD));
                 } else if (A_SZ & action) {
-                    r = RegSetValueEx(k, cval, 0, REG_SZ, (const BYTE*)cdata, strlen(cdata)+1);
+                    r = RegSetValueEx(k, cval, 0, REG_SZ, (const BYTE*)cdata, sizeof(TCHAR) * (_tcslen(cdata) + 1));
                 }
             }
             if (ERROR_SUCCESS == r) {
@@ -149,43 +153,120 @@ ST bool rw_reg(int action, HKEY root, const char *ckey, const char *cval, const 
 }                
 
 /* read/write from/to system.ini (for windows 9x/me) */
-ST bool rw_ini (int action, char *shell)
+ST bool rw_ini (int action, TCHAR * shell)
 {
-    char path[MAX_PATH];
+    TCHAR path[MAX_PATH];
     GetWindowsDirectory(path, sizeof(path));
-    strcat(path, "\\SYSTEM.INI");
+    _tcscat(path, TEXT("\\SYSTEM.INI"));
     if (action & A_RD)
-        return 0 != GetPrivateProfileString("Boot", "Shell", "", shell, MAX_PATH, path);
+        return 0 != GetPrivateProfileString(TEXT("Boot"), TEXT("Shell"), TEXT(""), shell, MAX_PATH, path);
     if (action & A_WR)
-        return 0 != WritePrivateProfileString("Boot", "Shell", shell, path);
+        return 0 != WritePrivateProfileString(TEXT("Boot"), TEXT("Shell"), shell, path);
     return 0;
 }
 
-ST bool get_shell(char *buffer)
+ST bool get_shell (TCHAR * buffer)
 {
     buffer[0] = 0;
     if (0 == is_usingNT)
         return rw_ini(A_RD, buffer);
     else if (is_per_user)
-        return rw_reg(A_RD|A_SZ, HKEY_CURRENT_USER, logonstr, "Shell", buffer);
+        return rw_reg(A_RD | A_SZ, HKEY_CURRENT_USER, logonstr, TEXT("Shell"), buffer);
     else
-        return rw_reg(A_RD|A_SZ, HKEY_LOCAL_MACHINE, logonstr, "Shell", buffer);
+        return rw_reg(A_RD | A_SZ, HKEY_LOCAL_MACHINE, logonstr, TEXT("Shell"), buffer);
 }
 
 ST bool get_per_user(void)
 {
-    char buffer[MAX_PATH];
+    TCHAR buffer[MAX_PATH];
     buffer[0] = 0;
-    rw_reg(A_RD|A_SZ, HKEY_LOCAL_MACHINE, inimapstr, "Shell", buffer);
+    rw_reg(A_RD | A_SZ, HKEY_LOCAL_MACHINE, inimapstr, TEXT("Shell"), buffer);
     return 0 == _memicmp(buffer, "USR:", 4);
 }
 
 /* ======================================================================== */
+int SetAsShell (TCHAR * shellpath)
+{
+    TCHAR temp[2000];
+    int f = 0;
+    /* okay, now really set it */
+    if (_tcscmp(shellpath, TEXT("explorer.exe"))) {
+        if (0 == shellpath[0]
+            || 0 == SearchPath(NULL, shellpath, TEXT(".exe"), MAX_PATH, temp, NULL)) {
+            message(MB_OK, TEXT("Error: File does not exist: '%s'"), shellpath);
+            return 1;
+        }
+        _tcscpy(shellpath, temp);
+    }
+
+    if (0 == is_usingNT) {
+        /* win9x/me */
+        GetShortPathName(temp, shellpath, MAX_PATH);
+        f = rw_ini(A_WR, temp);
+    } else {
+        if (is_admin) {
+            /* set the boot option that indicates whether to look
+               for the shell in HKCU or HKLM */
+            if (is_per_user)
+                f = rw_reg(A_WR | A_SZ, HKEY_LOCAL_MACHINE, inimapstr, TEXT("Shell"), usr_bootOption);
+            else
+                f = rw_reg(A_WR | A_SZ, HKEY_LOCAL_MACHINE, inimapstr, TEXT("Shell"), sys_bootOption);
+
+            if (f) {
+                /* flush the IniFileMapping cache (NT based systems) */
+                WritePrivateProfileStringW(NULL, NULL, NULL, TEXT("system.ini"));
+            } else {
+                message(MB_OK, TEXT("Error: Could not set Boot Option."));
+                return 1;
+            }
+        }
+
+        if (is_per_user)
+            /* set shell in HKCU */
+            f = rw_reg(A_WR | A_SZ, HKEY_CURRENT_USER, logonstr, TEXT("Shell"), shellpath);
+        else
+            /* remove shell from HKCU */
+            f = 1, rw_reg(A_DEL, HKEY_CURRENT_USER, logonstr, TEXT("Shell"), NULL);
+
+        if (is_admin) {
+            if (is_per_user)
+                /* set explorer as default for all users */
+                rw_reg(A_WR | A_SZ, HKEY_LOCAL_MACHINE, logonstr, TEXT("Shell"), szExplorer);
+            else
+                /* set our shell for all users */
+                f = rw_reg(A_WR | A_SZ, HKEY_LOCAL_MACHINE, logonstr, TEXT("Shell"), shellpath);
+        }
+    }
+
+    if (0 == f) {
+        message(MB_OK, TEXT("Error: Could not set '%s' as shell."), shellpath);
+        return 1;
+    }
+}
+
+void Init ()
+{
+    is_usingNT = 0 == (GetVersion() & 0x80000000);
+    if (is_usingNT) {
+        /* test if we could set in HKLM, if so we are admin */
+        is_admin = rw_reg(A_TEST | A_SZ, HKEY_LOCAL_MACHINE, inimapstr, TEXT("bsetshell"), TEXT("test"));
+        /* check if per user shell is set */
+        is_per_user = get_per_user();
+    } else {
+        /* dont bother on win9x */
+        is_per_user = 0;
+        is_admin = 1;
+    }
+
+    /* bsetshell should be where blackbox.exe is. If so, get it's full path */
+    if (0 == SearchPath(NULL, TEXT("blackbox.exe"), NULL, MAX_PATH, szBlackbox, NULL))
+        _tcscpy(szBlackbox, TEXT("(blackbox.exe not found)"));
+}
 
 ST INT_PTR CALLBACK dlgfunc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     int id, f, option;
-    char buffer[MAX_PATH], temp[2000];
+    TCHAR buffer[MAX_PATH], temp[2000];
 
     switch( msg ) {
     case WM_DESTROY:
@@ -196,29 +277,16 @@ ST INT_PTR CALLBACK dlgfunc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         g_hDlg = hDlg;
         option = 0;
 
-        is_usingNT = 0 == (GetVersion() & 0x80000000);
-        if (is_usingNT) {
-            /* test if we could set in HKLM, if so we are admin */
-            is_admin = rw_reg(A_TEST|A_SZ, HKEY_LOCAL_MACHINE, inimapstr, "bsetshell", "test");
-            /* check if per user shell is set */
-            is_per_user = get_per_user();
-        } else {
-            /* dont bother on win9x */
-            is_per_user = 0;
-            is_admin = 1;
-        }
-
-        /* bsetshell should be where blackbox.exe is. If so, get it's full path */
-        if (0 == SearchPath(NULL, "blackbox.exe", NULL, MAX_PATH, szBlackbox, NULL))
-            strcpy(szBlackbox, "(blackbox.exe not found)");
-
-        if (0 == is_usingNT) {
+        Init ();
+        if (0 == is_usingNT)
+        {
             EnableWindow(GetDlgItem(hDlg, IDC_CHK1), FALSE);
-
-        } else if (0 == is_admin) {
+        }
+        else if (0 == is_admin)
+        {
             /* if not admin, see if a shell is set for this user */
-            is_per_user = rw_reg(A_RD|A_SZ, HKEY_CURRENT_USER, logonstr, "Shell", buffer);
-            SetDlgItemText(hDlg, IDC_CHK1, "Set shell for this user &individually");
+            is_per_user = rw_reg(A_RD|A_SZ, HKEY_CURRENT_USER, logonstr, TEXT("Shell"), buffer);
+            SetDlgItemText(hDlg, IDC_CHK1, TEXT("Set shell for this user &individually"));
         }
 
         CheckDlgButton(hDlg, IDC_CHK1, is_per_user ? BST_CHECKED : BST_UNCHECKED);
@@ -226,38 +294,39 @@ ST INT_PTR CALLBACK dlgfunc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 display:
         if (is_usingNT) {
             if (0 == is_per_user) {
-                strcpy(buffer, "Shell for all users");
+                _tcscpy(buffer, TEXT("Shell for all users"));
                 if (0 == is_admin)
-                    strcat(buffer, " (run as admin to change)");
+                    _tcscat(buffer, TEXT(" (run as admin to change)"));
 
             } else {
                 DWORD result = sizeof temp;
                 temp[0] = 0;
                 GetUserName(temp, &result);
-                sprintf(buffer, "Shell for the current user (%s)", temp);
+                _stprintf(buffer, TEXT("Shell for the current user (%s)"), temp);
             }
 
             SetDlgItemText(hDlg, IDC_GRP1, buffer);
         }
 
         if (2 == option)
-            strcpy(buffer, szBlackbox);
+            _tcscpy(buffer, szBlackbox);
         else
         if (1 == option)
-            strcpy(buffer, szExplorer);
+            _tcscpy(buffer, szExplorer);
         else
             get_shell(buffer);
 
-        _strlwr(strcpy(temp, buffer));
+        _tcslwr(_tcscpy(temp, buffer));
 
-        if (0 == _stricmp(temp, szBlackbox)) {
+        if (0 == _tcsicmp(temp, szBlackbox)) {
             id = IDC_RBN1;
-        } else if (strstr(temp, "explorer")) {
+        }
+        else if (_tcsstr(temp, TEXT("explorer"))) {
             id = IDC_RBN2;
         } else if (temp[0]) {
             id = IDC_RBN3;
         } else {
-            strcpy(buffer, "<not set>");
+            _tcscpy(buffer, TEXT("<not set>"));
             id = 0;
         }
 
@@ -300,61 +369,9 @@ set_line:
 
         case IDOK:
         case IDC_LOG1:
-            /* okay, now really set it */
             GetDlgItemText(hDlg, IDC_EDT1, shellpath, sizeof shellpath);
-            if (strcmp(shellpath, "explorer.exe")) {
-                if (0 == shellpath[0]
-                    || 0 == SearchPath(NULL, shellpath, ".exe", MAX_PATH, temp, NULL)) {
-                    message(MB_OK, "Error: File does not exist: '%s'", shellpath);
-                    return 1;
-                }
-                strcpy(shellpath, temp);
-            }
-
-            if (0 == is_usingNT) {
-                /* win9x/me */
-                GetShortPathName(temp, shellpath, MAX_PATH);
-                f = rw_ini(A_WR, temp);
-            } else {
-                if (is_admin) {
-                    /* set the boot option that indicates whether to look
-                       for the shell in HKCU or HKLM */
-                    if (is_per_user)
-                        f = rw_reg(A_WR|A_SZ, HKEY_LOCAL_MACHINE, inimapstr, "Shell", usr_bootOption);
-                    else
-                        f = rw_reg(A_WR|A_SZ, HKEY_LOCAL_MACHINE, inimapstr, "Shell", sys_bootOption);
-
-                    if (f) {
-                        /* flush the IniFileMapping cache (NT based systems) */
-                        WritePrivateProfileStringW(NULL, NULL, NULL, L"system.ini");
-                    } else {
-                        message(MB_OK, "Error: Could not set Boot Option.");
-                        return 1;
-                    }
-                }
-
-                if (is_per_user)
-                    /* set shell in HKCU */
-                    f = rw_reg(A_WR|A_SZ, HKEY_CURRENT_USER, logonstr, "Shell", shellpath);
-                else
-                    /* remove shell from HKCU */
-                    f = 1, rw_reg(A_DEL, HKEY_CURRENT_USER, logonstr, "Shell", NULL);
-
-                if (is_admin) {
-                    if (is_per_user)
-                        /* set explorer as default for all users */
-                        rw_reg(A_WR|A_SZ, HKEY_LOCAL_MACHINE, logonstr, "Shell", szExplorer);
-                    else
-                        /* set our shell for all users */
-                        f = rw_reg(A_WR|A_SZ, HKEY_LOCAL_MACHINE, logonstr, "Shell", shellpath);
-                }
-            }
-
-            if (0 == f) {
-                message(MB_OK, "Error: Could not set '%s' as shell.", shellpath);
-                return 1;
-            }
-
+            if (SetAsShell(shellpath) == 1)
+              return 1;
             if (0 == is_admin && is_per_user && 0 == get_per_user()) {
                 id = 1;
             } else if (id == IDC_LOG1) {
@@ -381,14 +398,57 @@ int WINAPI WinMain(
     int nShowCmd
     )
 {
-    INT_PTR const result = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DLG1),
-                NULL, (DLGPROC)dlgfunc, (LONG_PTR)hInstance);
-    if (result == -1)
+    INT_PTR result;
+
+    int nArgs;
+    LPTSTR * szArglist = CommandLineToArgvW(GetCommandLine(), &nArgs);
+    if ( NULL == szArglist )
+        return 0;
+
+    if (nArgs > 1)
     {
-      DWORD r = GetLastError();
-      //char buff[1024];
-      //win_error(buff, sizeof buff);
-      return 1;
+        Init();
+        for (int i = 1; i < nArgs; ++i)
+        {
+            if (szArglist[i][0] != '-')
+            {
+                //foo.push_back(argv[i]);
+                continue;
+            }
+
+            // if there's a flag but no argument following, ignore it
+            if (nArgs == i) continue;
+            TCHAR  const * arg = szArglist[i + 1];
+            switch (szArglist[i][1])
+            {
+                case 'l':
+                    result = 2;
+                    break;
+                case 'u':
+                    is_per_user = true;
+                    break;
+                case 'b':
+                    is_blackbox = true;
+                    break;
+            }
+        }
+
+        SetAsShell(is_blackbox ? szBlackbox : szExplorer);
+
+        // Free memory allocated for CommandLineToArgvW arguments.
+        LocalFree(szArglist);
+        return 0;
+    }
+    else
+    {
+        result = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DLG1), NULL, (DLGPROC)dlgfunc, (LONG_PTR)hInstance);
+        if (result == -1)
+        {
+          DWORD r = GetLastError();
+          //char buff[1024];
+          //win_error(buff, sizeof buff);
+          return 1;
+        }
     }
 
     switch (result)
@@ -397,21 +457,21 @@ int WINAPI WinMain(
         return 1;
     case 1:
         message(MB_OK,
-            "'%s' has been set as shell."
-            "\n"
-            "\nTo make this work correctly, you need to run "APPNAME" as "
-            "\nadministrator and enable individual shells too."
+            TEXT("'%s' has been set as shell.\n")
+            TEXT("\nTo make this work correctly, you need to run ")
+            APPNAME
+            TEXT(" as ")
+            TEXT("\nadministrator and enable individual shells too.")
             , shellpath);
         break;
     case 2:
         ExitWindowsEx(EWX_LOGOFF, 0);
         break;
     case 3:
-        message(MB_OK,
-            "You will have the default system shell. Logout to apply.");
+        message(MB_OK, TEXT("You will have the default system shell. Logout to apply."));
         break;
     case 4:
-        message(MB_OK, "'%s' has been set as shell. Logout to apply.", shellpath);
+        message(MB_OK, TEXT("'%s' has been set as shell. Logout to apply."), shellpath);
         break;
     }
     return 0;
