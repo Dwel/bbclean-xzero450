@@ -63,8 +63,7 @@ var as_shell
 var curr_user
 var ShellDialog
 Var GroupBox3
-Var GroupBox5
-Var GroupBox6
+Var GroupBox4
 var RadioButtonAsShell
 var RadioButtonNoShell
 var RadioButtonCurrUser
@@ -716,7 +715,7 @@ Function shellPageEnter
   ${NSD_SetState} $RadioButtonAsShell ${BST_UNCHECKED}
 
   ${NSD_CreateGroupBox} 2% 52% 98% 98% "Choose affected user:"
-  Pop $GroupBox5
+  Pop $GroupBox4
 
   ${NSD_CreateRadioButton} 10% 68% 95% 6% "install BlackBox for current user (default)"
     Pop $RadioButtonCurrUser
