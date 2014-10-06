@@ -37,6 +37,7 @@ BlackboxBar.AutoHide: false
 BlackboxBar.autoRaise: true
 BlackboxBar.snapToEdge: 20
 BlackboxBar.arrowBullets: false
+BlackboxBar.alpha.enabled: false
 BlackboxBar.alpha.value: 255
 BlackboxBar.transparent: false
 

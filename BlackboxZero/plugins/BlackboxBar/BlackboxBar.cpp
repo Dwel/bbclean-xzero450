@@ -983,7 +983,7 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
 			{
 				int h = bbLeanBarLineHeight[i];
 				r.bottom = r.top + h;
-				StyleItem *T = this->alphaEnabled ? I : (StyleItem *)GetSettingPtr(SN_TOOLBAR);
+				StyleItem *T = (StyleItem *)GetSettingPtr(SN_TOOLBAR);
 				/*this->pBuff->*/MakeStyleGradient(buf, &r, T, T->bordered);
 				r.top += h - styleBorderWidth;
 			}
