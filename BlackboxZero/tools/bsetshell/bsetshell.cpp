@@ -27,41 +27,17 @@
 #include <stdarg.h>
 #include <tchar.h>
 
-#define IDD_DLG1 1000
-#define IDC_RBN1 1001
-#define IDC_RBN2 1002
-#define IDC_RBN3 1003
-#define IDC_CHK1 1004
-#define IDC_EDT1 1005
-#define IDC_LOG1 1006
-#define IDC_GRP1 1007
-#define IDC_GRP2 1008
-#define IDC_INFO 1009
+#include "resource.h"
+#define APPNAME TEXT(APPNAMEA)
 
-#define APPNAME TEXT("bsetshell")
+TCHAR szBlackbox[MAX_PATH];
+TCHAR shellpath[MAX_PATH];
+HWND g_hDlg;
 
-#ifndef RC_INVOKED
-#define ST
-
-ST TCHAR szBlackbox[MAX_PATH];
-ST TCHAR shellpath[MAX_PATH];
-ST HWND g_hDlg;
-
-ST bool is_usingNT = true;
-ST bool is_admin = true;
-ST bool is_per_user = false;
-ST bool is_blackbox = false;
-
-#ifndef KEY_WOW64_64KEY
-#define KEY_WOW64_64KEY 0x0100
-#endif
-#ifndef KEY_WOW64_32KEY
-#define KEY_WOW64_32KEY 0x0200
-#endif
-#ifndef GWLP_USERDATA
-# define DWORD_PTR unsigned long
-# define LONG_PTR long
-#endif
+bool is_usingNT = true;
+bool is_admin = true;
+bool is_per_user = false;
+bool is_blackbox = false;
 
 /* ======================================================================== */
 
@@ -86,11 +62,11 @@ int message(int flg, const TCHAR *fmt, ...)
 
 /* ======================================================================== */
 
-ST TCHAR inimapstr[] = TEXT("Software\\Microsoft\\Windows NT\\CurrentVersion\\IniFileMapping\\system.ini\\boot");
-ST TCHAR sys_bootOption[] = TEXT("SYS:Microsoft\\Windows NT\\CurrentVersion\\Winlogon");
-ST TCHAR usr_bootOption[] = TEXT("USR:Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon");
-ST TCHAR logonstr[] = TEXT("Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon");
-ST TCHAR szExplorer[] = TEXT("explorer.exe");
+TCHAR inimapstr[] = TEXT("Software\\Microsoft\\Windows NT\\CurrentVersion\\IniFileMapping\\system.ini\\boot");
+TCHAR sys_bootOption[] = TEXT("SYS:Microsoft\\Windows NT\\CurrentVersion\\Winlogon");
+TCHAR usr_bootOption[] = TEXT("USR:Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon");
+TCHAR logonstr[] = TEXT("Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon");
+TCHAR szExplorer[] = TEXT("explorer.exe");
 
 enum {
     A_RD = 1,
@@ -101,17 +77,13 @@ enum {
     A_TEST = A_WR|A_DEL
 };
 
-ST bool rw_reg (int action, HKEY root, const TCHAR * ckey, const TCHAR *cval, const TCHAR * cdata)
+bool rw_reg (int action, HKEY root, const TCHAR * ckey, const TCHAR *cval, const TCHAR * cdata)
 {
     HKEY k;
     LONG r;
     DWORD result, type, options;
     options = (action & A_RD) ? KEY_READ : KEY_WRITE | WRITE_OWNER;
-/*
-    // need both ?
-    if (usingx64)
-        options |= KEY_WOW64_64KEY ? KEY_WOW64_32KEY;
-*/
+
     r = RegCreateKeyEx(root, ckey, 0, NULL, REG_OPTION_NON_VOLATILE,
         options, NULL, &k, &result);
 
@@ -150,10 +122,10 @@ ST bool rw_reg (int action, HKEY root, const TCHAR * ckey, const TCHAR *cval, co
 #endif
 
     return ERROR_SUCCESS == r;
-}                
+}
 
 /* read/write from/to system.ini (for windows 9x/me) */
-ST bool rw_ini (int action, TCHAR * shell)
+bool rw_ini (int action, TCHAR * shell)
 {
     TCHAR path[MAX_PATH];
     GetWindowsDirectory(path, sizeof(path));
@@ -165,7 +137,7 @@ ST bool rw_ini (int action, TCHAR * shell)
     return 0;
 }
 
-ST bool get_shell (TCHAR * buffer)
+bool get_shell (TCHAR * buffer)
 {
     buffer[0] = 0;
     if (0 == is_usingNT)
@@ -176,7 +148,7 @@ ST bool get_shell (TCHAR * buffer)
         return rw_reg(A_RD | A_SZ, HKEY_LOCAL_MACHINE, logonstr, TEXT("Shell"), buffer);
 }
 
-ST bool get_per_user(void)
+bool get_per_user(void)
 {
     TCHAR buffer[MAX_PATH];
     buffer[0] = 0;
@@ -242,6 +214,7 @@ int SetAsShell (TCHAR * shellpath)
         message(MB_OK, TEXT("Error: Could not set '%s' as shell."), shellpath);
         return 1;
     }
+    return 0;
 }
 
 void Init ()
@@ -263,7 +236,7 @@ void Init ()
         _tcscpy(szBlackbox, TEXT("(blackbox.exe not found)"));
 }
 
-ST INT_PTR CALLBACK dlgfunc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK dlgfunc (HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     int id, f, option;
     TCHAR buffer[MAX_PATH], temp[2000];
@@ -390,13 +363,7 @@ set_line:
 }
 
 /* ======================================================================== */
-
-int WINAPI WinMain(
-    HINSTANCE hInstance,
-    HINSTANCE hPrevInstance,
-    LPSTR lpCmdLine,
-    int nShowCmd
-    )
+int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     int nArgs;
     LPTSTR * szArglist = CommandLineToArgvW(GetCommandLine(), &nArgs);
@@ -411,7 +378,6 @@ int WINAPI WinMain(
         {
             if (szArglist[i][0] != '-')
             {
-                //foo.push_back(argv[i]);
                 continue;
             }
 
@@ -446,7 +412,7 @@ int WINAPI WinMain(
     }
     else
     {
-		INT_PTR const result = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DLG1), NULL, (DLGPROC)dlgfunc, (LONG_PTR)hInstance);
+        INT_PTR const result = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DLG1), NULL, (DLGPROC)dlgfunc, (LONG_PTR)hInstance);
         if (result == -1)
         {
           DWORD r = GetLastError();
@@ -482,5 +448,3 @@ int WINAPI WinMain(
     return 0;
 }
 
-/* ======================================================================== */
-#endif

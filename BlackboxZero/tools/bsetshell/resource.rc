@@ -1,10 +1,14 @@
-#include "bsetshell.cpp"
+#include "resource.h"
 
 1 ICON "../bsetroot/Blackbox_inverted.ico"
 
 IDD_DLG1 DIALOGEX 0,0,252,104
 
-CAPTION APPNAME
+// from winuser.h - cannot include windows headers: trouble on xp/32
+#define IDOK                1
+#define IDCANCEL            2
+
+CAPTION APPNAMEA
 FONT 8,"MS Sans Serif"
 STYLE 0x80C80A82
 EXSTYLE 0x0
