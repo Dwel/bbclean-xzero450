@@ -8,7 +8,8 @@ set(bsetshell_RESOURCES resource.rc)
 set(CMAKE_RC_COMPILER_INIT windres)
 ENABLE_LANGUAGE(RC)
 
-add_executable(bsetshell WIN32 ${bsetshell_SOURCES} ${bsetshell_RESOURCES}) 
+add_executable(bsetshell ${bsetshell_SOURCES} ${bsetshell_RESOURCES})
+set_target_properties(bsetshell PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
 target_link_libraries(bsetshell bblib)
 target_link_libraries(bsetshell version comctl32)
 
