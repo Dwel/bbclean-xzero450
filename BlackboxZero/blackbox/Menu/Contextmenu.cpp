@@ -27,6 +27,7 @@
 
 #include <shlobj.h>
 #include <shellapi.h>
+#include <lib2/winutils.h>
 
 #ifndef CMF_CANRENAME
 #define CMF_CANRENAME 16

@@ -26,6 +26,8 @@
 #include "workspaces.h"
 #include "styleprops.h"
 #include <tlhelp32.h>
+#include <lib2/winutils.h>
+#include <tchar.h>
 
 #define ST static
 
@@ -532,13 +534,12 @@ skip:
 
 //===========================================================================
 
-BOOL BBExecute_string(const char *line, int flags)
+BOOL BBExecute_string(const TCHAR * line, int flags)
 {
-    char workdir[MAX_PATH];
-    char file[MAX_PATH];
-    const char *cmd, *args;
-    char *cmd_temp = NULL;
-    char *line_temp = NULL;
+	TCHAR workdir[MAX_PATH];
+	TCHAR file[MAX_PATH];
+	const TCHAR *cmd, *args;
+	TCHAR *cmd_temp = NULL;
     int n, ret;
 
     workdir[0] = 0;
@@ -547,13 +548,14 @@ BOOL BBExecute_string(const char *line, int flags)
     else
         GetBlackboxPath(workdir, sizeof workdir);
 
+	TCHAR * line_temp = NULL;
     if (0 == (flags & RUN_NOSUBST))
-        line = replace_environment_strings_alloc(&line_temp, line);
+        line = replace_environment_strings_alloc(line_temp, line);
 
     if (flags & RUN_NOARGS) {
         cmd = line;
         args = NULL;
-        strcpy(file, cmd);
+        _tcscpy(file, cmd);
 
     } else {
         for (args = line;; args += args[0] == ':')
@@ -564,13 +566,13 @@ BOOL BBExecute_string(const char *line, int flags)
                 break;
 
             // -hidden : run in a hidden window
-            if (0 == strcmp(file+1, "hidden")) {
+            if (0 == _tcscmp(file+1, TEXT("hidden"))) {
                 flags |= RUN_HIDDEN;
                 continue;
             }
 
             // -in <path> ; specify working directory
-            if (0 == strcmp(file+1, "in")) {
+			if (0 == _tcscmp(file + 1, TEXT("in"))) {
                 NextToken(file, &args, NULL);
                 replace_shellfolders(workdir, file, true);
                 continue;

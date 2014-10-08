@@ -31,6 +31,7 @@ COLORREF SetContrast (int sn_index);
 
 #define BBSETTINGS_INTERNAL
 #include "Settings.h"
+#include <lib2/winutils.h>
 
 // to be used in multimonitor setups (in the future, maybe ...)
 int screenNumber = 0;

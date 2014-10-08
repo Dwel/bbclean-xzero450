@@ -24,6 +24,7 @@
 #include "bbshell.h"
 #include "MenuMaker.h"
 #include "Menu.h"
+#include <lib2/winutils.h>
 
 // when no menu.rc file is found, use this default menu
 static const char default_root_menu[] =

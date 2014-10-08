@@ -22,6 +22,7 @@
 #include "BB.h"
 #include "BBVWM.h"
 #include "Workspaces.h"
+#include <lib2/winutils.h>
 
 #define ST static
 #define SCREEN_DIST 10

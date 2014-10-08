@@ -74,6 +74,7 @@ install(DIRECTORY ${FONTOUTDIR}
 
 # core modules
 add_subdirectory(lib)
+add_subdirectory(lib2)
 add_subdirectory(blackbox)
 add_subdirectory(blackbox/Hooks)
 

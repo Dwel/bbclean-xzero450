@@ -33,6 +33,7 @@
         1+strlen(stylefile)
         );
 */
+#include <lib2/winutils.h>
 
 struct bb_senddata
 {

@@ -1,48 +1,9 @@
-/* ------------------------------------------------------------------------- */
-/*
-  This file is part of the bbLean source code
-  Copyright © 2004-2009 grischka
+#pragma once
+#include "bbapi.h"
 
-  http://bb4win.sourceforge.net/bblean
-  http://developer.berlios.de/projects/bblean
+//#include "winutils.h"
 
-  bbLean is free software, released under the GNU General Public License
-  (GPL version 2). For details see:
-
-  http://www.fsf.org/licenses/gpl.html
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-  for more details.
-*/
-/* ------------------------------------------------------------------------- */
-
-#ifndef _BBLIB_H_
-#define _BBLIB_H_
-
-#ifdef BBLIB_COMPILING
-# ifndef WINVER
-#  define WINVER 0x0500
-#  define _WIN32_WINNT 0x0501
-#  define _WIN32_IE 0x0501
-# endif
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h>
-# include <stdlib.h>
-# include <stdio.h>
-# ifndef BBLIB_STATIC
-#  define BBLIB_EXPORT __declspec(dllexport)
-# endif
-#endif
-
-#ifndef BBLIB_EXPORT
-# define BBLIB_EXPORT
-#endif
-
-#ifndef __BBCORE__
-# define dbg_printf _dbg_printf
-#endif
+#if 0
 
 // #define BBOPT_MEMCHECK
 
@@ -51,8 +12,8 @@
 /* ------------------------------------------------------------------------- */
 
 /* Convenience defs */
-#define IS_SPC(c) ((unsigned char)(c) <= 32)
-#define IS_SLASH(c) ((c) == '\\' || (c) == '/')
+//#define IS_SPC(c) ((unsigned char)(c) <= 32)
+//#define IS_SLASH(c) ((c) == '\\' || (c) == '/')
 
 #ifndef offsetof
 # define offsetof(s,m) ((size_t)&(((s*)0)->m))
@@ -145,60 +106,53 @@ BBLIB_EXPORT int skip_spc(const char **pp);
 
 /* paths.c */
 
-BBLIB_EXPORT char* unquote(char *src);
-BBLIB_EXPORT char *quote_path(char *path);
-BBLIB_EXPORT const char *file_basename(const char *path);
-BBLIB_EXPORT const char *file_extension(const char *path);
-BBLIB_EXPORT char *file_directory(char *buffer, const char *path);
-BBLIB_EXPORT char *fix_path(char *path);
-BBLIB_EXPORT int is_absolute_path(const char *path);
-BBLIB_EXPORT char *join_path(char *buffer, const char *dir, const char *filename);
-BBLIB_EXPORT char *replace_slashes(char *buffer, const char *path);
+BBLIB_EXPORT TCHAR* unquote(TCHAR *src);
+BBLIB_EXPORT TCHAR *quote_path(TCHAR *path);
+BBLIB_EXPORT const TCHAR *file_basename(const TCHAR *path);
+BBLIB_EXPORT const TCHAR *file_extension(const TCHAR *path);
+BBLIB_EXPORT TCHAR *file_directory(TCHAR *buffer, const TCHAR *path);
+BBLIB_EXPORT TCHAR *fix_path(TCHAR *path);
+BBLIB_EXPORT int is_absolute_path(const TCHAR *path);
+BBLIB_EXPORT TCHAR *join_path(TCHAR *buffer, const TCHAR *dir, const TCHAR *filename);
+BBLIB_EXPORT TCHAR *replace_slashes(TCHAR *buffer, const TCHAR *path);
 
 BBLIB_EXPORT void bbshell_set_utf8(int f);
-BBLIB_EXPORT void bbshell_set_defaultrc_path(const char *s);
+BBLIB_EXPORT void bbshell_set_defaultrc_path(const TCHAR *s);
+#endif
 
 /* winutils.c */
-
 /*
-#define RUN_SHOWERRORS  0
-#define RUN_NOERRORS    1
-#define RUN_WAIT        2
-#define RUN_HIDDEN      4
-#define RUN_NOARGS      8
-#define RUN_NOSUBST    16
-#define RUN_ISPIDL     32
-#define RUN_WINDIR     64
-
 BBLIB_EXPORT void BitBltRect(HDC hdc_to, HDC hdc_from, RECT *r);
 BBLIB_EXPORT HWND GetRootWindow(HWND hwnd);
 BBLIB_EXPORT int is_bbwindow(HWND hwnd);
 BBLIB_EXPORT int get_fontheight(HFONT hFont);
-BBLIB_EXPORT int get_filetime(const char *fn, FILETIME *ft);
-BBLIB_EXPORT int diff_filetime(const char *fn, FILETIME *ft0);
-BBLIB_EXPORT unsigned long getfileversion(const char *path);
-BBLIB_EXPORT const char *replace_environment_strings_alloc(char **out, const char *src);
-BBLIB_EXPORT char* replace_environment_strings(char* src, int max_size);
-BBLIB_EXPORT void dbg_printf (const char *fmt, ...);
+BBLIB_EXPORT int get_filetime(const TCHAR *fn, FILETIME *ft);
+BBLIB_EXPORT int diff_filetime(const TCHAR *fn, FILETIME *ft0);
+BBLIB_EXPORT unsigned long getfileversion(const TCHAR *path);
+BBLIB_EXPORT const TCHAR *replace_environment_strings_alloc(TCHAR **out, const TCHAR *src);
+BBLIB_EXPORT TCHAR* replace_environment_strings(TCHAR* src, int max_size);
+BBLIB_EXPORT void dbg_printf(const TCHAR *fmt, ...);
 BBLIB_EXPORT void dbg_window(HWND hwnd, const char *fmt, ...);
-BBLIB_EXPORT char* win_error(char *msg, int msgsize);
+BBLIB_EXPORT TCHAR* win_error(TCHAR *msg, int msgsize);
 BBLIB_EXPORT void ForceForegroundWindow(HWND theWin);
 BBLIB_EXPORT void SetOnTop (HWND hwnd);
 BBLIB_EXPORT int is_frozen(HWND hwnd);
 BBLIB_EXPORT HWND window_under_mouse(void);
-BBLIB_EXPORT int load_imp(void *pp, const char *dll, const char *proc);
-BBLIB_EXPORT int _load_imp(void *pp, const char *dll, const char *proc);
+BBLIB_EXPORT int load_imp(void *pp, const TCHAR *dll, const TCHAR *proc);
+BBLIB_EXPORT int _load_imp(void *pp, const TCHAR *dll, const TCHAR *proc);
 #define have_imp(pp) ((DWORD_PTR)pp > 1)
 BBLIB_EXPORT int BBWait(int delay, unsigned nObj, HANDLE *pObj);
 BBLIB_EXPORT void BBSleep(unsigned millisec);
-BBLIB_EXPORT int run_process(const char *cmd, const char *dir, int flags);
+BBLIB_EXPORT int run_process(const TCHAR *cmd, const TCHAR *dir, int flags);
 */
+#if 0
 
-BBLIB_EXPORT char* get_exe_path(HINSTANCE h, char* pszPath, int nMaxLen);
-BBLIB_EXPORT char *set_my_path(HINSTANCE h, char *dest, const char *fname);
-BBLIB_EXPORT const char *get_relative_path(HINSTANCE h, const char *path);
+BBLIB_EXPORT TCHAR* get_exe_path(HINSTANCE h, TCHAR* pszPath, int nMaxLen);
+BBLIB_EXPORT TCHAR *set_my_path(HINSTANCE h, TCHAR *dest, const TCHAR *fname);
+BBLIB_EXPORT const TCHAR *get_relative_path(HINSTANCE h, const TCHAR *path);
 
 /* tinylist.c */
+
 #ifndef LIST_NODE_DEFINED
 typedef struct list_node { struct list_node *next; void *v; } list_node;
 #endif
@@ -246,23 +200,23 @@ BBLIB_EXPORT unsigned m_alloc_size(void);
 
 /* moreutils.c */
 
-BBLIB_EXPORT int locate_file(HINSTANCE hInstance, char *path, const char *fname, const char *ext);
-BBLIB_EXPORT int bbPlugin_LocateFile(HINSTANCE hInstance, LPSTR lpPluginPath, DWORD nSize, LPCSTR lpString);
-BBLIB_EXPORT int check_filetime(const char *fn, FILETIME *ft0);
+BBLIB_EXPORT int locate_file(HINSTANCE hInstance, TCHAR *path, const TCHAR *fname, const TCHAR *ext);
+BBLIB_EXPORT int bbPlugin_LocateFile(HINSTANCE hInstance, LPTSTR lpPluginPath, DWORD nSize, LPTSTR lpString);
+BBLIB_EXPORT int check_filetime(const TCHAR *fn, FILETIME *ft0);
 BBLIB_EXPORT unsigned int eightScale_down(unsigned int i);
 BBLIB_EXPORT unsigned int eightScale_up(unsigned int i);
-BBLIB_EXPORT int my_substr_icmp(const char *a, const char *b);
-BBLIB_EXPORT int n_stricmp(const char **pp, const char *s);
-BBLIB_EXPORT int trim_address(char q[MAX_PATH], int is, int js);
-BBLIB_EXPORT int get_substring_index (const char *key, const char * const * string_list);
-BBLIB_EXPORT int substr_icmp(const char *a, const char *b);
-BBLIB_EXPORT const char *string_empty_or_null(const char *s);
-BBLIB_EXPORT const char *get_delim(const char *path, int d);
-BBLIB_EXPORT char *add_slash(char *d, const char *s);
-BBLIB_EXPORT int is_relative_path(const char *path);
-BBLIB_EXPORT char *make_bb_path(HINSTANCE h, char *dest, const char *src);
-BBLIB_EXPORT char* make_full_path(HINSTANCE h, char *buffer, const char *filename);
-BBLIB_EXPORT char *get_path(char *pszPath, int nMaxLen, const char *file);
+BBLIB_EXPORT int my_substr_icmp(const TCHAR *a, const TCHAR *b);
+BBLIB_EXPORT int n_stricmp(const TCHAR **pp, const TCHAR *s);
+BBLIB_EXPORT int trim_address(TCHAR q[MAX_PATH], int is, int js);
+BBLIB_EXPORT int get_substring_index(const TCHAR *key, const TCHAR * const * string_list);
+BBLIB_EXPORT int substr_icmp(const TCHAR *a, const TCHAR *b);
+BBLIB_EXPORT const TCHAR *string_empty_or_null(const TCHAR *s);
+BBLIB_EXPORT const TCHAR *get_delim(const TCHAR *path, int d);
+//BBLIB_EXPORT TCHAR *add_slash(TCHAR *d, const TCHAR *s);
+BBLIB_EXPORT int is_relative_path(const TCHAR *path);
+BBLIB_EXPORT TCHAR * make_bb_path(HINSTANCE h, TCHAR *dest, const TCHAR *src);
+BBLIB_EXPORT TCHAR * make_full_path(HINSTANCE h, TCHAR *buffer, const TCHAR *filename);
+BBLIB_EXPORT TCHAR * get_path(TCHAR *pszPath, int nMaxLen, const TCHAR *file);
 BBLIB_EXPORT void draw_line_h(HDC hDC, int x1, int x2, int y, int w, COLORREF C);
 BBLIB_EXPORT HICON GetIcon(HWND iWin);
 BBLIB_EXPORT COLORREF Settings_CreateShadowColor(COLORREF textColor);
@@ -305,6 +259,4 @@ inline void operator delete[] (void *v)
 #define delete _m_setinfo(__FILE__,__LINE__),delete
 #endif /* BBOPT_MEMCHECK */
 /* ------------------------------------------------------------------------- */
-
-/* ------------------------------------------------------------------------- */
-#endif /* ndef _BBLIB_H_ */
+#endif

@@ -99,7 +99,7 @@ add_executable(blackbox WIN32
 )
 
 set_target_properties(blackbox PROPERTIES ENABLE_EXPORTS ON)
-target_link_libraries(blackbox bblib)
+target_link_libraries(blackbox bblib bblib2)
 target_link_libraries(blackbox version comctl32)
 
 install(TARGETS blackbox

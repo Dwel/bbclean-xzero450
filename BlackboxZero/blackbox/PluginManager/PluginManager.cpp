@@ -27,6 +27,7 @@ for more details.
 #include "PluginManager.h"
 #include "PluginLoaderNative.h"
 #include "Types.h"
+#include <lib2/winutils.h>
 
 // Private variables
 static struct PluginLoaderList *pluginLoaders = &nativeLoader;

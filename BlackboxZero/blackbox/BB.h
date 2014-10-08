@@ -109,7 +109,7 @@ void get_window_text (HWND hwnd, char * buffer, int size);
 // ==============================================================
 /* BBApi.cpp - some (non api) utils */
 
-BOOL BBExecute_string (const char * s, int flags);
+BOOL BBExecute_string (const TCHAR * s, int flags);
 int BBExecute_pidl (const char * verb, const void * pidl);
 
 /* drawing */

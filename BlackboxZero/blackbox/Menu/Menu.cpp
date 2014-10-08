@@ -23,6 +23,7 @@
 #include "../Settings.h"
 #include "../Workspaces.h"
 #include "Menu.h"
+#include <lib2/winutils.h>
 
 // #define CHECKFOCUS
 

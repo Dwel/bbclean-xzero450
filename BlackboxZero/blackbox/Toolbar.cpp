@@ -34,6 +34,7 @@ ToolbarInfo TBInfo;
 #include <time.h>
 #include <locale.h>
 #include <shellapi.h>
+#include <lib2/winutils.h>
 
 #define ST static
 

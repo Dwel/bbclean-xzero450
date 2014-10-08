@@ -1,7 +1,7 @@
 /* ------------------------------------------------------------------------- */
 /*
   This file is part of the bbLean source code
-  Copyright © 2004-2009 grischka
+  Copyright ? 2004-2009 grischka
 
   http://bb4win.sourceforge.net/bblean
   http://developer.berlios.de/projects/bblean
@@ -19,6 +19,7 @@
 /* ------------------------------------------------------------------------- */
 /* windows functions */
 
+#if 0
 #include "bblib.h"
 #include "win0x500.h"
 
@@ -336,3 +337,4 @@ int run_process(const char *cmd, const char *dir, int flags)
 }
 
 /* ------------------------------------------------------------------------- */
+#endif

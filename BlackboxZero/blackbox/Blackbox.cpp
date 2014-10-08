@@ -33,6 +33,7 @@
 #include "bbshell.h"
 #include "bbrc.h"
 #include <logging.h>
+#include <lib2/winutils.h>
 
 #include <mmsystem.h>
 #include <process.h>
