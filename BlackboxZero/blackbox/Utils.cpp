@@ -26,7 +26,7 @@
 #include <shlobj.h>
 #include <shellapi.h>
 #include <malloc.h>
-#include <lib2/winutils.h>
+#include <lib2/bblib2.h>
 
 //===========================================================================
 // API: BBMessageBox

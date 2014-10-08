@@ -26,6 +26,7 @@
 #include "Workspaces.h"
 #include "MessageManager.h"
 #include "Menu/MenuMaker.h"
+#include <lib2/bblib2.h>
 #include <shlobj.h>
 #include <shellapi.h>
 

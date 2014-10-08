@@ -31,7 +31,8 @@ COLORREF SetContrast (int sn_index);
 
 #define BBSETTINGS_INTERNAL
 #include "Settings.h"
-#include <lib2/winutils.h>
+#include <lib2/bblib2.h>
+#include <tchar.h>
 
 // to be used in multimonitor setups (in the future, maybe ...)
 int screenNumber = 0;
@@ -140,11 +141,11 @@ void parse_font(StyleItem *si, const char *font)
             si->FontWeight = 0 != (w = getweight(b)) ? w : FW_NORMAL;
         }
 
-        if (is_digit(*(b = p[f_pixel]))) { // 'pixel'
+		if (_istdigit(*(b = p[f_pixel]))) { // 'pixel'
             si->FontHeight = atoi(b);
         }
         else
-            if (is_digit(*(b = p[f_point]))) {// 'point'
+			if (_istdigit(*(b = p[f_point]))) {// 'point'
                 si->FontHeight = atoi(b) / 10;
             }
     } else if (checkfont(font)) {
@@ -159,7 +160,8 @@ void parse_font(StyleItem *si, const char *font)
             if (0 == i) {
                 strcpy(si->Font, b);
                 subst = true;
-            } else if (is_digit(*b)) {
+			}
+			else if (_istdigit(*b)) {
                 si->FontHeight = atoi(b);
             } else if (0 != (w = getweight(b))) {
                 si->FontWeight = w;

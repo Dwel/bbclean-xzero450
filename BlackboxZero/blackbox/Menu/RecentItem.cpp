@@ -28,6 +28,7 @@
 */
 
 #include "RecentItem.h"
+#include <lib2/bblib2.h>
 //===========================================================================
 /*bool is_relative_path(const char *path)
 {

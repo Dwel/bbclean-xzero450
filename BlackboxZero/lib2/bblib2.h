@@ -1,7 +1,15 @@
 #pragma once
 #include "bbapi.h"
 
-//#include "winutils.h"
+#include "winutils.h"
+#include "numbers.h"
+#include <tchar.h>
+
+bool IS_SPC (TCHAR c)
+{
+  return _istcntrl(c) || _istspace(c);
+}
+
 
 #if 0
 
@@ -51,16 +59,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* numbers.c */
-
-BBLIB_EXPORT int imin(int a, int b);
-BBLIB_EXPORT int imax(int a, int b);
-BBLIB_EXPORT int iminmax(int a, int b, int c);
-BBLIB_EXPORT int iabs(int a);
-BBLIB_EXPORT int is_alpha(int c);
-BBLIB_EXPORT int is_digit(int c);
-BBLIB_EXPORT int is_alnum(int c);
 
 /* colors.c */
 
@@ -120,31 +118,6 @@ BBLIB_EXPORT void bbshell_set_utf8(int f);
 BBLIB_EXPORT void bbshell_set_defaultrc_path(const TCHAR *s);
 #endif
 
-/* winutils.c */
-/*
-BBLIB_EXPORT void BitBltRect(HDC hdc_to, HDC hdc_from, RECT *r);
-BBLIB_EXPORT HWND GetRootWindow(HWND hwnd);
-BBLIB_EXPORT int is_bbwindow(HWND hwnd);
-BBLIB_EXPORT int get_fontheight(HFONT hFont);
-BBLIB_EXPORT int get_filetime(const TCHAR *fn, FILETIME *ft);
-BBLIB_EXPORT int diff_filetime(const TCHAR *fn, FILETIME *ft0);
-BBLIB_EXPORT unsigned long getfileversion(const TCHAR *path);
-BBLIB_EXPORT const TCHAR *replace_environment_strings_alloc(TCHAR **out, const TCHAR *src);
-BBLIB_EXPORT TCHAR* replace_environment_strings(TCHAR* src, int max_size);
-BBLIB_EXPORT void dbg_printf(const TCHAR *fmt, ...);
-BBLIB_EXPORT void dbg_window(HWND hwnd, const char *fmt, ...);
-BBLIB_EXPORT TCHAR* win_error(TCHAR *msg, int msgsize);
-BBLIB_EXPORT void ForceForegroundWindow(HWND theWin);
-BBLIB_EXPORT void SetOnTop (HWND hwnd);
-BBLIB_EXPORT int is_frozen(HWND hwnd);
-BBLIB_EXPORT HWND window_under_mouse(void);
-BBLIB_EXPORT int load_imp(void *pp, const TCHAR *dll, const TCHAR *proc);
-BBLIB_EXPORT int _load_imp(void *pp, const TCHAR *dll, const TCHAR *proc);
-#define have_imp(pp) ((DWORD_PTR)pp > 1)
-BBLIB_EXPORT int BBWait(int delay, unsigned nObj, HANDLE *pObj);
-BBLIB_EXPORT void BBSleep(unsigned millisec);
-BBLIB_EXPORT int run_process(const TCHAR *cmd, const TCHAR *dir, int flags);
-*/
 #if 0
 
 BBLIB_EXPORT TCHAR* get_exe_path(HINSTANCE h, TCHAR* pszPath, int nMaxLen);

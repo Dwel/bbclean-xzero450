@@ -25,7 +25,7 @@
 #include "Desk.h"
 #include "BBVWM.h"
 #include "MessageManager.h"
-#include <lib2/winutils.h>
+#include <lib2/bblib2.h>
 
 Workspaces g_Workspaces;
 Workspaces & getWorkspaces () { return g_Workspaces; }

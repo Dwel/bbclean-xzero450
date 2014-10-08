@@ -26,7 +26,7 @@
 #include "workspaces.h"
 #include "styleprops.h"
 #include <tlhelp32.h>
-#include <lib2/winutils.h>
+#include <lib2/bblib2.h>
 #include <tchar.h>
 
 #define ST static

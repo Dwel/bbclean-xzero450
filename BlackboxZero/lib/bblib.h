@@ -51,8 +51,8 @@
 /* ------------------------------------------------------------------------- */
 
 /* Convenience defs */
-#define IS_SPC(c) ((unsigned char)(c) <= 32)
-#define IS_SLASH(c) ((c) == '\\' || (c) == '/')
+//#define IS_SPC(c) ((unsigned char)(c) <= 32)
+//#define IS_SLASH(c) ((c) == '\\' || (c) == '/')
 
 #ifndef offsetof
 # define offsetof(s,m) ((size_t)&(((s*)0)->m))
@@ -93,13 +93,13 @@ extern "C" {
 
 /* numbers.c */
 
-BBLIB_EXPORT int imin(int a, int b);
+/*BBLIB_EXPORT int imin(int a, int b);
 BBLIB_EXPORT int imax(int a, int b);
 BBLIB_EXPORT int iminmax(int a, int b, int c);
 BBLIB_EXPORT int iabs(int a);
 BBLIB_EXPORT int is_alpha(int c);
 BBLIB_EXPORT int is_digit(int c);
-BBLIB_EXPORT int is_alnum(int c);
+BBLIB_EXPORT int is_alnum(int c);*/
 
 /* colors.c */
 

@@ -26,7 +26,7 @@
 #include "Settings.h"
 #include "MessageManager.h"
 #include "bbshell.h"
-#include <lib2/winutils.h>
+#include <lib2/bblib2.h>
 #define INCLUDE_NIDS
 #include "Tray.h"
 

@@ -33,7 +33,7 @@
 #include "bbshell.h"
 #include "bbrc.h"
 #include <logging.h>
-#include <lib2/winutils.h>
+#include <lib2/bblib2.h>
 
 #include <mmsystem.h>
 #include <process.h>
@@ -1568,15 +1568,15 @@ bool get_opt_command (char * opt_cmd, const char * cmd)
 }
 
 //===========================================================================
-bool exec_script (const char * broam)
+bool exec_script (const TCHAR * broam)
 {
 	TRACE_SCOPE_MSG(trace::e_Debug, trace::CTX_BBCore, "broam = %s", broam);
-	const char * p = 0, * a = 0;
-	char * s = 0;
+	const TCHAR * p = 0, *a = 0;
+	TCHAR * s = 0;
 	int n = 0, c = 0;
 	if ('[' != skip_spc(&broam))
 		return false;
-	for (n = strlen(++broam); n && (c = broam[--n], IS_SPC(c));)
+	for (n = _tcslen(++broam); n && (c = broam[--n], IS_SPC(c));)
 		;
 	if (0 == n || ']' != c)
 		return false;
@@ -1586,7 +1586,7 @@ bool exec_script (const char * broam)
 		s[a - s + n] = 0;
 		exec_command(a);
 	}
-	m_free(s);
+	free(s);
 	return true;
 }
 
