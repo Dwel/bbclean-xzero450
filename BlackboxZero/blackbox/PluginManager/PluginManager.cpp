@@ -27,7 +27,7 @@ for more details.
 #include "PluginManager.h"
 #include "PluginLoaderNative.h"
 #include "Types.h"
-#include <lib2/winutils.h>
+#include <lib2/bblib2.h>
 
 // Private variables
 static struct PluginLoaderList *pluginLoaders = &nativeLoader;
@@ -60,7 +60,7 @@ void PluginManager_Init(void)
     char szBuffer[MAX_PATH];
 
     initPluginLoader(&nativeLoader, NULL);
-    bbplugins = c_new(struct PluginList);
+    bbplugins = c_new<struct PluginList>();
     
     bbplugins->isEnabled = true;
     
@@ -125,7 +125,7 @@ void EnumPlugins (PLUGINENUMPROC lpEnumFunc, LPARAM lParam)
 ///     Trailing comments are not supported.
 /// </remarks>
 static struct PluginList *parseConfigLine(const char *rcline) {
-    struct PluginList *q = c_new(struct PluginList);
+    struct PluginList *q = c_new<struct PluginList>();
 
     std::cmatch pathAndName;
     if(!std::regex_match(rcline, pathAndName, std::regex("(?![\\[#])[ &!]*((?:.*\\\\)*(.*)\\.dll)"))) {
@@ -286,7 +286,7 @@ static int loadPlugin(struct PluginList *plugin, HWND hSlit, char** errorMsg) {
         lastError = pll->LoadPlugin(plugin, hSlit, errorMsg);
 
         if(lastError == 0) {
-            struct PluginPtr *pp = c_new(struct PluginPtr);
+            struct PluginPtr *pp = c_new<struct PluginPtr>();
             pp->entry = plugin;
 
             append_node(&(pll->plugins), pp);
@@ -468,7 +468,7 @@ static int loadPluginLoader(struct PluginList* plugin, char** errorMsg) {
             return error_plugin_does_not_load;
     }
 
-    struct PluginLoaderList* pll = c_new(struct PluginLoaderList);
+    struct PluginLoaderList* pll = c_new<struct PluginLoaderList>();
     pll->module = module;
 
     r = initPluginLoader(pll, errorMsg);

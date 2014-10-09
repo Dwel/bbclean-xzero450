@@ -16,11 +16,13 @@ message("boost: ${Boost_LIBRARIES}")
 
 set(bblib2_SOURCES
   winutils.cpp
+  colors.cpp
 )
 
 set(bblib2_HEADERS
 	bblib2.h
   winutils.h
+  colors.h
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/blackbox)

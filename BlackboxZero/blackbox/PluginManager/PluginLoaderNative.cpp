@@ -4,6 +4,7 @@
 #include "PluginManager.h"
 #include "PluginLoaderNative.h"
 #include "Types.h"
+#include <lib2/bblib2.h>
 
 char name[255];
 
@@ -51,7 +52,7 @@ const char *GetPluginInfo(struct PluginList* plugin, int factId) {
 }
 
 int LoadPlugin(struct PluginList* q, HWND hSlit, char** errorMsg) {
-    struct NativePluginInfo* pInfo = c_new(struct NativePluginInfo);
+    struct NativePluginInfo* pInfo = c_new<struct NativePluginInfo>();
     int error = 0;
     bool useslit;
     int r;

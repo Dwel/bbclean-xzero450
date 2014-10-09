@@ -811,7 +811,7 @@ void SetDesktopMargin(HWND hwnd, int location, int margin)
         p = (struct dt_margins *)assoc(margin_list, hwnd);
         if (margin) {
             if (NULL == p) { // insert a _new structure
-                p = c_new(struct dt_margins);
+                p =  (dt_margins *)c_alloc(sizeof(struct dt_margins));
                 cons_node (&margin_list, p);
                 p->hwnd = hwnd;
             }
@@ -872,7 +872,7 @@ ST BOOL CALLBACK fnEnumMonProc(HMONITOR hMon, HDC hdcOptional, RECT *prcLimit, L
     struct _screen_list *i;
     int screen;
 
-    s = c_new(struct _screen);
+    s = c_new<struct _screen>();
     s->hMon = hMon;
     get_mon_rect(hMon, &s->screen_rect, &s->work_rect);
     s->new_rect = s->screen_rect;

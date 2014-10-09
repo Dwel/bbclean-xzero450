@@ -34,6 +34,7 @@
         );
 */
 #include <lib2/winutils.h>
+#include <cstddef>
 
 struct bb_senddata
 {

@@ -24,6 +24,7 @@
 #include "Menu.h"
 #include <shellapi.h>
 #include <shlobj.h>
+#include <lib2/bblib2.h>
 
 static void exec_folder_click(LPCITEMIDLIST pidl);
 

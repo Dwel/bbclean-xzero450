@@ -31,6 +31,7 @@ COLORREF SetContrast (int sn_index);
 
 #define BBSETTINGS_INTERNAL
 #include "Settings.h"
+#include <cstddef>
 #include <lib2/bblib2.h>
 #include <tchar.h>
 

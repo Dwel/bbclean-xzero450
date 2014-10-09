@@ -3,12 +3,22 @@
 
 #include "winutils.h"
 #include "numbers.h"
+#include "memory.h"
 #include <tchar.h>
 
-bool IS_SPC (TCHAR c)
+inline bool IS_SPC (TCHAR c)
 {
   return _istcntrl(c) || _istspace(c);
 }
+
+/*template <class T>
+constexpr size_t array_count(T * t)
+{
+  return sizeof(t) / sizeof(*t);
+}*/
+#ifndef array_count
+# define array_count(s) (sizeof(s) / sizeof(*s))
+#endif
 
 
 #if 0
@@ -23,13 +33,10 @@ bool IS_SPC (TCHAR c)
 //#define IS_SPC(c) ((unsigned char)(c) <= 32)
 //#define IS_SLASH(c) ((c) == '\\' || (c) == '/')
 
-#ifndef offsetof
+/*#ifndef offsetof
 # define offsetof(s,m) ((size_t)&(((s*)0)->m))
-#endif
+//#endif
 
-#ifndef array_count
-# define array_count(s) ((int)(sizeof (s) / sizeof (s)[0]))
-#endif
 
 #define c_new(t) (t*)c_alloc(sizeof(t))
 #define c_del(v) m_free(v)
@@ -59,16 +66,6 @@ bool IS_SPC (TCHAR c)
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* colors.c */
-
-BBLIB_EXPORT COLORREF rgb (unsigned r, unsigned g, unsigned b);
-BBLIB_EXPORT COLORREF switch_rgb (COLORREF c);
-BBLIB_EXPORT COLORREF mixcolors(COLORREF c1, COLORREF c2, int f);
-BBLIB_EXPORT COLORREF shadecolor(COLORREF c, int f);
-BBLIB_EXPORT unsigned greyvalue(COLORREF c);
-BBLIB_EXPORT COLORREF ParseLiteralColor(LPCSTR color);
-BBLIB_EXPORT COLORREF ReadColorFromString(const char* string);
 
 /* bools.c */
 

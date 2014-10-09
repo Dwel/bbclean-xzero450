@@ -15,3 +15,10 @@
 # define m_alloc_size() 0
 #endif /* BBOPT_MEMCHECK */
 
+template <typename T>
+T * c_new ()
+{
+  return static_cast<T * >(c_alloc(sizeof(T)));
+}
+//#define c_new(t) (t*)c_alloc(sizeof(t))
+#define c_del(v) m_free(v)

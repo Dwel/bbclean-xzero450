@@ -54,22 +54,22 @@
 //#define IS_SPC(c) ((unsigned char)(c) <= 32)
 //#define IS_SLASH(c) ((c) == '\\' || (c) == '/')
 
-#ifndef offsetof
+/*#ifndef offsetof
 # define offsetof(s,m) ((size_t)&(((s*)0)->m))
-#endif
+#endif*/
 
-#ifndef array_count
-# define array_count(s) ((int)(sizeof (s) / sizeof (s)[0]))
-#endif
+//#ifndef array_count
+//# define array_count(s) ((int)(sizeof (s) / sizeof (s)[0]))
+//#endif
 
-#define c_new(t) (t*)c_alloc(sizeof(t))
-#define c_del(v) m_free(v)
-
-/* ------------------------------------------------------------------------- */
+//#define c_new(t) (t*)c_alloc(sizeof(t))
+//#define c_del(v) m_free(v)
 
 /* ------------------------------------------------------------------------- */
 
-#ifdef BBOPT_MEMCHECK
+/* ------------------------------------------------------------------------- */
+
+/*#ifdef BBOPT_MEMCHECK
 # define m_alloc(s) _m_alloc(s,__FILE__,__LINE__)
 # define c_alloc(s) _c_alloc(s,__FILE__,__LINE__)
 # define m_realloc(p,s) _m_realloc(p,s,__FILE__,__LINE__)
@@ -82,7 +82,8 @@
 # define m_alloc_check_leaks(title)
 # define m_alloc_check_memory()
 # define m_alloc_size() 0
-#endif /* BBOPT_MEMCHECK */
+#endif
+*/
 
 /* ------------------------------------------------------------------------- */
 
@@ -103,13 +104,13 @@ BBLIB_EXPORT int is_alnum(int c);*/
 
 /* colors.c */
 
-BBLIB_EXPORT COLORREF rgb (unsigned r, unsigned g, unsigned b);
+/*BBLIB_EXPORT COLORREF rgb (unsigned r, unsigned g, unsigned b);
 BBLIB_EXPORT COLORREF switch_rgb (COLORREF c);
 BBLIB_EXPORT COLORREF mixcolors(COLORREF c1, COLORREF c2, int f);
 BBLIB_EXPORT COLORREF shadecolor(COLORREF c, int f);
 BBLIB_EXPORT unsigned greyvalue(COLORREF c);
 BBLIB_EXPORT COLORREF ParseLiteralColor(LPCSTR color);
-BBLIB_EXPORT COLORREF ReadColorFromString(const char* string);
+BBLIB_EXPORT COLORREF ReadColorFromString(const char* string);*/
 
 /* bools.c */
 

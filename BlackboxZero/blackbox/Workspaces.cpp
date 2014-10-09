@@ -1195,7 +1195,7 @@ void Workspaces::GetCaptions ()
 
 tasklist * Workspaces::AddTask (HWND hwnd)
 {
-    tasklist * tl = c_new(tasklist);
+    tasklist * tl = c_new<tasklist>();
     tl->hwnd = hwnd;
     tl->wkspc = currentScreen;
     append_node(&taskList, tl);

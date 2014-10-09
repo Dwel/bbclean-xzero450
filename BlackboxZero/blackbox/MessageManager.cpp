@@ -21,7 +21,7 @@
 
 #include "BB.h"
 #include "MessageManager.h"
-#include <malloc.h>
+#include <lib2/bblib2.h>
 
 struct winmap
 {
@@ -89,7 +89,7 @@ void MessageManager_Register(HWND hwnd, const UINT* messages, bool add)
                 --mm->count;
 
         } else if (add) {
-            mm = c_new(struct MsgMap);
+            mm = c_new<struct MsgMap>();
             mm->msg = msg;
             append_node (&msgs, mm);
             // these are the messages that expect return values and
@@ -98,7 +98,7 @@ void MessageManager_Register(HWND hwnd, const UINT* messages, bool add)
         }
 
         if (add) {
-            struct winmap *w = c_new(struct winmap);
+            struct winmap *w = c_new<struct winmap>();
             w->hwnd = hwnd;
             cons_node(&mm->winmap, w);
             ++mm->count;

@@ -86,7 +86,7 @@ winlist * vwm_add_window (HWND hwnd)
         if (g_usingXP && is_shadow(hwnd, ex_style, threadid))
             return NULL;
 
-        wl = c_new(winlist);
+        wl = c_new<winlist>();
         cons_node (&vwm_WL, wl);
         wl->hwnd = hwnd;
         wl->desk = wl->prev_desk = getWorkspaces().GetScreenCurrent();

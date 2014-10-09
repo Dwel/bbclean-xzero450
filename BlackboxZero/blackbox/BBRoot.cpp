@@ -26,7 +26,7 @@
 #include "Settings.h"
 #include "bbroot.h"
 #include "Workspaces.h"
-#include <lib2/winutils.h>
+#include <lib2/bblib2.h>
 
 #define ST static
 

@@ -639,7 +639,7 @@ ST LRESULT TrayEvent(void *data, unsigned size)
 #endif
                     return FALSE;
             }
-            p = c_new(systemTrayNode);
+            p = c_new<systemTrayNode>();
             append_node(&trayIconList, p);
             p->hWnd = nid.hWnd;
             p->uID  = nid.uID;

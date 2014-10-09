@@ -782,7 +782,7 @@ void ef_close(struct enum_files *ef)
 
 int ef_open(LPCITEMIDLIST pIDFolder, struct enum_files **pp)
 {
-    struct enum_files *ef = c_new(struct enum_files);
+    struct enum_files *ef = c_alloc(sizeof(struct enum_files));
 
     /* nothing to do on NULL pidl's */
     if (NULL==pIDFolder)
