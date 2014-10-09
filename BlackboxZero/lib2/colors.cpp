@@ -269,7 +269,7 @@ COLORREF ReadColorFromString (TCHAR const * string)
     if (NULL == string)
         return CLR_INVALID;
 
-    s = _tcslwr(unquote(strcpy_max(stub, string, sizeof(stub))));
+    s = _tcslwr(unquote(strcpy_max(stub, string, array_count(stub))));
 
     /* check if its an "rgb:12/ee/4c" type string */
     if (0 == tmemcmp(s, TEXT("rgb:"), 4))

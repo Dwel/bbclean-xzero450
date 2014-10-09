@@ -15,6 +15,7 @@ endif()
 message("boost: ${Boost_LIBRARIES}")
 
 set(bblib2_SOURCES
+  bbrc.cpp
   winutils.cpp
   colors.cpp
   styleprops.cpp
