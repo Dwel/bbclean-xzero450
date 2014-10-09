@@ -1,5 +1,5 @@
 #pragma once
-#include "bbapi.h"
+#include "bblibapi.h"
 
 BBLIB_EXPORT void dbg_printf (TCHAR const *fmt, ...);
 BBLIB_EXPORT void dbg_window (HWND hwnd, TCHAR const * fmt, ...);

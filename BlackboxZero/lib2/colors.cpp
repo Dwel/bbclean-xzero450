@@ -207,7 +207,7 @@ COLORREF ParseLiteralColor (LPTSTR color)
     if (l > array_count(buf))
         return (COLORREF) - 1;
 
-    memcpy(buf, color, l);
+    tmemcpy(buf, color, l);
     /*strlwr(buf); */
 
     while (NULL != (p = _tcschr(buf, ' ')))
@@ -222,7 +222,7 @@ COLORREF ParseLiteralColor (LPTSTR color)
     if (NULL != (p = _tcsstr(buf, TEXT("grey"))))
         p[2]='a';
 
-    if (0 == memcmp(buf, TEXT("gray"), 4) && (c = buf[4]) >= '0' && c <= '9')
+    if (0 == tmemcmp(buf, TEXT("gray"), 4) && (c = buf[4]) >= '0' && c <= '9')
     {
         i = iminmax(_ttoi(buf + 4), 0, 100);
         i = (i * 255 + 50) / 100;
@@ -240,13 +240,13 @@ COLORREF ParseLiteralColor (LPTSTR color)
     s = sizeof litcolor5_ary[0];
     for (;;) {
         do {
-            if (*buf <= **(const char**)cp)
+            if (*buf <= **(const TCHAR **)cp)
                 break;
         } while (cp += s, --n);
         do {
-            if (*buf < **(const char**)cp)
+            if (*buf < **(const TCHAR**)cp)
                 break;
-            if (0 == memcmp(buf, *(const char**)cp, l))
+            if (0 == tmemcmp(buf, *(const TCHAR **)cp, l))
                 return ((struct litcolor5*)cp)->cref[i];
         } while (cp += s, --n);
 
@@ -258,7 +258,6 @@ COLORREF ParseLiteralColor (LPTSTR color)
         s = sizeof litcolor1_ary[0];
     }
 }
-
 
 COLORREF ReadColorFromString (TCHAR const * string)
 {
@@ -273,38 +272,44 @@ COLORREF ReadColorFromString (TCHAR const * string)
     s = _tcslwr(unquote(strcpy_max(stub, string, sizeof(stub))));
 
     /* check if its an "rgb:12/ee/4c" type string */
-    if (0 == memcmp(s, "rgb:", 4)) {
+    if (0 == tmemcmp(s, TEXT("rgb:"), 4))
+    {
         int j = 3;
-        s+=4, d = rgbstr, r = s;
-        for (;;) {
+        s +=4;
+        d = rgbstr;
+        r = s;
+        for (;;)
+        {
             d[0] = *r && '/'!=*r ? *r++ : '0';
             d[1] = *r && '/'!=*r ? *r++ : d[0];
-            d+=2;
+            d += 2;
             if (0 == --j)
                 break;
             if ('/' != *r)
                 goto check_hex;
             ++r;
         }
-        *d=0, s = rgbstr;
+        *d = 0;
+        s = rgbstr;
     }
 check_hex:
     /* check if its a valid hex number */
     if ('#'==*s)
         s++;
-    for (cr = 0, d = s; (c = *d) != 0; ++d) {
+    for (cr = 0, d = s; (c = *d) != 0; ++d)
+    {
         cr <<= 4;
         if (c >= '0' && c <= '9')
             cr |= c - '0';
         else
         if (c >= 'a' && c <= 'f')
-            cr |= c - ('a'-10);
+            cr |= c - ('a' - 10);
         else /* must be a literal color name (or is invalid) */
             return ParseLiteralColor(s);
     }
     /* #AB4 short type colors */
     if (d - s == 3)
-        cr = ((cr&0xF00)<<12) | ((cr&0xFF0)<<8) | ((cr&0x0FF)<<4) | (cr&0x00F);
+        cr = ((cr & 0xF00) << 12) | ((cr & 0xFF0) << 8) | ((cr & 0x0FF) << 4) | (cr & 0x00F);
     return switch_rgb(cr);
 }
 

@@ -1,11 +1,12 @@
 #pragma once
-#include "bbapi.h"
+#include "bblibapi.h"
 #include <tchar.h>
 #include "winutils.h"
 #include "numbers.h"
 #include "memory.h"
 #include "strings.h"
 #include "colors.h"
+#include "styleprops.h"
 
 inline bool IS_SPC (TCHAR c)
 {

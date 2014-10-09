@@ -17,6 +17,7 @@ message("boost: ${Boost_LIBRARIES}")
 set(bblib2_SOURCES
   winutils.cpp
   colors.cpp
+  styleprops.cpp
 )
 
 set(bblib2_HEADERS

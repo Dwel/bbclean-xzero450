@@ -1,5 +1,5 @@
 #pragma once
-#include "bbapi.h"
+#include "bblibapi.h"
 
 BBLIB_EXPORT COLORREF rgb (unsigned r, unsigned g, unsigned b);
 BBLIB_EXPORT COLORREF switch_rgb (COLORREF c);

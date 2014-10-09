@@ -253,7 +253,7 @@ void WriteColor(const char* fileName, const char* szKey, COLORREF value)
 // Purpose: parses a given string and assigns settings to a StyleItem class
 //===========================================================================
 
-void ParseItem(const char* szItem, StyleItem *item)
+void ParseItem (TCHAR const * szItem, StyleItem * item)
 {
     parse_item(szItem, item);
 }

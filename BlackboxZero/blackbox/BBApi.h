@@ -107,40 +107,6 @@
 /*------------------------------------------ */
 /* BImage definitions */
 
-/* Gradient types */
-#define B_HORIZONTAL 0
-#define B_VERTICAL 1
-#define B_DIAGONAL 2
-#define B_CROSSDIAGONAL 3
-#define B_PIPECROSS 4
-#define B_ELLIPTIC 5
-#define B_RECTANGLE 6
-#define B_PYRAMID 7
-#define B_SOLID 8
-/* BlackboxZero 1.5.2012 */
-//#define B_SPLIT_VERTICAL		9
-//#define B_MIRROR_VERTICAL	11//10
-//#define B_MIRROR_HORIZONTAL	10//11
-//#define B_SPLIT_HORIZONTAL	12
-#define B_SPLITVERTICAL		B_VERTICAL+100
-#define B_MIRRORHORIZONTAL	B_HORIZONTAL+200
-#define B_MIRRORVERTICAL	B_VERTICAL+200
-#define B_SPLITHORIZONTAL	B_HORIZONTAL+100
-#define B_WAVEHORIZONTAL	B_HORIZONTAL+300
-#define B_WAVEVERTICAL		B_VERTICAL+300
-#define B_BLOCKHORIZONTAL	B_HORIZONTAL+400
-#define B_BLOCKVERTICAL		B_VERTICAL+400
-/* BlackboxZero 1.5.2012 */
-
-/* Bevelstyle */
-#define BEVEL_FLAT 0
-#define BEVEL_RAISED 1
-#define BEVEL_SUNKEN 2
-
-/* Bevelposition */
-#define BEVEL1 1
-#define BEVEL2 2
-
 /* bullet styles for menus */
 #define BS_EMPTY 0
 #define BS_TRIANGLE 1

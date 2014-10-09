@@ -21,6 +21,7 @@
 
 #ifndef _BIMAGE_H_
 #define _BIMAGE_H_
+#include <wtypes.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -19,8 +19,9 @@
 
   ========================================================================== */
 
-#include "BBApi.h"
 #include "BImage.h"
+#include <lib2/bblib2.h>
+#include <lib2/StyleItem.h>
 #include <cassert>
 #include <algorithm>
 
@@ -311,13 +312,6 @@ inline static void table_fn_block(struct bimage *bi, unsigned char *p, int lengt
 		c[3] = 0;
 		c += 4; i += d;
     }
-}
-
-int iminmax(int a, int b, int c)
-{
-    if (a>c) a=c;
-    if (a<b) a=b;
-    return a;
 }
 
 /* BlackboxZero 1.5.2012 */
