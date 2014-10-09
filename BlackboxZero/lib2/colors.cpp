@@ -263,14 +263,14 @@ COLORREF ParseLiteralColor (LPTSTR color)
 COLORREF ReadColorFromString (TCHAR const * string)
 {
     TCHAR stub[32];
-    char rgbstr[32];
-    char *s, *d, *r, c;
+    TCHAR rgbstr[32];
+    TCHAR *s, *d, *r, c;
     COLORREF cr;
 
     if (NULL == string)
         return CLR_INVALID;
 
-    s = _strlwr(unquote(strcpy_max(stub, string, sizeof stub)));
+    s = _tcslwr(unquote(strcpy_max(stub, string, sizeof(stub))));
 
     /* check if its an "rgb:12/ee/4c" type string */
     if (0 == memcmp(s, "rgb:", 4)) {

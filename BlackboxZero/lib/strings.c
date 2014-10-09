@@ -34,7 +34,7 @@ int replace_string(char *out, int bufsize, int offset, int len, const char *in)
     return newlen;
 }
 
-char *extract_string(char *dest, const char *src, int n)
+/*char *extract_string(char *dest, const char *src, int n)
 {
     memcpy(dest, src, n);
     dest[n] = 0;
@@ -45,7 +45,7 @@ char *strcpy_max(char *dest, const char *src, int maxlen)
 {
     int l = (int)strlen(src);
     return extract_string(dest, src, l < maxlen ? l : maxlen-1);
-}
+}*/
 
 char* stristr(const char *aa, const char *bb)
 {

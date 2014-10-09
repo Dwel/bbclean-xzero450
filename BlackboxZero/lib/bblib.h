@@ -121,8 +121,8 @@ BBLIB_EXPORT void set_bool(void *v, const char *arg);
 /* strings.c */
 
 BBLIB_EXPORT int replace_string(char *out, int bufsize, int offset, int len, const char *in);
-BBLIB_EXPORT char *extract_string(char *dest, const char *src, int n);
-BBLIB_EXPORT char *strcpy_max(char *dest, const char *src, int maxlen);
+//BBLIB_EXPORT char *extract_string(char *dest, const char *src, int n);
+//BBLIB_EXPORT char *strcpy_max(char *dest, const char *src, int maxlen);
 BBLIB_EXPORT char* stristr(const char *aa, const char *bb);
 BBLIB_EXPORT int get_string_index (const char *key, const char * const * string_array);
 BBLIB_EXPORT unsigned calc_hash(char *p, const char *s, int *pLen, int delim);
