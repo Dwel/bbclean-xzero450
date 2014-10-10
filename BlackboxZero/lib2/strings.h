@@ -6,11 +6,13 @@
 # define tmemmove wmemmove
 # define tmemset wmemset
 # define tmemcmp wmemcmp
+# define tmemchr wmemchr
 #else
 # define tmemcpy (char*)memcpy
 # define tmemmove memmove
 # define tmemset memset
 # define tmemcmp memcmp
+# define tmemchr memchr
 #endif
 
 inline TCHAR * extract_string (TCHAR * dst, TCHAR const * src, int n)

@@ -257,10 +257,10 @@ void check_070 (fil_list * fl)
 
 bool is_stylefile (TCHAR const * path)
 {
-    TCHAR const * temp = read_file_into_buffer(path, 10000);
+    TCHAR * temp = read_file_into_buffer(path, 10000);
     bool r = false;
     if (temp) {
-        r = NULL != _tcsstr(_strlwr(temp), TEXT("menu.frame"));
+        r = NULL != _tcsstr(_tcslwr(temp), TEXT("menu.frame"));
         m_free(temp);
     }
     return r;
@@ -271,7 +271,7 @@ FILE * create_rcfile (TCHAR const * path)
 {
     FILE * fp = 0;
     //dbg_printf("writing to %s", path);
-    if (NULL == (fp = _tfopen(path, g_rc->dos_eol ? "wt" : "wb"))) {
+    if (NULL == (fp = _tfopen(path, g_rc->dos_eol ? TEXT("wt") : TEXT("wb")))) {
         if (g_rc->write_error)
             g_rc->write_error(path);
     }
@@ -375,7 +375,7 @@ void set_reader_timer ()
 TCHAR * read_file_into_buffer (TCHAR const * path, int max_len)
 {
     FILE * fp = 0;
-    if (NULL == (fp = _tfopen(path,"rb")))
+    if (NULL == (fp = _tfopen(path, TEXT("rb"))))
         return NULL;
 
     fseek(fp,0,SEEK_END);
@@ -453,8 +453,9 @@ int scan_component (TCHAR const ** p)
 
 int xrm_match (TCHAR const * key, TCHAR const * pat)
 {
-    TCHAR const *pp, *kk; int c, m, n, k, p;
-    for (c = 256, m = 0; ; key = kk, c /= 2)
+    TCHAR const * pp = 0, * kk = 0;
+    int n, k, p;
+    for (int c = 256, m = 0; ; key = kk, c /= 2)
     {
         kk = key, k = scan_component(&kk);
         pp = pat, p = scan_component(&pp);
@@ -480,47 +481,52 @@ int xrm_match (TCHAR const * key, TCHAR const * pat)
 /* ------------------------------------------------------------------------- */
 lin_list * make_line (fil_list * fl, TCHAR const * key, TCHAR const * val)
 {
-    TCHAR buffer[MAX_KEYWORD_LENGTH];
-    lin_list * tl, ** tlp;
-    int k, v;
-    unsigned h;
+    TCHAR buffer[e_MAX_KEYWORD_LENGTH];
+    int k = 0;
+    unsigned h = 0;
 
-    v = (int)_tcslen(val);
-    h = k = 0;
+    int v = (int)_tcslen(val);
     if (key)
         h = calc_hash(buffer, key, &k, ':');
 
-    tl=(struct lin_list*)c_alloc(sizeof (struct lin_list) + k*2 + v);
+    lin_list * tl = (lin_list *)c_alloc(sizeof(lin_list) + k*2 + v);
     tl->hash = h;
-    tl->k = k+1;
-    tl->o = k+v+2;
-    if (k) {
-        memcpy(tl->str, buffer, k);
-        memcpy(tl->str + tl->o, key, k);
+    tl->k = k + 1;
+    tl->o = k + v + 2;
+    if (k)
+    {
+        tmemcpy(tl->str, buffer, k);
+        tmemcpy(tl->str + tl->o, key, k);
     }
-    memcpy(tl->str+tl->k, val, v);
+    tmemcpy(tl->str+tl->k, val, v);
 
     //if the key contains a wildcard
-    if (k && (memchr(key, '*', k) || memchr(key, '?', k))) {
+    if (k && (tmemchr(key, '*', k) || tmemchr(key, '?', k)))
+    {
         // add it to the wildcard - list
         tl->wnext = fl->wild;
         fl->wild = tl;
         tl->is_wild = true;
-    } else {
+    }
+    else
+    {
         // link it in the hash bucket
-        tlp = &fl->ht[tl->hash%RCFILE_HTS];
+        lin_list ** tlp = &fl->ht[tl->hash % e_RCFILE_HTS];
         tl->hnext = *tlp;
         *tlp = tl;
     }
     return tl;
 }
 
-void del_from_list(void *tlp, void *tl, void *n)
+/*void del_from_list (void * tlp, void * tl, void * n)
 {
-    void *v; size_t o = (char*)n - (char*)tl;
-    while (NULL != (v = *(void**)tlp)) {
+    void * v;
+    size_t o = (char*)n - (char*)tl;
+    while (NULL != (v = *(void**)tlp))
+    {
         void **np = (void **)((char *)v+o);
-        if (v == tl) {
+        if (v == tl)
+        {
             *(void**)tlp = *np;
             break;
         }
@@ -528,32 +534,31 @@ void del_from_list(void *tlp, void *tl, void *n)
     }
 }
 
-void free_line(struct fil_list *fl, struct lin_list *tl)
+void free_line (fil_list * fl, lin_list * tl)
 {
     if (tl->is_wild)
         del_from_list(&fl->wild, tl, &tl->wnext);
     else
         del_from_list(&fl->ht[tl->hash%RCFILE_HTS], tl, &tl->hnext);
     m_free(tl);
-}
+}*/
 
-struct lin_list *search_line(
-    struct fil_list *fl, const char *key, int fwild, LONG *p_seekpos)
+lin_list * search_line (fil_list * fl, TCHAR const * key, int fwild, LONG * p_seekpos)
 {
-    int key_len, n;
-    char buff[MAX_KEYWORD_LENGTH];
-    unsigned h;
-    struct lin_list *tl;
+    TCHAR buff[e_MAX_KEYWORD_LENGTH];
+    lin_list * tl = 0;
 
-    h = calc_hash(buff, key, &key_len, ':');
+    int key_len = 0;
+    unsigned const h = calc_hash(buff, key, &key_len, ':');
     if (0 == key_len)
         return NULL;
 
     ++key_len; // check terminating \0 too
 
-    if (p_seekpos) {
+    if (p_seekpos)
+    {
         long seekpos = *p_seekpos;
-        n = 0;
+        int n = 0;
         dolist (tl, fl->lines)
             if (++n > seekpos && tl->hash == h && 0==memcmp(tl->str, buff, key_len)) {
                 *p_seekpos = n;
@@ -563,17 +568,17 @@ struct lin_list *search_line(
     }
 
     // search hashbucket
-    for (tl = fl->ht[h % RCFILE_HTS]; tl; tl = tl->hnext)
-        if (0==memcmp(tl->str, buff, key_len))
+    for (tl = fl->ht[h % e_RCFILE_HTS]; tl; tl = tl->hnext)
+        if (0 == tmemcmp(tl->str, buff, key_len))
             return tl;
 
-    if (fwild) {
+    if (fwild)
+    {
         // search wildcards
-        struct lin_list *wl;
         int best_match = 0;
-
-        for (wl = fl->wild; wl; wl = wl->wnext) {
-            n = xrm_match(buff, wl->str);
+        for (lin_list * wl = fl->wild; wl; wl = wl->wnext)
+        {
+            int n = xrm_match(buff, wl->str);
             //dbg_printf("match:%d <%s> <%s>", n, buff, sl->str);
             if (n > best_match)
                 tl = wl, best_match = n;
@@ -582,116 +587,118 @@ struct lin_list *search_line(
     return tl;
 }
 
-void translate_new(char *buffer, size_t bufsize, char **pkey, int *pklen, int syntax)
+void translate_new (TCHAR * buffer, size_t bufsize, TCHAR ** pkey, int * pklen, int syntax)
 {
-    static const char *pairs [] =
+    TCHAR const * pairs [] =
     {
         // from         -->   to [OB -> 0.65 fork] 
-        "padding.width"                 , "bevelWidth"     ,
-        "menu.border.width"             , "menu.*.borderWidth"     ,
-        "border.width"                  , "borderWidth"     ,
-        "handle.width"                  , "handleWidth"     ,
-        "menu.border.color"             , "menu.*.borderColor"     ,
-        "border.color"                  , "borderColor"     ,
-        "label.text.justify"            , "justify"                ,
-        ".bg"                           , ""                ,
-        "title.text.font"               , "title.font"                ,
-        "items.font"                    , "frame.font"                ,
-        "items.active"                  , "hilite"                ,
-        "items"                         , "frame"                ,
-        "disabled.text.color"           , "disableColor"                ,
-        "active.label.text.font"        , "font"                ,
-        ".active.title"                 , ".title.focus"                ,
-        ".active.label"                 , ".label.focus"                ,
-        ".active.handle"                , ".handle.focus"                ,
-        ".active.grip"                  , ".grip.focus"                ,
-        "window.active.button.*"        , "window.button.focus"        ,
-        "window.inactive.button.*"      , "window.button.unfocus"     ,
-        ".active.button.unpressed"      , ".button.focus"                ,
-        ".active.button.pressed"        , ".button.pressed"            ,
-        "inactive.title"                , "title.unfocus"                ,
-        "inactive.label"                , "label.unfocus"                ,
-        "inactive.handle"               , "handle.unfocus"                ,
-        "inactive.grip"                 , "grip.unfocus"                ,
-        "inactive.button.unpressed"     , "button.unfocus"                ,
-        "text.justify"                  , "justify"                ,
-        "text.color"                    , "textColor"                ,
-        "image.color"                   , "picColor"             ,
-        "osd"                           , "toolbar"     ,
-        "unhighlight"                   , "button"     ,
-        "highlight"                     , "button.pressed"     ,
+        TEXT("padding.width")                 , TEXT("bevelWidth")     ,
+        TEXT("menu.border.width")             , TEXT("menu.*.borderWidth")     ,
+        TEXT("border.width")                  , TEXT("borderWidth")     ,
+        TEXT("handle.width")                  , TEXT("handleWidth")     ,
+        TEXT("menu.border.color")             , TEXT("menu.*.borderColor")     ,
+        TEXT("border.color")                  , TEXT("borderColor")     ,
+        TEXT("label.text.justify")            , TEXT("justify")                ,
+        TEXT(".bg")                           , TEXT("")                ,
+        TEXT("title.text.font")               , TEXT("title.font")                ,
+        TEXT("items.font")                    , TEXT("frame.font")                ,
+        TEXT("items.active")                  , TEXT("hilite")                ,
+        TEXT("items")                         , TEXT("frame")                ,
+        TEXT("disabled.text.color")           , TEXT("disableColor")                ,
+        TEXT("active.label.text.font")        , TEXT("font")                ,
+        TEXT(".active.title")                 , TEXT(".title.focus")                ,
+        TEXT(".active.label")                 , TEXT(".label.focus")                ,
+        TEXT(".active.handle")                , TEXT(".handle.focus")                ,
+        TEXT(".active.grip")                  , TEXT(".grip.focus")                ,
+        TEXT("window.active.button.*")        , TEXT("window.button.focus")        ,
+        TEXT("window.inactive.button.*")      , TEXT("window.button.unfocus")     ,
+        TEXT(".active.button.unpressed")      , TEXT(".button.focus")                ,
+        TEXT(".active.button.pressed")        , TEXT(".button.pressed")            ,
+        TEXT("inactive.title")                , TEXT("title.unfocus")                ,
+        TEXT("inactive.label")                , TEXT("label.unfocus")                ,
+        TEXT("inactive.handle")               , TEXT("handle.unfocus")                ,
+        TEXT("inactive.grip")                 , TEXT("grip.unfocus")                ,
+        TEXT("inactive.button.unpressed")     , TEXT("button.unfocus")                ,
+        TEXT("text.justify")                  , TEXT("justify")                ,
+        TEXT("text.color")                    , TEXT("textColor")                ,
+        TEXT("image.color")                   , TEXT("picColor")             ,
+        TEXT("osd")                           , TEXT("toolbar")     ,
+        TEXT("unhighlight")                   , TEXT("button")     ,
+        TEXT("highlight")                     , TEXT("button.pressed")     ,
         // frame values
-        "window.client.padding.width"   , "window.frame.borderWidth"     ,
-        "window.active.border.color"    , "window.*.focus.borderColor"  ,
-        "window.inactive.border.color"  , "window.*.unfocus.borderColor" ,
-        "active.client.color"           , "frame.focus.borderColor"     ,
-        "inactive.client.color"         , "frame.unfocus.borderColor"   ,
-        "frameColor"                    , "frame.focus.borderColor"     ,
+        TEXT("window.client.padding.width")   , TEXT("window.frame.borderWidth")     ,
+        TEXT("window.active.border.color")    , TEXT("window.*.focus.borderColor")  ,
+        TEXT("window.inactive.border.color")  , TEXT("window.*.unfocus.borderColor") ,
+        TEXT("active.client.color")           , TEXT("frame.focus.borderColor")     ,
+        TEXT("inactive.client.color")         , TEXT("frame.unfocus.borderColor")   ,
+        TEXT("frameColor")                    , TEXT("frame.focus.borderColor")     ,
        NULL
     };
 
-    static const char *FBpairs [] =    // older items
+    TCHAR const * FBpairs [] =    // older items
     {
-        "window.frame.focusColor"       , "window.frame.focus.borderColor" ,
-        "window.frame.unfocusColor"     , "window.frame.unfocus.borderColor" ,
-        "window.frame.focus.color"      , "window.frame.focus.borderColor" ,
-        "window.frame.unfocus.color"    , "window.frame.unfocus.borderColor" ,
-        "frameWidth"                    , "window.frame.borderWidth"     ,
-        "window.frameWidth"             , "window.frame.borderWidth" ,
+        TEXT("window.frame.focusColor")       , TEXT("window.frame.focus.borderColor") ,
+        TEXT("window.frame.unfocusColor")     , TEXT("window.frame.unfocus.borderColor") ,
+        TEXT("window.frame.focus.color")      , TEXT("window.frame.focus.borderColor") ,
+        TEXT("window.frame.unfocus.color")    , TEXT("window.frame.unfocus.borderColor") ,
+        TEXT("frameWidth")                    , TEXT("window.frame.borderWidth")     ,
+        TEXT("window.frameWidth")             , TEXT("window.frame.borderWidth") ,
       NULL
     };
 
-    const char **p = pairs;
+    TCHAR const ** p = pairs;
     size_t k = *pklen;
     if (k >= bufsize) return;
-    *pkey = (char *)memcpy(buffer, *pkey, k);
+    *pkey = tmemcpy(buffer, *pkey, k);
     buffer[k] = 0;
     if (syntax == 1)
         p = FBpairs;
     do
     {
-        char *q = (char*)stristr(buffer, *p);
+        TCHAR * q = stristr(buffer, *p);
         if (q)
         {
-            size_t lp = strlen(p[0]);
-            size_t lq = strlen(q);
-            size_t lr = strlen(p[1]);
+            size_t lp = _tcslen(p[0]);
+            size_t lq = _tcslen(q);
+            size_t lr = _tcslen(p[1]);
             size_t k0 = k + lr - lp;
             if (k0 >= bufsize) break;
-            memmove(q + lr, q + lp, lq - lp + 1);
-            memmove(q, p[1], lr);
+            tmemmove(q + lr, q + lp, lq - lp + 1);
+            tmemmove(q, p[1], lr);
             k = k0;
         }
-    } while ((p += 2)[0]);
-    *pklen = (int)k;
+    }
+    while ((p += 2)[0]);
+
+    *pklen = static_cast<int>(k);
 }
 
 /* ------------------------------------------------------------------------- */
 // searches for the filename and, if not found, builds a _new line-list
 
-struct fil_list *read_file(const char *filename)
+fil_list * read_file (TCHAR const * filename)
 {
-    struct lin_list **slp, *sl;
-    struct fil_list **flp, *fl;
-    char *buf, *p, *d, *s, *t, *hilite, c, hashname[MAX_PATH], buff[MAX_KEYWORD_LENGTH];
-    unsigned h;
+    lin_list ** slp = 0, *sl = 0;
+    fil_list ** flp = 0, *fl = 0;
+    TCHAR *buf = 0, *p = 0, *d = 0, *s = 0, *t = 0, *hilite = 0, c = 0, hashname[MAX_PATH], buff[e_MAX_KEYWORD_LENGTH];
     int k, is_OB, is_070;
 
     // ----------------------------------------------
     // first check, if the file has already been read
-    h = calc_hash(hashname, filename, &k, 0);
+    unsigned h = calc_hash(hashname, filename, &k, 0);
     k = k + 1;
     for (flp = &g_rc->rc_files; NULL!=(fl=*flp); flp = &fl->next)
-        if (fl->hash==h && 0==memcmp(hashname, fl->path+fl->k, k)) {
+        if (fl->hash == h && 0 == tmemcmp(hashname, fl->path+fl->k, k))
+        {
             ++g_rc->used;
             return fl; //... return cached line list.
-    }
+        }
 
     // allocate a _new file structure, the filename is
     // stored twice, as is and strlwr'd for compare.
-    fl = (struct fil_list*)c_alloc(sizeof(*fl) + k*2);
-    memcpy(fl->path, filename, k);
-    memcpy(fl->path+k, hashname, k);
+    fl = (fil_list *)c_alloc(sizeof(*fl) + k * 2);
+    tmemcpy(fl->path, filename, k);
+    tmemcpy(fl->path + k, hashname, k);
     fl->k = k;
     fl->hash = h;
     cons_node(&g_rc->rc_files, fl);
@@ -702,7 +709,8 @@ struct fil_list *read_file(const char *filename)
     set_reader_timer();
 
     buf = read_file_into_buffer(fl->path, 0);
-    if (NULL == buf) {
+    if (NULL == buf)
+    {
         fl->newfile = true;
         return fl;
     }
@@ -725,13 +733,13 @@ comment:
             sl = make_line(fl, NULL, s);
 
         } else {
-            d = (char*)memchr(s, ':', k);
+            d = tmemchr(s, ':', k);
             if (NULL == d)
                 goto comment;
             for (t = d; t > s && IS_SPC(t[-1]); --t)
                 ;
             *t = 0;
-            if (t - s >= MAX_KEYWORD_LENGTH)
+            if (t - s >= e_MAX_KEYWORD_LENGTH)
                 goto comment;
             // skip spaces between key and value
             while (*++d == ' ')
@@ -747,8 +755,8 @@ comment:
             // the thing is that filelist has menu.hilite items from file,
             // while the read_style reads menu.active.
             if (is_070)
-                if (NULL != (hilite = strstr(s, "hilite")))
-                    memcpy(hilite, "active", 6);
+                if (NULL != (hilite = _tcsstr(s, TEXT("hilite"))))
+                    tmemcpy(hilite, TEXT("active"), 6);
 
             sl = make_line(fl, s, d);
         }
@@ -763,22 +771,20 @@ comment:
 /* ------------------------------------------------------------------------- */
 // Purpose: Searches the given file for the supplied keyword and returns a
 // pointer to the value - string
-// In: const char* path = String containing the name of the file to be opened
-// In: const char* szKey = String containing the keyword to be looked for
+// In: TCHAR const * path = String containing the name of the file to be opened
+// In: TCHAR const * szKey = String containing the keyword to be looked for
 // In: LONG ptr: optional: an index into the file to start search.
-// Out: const char* = Pointer to the value string of the keyword
+// Out: TCHAR const * = Pointer to the value string of the keyword
 
-const char* read_value(const char* path, const char* szKey, long *ptr)
+TCHAR const * read_value (TCHAR const * path, TCHAR const * szKey, long * ptr)
 {
-    struct fil_list *fl;
-    struct lin_list *tl;
-    const char *r = NULL;
-
-    fl = read_file(path);
-    tl = search_line(fl, szKey, true, ptr);
+    fil_list * fl = read_file(path);
+    lin_list * tl = search_line(fl, szKey, true, ptr);
 
     if (NULL == tl && fl->is_style && g_rc->translate_065)
         tl = search_line_065(fl, szKey);
+
+    TCHAR const * r = NULL;
     if (tl)
         r = tl->str + tl->k;
 
@@ -794,11 +800,12 @@ const char* read_value(const char* path, const char* szKey, long *ptr)
 // Find out a good place where to put an item if it was not yet found in the
 // rc-file previously.
 
-int simkey(const char *a0, const char *b0)
+int simkey (TCHAR const * a0, TCHAR const * b0)
 {
-    const char *a = a0, *b = b0, *aa, *bb;
+    TCHAR const * a = a0, *b = b0, *aa = 0, *bb = 0;
     int ca, cb, na, nb, m, f, e;
-    for (f = e = m = na = nb = 0; ;) {
+    for (f = e = m = na = nb = 0; ; )
+    {
         aa = a, ca = scan_component(&a);
         bb = b, cb = scan_component(&b);
         if (0 == ca && 0 == cb)
@@ -807,12 +814,12 @@ int simkey(const char *a0, const char *b0)
         if (cb) ++nb;
         if (0 == ca || 0 == cb || f)
             continue;
-        if (ca == cb && 0 == memcmp(aa, bb, ca)) {
+        if (ca == cb && 0 == tmemcmp(aa, bb, ca)) {
             m ++;
             e = 0;
         } else {
             f = 1;
-            e = 0 == memcmp(aa, bb, 4);
+            e = 0 == tmemcmp(aa, bb, 4);
         }
     }
     f = 2*m + e * (m && na == nb);
@@ -820,22 +827,23 @@ int simkey(const char *a0, const char *b0)
     return f;
 }
 
-struct lin_list **get_simkey(struct lin_list **slp, const char *key)
+lin_list ** get_simkey (lin_list ** slp, TCHAR const * key)
 {
-    struct lin_list **tlp = NULL, *sl;
-    int n, m, i, k;
-    m = 1;
-    i = k = 0;
-    for (; NULL!=(sl=*slp); slp = &sl->next) {
+    lin_list ** tlp = NULL, *sl = 0;
+    int m = 1;
+    int i = 0, k = 0;
+    for (; NULL!=(sl=*slp); slp = &sl->next)
+    {
         if (0 == sl->str[0])
             continue;
-        n = simkey(sl->str, key);
+        int const n = simkey(sl->str, key);
         if (n != m)
             i = 0;
         if (n < m)
             continue;
         ++i;
-        if (n > m || i > k) {
+        if (n > m || i > k)
+        {
             m = n;
             k = i;
             tlp = &sl->next;
@@ -848,37 +856,42 @@ struct lin_list **get_simkey(struct lin_list **slp, const char *key)
 // Search for the szKey in the file_list, replace, if found and the value
 // did change, or append, if not found. Write to file on changes.
 
-void write_value(const char* path, const char* szKey, const char* value)
+void write_value (TCHAR const * path, TCHAR const * szKey, TCHAR const * value)
 {
-    struct fil_list *fl;
-    struct lin_list *tl, **tlp, *sl, **slp;
-
 #ifdef DEBUG_READER
     dbg_printf("write_value <%s> <%s> <%s>", path, szKey, value);
 #endif
 
-    fl = read_file(path);
-    tl = search_line(fl, szKey, false, NULL);
+    fil_list * fl = read_file(path);
+    lin_list * tl = search_line(fl, szKey, false, NULL);
 
-    if (tl && value && 0 == strcmp(tl->str + tl->k, value)) {
+    if (tl && value && 0 == _tcscmp(tl->str + tl->k, value))
+    {
         // nothing changed
-        if (memcmp(tl->str + tl->o, szKey, tl->k-1)) {
+        if (tmemcmp(tl->str + tl->o, szKey, tl->k-1)) {
             // make shure that keyword has correct letter case
-            memcpy(tl->str + tl->o, szKey, tl->k-1);
+            tmemcpy(tl->str + tl->o, szKey, tl->k-1);
             mark_rc_dirty(fl);
         }
         tl->dirty = 1;
-    } else {
+    }
+    else 
+    {
+        lin_list ** tlp = 0;
         for (tlp = &fl->lines; *tlp != tl; tlp = &(*tlp)->next)
             ;
-        if (tl) {
+        if (tl)
+        {
             *tlp = tl->next;
             free_line(fl, tl);
         }
-        if (value) {
+        if (value)
+        {
+            lin_list *sl = 0, **slp = 0;
             sl = make_line(fl, szKey, value);
             sl->dirty = true;
-            if (NULL == tl && false == fl->newfile) {
+            if (NULL == tl && false == fl->newfile)
+            {
                 // insert a new item below a similar one
                 slp = get_simkey(&fl->lines, sl->str);
                 if (slp) tlp = slp;
@@ -892,21 +905,23 @@ void write_value(const char* path, const char* szKey, const char* value)
 
 /* ------------------------------------------------------------------------- */
 
-int rename_setting(const char* path, const char* szKey, const char* new_keyword)
+int rename_setting (TCHAR const * path, TCHAR const * szKey, TCHAR const * new_keyword)
 {
-    char buff[MAX_KEYWORD_LENGTH];
-    struct fil_list *fl;
-    struct lin_list **slp, *sl, *tl;
+    TCHAR buff[e_MAX_KEYWORD_LENGTH];
+    lin_list *sl = 0, *tl = 0;
     int k, dirty = 0;
 
     calc_hash(buff, szKey, &k, ':');
     if (0 == k)
         return false;
 
-    fl = read_file(path);
-    for (slp = &fl->lines; NULL!=(sl=*slp); ) {
-        if (new_keyword) {
-            if ((int)sl->k == 1+k && 0==memcmp(sl->str, buff, k)) {
+    fil_list * fl = read_file(path);
+    for (lin_list ** slp = &fl->lines; NULL != (sl = *slp); )
+    {
+        if (new_keyword)
+        {
+            if ((int)sl->k == 1+k && 0 == tmemcmp(sl->str, buff, k))
+            {
                 tl = make_line(fl, new_keyword, sl->str+sl->k);
                 tl->next = sl->next;
                 *slp = tl;
@@ -915,8 +930,11 @@ int rename_setting(const char* path, const char* szKey, const char* new_keyword)
                 ++dirty;
                 continue;
             }
-        } else {
-            if ((1==k && '*' == buff[0]) || xrm_match(sl->str, buff)) {
+        }
+        else
+        {
+            if ((1 == k && '*' == buff[0]) || xrm_match(sl->str, buff))
+            {
                 *slp = sl->next;
                 free_line(fl, sl);
                 ++dirty;
@@ -932,7 +950,7 @@ int rename_setting(const char* path, const char* szKey, const char* new_keyword)
 
 /* ------------------------------------------------------------------------- */
 
-int delete_setting(LPCSTR path, LPCSTR szKey)
+int delete_setting (LPTSTR path, LPTSTR szKey)
 {
 #ifdef DEBUG_READER
     dbg_printf("delete_setting <%s> <%s>", path, szKey);
@@ -942,12 +960,12 @@ int delete_setting(LPCSTR path, LPCSTR szKey)
 
 /* ------------------------------------------------------------------------- */
 
-int read_next_line(FILE *fp, char* szBuffer, unsigned dwLength)
+int read_next_line (FILE * fp, TCHAR * szBuffer, unsigned dwLength)
 {
-    if (fp && fgets(szBuffer, dwLength, fp))
+    if (fp && _fgetts(szBuffer, dwLength, fp))
     {
-        const char *p; char *q, c;
-        p = q = szBuffer;
+        TCHAR const * p = szBuffer;
+        TCHAR * q = szBuffer, c;
         skip_spc(&p);
         while (0 != (c = *p))
             *q++ = IS_SPC(c) ? ' ' : c, p++;
