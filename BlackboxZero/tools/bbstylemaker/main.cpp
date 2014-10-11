@@ -384,14 +384,14 @@ const struct button main_buttons[] = {
 { "right"         , BN_CHK   , FNT_RIG  , 290, 76,  38,  14, BN_CEN|BN_RAD },
 { "bullet"        , BN_STR   , BUL_HDR  ,  90,  32,  82,  18, BN_EXT },
 
-{ "empty"         , BN_CHK   , BUL_EMP  ,  90,  54,  82,  14, BN_RAD|BN_GRP },
-{ "triangle"      , BN_CHK   , BUL_TRI  ,  90,  78,  82,  14, BN_RAD },
-{ "square"        , BN_CHK   , BUL_SQR  ,  90,  94,  82,  14, BN_RAD },
-{ "diamond"       , BN_CHK   , BUL_DIA  ,  90, 110,  82,  14, BN_RAD },
-{ "circle"        , BN_CHK   , BUL_CIR  ,  90, 126,  82,  14, BN_RAD },
+{ "empty"         , BN_CHK   , BUL_EMP  ,  90,  38+dwnAdj,  82,  14, BN_RAD|BN_GRP },
+{ "triangle"      , BN_CHK   , BUL_TRI  ,  90,  54+dwnAdj,  82,  14, BN_RAD },
+{ "square"        , BN_CHK   , BUL_SQR  ,  90,  70+dwnAdj,  82,  14, BN_RAD },
+{ "diamond"       , BN_CHK   , BUL_DIA  ,  90, 86+dwnAdj,  82,  14, BN_RAD },
+{ "circle"        , BN_CHK   , BUL_CIR  ,  90, 102+dwnAdj,  82,  14, BN_RAD },
 
-{ "left"          , BN_CHK   , BUL_LEF  ,  90, 150,  82,  14, BN_RAD|BN_GRP },
-{ "right"         , BN_CHK   , BUL_RIG  ,  90, 166,  82,  14, BN_RAD },
+{ "left"          , BN_CHK   , BUL_LEF  ,  90, 134+dwnAdj,  82,  14, BN_RAD|BN_GRP },
+{ "right"         , BN_CHK   , BUL_RIG  ,  90, 150+dwnAdj,  82,  14, BN_RAD },
 //
 { ""              , BN_RECT  , OPT_RCT  , 258,  32+dwnAdj,  74,  72, BN_EXT },
 { "7.option"        , BN_STR   , OPT_HDR, 258,  32+dwnAdj,  74,  18, BN_EXT },
