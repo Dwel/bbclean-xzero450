@@ -79,7 +79,7 @@ BBLIB_EXPORT int sh_get_uiobject(
 /* lists of pidlists */
 struct pidl_node
 {
-    struct pidl_node *next;
+    struct pidl_node * m_next;
     short stuff[1];
 };
 

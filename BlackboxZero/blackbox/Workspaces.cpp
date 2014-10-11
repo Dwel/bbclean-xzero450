@@ -692,10 +692,10 @@ void Workspaces::WS_RaiseWindow (HWND hwnd_notused)
     struct tasklist * tl = NULL;
     struct toptask * lp = 0;
     dolist (lp, pTopTask)
-        if (currentScreen == lp->task->wkspc)
-            tl = lp->task;
+		if (currentScreen == lp->m_val->wkspc)
+			tl = lp->m_val;
     if (tl)
-        WS_BringToFront(tl->hwnd, false);
+		WS_BringToFront(tl->m_val, false);
 }
 
 void Workspaces::WS_LowerWindow (HWND hwnd)
@@ -703,9 +703,9 @@ void Workspaces::WS_LowerWindow (HWND hwnd)
     tasklist * tl = 0;
     SwitchToBBWnd();
     if (pTopTask) {
-        tl = pTopTask->task;
+		tl = pTopTask->m_val;
         SetTopTask(tl, 2); // append
-        if (tl != pTopTask->task)
+		if (tl != pTopTask->m_val)
             FocusTopWindow();
     }
     vwm_lower_window(hwnd);
@@ -733,7 +733,7 @@ void Workspaces::MakeSticky (HWND hwnd)
             return;
         p = (StickyNode *)m_alloc(sizeof(StickyNode));
         cons_node(&sticky_list, p);
-        p->hwnd = hwnd;
+		p->m_val = hwnd;
         //dbg_window(hwnd, "[+%d]", listlen(sticky_list));
     } else {
         if (vwm_get_desk(hwnd) != currentScreen)
@@ -751,7 +751,7 @@ void Workspaces::RemoveSticky (HWND hwnd)
     pp = (StickyNode **)assoc_ptr(&sticky_list, hwnd);
     if (pp) {
 
-        *pp = (p = *pp)->next;
+        *pp = (p = *pp)->m_next;
         m_free(p);
         //dbg_window(hwnd, "[-%d]", listlen(sticky_list));
 
@@ -843,7 +843,7 @@ void Workspaces::RemoveOnBG (HWND hwnd)
     pp = (onbg_node**)assoc_ptr(&onbg_list, hwnd);
     if (pp)
     {
-        *pp = (p = *pp)->next;
+        *pp = (p = *pp)->m_next;
         m_free(p);
         //dbg_window(hwnd, "[-%d]", listlen(onbg_list));
 
@@ -922,7 +922,7 @@ BOOL CALLBACK mr_enumproc (HWND hwnd, LPARAM lParam)
     {
         mr_info * mr = (mr_info *)lParam;
         if (mr->iconic == (FALSE != IsIconic(hwnd)))
-            cons_node (&mr->p, new_node(hwnd));
+            cons_node (&mr->p, new_node<list_node>(hwnd));
     }
     return TRUE;
 }
@@ -943,10 +943,10 @@ void Workspaces::min_rest_helper (int cmd)
         cmd = SC_MINIMIZE;
         if (NULL == mr->p) {
             for (pp = &toggled_windows; NULL != (p = *pp); ) {
-                if (mr_checktask((HWND)p->v))
-                    *pp = p->next, cons_node(&mr->p, p);
+                if (mr_checktask((HWND)p->m_val))
+                    *pp = p->m_next, cons_node(&mr->p, p);
                 else
-                    pp = &p->next;
+                    pp = &p->m_next;
             }
             cmd = SC_RESTORE;
         }
@@ -955,9 +955,9 @@ void Workspaces::min_rest_helper (int cmd)
     mr->cmd = cmd;
     freeall(&toggled_windows);
     dolist (p, mr->p) {
-        HWND hwnd = (HWND)p->v;
+        HWND hwnd = (HWND)p->m_val;
         if (SC_MINIMIZE == mr->cmd)
-            cons_node (&toggled_windows, new_node(hwnd));
+			cons_node(&toggled_windows, new_node<list_node>(hwnd));
         send_syscommand(hwnd, mr->cmd);
     }
     freeall(&mr->p);
@@ -980,8 +980,8 @@ HWND Workspaces::get_top_window (int scrn) const
 {
     struct toptask * lp = 0;
     dolist (lp, pTopTask)
-        if (scrn == lp->task->wkspc) {
-            HWND hwnd = lp->task->hwnd;
+		if (scrn == lp->m_val->wkspc) {
+		HWND hwnd = lp->m_val->m_val;
             if (FALSE == IsIconic(hwnd))
                 return hwnd;
         }
@@ -1116,7 +1116,7 @@ void Workspaces::NextWindow (bool allDesktops, int dir)
     struct tasklist *tl;
     int const s = GetTaskListSize();
     if (0==s) return;
-    int i = FindTask(pTopTask->task->hwnd);
+	int i = FindTask(pTopTask->m_val->m_val);
     if (-1==i) i=0;
     int const j = i;
     do {
@@ -1129,8 +1129,8 @@ void Workspaces::NextWindow (bool allDesktops, int dir)
         }
         tl = (struct tasklist *)nth_node(taskList, i);
         if (tl && (allDesktops || currentScreen == tl->wkspc)
-            && FALSE == IsIconic(tl->hwnd) && FALSE == CheckOnBG(tl->hwnd)) {
-            PostMessage(BBhwnd, BB_BRINGTOFRONT, 0, (LPARAM)tl->hwnd);
+			&& FALSE == IsIconic(tl->m_val) && FALSE == CheckOnBG(tl->m_val)) {
+			PostMessage(BBhwnd, BB_BRINGTOFRONT, 0, (LPARAM)tl->m_val);
             return;
         }
     } while (j!=i);
@@ -1155,7 +1155,7 @@ void Workspaces::del_from_toptasks (tasklist * tl)
     toptask **lpp, *lp;
     lpp = (toptask**)assoc_ptr(&pTopTask, tl);
     if (lpp)
-        *lpp=(lp=*lpp)->next, m_free(lp);
+        *lpp=(lp=*lpp)->m_next, m_free(lp);
 }
 
 void Workspaces::SetTopTask (tasklist * tl, int set_where)
@@ -1166,17 +1166,17 @@ void Workspaces::SetTopTask (tasklist * tl, int set_where)
     if (0==set_where)
         return; // delete_only
     if (1==set_where) // push at front
-        cons_node(&pTopTask, new_node(tl));
+        cons_node(&pTopTask, new_node<toptask>(tl));
     if (2==set_where) // push at end
-        append_node(&pTopTask, new_node(tl));
+        append_node(&pTopTask, new_node<toptask>(tl));
 }
 
 void Workspaces::get_caption (tasklist * tl, int force)
 {
     if (force || 0 == tl->caption[0])
-        get_window_text(tl->hwnd, tl->caption, sizeof tl->caption);
+		get_window_text(tl->m_val, tl->caption, sizeof tl->caption);
     if (force || NULL == tl->icon)
-        get_window_icon(tl->hwnd, &tl->icon);
+		get_window_icon(tl->m_val, &tl->icon);
 }
 
 HWND Workspaces::GetActiveTaskWindow ()
@@ -1186,7 +1186,7 @@ HWND Workspaces::GetActiveTaskWindow ()
 
 void Workspaces::GetCaptions ()
 {
-    struct tasklist *tl;
+    tasklist *tl;
     dolist (tl, taskList)
         get_caption(tl, 1);
 }
@@ -1196,7 +1196,7 @@ void Workspaces::GetCaptions ()
 tasklist * Workspaces::AddTask (HWND hwnd)
 {
     tasklist * tl = c_new<tasklist>();
-    tl->hwnd = hwnd;
+	tl->m_val = hwnd;
     tl->wkspc = currentScreen;
     append_node(&taskList, tl);
     get_caption(tl, 1);
@@ -1210,7 +1210,7 @@ void Workspaces::RemoveTask (tasklist * tl)
     if (tl->icon)
         DestroyIcon(tl->icon);
     del_from_toptasks(tl);
-    hwnd = tl->hwnd;
+	hwnd = tl->m_val;
     remove_item(&taskList, tl);
     send_task_message(hwnd, TASKITEM_REMOVED);
 }
@@ -1219,7 +1219,7 @@ int Workspaces::FindTask (HWND hwnd)
 {
     struct tasklist *tl; int i = 0;
     dolist(tl, taskList) {
-        if (tl->hwnd == hwnd)
+		if (tl->m_val == hwnd)
             return i;
         i++;
     }
@@ -1231,8 +1231,8 @@ void Workspaces::CleanTasks ()
 {
     struct tasklist **tl = &taskList;
     while (*tl)
-        if (is_valid_task((*tl)->hwnd))
-            tl = &(*tl)->next;
+		if (is_valid_task((*tl)->m_val))
+            tl = &(*tl)->m_next;
         else
             RemoveTask(*tl);
 }
@@ -1273,10 +1273,10 @@ void Workspaces::workspaces_set_desk ()
 {
     struct tasklist *tl, *tn, **tpp, *tr = NULL;
     for (tl = taskList; tl; tl = tn) {
-        tl->wkspc = vwm_get_desk(tl->hwnd);
+		tl->wkspc = vwm_get_desk(tl->m_val);
         for (tpp = &tr; *tpp && (*tpp)->wkspc <= tl->wkspc;)
-            tpp = &(*tpp)->next;
-        tn = tl->next, tl->next = *tpp, *tpp = tl;
+            tpp = &(*tpp)->m_next;
+        tn = tl->m_next, tl->m_next = *tpp, *tpp = tl;
     }
     taskList = tr;
 }
@@ -1337,7 +1337,7 @@ void Workspaces::TaskProc (WPARAM wParam, HWND hwnd)
         hwnd_replacing = NULL;
         if (NULL == tl)
             break;
-        tl->hwnd = hwnd;
+		tl->m_val = hwnd;
         get_caption(tl, 1);
         if (activeTaskWindow == hwnd)
             goto hshell_windowactivated;
@@ -1437,8 +1437,8 @@ void Workspaces::TaskProc (WPARAM wParam, HWND hwnd)
         if (tl)
         {
             UINT msg = TASKITEM_MODIFIED;
-            get_window_text(tl->hwnd, tl->caption, sizeof tl->caption);
-            get_window_icon(tl->hwnd, &tl->icon); // disable for foobar delay issue ?
+			get_window_text(tl->m_val, tl->caption, sizeof tl->caption);
+			get_window_icon(tl->m_val, &tl->icon); // disable for foobar delay issue ?
             if (wParam & 0x8000) {
                 msg = TASKITEM_FLASHED;
                 tl->flashing = true;
@@ -1498,7 +1498,7 @@ tasklist const * Workspaces::GetTaskListPtr () const
 HWND Workspaces::GetTask (int index) const
 {
     tasklist * tl = (tasklist *)nth_node(taskList, index);
-    return tl ? tl->hwnd : NULL;
+	return tl ? tl->m_val : NULL;
 }
 
 //===========================================================================

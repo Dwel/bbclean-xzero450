@@ -30,7 +30,11 @@
 #include "MenuMaker.h"
 #include "../DataTypes.h"
 
-struct MenuList { struct MenuList *next; class Menu *m; };
+struct MenuList
+{
+	struct MenuList * m_next;
+	class Menu * m_val;
+};
 
 // global vars
 extern int g_menu_count;
@@ -314,7 +318,7 @@ protected:
 class MenuItem
 {
 public:
-    MenuItem *next;
+    MenuItem * m_next;
 
     MenuItem(const char* pszTitle);
     virtual ~MenuItem();

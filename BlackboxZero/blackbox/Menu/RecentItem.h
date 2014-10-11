@@ -37,14 +37,14 @@
 #include <limits.h>
 
 typedef struct ItemList{
-	struct ItemList *next;
+	struct ItemList * m_next;
 	char szItem[MAX_PATH];
 	UINT nFrequency;
 } ItemList;
 
-#define _strcat(dest, src) strncat(dest, src, sizeof(dest) - strlen(dest) - 1)
-#define _strcpy(dest, src) strncpy(dest, src, sizeof(dest) - 1)
-#define _sprintf(str, format, ...) snprintf(str, sizeof(str) - 1, format, __VA_ARGS__)
+//#define _strcat(dest, src) strncat(dest, src, sizeof(dest) - strlen(dest) - 1)
+//#define _strcpy(dest, src) strncpy(dest, src, sizeof(dest) - 1)
+//#define _sprintf(str, format, ...) snprintf(str, sizeof(str) - 1, format, __VA_ARGS__)
 
 int CreateRecentItemMenu(char *pszFileName, char *pszCommand, char *pszTitle, char *pszIcon, int nKeep, int nSort, bool bBeginEnd);
 ItemList *sortlist(ItemList *il);

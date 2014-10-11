@@ -139,29 +139,29 @@ ItemList *sortlist(ItemList *il){
 	ItemList *p;
 
 	dmy.nFrequency = UINT_MAX;
-	dmy.next = il;
-	p = il->next;
-	il->next = NULL;
+	dmy.m_next = il;
+	p = il->m_next;
+	il->m_next = NULL;
 
 	p1 = p;
 	while(p1 != NULL){
 		p0 = &dmy;
-		while(p0->next != NULL){
-			if(p1->nFrequency > p0->next->nFrequency){
-				p = p1->next;
-				p1->next = p0->next;
-				p0->next = p1;
+		while(p0->m_next != NULL){
+			if(p1->nFrequency > p0->m_next->nFrequency){
+				p = p1->m_next;
+				p1->m_next = p0->m_next;
+				p0->m_next = p1;
 				break;
 			}
-			p0 = p0->next;
+			p0 = p0->m_next;
 		}
-		if(p0->next == NULL){
-			p = p1->next;
-			p0->next = p1;
-			p1->next = NULL;
+		if(p0->m_next == NULL){
+			p = p1->m_next;
+			p0->m_next = p1;
+			p1->m_next = NULL;
 		}
 		p1 = p;
 	}
-	return dmy.next;
+	return dmy.m_next;
 }
 //===========================================================================

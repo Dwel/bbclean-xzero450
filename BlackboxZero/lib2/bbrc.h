@@ -5,7 +5,7 @@ enum { e_RCFILE_HTS = 40 }; // hash table size
 
 struct lin_list
 {
-    lin_list * next;
+    lin_list * m_next;
     lin_list * hnext;
     lin_list * wnext;
     unsigned hash, k, o;
@@ -18,7 +18,7 @@ struct lin_list
 
 struct fil_list
 {
-    fil_list * next;
+    fil_list * m_next;
     lin_list * lines;
     lin_list * wild;
     lin_list * ht[e_RCFILE_HTS];

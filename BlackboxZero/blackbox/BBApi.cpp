@@ -772,7 +772,7 @@ HMONITOR GetMonitorRect(void *from, RECT *r, int flags)
 
 struct dt_margins
 {
-    struct dt_margins *next;
+    dt_margins * m_next;
     HWND hwnd;
     HMONITOR hmon;
     int location;
@@ -799,7 +799,7 @@ void SetDesktopMargin(HWND hwnd, int location, int margin)
         // re-validate margins
         for (p = margin_list; p;)
         {
-            struct dt_margins *n = p->next;
+            dt_margins * n = p->m_next;
             if (FALSE == IsWindow(p->hwnd))
                 remove_item(&margin_list, p);
             p = n;
@@ -832,7 +832,7 @@ void SetDesktopMargin(HWND hwnd, int location, int margin)
 
 struct _screen
 {
-    struct _screen *next;   /* this must come first */
+    _screen * m_next;   /* this must come first */
     HMONITOR hMon;          /* this must be the second member */
     int index;
     RECT screen_rect;
@@ -879,7 +879,7 @@ ST BOOL CALLBACK fnEnumMonProc(HMONITOR hMon, HDC hdcOptional, RECT *prcLimit, L
 
     i = (struct _screen_list *)dwData;
     *i->ppScr = s;
-    i->ppScr = &s->next;
+    i->ppScr = &s->m_next;
 
     screen = s->index = i->index++;
     if (0 == screen)

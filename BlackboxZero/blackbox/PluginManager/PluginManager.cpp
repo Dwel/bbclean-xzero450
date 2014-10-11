@@ -326,15 +326,15 @@ static int unloadPlugin(struct PluginList *q, char** errorMsg) {
 
 static void free_plugin(struct PluginList **pp)
 {
-    struct PluginList *q = *pp;
-    struct PluginLoaderList *pll;
+    PluginList *q = *pp;
+    PluginLoaderList *pll = 0;
 
     dolist(pll, pluginLoaders) {
         if(pll->parent == q) {
             if(pll == &nativeLoader)
                 pll->parent = NULL;
             else
-                remove_item(pluginLoaders, pll);
+                remove_item(&pluginLoaders, pll);
 
             break;
         }
@@ -342,7 +342,7 @@ static void free_plugin(struct PluginList **pp)
 
     free_str(&q->name);
     free_str(&q->path);
-    *pp = q->next;
+    *pp = q->m_next;
     m_free(q);
 }
 
@@ -688,7 +688,7 @@ static Menu *get_menu(const char *title, char *menu_id, bool pop, struct PluginL
     pMenu = MakeNamedMenu(title, menu_id, pop);
 
     while (NULL != (q = *qp)) {
-        *qp = q->next;
+        *qp = q->m_next;
         if (q->name) {
             if (0 == b_slit) {
                 sprintf(broam, "@BBCfg.plugin.load %s", q->name);
@@ -720,7 +720,7 @@ static Menu *get_menu(const char *title, char *menu_id, bool pop, struct PluginL
 
 Menu* PluginManager_GetMenu(const char *text, char *menu_id, bool pop, int mode)
 {
-    struct PluginList *q = bbplugins->next;
+    struct PluginList *q = bbplugins->m_next;
     if (SUB_PLUGIN_SLIT == mode && NULL == hSlit)
         return NULL;
     return get_menu(text, menu_id, pop, &q, SUB_PLUGIN_SLIT == mode);

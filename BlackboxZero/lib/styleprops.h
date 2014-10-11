@@ -1,4 +1,5 @@
 #pragma once
+#if 0
 #include "bblib.h"
 
 #ifdef __cplusplus
@@ -27,5 +28,5 @@ extern const struct styleprop styleprop_3[];
 #ifdef __cplusplus
 }
 #endif
-
+#endif
 

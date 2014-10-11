@@ -649,7 +649,7 @@ COLORREF Settings_MapShadowColor(StyleItem *si, StyleItem *ri)
 #ifdef BBOPT_SUPPORT_NLS
 
 struct nls {
-    struct nls *next;
+    nls * m_next;
     unsigned hash;
     int k;
     char *translation;
@@ -824,7 +824,7 @@ void register_fonts(void)
             do {
                 string_node *sn, **psn;
                 strcpy(end+1, findData.cFileName);
-                for (psn = &bbFonts; 0 != (sn = *psn); psn = &sn->next)
+                for (psn = &bbFonts; 0 != (sn = *psn); psn = &sn->m_next)
                     if (0 == strcmp(sn->str, path))
                         break;
                 if (!sn) {
@@ -851,7 +851,7 @@ void unregister_fonts(void)
             //int r =
             RemoveFontResource(sn->str);
             // dbg_printf("remove font (%d) %s", r, sn->str);
-        } while (0 != (sn = sn->next));
+        } while (0 != (sn = sn->m_next));
         freeall(&bbFonts);
         PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     }

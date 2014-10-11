@@ -438,7 +438,7 @@ ST struct hwnd_list *basebarlist;
 ST void hidewnd (HWND hwnd)
 {
     if (hwnd && ShowWindow(hwnd, SW_HIDE))
-        cons_node(&basebarlist, new_node(hwnd));
+		cons_node(&basebarlist, new_node<hwnd_list>(hwnd));
 }
 
 ST BOOL CALLBACK HideBaseBars(HWND hwnd, LPARAM lParam)
@@ -479,7 +479,7 @@ void ShowExplorer(void)
 {
     struct hwnd_list *p;
     dolist (p, basebarlist)
-        ShowWindow(p->hwnd, SW_SHOW);
+        ShowWindow(p->m_val, SW_SHOW);
     freeall(&basebarlist);
 }
 

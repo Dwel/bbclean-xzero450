@@ -124,7 +124,7 @@ void make_style070 (fil_list * fl)
     lin_list * tl, ** tlp, * sl, * ol;
     TCHAR buffer[e_MAX_KEYWORD_LENGTH], *p;
     int f;
-    for (tlp = &fl->lines; NULL != (tl = *tlp); tlp = &tl->next)
+    for (tlp = &fl->lines; NULL != (tl = *tlp); tlp = &tl->m_next)
     {
         if (0 == tl->str[0])
             continue;
@@ -134,8 +134,8 @@ void make_style070 (fil_list * fl)
             for (ol = tl;;) {
                 sl = make_line(fl, buffer, tl->str+tl->k);
                 //dbg_printf(TEXT("%s -> %s"), tl->str, sl->str);
-                sl->next = tl->next;
-                tl->next = sl;
+                sl->m_next = tl->m_next;
+                tl->m_next = sl;
                 tl = sl;
                 if (0 == --f)
                     break;
@@ -145,7 +145,7 @@ void make_style070 (fil_list * fl)
                 p = _tcschr(buffer, 0) - (sizeof TEXT("color1") - 1);
                 _tcscpy(p, TEXT("backgroundColor"));
             }
-            *tlp = ol->next;
+            *tlp = ol->m_next;
             free_line(fl, ol);
         }
     }
@@ -195,7 +195,7 @@ void make_style065 (fil_list *fl)
     lin_list *tl = 0, **tlp = 0, *ol = 0;
     TCHAR buffer[1024];
     int f;
-    for (tlp = &fl->lines; NULL != (tl = *tlp); tlp = &tl->next)
+    for (tlp = &fl->lines; NULL != (tl = *tlp); tlp = &tl->m_next)
     {
         if (0 == tl->str[0])
             continue;
@@ -204,7 +204,7 @@ void make_style065 (fil_list *fl)
         if (f) {
             ol = tl;
             *tlp = tl = make_line(fl, buffer, tl->str+tl->k);
-            tl->next = ol->next;
+            tl->m_next = ol->m_next;
             free_line(fl, ol);
         }
     }
@@ -687,7 +687,7 @@ fil_list * read_file (TCHAR const * filename)
     // first check, if the file has already been read
     unsigned h = calc_hash(hashname, filename, &k, 0);
     k = k + 1;
-    for (flp = &g_rc->rc_files; NULL!=(fl=*flp); flp = &fl->next)
+    for (flp = &g_rc->rc_files; NULL!=(fl=*flp); flp = &fl->m_next)
         if (fl->hash == h && 0 == tmemcmp(hashname, fl->path+fl->k, k))
         {
             ++g_rc->used;
@@ -761,7 +761,7 @@ comment:
             sl = make_line(fl, s, d);
         }
         //append it to the list
-        slp = &(*slp=sl)->next;
+        slp = &(*slp=sl)->m_next;
     }
     m_free(buf);
     check_070(fl);
@@ -832,7 +832,7 @@ lin_list ** get_simkey (lin_list ** slp, TCHAR const * key)
     lin_list ** tlp = NULL, *sl = 0;
     int m = 1;
     int i = 0, k = 0;
-    for (; NULL!=(sl=*slp); slp = &sl->next)
+    for (; NULL!=(sl=*slp); slp = &sl->m_next)
     {
         if (0 == sl->str[0])
             continue;
@@ -846,7 +846,7 @@ lin_list ** get_simkey (lin_list ** slp, TCHAR const * key)
         {
             m = n;
             k = i;
-            tlp = &sl->next;
+            tlp = &sl->m_next;
         }
     }
     return tlp;
@@ -878,11 +878,11 @@ void write_value (TCHAR const * path, TCHAR const * szKey, TCHAR const * value)
     else 
     {
         lin_list ** tlp = 0;
-        for (tlp = &fl->lines; *tlp != tl; tlp = &(*tlp)->next)
+        for (tlp = &fl->lines; *tlp != tl; tlp = &(*tlp)->m_next)
             ;
         if (tl)
         {
-            *tlp = tl->next;
+            *tlp = tl->m_next;
             free_line(fl, tl);
         }
         if (value)
@@ -896,7 +896,7 @@ void write_value (TCHAR const * path, TCHAR const * szKey, TCHAR const * value)
                 slp = get_simkey(&fl->lines, sl->str);
                 if (slp) tlp = slp;
             }
-            sl->next = *tlp;
+            sl->m_next = *tlp;
             *tlp = sl;
         }
         mark_rc_dirty(fl);
@@ -923,9 +923,9 @@ int rename_setting (TCHAR const * path, TCHAR const * szKey, TCHAR const * new_k
             if ((int)sl->k == 1+k && 0 == tmemcmp(sl->str, buff, k))
             {
                 tl = make_line(fl, new_keyword, sl->str+sl->k);
-                tl->next = sl->next;
+                tl->m_next = sl->m_next;
                 *slp = tl;
-                slp = &tl->next;
+                slp = &tl->m_next;
                 free_line(fl, sl);
                 ++dirty;
                 continue;
@@ -935,13 +935,13 @@ int rename_setting (TCHAR const * path, TCHAR const * szKey, TCHAR const * new_k
         {
             if ((1 == k && '*' == buff[0]) || xrm_match(sl->str, buff))
             {
-                *slp = sl->next;
+                *slp = sl->m_next;
                 free_line(fl, sl);
                 ++dirty;
                 continue;
             }
         }
-        slp = &sl->next;
+        slp = &sl->m_next;
     }
     if (dirty)
         mark_rc_dirty(fl);

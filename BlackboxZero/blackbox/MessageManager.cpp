@@ -25,14 +25,14 @@
 
 struct winmap
 {
-    struct winmap* next;
-    HWND hwnd;
+    winmap * m_next;
+    HWND m_val;
 };
 
 struct MsgMap
 {
-    struct MsgMap *next;
-    UINT_PTR msg;
+    MsgMap * m_next;
+    UINT_PTR m_val;
     int count;
     int send_mode;
     struct winmap *winmap;
@@ -83,14 +83,14 @@ void MessageManager_Register(HWND hwnd, const UINT* messages, bool add)
     UINT msg;
     while (0 != (msg = *messages++))
     {
-        struct MsgMap *mm = (struct MsgMap *)assoc(msgs, (void*)msg);
+        struct MsgMap *mm = (struct MsgMap *)assoc(msgs, msg);
         if (mm) {
             if (remove_assoc(&mm->winmap, hwnd))
                 --mm->count;
 
         } else if (add) {
             mm = c_new<struct MsgMap>();
-            mm->msg = msg;
+			mm->m_val = msg;
             append_node (&msgs, mm);
             // these are the messages that expect return values and
             // are handled differently in 'MessageManager_Send()'
@@ -99,7 +99,7 @@ void MessageManager_Register(HWND hwnd, const UINT* messages, bool add)
 
         if (add) {
             struct winmap *w = c_new<struct winmap>();
-            w->hwnd = hwnd;
+			w->m_val = hwnd;
             cons_node(&mm->winmap, w);
             ++mm->count;
             dbg_msg("add", hwnd, msg);
@@ -121,7 +121,7 @@ LRESULT MessageManager_Send(UINT msg, WPARAM wParam, LPARAM lParam)
     HWND hwnd_array[256], *pw;
 
     dolist (mm, msgs)
-        if (mm->msg == msg)
+		if (mm->m_val == msg)
             goto found;
     return 0;
 found:
@@ -133,9 +133,9 @@ found:
     // added or removed while traversing the list:
     pw = hwnd_array;
     do {
-        *pw = w->hwnd;
+		*pw = w->m_val;
         dbg_msg("send", *pw, msg);
-        w = w->next;
+        w = w->m_next;
     } while (++pw < hwnd_array + 256 && w);
 
     result = SendMessage(*--pw, msg, wParam, lParam);

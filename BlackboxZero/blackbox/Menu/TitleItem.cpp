@@ -41,7 +41,7 @@ void TitleItem::Paint(HDC hDC)
 
     if (false == pSI->parentRelative) {
         MakeStyleGradient(hDC, &rect, pSI, mStyle.menuTitleLabel && pSI->bordered);
-        if (false == mStyle.menuTitleLabel && this->next && bw)
+        if (false == mStyle.menuTitleLabel && this->m_next && bw)
             draw_line_h(hDC, rect.left, rect.right, rect.bottom, bw, bc);
     }
 

@@ -69,7 +69,7 @@ Menu *Menu::find_special_folder(struct pidl_node* p1)
     MenuList *ml;
     struct pidl_node *p2;
     if (p1) dolist (ml, Menu::g_MenuWindowList) {
-        Menu *m = ml->m;
+        Menu *m = ml->m_val;
         if (m->m_MenuID == MENU_ID_SF) {
             p2 = m->m_pidl_list;
             if (p2 && equal_pidl_list(p1, p2))
@@ -164,14 +164,14 @@ void SFInsert::Measure(HDC hDC, SIZE *size)
     if (m_pLast)
         return;
 
-    pNext = this->next;
-    this->next = NULL;
+    pNext = this->m_next;
+    this->m_next = NULL;
     m_pMenu->m_pLastItem = this;
     m_pMenu->AddFolderContents(m_pidl_list, m_pszExtra);
-    for (p = this->next; p; p = p->next)
+    for (p = this->m_next; p; p = p->m_next)
         ++m_pMenu->m_itemcount;
     m_pLast = m_pMenu->m_pLastItem;
-    m_pLast->next = pNext;
+    m_pLast->m_next = pNext;
     if (NULL == m_pMenu->m_pidl_list) {
         m_pMenu->m_pidl_list = copy_pidl_list(m_pidl_list);
         m_pMenu->m_bIsDropTarg = true;
@@ -180,18 +180,18 @@ void SFInsert::Measure(HDC hDC, SIZE *size)
 
 void SFInsert::RemoveStuff(void)
 {
-    MenuItem *mi = 0, *next = NULL;
+    MenuItem *mi = 0, *m_next = NULL;
     if (NULL == m_pLast)
         return;
-    for (mi = this->next; mi; ) {
-        next = mi->next;
+    for (mi = this->m_next; mi; ) {
+        m_next = mi->m_next;
         delete mi;
         --m_pMenu->m_itemcount;
         if (mi == m_pLast)
             break;
-        mi = next;
+        mi = m_next;
     }
-    this->next = next;
+    this->m_next = m_next;
     m_pLast = NULL;
     m_pMenu->m_pActiveItem = NULL;
 }
@@ -348,7 +348,7 @@ int Menu::AddFolderContents(const struct pidl_node *pidl_list, const char *extra
 
     if (p) for (;;) {
         flag |= LoadFolder(&pItems, first_pidl(p), extra, options);
-        p = p->next;
+        p = p->m_next;
         if (NULL == p)
             break;
         options |= LF_join;
@@ -372,15 +372,15 @@ int Menu::AddFolderContents(const struct pidl_node *pidl_list, const char *extra
         COMCALL0(g_psf, Release), g_psf = NULL;
 
     if (pItems) for (;;) {
-        MenuItem *next = pItems->next;
+        MenuItem *m_next = pItems->m_next;
         AddMenuItem(pItems);
-        if (!next)
+        if (!m_next)
             break;
 #if 0
-        if (pItems->m_nSortPriority != next->m_nSortPriority)
+        if (pItems->m_nSortPriority != m_next->m_nSortPriority)
             MakeMenuNOP(this, NULL);
 #endif
-        pItems = next;
+        pItems = m_next;
     }
 
     return flag;
@@ -494,7 +494,7 @@ int LoadFolder(
         }
 
         // add item to the list
-        pItem->next = *ppItems, *ppItems = pItem;
+        pItem->m_next = *ppItems, *ppItems = pItem;
     }
     ef_close(ef);
     return r;

@@ -81,7 +81,7 @@ typedef struct _SHELLTRAYDATA
 
 typedef struct systemTrayNode
 {
-    struct systemTrayNode *next;
+    systemTrayNode * m_next;
     bool hidden;
     bool shared;
     bool added;
@@ -176,7 +176,7 @@ void CleanTray(void)
 {
     systemTrayNode *p = trayIconList;
     while (p) {
-        systemTrayNode *n = p->next;
+        systemTrayNode *n = p->m_next;
         if (FALSE == IsWindow(p->hWnd))
             RemoveTrayIcon(p, true);
         p = n;
@@ -869,7 +869,7 @@ ST LRESULT CALLBACK TrayWndProc(
 
 typedef struct sso_list_t
 {
-    struct sso_list_t *next;
+    sso_list_t * m_next;
     IOleCommandTarget *pOCT;
     char name[1];
 } sso_list_t;

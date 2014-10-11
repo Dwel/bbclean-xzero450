@@ -826,8 +826,8 @@ extern "C" {
 
     typedef struct tasklist /* bb4win 0.90 compatible layout */
     {
-        struct tasklist* next;
-        HWND    hwnd;
+        tasklist * m_next;
+        HWND    m_val;
         HICON   icon;
         int     wkspc;
         char    caption[248];
@@ -865,13 +865,13 @@ extern "C" {
     /* ------------------------------------ */
     /* often used structure */
 
-    typedef struct string_node
+    /*typedef struct string_node
     {
         struct string_node *next;
         char str[1];
     } string_node;
 
-    #define STRING_NODE_DEFINED
+    #define STRING_NODE_DEFINED*/
 
     /* ------------------------------------ */
     /* windows on workspace placement interface */

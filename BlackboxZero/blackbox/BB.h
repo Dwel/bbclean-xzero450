@@ -100,8 +100,8 @@ extern char defaultrc_path[];
 
 struct hwnd_list
 {
-    struct hwnd_list * next;
-		HWND hwnd;
+    hwnd_list * m_next;
+	HWND m_val;
 };
 void get_window_icon (HWND hwnd, HICON * picon);
 void get_window_text (HWND hwnd, char * buffer, int size);

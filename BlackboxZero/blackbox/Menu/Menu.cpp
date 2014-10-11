@@ -76,7 +76,7 @@ Menu::Menu(const char *pszTitle)
 
     // add to the global menu list. It is used to see
     // if a specific menu exists (with 'find_named_menu')
-    cons_node(&g_MenuStructList, new_node(this));
+    cons_node(&g_MenuStructList, new_node<MenuList>(this));
     ++g_menu_count;
 
     // start with a refcount of 1, assuming that
@@ -113,7 +113,7 @@ int Menu::decref(void)
         return m_refc = n;
     if (g_menu_ref) {
         // delay deletion
-        cons_node(&g_MenuRefList, new_node(this));
+        cons_node(&g_MenuRefList, new_node<MenuList>(this));
         return n+1;
     }
     delete this;
@@ -143,7 +143,7 @@ void Menu::g_decref()
         return;
     // dbg_printf("MenuDelList %d", listlen(g_MenuRefList));
     dolist (ml, g_MenuRefList)
-        ml->m->decref();
+        ml->m_val->decref();
     freeall(&g_MenuRefList);
 }
 
@@ -291,7 +291,7 @@ void Menu::LinkToParentItem(MenuItem *pItem)
 MenuItem *Menu::AddMenuItem(MenuItem* pItem)
 {
     // link to the list
-    m_pLastItem = m_pLastItem->next = pItem;
+    m_pLastItem = m_pLastItem->m_next = pItem;
 
     // set references
     pItem->m_pMenu = this;
@@ -305,12 +305,12 @@ void Menu::DeleteMenuItems()
 {   
     MenuItem *pItem, *thisItem;
 
-    pItem = (thisItem = m_pLastItem = m_pMenuItems)->next;
-    thisItem->next = NULL;
+    pItem = (thisItem = m_pLastItem = m_pMenuItems)->m_next;
+    thisItem->m_next = NULL;
     thisItem->m_bActive = false;
     m_pActiveItem = NULL;
     while (pItem)
-        pItem=(thisItem=pItem)->next, delete thisItem;
+        pItem=(thisItem=pItem)->m_next, delete thisItem;
 }
 
 //==============================================
@@ -322,10 +322,10 @@ Menu *Menu::find_named_menu(const char *IDString, bool fuzzy)
     MenuList *ml;
     Menu *m;
     dolist (ml, g_MenuStructList)
-        if ((m = ml->m)->m_IDString
+        if ((m = ml->m_val)->m_IDString
             && 0 == memcmp(m->m_IDString, IDString, l)
             && (0 == m->m_IDString[l] || fuzzy))
-            return ml->m;
+            return ml->m_val;
     return NULL;
 }
 
@@ -338,14 +338,14 @@ void Menu::insert_at_last (void)
 {
     MenuList **mp, *ml, *mn = NULL;
     for (mp = &g_MenuWindowList; NULL != (ml = *mp); ) {
-        if (this == ml->m)
-            *mp = (mn = ml)->next;
+        if (this == ml->m_val)
+            *mp = (mn = ml)->m_next;
         else
-            mp = &ml->next;
+            mp = &ml->m_next;
     }
     if (NULL == mn)
-        mn = (MenuList*)new_node(this);
-    (*mp = mn)->next = NULL;
+        mn = (MenuList*)new_node<MenuList>(this);
+    (*mp = mn)->m_next = NULL;
 }
 
 // get the list-index for item or -2, if not found
@@ -354,7 +354,7 @@ int Menu::get_item_index (MenuItem *item)
     int c = 0;
     MenuItem *pItem;
     if (item)
-        dolist (pItem, m_pMenuItems->next) {
+        dolist (pItem, m_pMenuItems->m_next) {
             if (item == pItem)
                 return c;
             c++;
@@ -368,7 +368,7 @@ MenuItem * Menu::nth_item(int a)
     int c = 0;
     MenuItem *pItem = NULL;
     if (a >= 0)
-        dolist (pItem, m_pMenuItems->next) {
+        dolist (pItem, m_pMenuItems->m_next) {
             if (c == a)
                 break;
             c++;
@@ -408,8 +408,8 @@ Menu *Menu::last_active_menu_root(void)
 {
     MenuList *ml;
     dolist (ml, g_MenuWindowList)
-        if (NULL == ml->next)
-            return ml->m->menu_root();
+        if (NULL == ml->m_next)
+            return ml->m_val->menu_root();
     return NULL;
 }
 
@@ -589,7 +589,7 @@ void Menu::scroll_assign_items(int new_top)
     c   = 0;
     y   = m_firstitem_top;
     pItem = m_pMenuItems;
-    while (NULL != (pItem=pItem->next)) // skip TitleItem
+    while (NULL != (pItem=pItem->m_next)) // skip TitleItem
     {
         if (c<c0 || c>=c1)
             pItem->m_nTop = -1000;
@@ -751,7 +751,7 @@ void Menu::Paint()
 
     // skip items scrolled out on top
     while (c < c1 && pItem)
-        pItem = pItem->next, ++c;
+        pItem = pItem->m_next, ++c;
 
     while (c < c2 && pItem)
     {
@@ -760,7 +760,7 @@ void Menu::Paint()
             break;
         if (y + pItem->m_nHeight > y1)
             pItem->Paint(hdc);
-        pItem = pItem->next, ++c;
+        pItem = pItem->m_next, ++c;
     }
     SelectObject(hdc, F0);
 
@@ -862,7 +862,7 @@ void Menu::Validate()
     // now for frame items
     SelectObject(hDC, MenuInfo.hFrameFont);
 
-    while (NULL != (pItem = pItem->next))
+    while (NULL != (pItem = pItem->m_next))
     {
 		pItem->Measure(hDC, &size, &mStyle.MenuTitle);
         pItem->m_nHeight = size.cy;
@@ -914,7 +914,7 @@ void Menu::Validate()
 
     // assign xy-coords and width
     w2 = m_width - 2*margin;
-    while (NULL != (pItem = pItem->next))
+    while (NULL != (pItem = pItem->m_next))
     {
         pItem->m_nLeft = margin;
         pItem->m_nWidth = w2;
@@ -1229,7 +1229,7 @@ void Menu::Handle_Mouse(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     // check normal items
-    while (NULL != (item = item->next)) {
+    while (NULL != (item = item->m_next)) {
         if (item->isover(pt.y)) {
             item->Mouse(hwnd, uMsg, wParam, lParam);
             return;
@@ -1320,7 +1320,7 @@ void Menu_Tab_Next(Menu *p)
     Menu *m = NULL;
     //bool backwards = 0x8000 & GetAsyncKeyState(VK_SHIFT);
     dolist (ml, Menu::g_MenuWindowList)
-        if (NULL == (m = ml->m)->m_pParent && p != m)
+        if (NULL == (m = ml->m_val)->m_pParent && p != m)
             break;
     if (NULL == m)
         m = p;
@@ -1340,7 +1340,7 @@ MenuItem * Menu::kbd_get_next_shortcut(const char *d)
     for (n = 0, pItem = m_pActiveItem;; pItem = m_pMenuItems)
     {
         if (pItem)
-            while (NULL != (pItem = pItem->next)) {
+            while (NULL != (pItem = pItem->m_next)) {
                 const char *s, *t;
                 for (t = s = pItem->m_pszTitle;; ++s)
                     if (0 == *s) {
@@ -1376,7 +1376,7 @@ bool Menu::Handle_Key(UINT msg, UINT wParam)
     //--------------------------------------
     if (MENU_ID_INT & m_MenuID)
     {
-        m_pMenuItems->next->Key(msg, wParam);
+        m_pMenuItems->m_next->Key(msg, wParam);
         return true;
     }
 
@@ -1527,7 +1527,7 @@ one_more:
             hilite_child:
                 if (m_pChild) {
                     m_pChild->set_focus();
-                    m_pChild->kbd_hilite(m_pChild->m_pMenuItems->next);
+                    m_pChild->kbd_hilite(m_pChild->m_pMenuItems->m_next);
                 }
                 break;
 
@@ -1859,7 +1859,7 @@ MenuItem *MenuItem::get_real_item(void)
 {
     if (this && this->m_pSubmenu
      && (this->m_pSubmenu->m_MenuID & (MENU_ID_STRING|MENU_ID_INT)))
-        return this->m_pSubmenu->m_pMenuItems->next;
+        return this->m_pSubmenu->m_pMenuItems->m_next;
     return NULL;
 }
 
@@ -1871,7 +1871,7 @@ void Menu::Sort(MenuItem **ppItems, int(*cmp_fn)(MenuItem **, MenuItem**))
     b = a = (MenuItem**)m_alloc(n * sizeof *a); // make array
     dolist(i, *ppItems) *b = i, b++; // store pointers
     qsort(a, n, sizeof *a, (int(*)(const void*,const void*))cmp_fn);
-    do a[--n]->next = i, i = a[n]; while (n); // make list
+    do a[--n]->m_next = i, i = a[n]; while (n); // make list
     m_free(a); // free array
     *ppItems = i;
 }
@@ -1923,7 +1923,7 @@ void Menu::RedrawGUI(int flags)
         // sent from bbstylemaker
         if ((flags & BBRG_MENU) && (flags & BBRG_PRESSED) && NULL == m_pActiveItem) {
             MenuItem *pItem = m_pMenuItems;
-            while (NULL != (pItem = pItem->next))
+            while (NULL != (pItem = pItem->m_next))
                 if (false == pItem->m_bNOP) {
                     pItem -> Active(2); // hilite some item
                     break;
@@ -2106,7 +2106,7 @@ void Menu_All_BringOnTop(void)
     MenuList *ml;
     Menu *m;
     dolist (ml, Menu::g_MenuWindowList)
-        SetOnTop(ml->m->m_hwnd);
+        SetOnTop(ml->m_val->m_hwnd);
     m = Menu::last_active_menu_root();
     if (m) 
         m->set_focus();
@@ -2116,7 +2116,7 @@ bool Menu_Exists(bool pinned)
 {
     MenuList *ml;
     dolist (ml, Menu::g_MenuWindowList)
-        if (pinned == ml->m->m_bPinned)
+        if (pinned == ml->m_val->m_bPinned)
             return true;
     return false;
 }
@@ -2140,7 +2140,7 @@ Menu *MenuEnum(MENUENUMPROC fn, void *ud)
     Menu *m = NULL;
     Menu::g_incref();
     dolist (ml, ml_copy) {
-        m = ml->m;
+        m = ml->m_val;
         if (false == fn(m, ud))
             break;
     }
@@ -2759,7 +2759,7 @@ void MenuOption(Menu *pMenu, int flags, ...)
         pMenu->m_bIsDropTarg = true;
 
     if (flags & BBMENU_SORT)
-        Menu::Sort(&pMenu->m_pMenuItems->next, item_compare);
+        Menu::Sort(&pMenu->m_pMenuItems->m_next, item_compare);
 }
 
 //===========================================================================

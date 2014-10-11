@@ -1,5 +1,6 @@
 #pragma once
 #include "bblibapi.h"
+#include <tchar.h>
 
 #ifdef UNICODE
 # define tmemcpy wmemcpy

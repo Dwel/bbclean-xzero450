@@ -201,16 +201,16 @@ BBLIB_EXPORT const char *get_relative_path(HINSTANCE h, const char *path);
 
 /* tinylist.c */
 #ifndef LIST_NODE_DEFINED
-typedef struct list_node { struct list_node *next; void *v; } list_node;
+//typedef struct list_node { struct list_node *next; void *v; } list_node;
 #endif
 #ifndef STRING_NODE_DEFINED
-typedef struct string_node { struct string_node *next; char str[1]; } string_node;
+//typedef struct string_node { struct string_node *next; char str[1]; } string_node;
 #endif
 
-#define dolist(_e,_l) for (_e=(_l);_e;_e=_e->next)
-#define skipUntil(_e, _l, _pred) for(_e=(_l);(_e)&&!(_pred);_e=_e->next)
+//#define dolist(_e,_l) for (_e=(_l);_e;_e=_e->next)
+//#define skipUntil(_e, _l, _pred) for(_e=(_l);(_e)&&!(_pred);_e=_e->next)
 
-BBLIB_EXPORT void *member(void *a0, void *e0);
+/*BBLIB_EXPORT void *member(void *a0, void *e0);
 BBLIB_EXPORT void *member_ptr(void *a0, void *e0);
 BBLIB_EXPORT void *assoc(void *a0, void *e0);
 BBLIB_EXPORT void *assoc_ptr(void *a0, void *e0);
@@ -227,7 +227,7 @@ BBLIB_EXPORT int listlen(void *v0);
 BBLIB_EXPORT void freeall(void *p);
 
 BBLIB_EXPORT struct string_node *new_string_node(const char *s);
-BBLIB_EXPORT void append_string_node(struct string_node **p, const char *s);
+BBLIB_EXPORT void append_string_node(struct string_node **p, const char *s);*/
 
 /* m_alloc.c */
 

@@ -15,7 +15,7 @@ enum plugin_errors {
 
 struct PluginList
 {
-    struct PluginList *next;
+    PluginList * m_next;
 
     char *name;     // display name as in the menu, NULL for comments
     char *path;     // as in plugins.rc, entire line for comments
@@ -31,13 +31,13 @@ struct PluginList
 };
 
 struct PluginPtr {
-    struct PluginPtr* next;
-    struct PluginList* entry;
+    PluginPtr * m_next;
+    PluginList * entry;
 };
 
 struct PluginLoaderList {
-    struct PluginLoaderList* next;
-	struct PluginList* parent;
+    PluginLoaderList * m_next;
+	PluginList * parent;
     
 	HMODULE module;
 	const char* name;

@@ -29,8 +29,8 @@
 
 struct winlist
 {
-    struct winlist *next;
-    HWND hwnd;
+    winlist * m_next;
+    HWND m_val;
     RECT rect;
     int desk;
     int prev_desk;
@@ -88,7 +88,7 @@ winlist * vwm_add_window (HWND hwnd)
 
         wl = c_new<winlist>();
         cons_node (&vwm_WL, wl);
-        wl->hwnd = hwnd;
+		wl->m_val = hwnd;
         wl->desk = wl->prev_desk = getWorkspaces().GetScreenCurrent();
 
         // store some infos used with 'belongs_to_app(...)'
@@ -138,9 +138,9 @@ void vwm_update_winlist ()
     // clear not listed windows
     for (wlp = &vwm_WL; NULL != (wl = *wlp);) {
         if (wl->check) {
-            wlp = &wl->next;
+            wlp = &wl->m_next;
         } else {
-            *wlp = wl->next;
+            *wlp = wl->m_next;
             m_free(wl);
         }
     }
@@ -327,7 +327,7 @@ ST void defer_windows(int newdesk)
 
             // frozen windows would freeze blackbox in
             // "EndDeferWindowPos" below
-            if (is_frozen(wl->hwnd))
+			if (is_frozen(wl->m_val))
                 goto next;
 
             if (gather || wl->sticky) {
@@ -352,7 +352,7 @@ ST void defer_windows(int newdesk)
                 if (wl->moved && newdesk == wl->desk) {
                     // The window was iconized while on other WS
                     // which should not happen, but just in case:
-                    set_normal_position(wl->hwnd, &wl->rect);
+					set_normal_position(wl->m_val, &wl->rect);
                     wl->moved = false;
                 }
                 goto next;
@@ -382,7 +382,7 @@ ST void defer_windows(int newdesk)
                 flags = SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE;
             }
 
-            dwp_new = DeferWindowPos(dwp, wl->hwnd, NULL, left, top, width, height, flags);
+			dwp_new = DeferWindowPos(dwp, wl->m_val, NULL, left, top, width, height, flags);
     #if 0
             char buffer[100];
             GetClassName(wl->hwnd, buffer, sizeof buffer);
@@ -419,8 +419,8 @@ ST void defer_windows(int newdesk)
 
 ST void explicit_move(winlist *wl)
 {
-    if (!wl->iconic && !is_frozen(wl->hwnd))
-        SetWindowPos(wl->hwnd, NULL,
+	if (!wl->iconic && !is_frozen(wl->m_val))
+		SetWindowPos(wl->m_val, NULL,
             wl->rect.left,
             wl->rect.top,
             wl->rect.right - wl->rect.left,
@@ -588,7 +588,7 @@ bool vwm_lower_window(HWND hwnd)
     check_appwindows(wl);
     dolist (wl, vwm_WL)
         if (wl->check)
-            bottomize(wl->hwnd);
+            bottomize(wl->m_val);
     return true;
 }
 

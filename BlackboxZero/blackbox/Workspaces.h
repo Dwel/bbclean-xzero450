@@ -9,18 +9,19 @@
   ========================================================================== */
 #pragma once
 #include "BB.h"
+#include <lib2/tinylist.h>
 
 struct toptask {
-    toptask  * next;
-    tasklist * task;
+    toptask  * m_next;
+    tasklist * m_val;
 };
 struct StickyNode {
-    StickyNode * next;
-    HWND hwnd;
+    StickyNode * m_next;
+    HWND m_val;
 };
 struct onbg_node {
-    onbg_node * next;
-    HWND hwnd;
+    onbg_node * m_next;
+    HWND m_val;
 };
 
 class Workspaces

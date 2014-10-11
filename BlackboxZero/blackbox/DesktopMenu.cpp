@@ -31,8 +31,8 @@ enum e_flags { e_alltasks = 1 };
 static BOOL task_enum_func(tasklist const * tl, LPARAM lParam)
 {
     struct en* en = (struct en *)lParam;
-    bool is_top = tl->hwnd == en->hwndTop;
-    bool iconic = !is_top && IsIconic(tl->hwnd);
+	bool is_top = tl->m_val == en->hwndTop;
+	bool iconic = !is_top && IsIconic(tl->m_val);
     en->i++;
     if ((en->desk == -1 && iconic) // iconic tasks
      || (en->desk == tl->wkspc // tasks for one workspace
@@ -111,7 +111,7 @@ Menu* MakeDesktopMenu(int mode, bool popup)
         m = MakeNamedMenu(NLS0("Workspaces"), "Core_tasks_workspaces", popup);
     }
     getWorkspaces().GetDesktopInfo(DI);
-    for (n = 0, d = DI.nScreens, sl = DI.deskNames; n < d; ++n, sl = sl->next) {
+    for (n = 0, d = DI.nScreens, sl = DI.deskNames; n < d; ++n, sl = sl->m_next) {
         if (mode == 0) {
             char buf[100];
             MenuItem *fi;

@@ -30,7 +30,7 @@ MenuItem::MenuItem(const char* pszTitle)
 {
 
 	// FUJ!!!!!!!!!!
-    memset(&next, 0, sizeof *this - sizeof(void*));
+    memset(&m_next, 0, sizeof *this - sizeof(void*));
 
     m_Justify   = MENUITEM_STANDARD_JUSTIFY;
     //m_ItemID    = MENUITEM_ID_NORMAL;

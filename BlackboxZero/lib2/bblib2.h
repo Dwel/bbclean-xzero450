@@ -1,6 +1,7 @@
 #pragma once
 #include "bblibapi.h"
 #include <tchar.h>
+#include "tinylist.h"
 #include "winutils.h"
 #include "numbers.h"
 #include "memory.h"
@@ -132,8 +133,6 @@ typedef struct list_node { struct list_node *next; void *v; } list_node;
 typedef struct string_node { struct string_node *next; char str[1]; } string_node;
 #endif
 
-#define dolist(_e,_l) for (_e=(_l);_e;_e=_e->next)
-#define skipUntil(_e, _l, _pred) for(_e=(_l);(_e)&&!(_pred);_e=_e->next)
 
 BBLIB_EXPORT void *member(void *a0, void *e0);
 BBLIB_EXPORT void *member_ptr(void *a0, void *e0);
