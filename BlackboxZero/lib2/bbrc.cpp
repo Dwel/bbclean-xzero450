@@ -716,10 +716,9 @@ fil_list * read_file (TCHAR const * filename)
     }
 
     is_OB = is_070 = false;
-    if(stristr(buf, "bg:"))
+    if(stristr(buf, TEXT("bg:")))
         is_OB = true;
-    else
-    if(stristr(buf, "appearance:"))
+    else if (stristr(buf, TEXT("appearance:")))
         is_070 = true;
 
     for (slp = &fl->lines, p = buf;;)

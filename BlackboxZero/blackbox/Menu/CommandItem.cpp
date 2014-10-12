@@ -61,7 +61,7 @@ void CommandItem::Invoke(int button)
 			//if (const char *p = strstr(m_pszCommand, "%b")) {
             //    post_command_fmt(m_pszCommand, false == m_bChecked);
 			if (const char *p = stristr(m_pszCommand, "@BBCore.exec ")) {
-                _strcpy(szPath, p+13);
+                _tcscpy(szPath, p+13);
 				post_command(m_pszCommand);
 			} else
                 post_command(m_pszCommand);

@@ -60,7 +60,7 @@ int CreateRecentItemMenu(char *pszFileName, char *pszCommand, char *pszTitle, ch
 		_snprintf(buf, MAX_PATH, "\t[exec] (%s) {%s} <%s>", pszTitle, pszCommand, pszIcon);
 	else
 		_snprintf(buf, MAX_PATH, "\t[exec] (%s) {%s}", pszTitle, pszCommand);
-	_strcpy(iln->szItem, buf);
+	_tcscpy(iln->szItem, buf);
 	iln->nFrequency = 1;
 	append_node(&KeepItemList, iln);
 
@@ -83,7 +83,7 @@ int CreateRecentItemMenu(char *pszFileName, char *pszCommand, char *pszTitle, ch
 					}
 					if (0 != strnicmp(pszCommand, p0+1 , p1 - p0 - 1)){ // ignore duplicated item
 						ItemList *il = (ItemList*)m_alloc(sizeof(ItemList));
-						_strcpy(il->szItem, buf);
+						_tcscpy(il->szItem, buf);
 						il->nFrequency = imin(nFrequency, UINT_MAX);
 						if (cnt_k++ < nKeep - 1)
 							append_node(&KeepItemList, il);

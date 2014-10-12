@@ -1,6 +1,7 @@
 #pragma once
 #include "bblibapi.h"
 #include <tchar.h>
+#include <shlwapi.h>
 
 #ifdef UNICODE
 # define tmemcpy wmemcpy
@@ -9,7 +10,7 @@
 # define tmemcmp wmemcmp
 # define tmemchr wmemchr
 #else
-# define tmemcpy (char*)memcpy
+# define tmemcpy memcpy
 # define tmemmove memmove
 # define tmemset memset
 # define tmemcmp memcmp
@@ -27,3 +28,7 @@ inline TCHAR * strcpy_max (TCHAR * dst, TCHAR const * src, int maxlen)
     return extract_string(dst, src, maxlen);
 }
 
+inline TCHAR * stristr (const TCHAR * aa, const TCHAR * bb)
+{
+    return StrStrI(aa, bb);
+}
