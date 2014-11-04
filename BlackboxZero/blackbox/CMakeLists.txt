@@ -93,6 +93,7 @@ endif(MINGW)
 
 add_definitions(-D__BBCORE__)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 add_executable(blackbox WIN32
 	${blackbox_SOURCES}

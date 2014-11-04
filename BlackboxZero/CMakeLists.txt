@@ -53,6 +53,17 @@ endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
 add_subdirectory(3rd_party)
 
+set(Boost_DEBUG 0)
+set(Boost_USE_STATIC_LIBS 1)
+find_package(Boost)
+if (Boost_FOUND)
+	include_directories(${Boost_INCLUDE_DIR})
+	add_definitions( "-DHAS_BOOST" )
+
+	find_package(Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
+endif()
+message("boost: ${Boost_LIBRARIES}")
+
 # font tools and conversion
 add_subdirectory(build/bdf2fon)
 add_custom_target(fonts ALL)

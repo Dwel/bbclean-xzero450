@@ -3,6 +3,7 @@
 #include "../Settings.h"
 #include "Menu.h"
 #include "RecentItem.h"
+#include <blackbox/Search/find.h>
 
 MenuItem * MakeMenuItemSearch(Menu * PluginMenu, const char * Title, const char * Cmd, const char * init_string)
 {
@@ -116,7 +117,7 @@ Menu * MakeResultMenu(Menu * parent, std::vector<std::string> const & res)
 	char text[1024];
 	for (size_t i = 0, ie = res.size(); i < ie; ++i)
 	{
-		_snprintf_s(broam, 1024, "@BBCore.Exec %s", res[i].c_str());
+		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", res[i].c_str());
 		_snprintf_s(text, 1024, "%s", res[i].c_str());
 		MenuItem * mi = MakeMenuItem(parent, text, broam, false);
 		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
@@ -130,12 +131,23 @@ void SearchItem::OnInput ()
 	char * buffer = static_cast<char *>(alloca(sizeof(char) * (len + 1)));
 	SendMessage(m_hText, WM_GETTEXT, (WPARAM)len + 1, (LPARAM)buffer);
 
-    // if old != new
-    m_results.clear();
-    m_results.push_back(TEXT("ONE"));
-    m_results.push_back(TEXT("2"));
-    m_results.push_back(TEXT("3"));
+	// warning: this is temporary stuff glued together
+	Config cfg;
+	defaultConfig(cfg);
 
+	const tstring text(buffer);
+	SearchString find(cfg);
+	find.m_text = text;
+	find.Execute(); // @TODO: ugh, this has to go in other thread...
+
+	//if (find.m_result.size() > 0)
+	//	find.Accept(find.m_result[0]);
+
+	m_results.clear();
+	for (auto const & p : find.m_result)
+		m_results.push_back(p); // @TODO: move instead of copy
+
+    // if old != new
 	Menu * menu = MakeNamedMenu(NLS0("Search results"), "Search_results", true);
 	MakeResultMenu(menu, m_results);
 	MenuOption(menu, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_PINNED | BBMENU_ONTOP, 512);
