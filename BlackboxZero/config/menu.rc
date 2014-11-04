@@ -5,6 +5,7 @@
 # Available menu commands are listed in the documentation.
 
 [begin] (BlackBox)
+    [search] (Search) {SEARCHMENU|COMMON_SEARCHMENU}
     [path] (Start) {STARTMENU|COMMON_STARTMENU}
     [path] (Desktop) {DESKTOPDIRECTORY|COMMON_DESKTOPDIRECTORY}
     [path] (Quick) {APPDATA\Microsoft\Internet Explorer\Quick Launch}

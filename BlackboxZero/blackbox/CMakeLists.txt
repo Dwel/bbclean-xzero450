@@ -25,6 +25,7 @@ set(blackbox_SOURCES
 	Menu/RecentItem.cpp
 	Menu/SpecialFolder.cpp
 	Menu/TitleItem.cpp
+	Menu/SearchItem.cpp
 	
 	BBApi.cpp
 	BBRoot.cpp
@@ -68,6 +69,7 @@ set (blackbox_HEADERS
 	Menu/Menu.h
 	Menu/MenuMaker.h
 	Menu/RecentItem.h
+	Menu/SearchItem.h
 )
 
 set(PluginManager_HEADERS

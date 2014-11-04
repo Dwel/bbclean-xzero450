@@ -280,6 +280,7 @@ protected:
     friend class CommandItemEx;
     friend class IntegerItem;
     friend class StringItem;
+	friend class SearchItem;
     friend class SpecialFolder;
     friend class SpecialFolderItem;
     friend class SFInsert;
