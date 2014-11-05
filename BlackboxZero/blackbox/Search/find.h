@@ -19,7 +19,7 @@ struct Config
 inline void defaultConfig (Config & cfg)
 {
 	cfg.m_locations.push_back(SearchLocationInfo(TEXT("C:\\Program Files\\"), TEXT("*.exe;*.com;*.bat;*.cmd"), TEXT(""), true));
-	cfg.m_locations.push_back(SearchLocationInfo(TEXT("C:\\Program Files (x86)\\"), TEXT("*.exe;*.com;*.bat;*.cmd"), TEXT("C:\\Program Files (x86)\\Microsoft Visual Studio 12.0"), true));
+	cfg.m_locations.push_back(SearchLocationInfo(TEXT("C:\\Program Files (x86)\\"), TEXT("*.exe;*.com;*.bat;*.cmd"), TEXT(""), true));
 	cfg.m_locations.push_back(SearchLocationInfo(TEXT("C:\\Windows\\"), TEXT("*.exe;*.com;*.bat;*.cmd"),
 					TEXT("C:\\Windows\\winsxs\\;C:\\Windows\\Installer\\;C:\\Windows\\Microsoft.NET\\;C:\\Windows\\SoftwareDistribution\\"), true));
 	// blackbox dir :)
