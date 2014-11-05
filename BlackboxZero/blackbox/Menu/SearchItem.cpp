@@ -56,8 +56,8 @@ void SearchItem::Paint (HDC hDC)
     if (NULL == m_hText)
     {
         m_hText = CreateWindow(
-            //TEXT("EDIT"),
-            TEXT("COMBOBOX"),
+            TEXT("EDIT"),
+            //TEXT("COMBOBOX"),
             m_pszTitle,
             WS_CHILD
             | WS_VISIBLE
@@ -150,7 +150,8 @@ void SearchItem::OnInput ()
     // if old != new
 	Menu * menu = MakeNamedMenu(NLS0("Search results"), "Search_results", true);
 	MakeResultMenu(menu, m_results);
-	MenuOption(menu, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_PINNED | BBMENU_ONTOP, 512);
+	MenuOption(menu, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_ONTOP, 512);
+  //MenuOption(menu, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_PINNED | BBMENU_ONTOP, 512);
 	ShowMenu(menu);
 
 	//    if (pRect)
