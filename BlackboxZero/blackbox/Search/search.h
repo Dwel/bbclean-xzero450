@@ -3,41 +3,14 @@
 #include <functional>
 #include <vector>
 #include <windows.h>
+#include "unicode.h"
+#include "regex.h"
+#include "SearchLocationInfo.h"
 #include <boost/algorithm/string/predicate.hpp>
 
-struct SearchLocationInfo
-{
-	tstring m_dir_path;
-	std::vector<tstring> m_includes;
-	std::vector<tstring> m_excludes;
-	bool m_recursive;
-	bool m_follow_symlinks;
+namespace bb { namespace search {
 
-	SearchLocationInfo () { }
-
-	SearchLocationInfo (tstring const & dir, tstring const & includes, tstring const & excludes, bool rec)
-		: m_dir_path(dir)
-		, m_includes()
-		, m_excludes()
-		, m_recursive(rec)
-		, m_follow_symlinks(false)
-	{
-		std::vector<tstring> tok;
-		split(tok, includes, boost::is_any_of(L";"));
-		for(std::vector<tstring>::iterator tok_iter = tok.begin(); tok_iter != tok.end(); ++tok_iter)
-			m_includes.push_back(*tok_iter);
-		tok.clear();
-		split(tok, excludes, boost::is_any_of(L";\n"));
-		for (std::vector<tstring>::iterator tok_iter = tok.begin(); tok_iter != tok.end(); ++tok_iter)
-		{
-			tstring tmp(*tok_iter);
-			boost::trim_right_if(tmp, boost::is_any_of(L"\\"));
-			m_excludes.push_back(tmp);
-		}
-	}
-};
-
-bool matchExclude (std::vector<tstring> const & excludes, tstring const & file_name)
+inline bool matchExclude (std::vector<tstring> const & excludes, tstring const & file_name)
 {
 	for (tstring const & ws : excludes)
 	{
@@ -47,9 +20,11 @@ bool matchExclude (std::vector<tstring> const & excludes, tstring const & file_n
 	return false;
 }
 
-inline int SearchDirectory (tstring const & dir_path, std::vector<tstring> const & includes, std::vector<tstring> const & excludes, bool recursive, bool follow_symlinks
+inline int SearchDirectory (
+				  tstring const & dir_path, std::vector<tstring> const & includes, std::vector<tstring> const & excludes, bool recursive, bool follow_symlinks
 				, tstring const & file_name
-				, std::vector<tstring> & matches)
+				, std::function<bool(tstring const &, tstring const &)> compare
+				, std::function<void(tstring const &, tstring const &)> on_match)
 {
 	tstring filePath;
 	tstring pattern = dir_path;
@@ -78,15 +53,29 @@ inline int SearchDirectory (tstring const & dir_path, std::vector<tstring> const
 						if (!matchExclude(excludes, filePath))
 						{
 							// descend into subdirectory
-							if (int const iRC = SearchDirectory(filePath, includes, excludes, recursive, follow_symlinks, file_name, matches))
+							if (int const iRC = SearchDirectory(filePath, includes, excludes, recursive, follow_symlinks, file_name, compare, on_match))
 								return iRC;
 						}
 					}
 				}
 				else
 				{
-					if (boost::algorithm::iends_with(fi.cFileName, file_name))
-						matches.push_back(filePath);
+					if (includes.size() > 0)
+					{
+						for (tstring const & ws : includes)
+						{
+							if (std::regex_match(fi.cFileName, tregex(ws, std::tr1::regex_constants::icase)))
+							{
+								if (compare(fi.cFileName, file_name))
+									on_match(fi.cFileName, filePath);
+							}
+						}
+					}
+					else
+					{
+						if (compare(fi.cFileName, file_name))
+							on_match(fi.cFileName, filePath);
+					}
 				}
 			}
 		}
@@ -98,14 +87,14 @@ inline int SearchDirectory (tstring const & dir_path, std::vector<tstring> const
 		if(dwError != ERROR_NO_MORE_FILES)
 			return dwError;
 	}
-
 	return 0;
 }
 
-inline int SearchDirectory (SearchLocationInfo const & info, tstring const & file_name
+/*inline int SearchDirectory (SearchLocationInfo const & info, tstring const & file_name
 				, std::vector<tstring> & matches)
 {
 	return SearchDirectory(info.m_dir_path, info.m_includes, info.m_excludes, info.m_recursive, info.m_follow_symlinks, file_name, matches);
-}
+}*/
 
+}}
 

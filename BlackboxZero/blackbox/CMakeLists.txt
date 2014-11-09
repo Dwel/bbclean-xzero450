@@ -26,6 +26,9 @@ set(blackbox_SOURCES
 	Menu/SpecialFolder.cpp
 	Menu/TitleItem.cpp
 	Menu/SearchItem.cpp
+  Search/index.cpp
+  Search/history.cpp
+  Search/lookup.cpp
 	
 	BBApi.cpp
 	BBRoot.cpp

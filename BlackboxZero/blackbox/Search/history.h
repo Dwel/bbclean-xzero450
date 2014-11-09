@@ -1,109 +1,98 @@
 #pragma once
 #include <vector>
-#include <memory>
-#include <boost/call_traits.hpp>
-#include <functional>
+#include <windows.h>
 #include <algorithm>
+#include "unicode.h"
+#include "serialize.h"
 
-template <typename KeyT>
-struct ItemInfo
+namespace bb { namespace search {
+
+struct HistoryItem
 {
-	unsigned m_ref_count;
-	unsigned m_hash;
-	KeyT m_key;
+	tstring m_typed;
+	tstring m_fname;
+	tstring m_fpath;
+	unsigned m_ref;
 
-	ItemInfo () : m_ref_count(0), m_hash(0) { }
-
-	ItemInfo (typename boost::call_traits<KeyT>::param_type key)
-		: m_ref_count(0), m_hash(static_cast<unsigned>(std::hash<KeyT>()(key))), m_key(key) { }
-
-	friend bool operator< (ItemInfo const & lhs, ItemInfo const & rhs)
-	{
-		return rhs.m_ref_count < lhs.m_ref_count; // @NOTE: reverse order rhs < lhs
-	}
-
-	friend bool operator== (ItemInfo const & lhs, ItemInfo const & rhs)
-	{
-		return lhs.m_key == rhs.m_key;
-	}
-
-	template <class ArchiveT>
-	void serialize (ArchiveT & ar, unsigned const version)
-	{
-		ar & boost::serialization::make_nvp("ref_count", m_ref_count);
-		ar & boost::serialization::make_nvp("hash", m_hash);
-		ar & boost::serialization::make_nvp("key", m_key);
-	}
+	HistoryItem () : m_ref(0) { }
 };
 
-template <typename KeyT>
+inline std::ostream & write (std::ostream & os, HistoryItem const & t)
+{
+	if (!write(os, t.m_typed)) return os;
+	if (!write(os, t.m_fname)) return os;
+	if (!write(os, t.m_fpath)) return os;
+	if (!write(os, t.m_ref)) return os;
+	return os;
+}
+inline std::istream & read (std::istream & is, HistoryItem & t)
+{
+	if (!read(is, t.m_typed)) return is;
+	if (!read(is, t.m_fname)) return is;
+	if (!read(is, t.m_fpath)) return is;
+	if (!read(is, t.m_ref)) return is;
+	return is;
+}
+
+
 struct History
 {
-	unsigned m_key_limit;
-	int m_current_item;
-	typedef KeyT key_t;
-	typedef std::vector<ItemInfo<key_t> > dict_t;
-	typedef typename dict_t::iterator it_t;
-	typedef typename dict_t::const_iterator const_it_t;
-	dict_t m_dict;
+	typedef std::vector<HistoryItem> items_t;
+	items_t m_items;
+	tstring m_path;
+	tstring m_name;
 
-	History (unsigned item_limit)
-		: m_key_limit(item_limit)
-		, m_current_item(-1)
-	{ 
-		m_dict.reserve(m_key_limit);
-	}
+	History (tstring const & path, tstring const & name) : m_path(path), m_name(name) { }
+	bool IsLoaded () const { return m_items.size() > 0; }
 
-	void sort () { std::sort(m_dict.begin(), m_dict.end()); }
-
-	void insert (typename boost::call_traits<KeyT>::param_type key)
+	bool Find (tstring const & what, std::vector<HistoryItem *> & results, size_t max_results = 128)
 	{
-		unsigned const key_hash = static_cast<unsigned>(std::hash<KeyT>()(key));
-		for (size_t i = 0, ie = m_dict.size(); i < ie; ++i)
+		results.clear();
+		results.reserve(max_results);
+		for (size_t i = 0; i < m_items.size(); ++i)
 		{
-			if (m_dict[i].m_hash == key_hash && m_dict[i].m_key == key)
+			if (m_items[i].m_typed == what)
 			{
-				++m_dict[i].m_ref_count;
-				return;
+				results.push_back(&m_items[i]);
+				continue;
+			}
+			if (m_items[i].m_fname == what)
+			{
+				results.push_back(&m_items[i]);
+				continue;
 			}
 		}
-
-		sort();
-
-		// item not found, replace another
-		if (m_dict.size() >= m_key_limit)
-			m_dict.pop_back();
-		m_dict.push_back(ItemInfo<KeyT>(key));
+		return results.size() > 0;
 	}
 
-	void insert_no_refcount (typename boost::call_traits<KeyT>::param_type key)
+	bool Insert (tstring const & typed, tstring const & fname, tstring const & fpath)
 	{
-		if (!find(key))
-			m_dict.push_back(ItemInfo<KeyT>(key));
-	}
-
-	bool find (typename boost::call_traits<KeyT>::param_type key)
-	{
-		unsigned const key_hash = static_cast<unsigned>(hash<KeyT>()(key));
-		for (size_t i = 0, ie = m_dict.size(); i < ie; ++i)
-			if (m_dict[i].m_hash == key_hash && m_dict[i].m_key == key)
+		for (size_t i = 0; i < m_items.size(); ++i)
+		{
+			if (m_items[i].m_typed == typed && m_items[i].m_fname == fname && m_items[i].m_fpath == fpath)
+			{
+				++m_items[i].m_ref;
+				// save
 				return true;
+			}
+		}
+		HistoryItem hi;
+		hi.m_typed = typed;
+		hi.m_fname = fname;
+		hi.m_fpath = fpath;
+		hi.m_ref = 1;
+		m_items.push_back(hi);
+		// save
 		return false;
 	}
 
-	void remove (typename boost::call_traits<KeyT>::param_type key)
-	{
-		m_dict.erase(std::remove(m_dict.begin(), m_dict.end(), key), m_dict.end());
-	}
-
-	template <class ArchiveT>
-	void serialize (ArchiveT & ar, unsigned const version)
-	{
-		ar & boost::serialization::make_nvp("dict", m_dict);
-		ar & boost::serialization::make_nvp("current_item", m_current_item);
-	}
-
-	size_t size () const { return m_dict.size(); }
-	KeyT const & operator[] (size_t i) const { return m_dict[i].m_key; }
+	//bool Suggest (tstring const & what, std::vector<tstring> & keywords, std::vector<tstring> & results, size_t max_results = 128)
+	bool Load ();
+	bool Save ();
+protected:
+	bool load (items_t & t, tstring const & fpath);
+	bool save (items_t const & t, tstring const & fpath);
 };
+
+}}
 

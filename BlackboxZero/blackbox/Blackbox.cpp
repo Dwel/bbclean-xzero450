@@ -33,6 +33,7 @@
 #include "bbshell.h"
 #include "bbrc.h"
 #include <logging.h>
+#include "Search/lookup.h"
 
 #include <mmsystem.h>
 #include <process.h>
@@ -610,6 +611,7 @@ void shutdown_blackbox ()
 	if (g_shutting_down)
 		return;
 	g_shutting_down = true;
+	bb::search::stopLookup();
 
 	kill_plugins();
 	Tray_Exit();

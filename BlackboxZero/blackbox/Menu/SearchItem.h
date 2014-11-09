@@ -17,12 +17,14 @@
 #include <vector>
 #include <string>
 
+#include <blackbox/Search/lookup.h>
+
 class SearchItem : public StringItem
 {
+  tstring m_bbPath;
   HWND m_hText;
   WNDPROC m_wpEditProc;
   RECT m_textrect;
-  // history ?
   std::vector<std::string> m_results;
 
 public:
@@ -38,3 +40,4 @@ public:
 protected:
   void OnInput ();
 };
+
