@@ -41,3 +41,14 @@ protected:
   void OnInput ();
 };
 
+struct ResultItem : CommandItem
+{
+    tstring m_typed;
+
+    ResultItem (const char* pszCommand, const char* pszTitle, bool bChecked)
+        : CommandItem(pszCommand, pszTitle, bChecked)
+    { }
+    void Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam);
+    void Invoke (int button);
+};
+

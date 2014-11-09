@@ -125,20 +125,6 @@ void SearchItem::Invoke (int button)
 		OnInput();
 }
 
-Menu * MakeResultMenu(Menu * parent, std::vector<std::string> const & res)
-{
-	char broam[1024];
-	char text[1024];
-	for (size_t i = 0, ie = res.size(); i < ie; ++i)
-	{
-		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", res[i].c_str());
-		_snprintf_s(text, 1024, "%s", res[i].c_str());
-		MenuItem * mi = MakeMenuItem(parent, text, broam, false);
-		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
-	}
-	return parent;
-}	
-
 void SearchItem::OnInput ()
 {
 	int const len = SendMessage(m_hText, WM_GETTEXTLENGTH, 0, 0);
@@ -174,18 +160,16 @@ void SearchItem::OnInput ()
 		for (auto const & p : hres)
 			m_results.push_back(p); // @TODO: move instead of copy
 	}
+	//@TODO: separator between the two sets of results
 	if (ires.size() > 0)
 	{
 		for (auto const & p : ires)
 			m_results.push_back(p); // @TODO: move instead of copy
 	}
-	//	find.Accept(find.m_result[0]);
 
-
-	// @TODO: created once
-		// if old != new
 	Menu * menu = MakeNamedMenu(NLS0("Search results"), "Search_results", true);
-	MakeResultMenu(menu, m_results);
+	Menu * MakeResultMenu (Menu * parent, tstring const &, std::vector<std::string> const & res);
+	MakeResultMenu(menu, what, m_results);
 	MenuOption(menu, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_ONTOP, 512);
 	//MenuOption(menu, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_PINNED | BBMENU_ONTOP, 512);
 	ShowMenu(menu);
@@ -287,4 +271,52 @@ leave:
 		return r;
 }
 
+MenuItem * MakeMenuResultItem (Menu * PluginMenu, const char * Title, const char * Cmd, char const * typed, bool ShowIndicator)
+{
+	ResultItem * r = new ResultItem(Cmd, NLS1(Title), ShowIndicator);
+	r->m_typed = typed;
+    return PluginMenu->AddMenuItem(r);
+}
+
+Menu * MakeResultMenu (Menu * parent, tstring const & typed, std::vector<std::string> const & res)
+{
+	char broam[1024];
+	char text[1024];
+	for (size_t i = 0, ie = res.size(); i < ie; ++i)
+	{
+		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", res[i].c_str());
+		_snprintf_s(text, 1024, "%s", res[i].c_str());
+		MenuItem * mi = MakeMenuResultItem(parent, text, broam, typed.c_str(), false);
+		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
+
+		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
+		MakeMenuItem(ctx, TEXT("run"), broam, false);
+		MakeMenuItem(ctx, TEXT("pin to history"), broam, false);
+		MakeMenuItem(ctx, TEXT("unpin from history"), broam, false);
+		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
+		mi->m_pRightmenu = ctx;
+		//MenuOption(ctx, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_ONTOP, 512);
+	}
+	return parent;
+}	
+
+void ResultItem::Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam)
+{
+	CommandItem::Mouse(hwnd, uMsg, wParam, lParam);
+}
+
+void ResultItem::Invoke (int button)
+{
+	CommandItem::Invoke(button);
+
+	char drive[_MAX_DRIVE];
+	char dir[_MAX_DIR];
+	char fname[_MAX_FNAME];
+	char ext[_MAX_EXT];
+	errno_t err = _splitpath_s(m_pszTitle, drive, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, ext, _MAX_EXT );
+
+	tstring const fpath = m_pszTitle;
+	bb::search::getLookup().m_history.Insert(m_typed, fname, fpath);
+	bb::search::getLookup().m_history.Save();
+}
 
