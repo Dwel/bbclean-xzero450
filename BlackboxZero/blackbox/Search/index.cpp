@@ -2,28 +2,33 @@
 #include "config.h"
 #include "search.h"
 #include <fstream>
+#include <blackbox/BBApi.h>
 #include "serialize.h"
 
 namespace bb { namespace search {
 
-void makeIndex (trie_t & trie, props_t & props, tstring const & fname)
+void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring const & fname)
 {
-	Config cfg;
-	defaultConfig(cfg);
-
-	for (SearchLocationInfo const & info : cfg.m_locations)
+	try
 	{
-		SearchDirectory(
-			  info.m_dir_path, info.m_includes, info.m_excludes, info.m_recursive, info.m_follow_symlinks
-			, TEXT("")
-			, [] (tstring const & fname, tstring const & cmp) { return true; }
-			, [&trie, &props] (tstring const & fname, tstring const & fpath)
-				 {
-					props.push_back(Props(fname, fpath));
-					//printf("update: fname=%s fpath=%s\n", fname.c_str(), fpath.c_str());
-					trie_t::result_type const id = static_cast<trie_t::result_type>(props.size() - 1);
-					trie.update(fname.c_str(), fname.length(), id);
-				 });
+		for (SearchLocationInfo const & info : cfg.m_locations)
+		{
+			SearchDirectory(
+				  info.m_dir_path, info.m_includes, info.m_excludes, info.m_recursive, info.m_follow_symlinks
+				, TEXT("")
+				, [] (tstring const & fname, tstring const & cmp) { return true; }
+				, [&trie, &props] (tstring const & fname, tstring const & fpath)
+					 {
+						props.push_back(Props(fname, fpath));
+						//printf("update: fname=%s fpath=%s\n", fname.c_str(), fpath.c_str());
+						trie_t::result_type const id = static_cast<trie_t::result_type>(props.size() - 1);
+						trie.update(fname.c_str(), fname.length(), id);
+					 });
+		}
+	}
+	catch (std::regex_error const & e)
+	{
+		dbg_printf("Exception caught: %s", e.what());
 	}
 
 	printf("keys: %ld\n", trie.num_keys ());

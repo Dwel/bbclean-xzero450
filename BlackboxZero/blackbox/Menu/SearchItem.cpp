@@ -5,18 +5,13 @@
 #include "RecentItem.h"
 #include <blackbox/Search/find.h>
 #include <blackbox/Search/lookup.h>
+#include <blackbox/Search/config.h>
+#include <blackbox/Search/tmp.h>
 //#include <richedit.h>
 
 MenuItem * MakeMenuItemSearch(Menu * PluginMenu, const char * Title, const char * Cmd, const char * init_string)
 {
 	return helper_menu(PluginMenu, Title, MENU_ID_STRING, new SearchItem(Cmd, init_string));
-}
-
-API_EXPORT tstring WINAPI getBlackboxPath ()
-{
-	TCHAR tmp[1024];
-	GetBlackboxPath(tmp, 1024);
-	return tstring(tmp);
 }
 
 SearchItem::SearchItem (const char* pszCommand, const char *init_string)
@@ -25,7 +20,6 @@ SearchItem::SearchItem (const char* pszCommand, const char *init_string)
 		, m_hText(0)
 		, m_wpEditProc(0)
 		, m_textrect()
-		, m_indexing(false)
 {
 	bb::search::startLookup(m_bbPath);
 }
@@ -155,8 +149,9 @@ void SearchItem::OnInput ()
 		if (!bb::search::getLookup().IsLoaded())
 		{
 			// ask to rebuild index?
-			bool ret = bb::search::getLookup().LoadOrBuild(true); // sync for now
-			bb::search::getLookup().Stop(); // due to sync
+			bool ret = bb::search::getLookup().LoadOrBuild(false);
+			return;
+			// if (sync) bb::search::getLookup().Stop(); // due to sync
 		}
 	}
 
@@ -168,6 +163,8 @@ void SearchItem::OnInput ()
 
 	char broam[1024];
 	char text[1024];
+
+	MakeMenuNOP(menu, TEXT("History"));
 
 	for (size_t i = 0, ie = hres.size(); i < ie; ++i)
 	{
@@ -186,6 +183,7 @@ void SearchItem::OnInput ()
 	}
 
 	MakeMenuNOP(menu, nullptr);
+	MakeMenuNOP(menu, TEXT("Index"));
 
 	for (size_t i = 0, ie = ires.size(); i < ie; ++i)
 	{
@@ -273,18 +271,20 @@ LRESULT CALLBACK SearchItem::EditProc(HWND hText, UINT msg, WPARAM wParam, LPARA
 
 			hdc = BeginPaint(hText, &ps);
 			GetClientRect(hText, &r);
-			if (pItem->m_indexing)
+			static int i = 0;
+			if (bb::search::getLookup().IsIndexing())
 			{
-				// hmmm, does not work
-				COLORREF bg = RGB(255,0,0);
-				SetBkColor(hdc, bg);
-				SetDCBrushColor(hdc, bg);
+				pSI = &mStyle.MenuFrame;
+				COLORREF c0 = RGB(128, 0, 0);
+				COLORREF c1 = RGB(128, 64, 64);
+				COLORREF cs0 = RGB(64, 0, 0);
+				COLORREF cs1 = RGB(64, 32, 32);
+				MakeGradientEx(hdc, r, pSI->type, c0, c1, cs0, cs1, pSI->interlaced, BEVEL_SUNKEN, BEVEL1, 0, 0, 0);
 			}
 			else
 			{
 				pSI = &mStyle.MenuFrame;
-				MakeGradientEx(hdc, r, pSI->type, pSI->Color, pSI->ColorTo, pSI->ColorSplitTo, pSI->ColorToSplitTo,
-						pSI->interlaced, BEVEL_SUNKEN, BEVEL1, 0, 0, 0);
+				MakeGradientEx(hdc, r, pSI->type, pSI->Color, pSI->ColorTo, pSI->ColorSplitTo, pSI->ColorToSplitTo, pSI->interlaced, BEVEL_SUNKEN, BEVEL1, 0, 0, 0);
 			}
 
 			CallWindowProc(pItem->m_wpEditProc, hText, msg, (WPARAM)hdc, lParam);

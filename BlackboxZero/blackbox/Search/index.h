@@ -5,6 +5,7 @@
 #include "unicode.h"
 #include <3rd_party/cedar/cedar.h>
 #include "serialize.h"
+#include "config.h"
 
 namespace bb { namespace search {
 
@@ -32,7 +33,7 @@ inline std::ostream & write (std::ostream & os, Props const & t)
 typedef std::vector<Props> props_t;
 typedef cedar::da<int> trie_t;
 
-void makeIndex (trie_t & trie, props_t & props, tstring const & fpath);
+void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring const & fpath);
 bool loadIndex (trie_t & t, tstring const & fpath);
 bool saveIndex (trie_t const & t, tstring const & fpath);
 bool searchIndex (trie_t & t, tstring const & str, std::function<void(tstring const &, tstring const &)> on_match);
@@ -45,8 +46,9 @@ struct Index
 	props_t m_props;
 	tstring m_path;
 	tstring m_name;
+	Config m_cfg;
 
-	Index (tstring const & path, tstring const & name) : m_path(path), m_name(name) { }
+	Index (tstring const & path, tstring const & name, Config const & cfg) : m_path(path), m_name(name), m_cfg(cfg) { }
 	bool IsLoaded () const { return m_props.size() > 0; }
 
 	bool Find (tstring const & what, std::vector<tstring> & results, size_t max_results = 128)
@@ -104,7 +106,7 @@ struct Index
 		_tprintf(TEXT("*** Rebuilding index ***\n"));
 		m_trie.clear();
 		m_props.clear();
-		makeIndex(m_trie, m_props, TEXT("C:\\devel\\dir\\filesystem.index"));
+		makeIndex(m_trie, m_props, m_cfg, TEXT("C:\\devel\\dir\\filesystem.index"));
 		Save();
 		return IsLoaded();
 	}

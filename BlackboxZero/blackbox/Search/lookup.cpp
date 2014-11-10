@@ -11,13 +11,24 @@ namespace bb { namespace search {
 	void startLookup (tstring const & path)
 	{
 		if (!g_lookup)
-			g_lookup = new bb::search::ProgramLookup(path);
+		{
+			Config cfg;
+			if (!readRC(path + TEXT("search.rc"), cfg))
+			{
+				defaultConfig(cfg);
+			}
+
+			g_lookup = new bb::search::ProgramLookup(path, cfg);
+		}
 	}
 
 	void stopLookup ()
 	{
 		if (g_lookup)
 		{
+			tstring tmp = g_lookup->m_path;
+			tmp += TEXT("search.rc");
+			writeRC(tmp, g_lookup->m_index.m_cfg);
 			g_lookup->Stop();
 			delete g_lookup;
 			g_lookup = nullptr;

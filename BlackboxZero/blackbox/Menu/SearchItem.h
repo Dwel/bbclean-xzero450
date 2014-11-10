@@ -25,8 +25,6 @@ class SearchItem : public StringItem
   HWND m_hText;
   WNDPROC m_wpEditProc;
   RECT m_textrect;
-  bool m_indexing;
-  //std::vector<std::string> m_results;
 
 public:
   SearchItem (const char * pszCommand, const char * init_string);

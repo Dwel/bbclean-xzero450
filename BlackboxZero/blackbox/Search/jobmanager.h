@@ -79,6 +79,8 @@ struct JobManager
 		}
 	}
 
+	size_t size () { return m_pool.size(); }
+
 	void Stop ()
 	{
 		m_terminating = true;

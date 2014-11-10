@@ -29,6 +29,7 @@ set(blackbox_SOURCES
   Search/index.cpp
   Search/history.cpp
   Search/lookup.cpp
+  Search/rc.cpp
 	
 	BBApi.cpp
 	BBRoot.cpp

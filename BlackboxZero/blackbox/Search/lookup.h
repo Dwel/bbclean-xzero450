@@ -4,6 +4,8 @@
 #include "history.h"
 #include "index.h"
 #include "jobmanager.h"
+#include "rc.h"
+
 namespace bb { namespace search {
 
 struct ProgramLookup;
@@ -22,23 +24,32 @@ struct RebuildJob : Runnable
 		m_index.Rebuild();
 		m_finished.store(true, std::memory_order_relaxed);
 	}
-	bool IsFinished ()
+	bool IsFinished () const
 	{
 		return m_finished.load(std::memory_order_relaxed);
+	}
+
+	void Restart ()
+	{
+		m_finished.store(false, std::memory_order_relaxed);
 	}
 };
 
 struct ProgramLookup
 {
-	tstring const & m_path;
+	tstring m_path;
 	History m_history;
 	Index m_index;
 	JobManager m_jobs;
+	RebuildJob m_job;
+	bool m_indexing;
 
-	ProgramLookup (tstring const & path) 
+	ProgramLookup (tstring const & path, Config const & cfg) 
 		: m_path(path)
 		, m_history(path, TEXT("programs_history"))
-		, m_index(path, TEXT("programs"))
+		, m_index(path, TEXT("programs"), cfg)
+		, m_job(m_index)
+		, m_indexing(false)
 	{ }
 
 	void Stop ()
@@ -56,7 +67,7 @@ struct ProgramLookup
 
 	bool IsIndexing () const
 	{
-		return m_jobs.m_readyQueueLock.load(std::memory_order_relaxed);
+		return m_indexing && !m_job.IsFinished();
 	}
 
 	bool LoadOrBuild (bool sync = false)
@@ -64,14 +75,17 @@ struct ProgramLookup
 		m_history.Load();
 		if (!m_index.Load())
 		{
-			m_jobs.Create(1);
-			RebuildJob job(m_index);
-			m_jobs.AddJob(&job);
+			if (m_jobs.size() == 0)
+				m_jobs.Create(1);
+			m_indexing = true;
+			m_job.Restart();
+			m_jobs.AddJob(&m_job);
 			if (sync)
 			{
 				unsigned c = 0;
-				while (!job.IsFinished())
+				while (!m_job.IsFinished())
 					delayExecution(c);
+				m_indexing = false;
 			}
 			return false;
 		}
@@ -91,22 +105,20 @@ struct ProgramLookup
 	{
 		std::vector<HistoryItem *> history_res; //@TODO: unlocal
 		history_res.reserve(32);
+		bool found_some = false;
 		if (m_history.Find(what, history_res, 8))
 		{
 			for (HistoryItem const * h : history_res)
 				hkeys.push_back(h->m_fname);
 			for (HistoryItem const * h : history_res)
 				hres.push_back(h->m_fpath);
-			return true;
+			found_some = true;
 		}
-		else
+		if (m_index.Suggest(what, ikeys, ires, 64))
 		{
-			if (m_index.Suggest(what, ikeys, ires, 64))
-			{
-				return true;
-			}
+			found_some = true;
 		}
-		return false;
+		return found_some;
 	}
 };
 
