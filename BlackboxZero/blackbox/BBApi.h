@@ -899,6 +899,7 @@ extern "C" {
     /* ------------------------------------ */
     /* often used structure */
 
+#if !defined STRING_NODE_DEFINED
     typedef struct string_node
     {
         struct string_node *next;
@@ -906,6 +907,7 @@ extern "C" {
     } string_node;
 
     #define STRING_NODE_DEFINED
+#endif
 
     /* ------------------------------------ */
     /* windows on workspace placement interface */

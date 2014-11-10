@@ -25,6 +25,7 @@ SearchItem::SearchItem (const char* pszCommand, const char *init_string)
 		, m_hText(0)
 		, m_wpEditProc(0)
 		, m_textrect()
+		, m_indexing(false)
 {
 	bb::search::startLookup(m_bbPath);
 }
@@ -125,6 +126,13 @@ void SearchItem::Invoke (int button)
 		OnInput();
 }
 
+MenuItem * MakeMenuResultItem (Menu * PluginMenu, const char * Title, const char * Cmd, char const * typed, bool ShowIndicator)
+{
+	ResultItem * r = new ResultItem(Cmd, NLS1(Title), ShowIndicator);
+	r->m_typed = typed;
+    return PluginMenu->AddMenuItem(r);
+}
+
 void SearchItem::OnInput ()
 {
 	int const len = SendMessage(m_hText, WM_GETTEXTLENGTH, 0, 0);
@@ -133,7 +141,7 @@ void SearchItem::OnInput ()
 
 	if (bb::search::getLookup().IsIndexing())
 	{
-		// flash red
+		return;
 	}
 
 	tstring const what(buffer);
@@ -154,22 +162,46 @@ void SearchItem::OnInput ()
 
 	bool const found2 = bb::search::getLookup().Find(what, hkeys, hres, ikeys, ires);
 
-	m_results.clear();
-	if (hres.size() > 0)
-	{
-		for (auto const & p : hres)
-			m_results.push_back(p); // @TODO: move instead of copy
-	}
-	//@TODO: separator between the two sets of results
-	if (ires.size() > 0)
-	{
-		for (auto const & p : ires)
-			m_results.push_back(p); // @TODO: move instead of copy
-	}
+	//m_results.clear();
 
 	Menu * menu = MakeNamedMenu(NLS0("Search results"), "Search_results", true);
-	Menu * MakeResultMenu (Menu * parent, tstring const &, std::vector<std::string> const & res);
-	MakeResultMenu(menu, what, m_results);
+
+	char broam[1024];
+	char text[1024];
+
+	for (size_t i = 0, ie = hres.size(); i < ie; ++i)
+	{
+		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", hres[i].c_str());
+		_snprintf_s(text, 1024, "%s", hres[i].c_str());
+		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what.c_str(), false);
+		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
+
+		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
+		MakeMenuItem(ctx, TEXT("run"), broam, false);
+		MakeMenuItem(ctx, TEXT("pin to history"), broam, false);
+		MakeMenuItem(ctx, TEXT("unpin from history"), broam, false);
+		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
+		mi->m_pRightmenu = ctx;
+		//MenuOption(ctx, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_ONTOP, 512);
+	}
+
+	MakeMenuNOP(menu, nullptr);
+
+	for (size_t i = 0, ie = ires.size(); i < ie; ++i)
+	{
+		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", ires[i].c_str());
+		_snprintf_s(text, 1024, "%s", ires[i].c_str());
+		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what.c_str(), false);
+		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
+
+		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
+		MakeMenuItem(ctx, TEXT("run"), broam, false);
+		MakeMenuItem(ctx, TEXT("pin to history"), broam, false);
+		MakeMenuItem(ctx, TEXT("unpin from history"), broam, false);
+		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
+		mi->m_pRightmenu = ctx;
+	}
+
 	MenuOption(menu, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_ONTOP, 512);
 	//MenuOption(menu, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_PINNED | BBMENU_ONTOP, 512);
 	ShowMenu(menu);
@@ -181,124 +213,106 @@ void SearchItem::OnInput ()
 //===========================================================================
 LRESULT CALLBACK SearchItem::EditProc(HWND hText, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-		SearchItem * pItem = reinterpret_cast<SearchItem *>(GetWindowLongPtr(hText, GWLP_USERDATA));
-	 LRESULT r = 0;
-		Menu * pMenu = pItem->m_pMenu;
+	SearchItem * pItem = reinterpret_cast<SearchItem *>(GetWindowLongPtr(hText, GWLP_USERDATA));
+	LRESULT r = 0;
+	Menu * pMenu = pItem->m_pMenu;
 
-		pMenu->incref();
-		switch(msg)
-		{
-				// Send Result
-				case WM_MOUSEMOVE:
-						PostMessage(pMenu->m_hwnd, WM_MOUSEMOVE, wParam, MAKELPARAM(10, pItem->m_nTop+2));
-						break;
-
-				// Key Intercept
-				case WM_KEYDOWN:
-				{
-						switch (wParam)
-						{
-								case VK_DOWN:
-								case VK_UP:
-								case VK_TAB:
-										pItem->Invoke(0);
-										pItem->next_item(wParam);
-										goto leave;
-
-								case VK_RETURN:
-										pItem->Invoke(INVOKE_RET);
-										pItem->next_item(0);
-										goto leave;
-
-								case VK_ESCAPE:
-										SetWindowText(hText, pItem->m_pszTitle);
-										pItem->next_item(0);
-										goto leave;
-						}
-						//pItem->OnInput();
-						break;
-				}
-				case WM_CHAR:
-						switch (wParam)
-						{
-								case 'A' - 0x40: // ctrl-A: select all
-										SendMessage(hText, EM_SETSEL, 0, GetWindowTextLength(hText));
-								case 13:
-								case 27:
-										goto leave;
-						}
-						break;
-
-				// --------------------------------------------------------
-				// Paint
-
-				case WM_PAINT:
-				{
-						PAINTSTRUCT ps;
-						HDC hdc;
-						RECT r;
-						StyleItem *pSI;
-
-						hdc = BeginPaint(hText, &ps);
-						GetClientRect(hText, &r);
-						pSI = &mStyle.MenuFrame;
-						MakeGradientEx(hdc, r, pSI->type, pSI->Color, pSI->ColorTo, pSI->ColorSplitTo, pSI->ColorToSplitTo,
-								pSI->interlaced, BEVEL_SUNKEN, BEVEL1, 0, 0, 0);
-						CallWindowProc(pItem->m_wpEditProc, hText, msg, (WPARAM)hdc, lParam);
-						EndPaint(hText, &ps);
-						goto leave;
-				}
-
-				case WM_ERASEBKGND:
-						r = TRUE;
-						goto leave;
-
-				case WM_DESTROY:
-						pItem->hText = NULL;
-						pMenu->m_hwndChild = NULL;
-						break;
-
-				case WM_SETFOCUS:
-						break;
-
-				case WM_KILLFOCUS:
-						pItem->Invoke(0);
-						break;
-		}
-		r = CallWindowProc(pItem->m_wpEditProc, hText, msg, wParam, lParam);
-leave:
-		pMenu->decref();
-		return r;
-}
-
-MenuItem * MakeMenuResultItem (Menu * PluginMenu, const char * Title, const char * Cmd, char const * typed, bool ShowIndicator)
-{
-	ResultItem * r = new ResultItem(Cmd, NLS1(Title), ShowIndicator);
-	r->m_typed = typed;
-    return PluginMenu->AddMenuItem(r);
-}
-
-Menu * MakeResultMenu (Menu * parent, tstring const & typed, std::vector<std::string> const & res)
-{
-	char broam[1024];
-	char text[1024];
-	for (size_t i = 0, ie = res.size(); i < ie; ++i)
+	pMenu->incref();
+	switch(msg)
 	{
-		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", res[i].c_str());
-		_snprintf_s(text, 1024, "%s", res[i].c_str());
-		MenuItem * mi = MakeMenuResultItem(parent, text, broam, typed.c_str(), false);
-		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
+		// Send Result
+		case WM_MOUSEMOVE:
+			PostMessage(pMenu->m_hwnd, WM_MOUSEMOVE, wParam, MAKELPARAM(10, pItem->m_nTop+2));
+			break;
 
-		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
-		MakeMenuItem(ctx, TEXT("run"), broam, false);
-		MakeMenuItem(ctx, TEXT("pin to history"), broam, false);
-		MakeMenuItem(ctx, TEXT("unpin from history"), broam, false);
-		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
-		mi->m_pRightmenu = ctx;
-		//MenuOption(ctx, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_ONTOP, 512);
+		// Key Intercept
+		case WM_KEYDOWN:
+		{
+			switch (wParam)
+			{
+				case VK_DOWN:
+				case VK_UP:
+				case VK_TAB:
+					pItem->Invoke(0);
+					pItem->next_item(wParam);
+					goto leave;
+
+				case VK_RETURN:
+					pItem->Invoke(INVOKE_RET);
+					pItem->next_item(0);
+					goto leave;
+
+				case VK_ESCAPE:
+					SetWindowText(hText, pItem->m_pszTitle);
+					pItem->next_item(0);
+					goto leave;
+			}
+			//pItem->OnInput();
+			break;
+		}
+		case WM_CHAR:
+				switch (wParam)
+				{
+					case 'A' - 0x40: // ctrl-A: select all
+							SendMessage(hText, EM_SETSEL, 0, GetWindowTextLength(hText));
+					case 13:
+					case 27:
+							goto leave;
+				}
+				break;
+
+		// --------------------------------------------------------
+		// Paint
+
+		case WM_PAINT:
+		{
+			PAINTSTRUCT ps;
+			HDC hdc;
+			RECT r;
+			StyleItem *pSI;
+
+			hdc = BeginPaint(hText, &ps);
+			GetClientRect(hText, &r);
+			if (pItem->m_indexing)
+			{
+				// hmmm, does not work
+				COLORREF bg = RGB(255,0,0);
+				SetBkColor(hdc, bg);
+				SetDCBrushColor(hdc, bg);
+			}
+			else
+			{
+				pSI = &mStyle.MenuFrame;
+				MakeGradientEx(hdc, r, pSI->type, pSI->Color, pSI->ColorTo, pSI->ColorSplitTo, pSI->ColorToSplitTo,
+						pSI->interlaced, BEVEL_SUNKEN, BEVEL1, 0, 0, 0);
+			}
+
+			CallWindowProc(pItem->m_wpEditProc, hText, msg, (WPARAM)hdc, lParam);
+			EndPaint(hText, &ps);
+			goto leave;
+		}
+
+		case WM_ERASEBKGND:
+			r = TRUE;
+			goto leave;
+
+		case WM_DESTROY:
+			pItem->hText = NULL;
+			pMenu->m_hwndChild = NULL;
+			break;
+
+		case WM_SETFOCUS:
+			break;
+
+		case WM_KILLFOCUS:
+			pItem->Invoke(0);
+			break;
 	}
-	return parent;
-}	
+	r = CallWindowProc(pItem->m_wpEditProc, hText, msg, wParam, lParam);
+leave:
+	pMenu->decref();
+	return r;
+}
 
 void ResultItem::Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam)
 {
