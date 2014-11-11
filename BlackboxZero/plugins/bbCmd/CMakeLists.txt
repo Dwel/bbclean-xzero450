@@ -10,7 +10,7 @@ if (Boost_FOUND)
 	add_definitions( "-DHAS_BOOST" )
 
   #set(BOOST_LIBS thread date_time system regex serialization)
-  set(BOOST_LIBS filesystem)
+  #set(BOOST_LIBS filesystem)
 	find_package(Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
 endif()
 message("boost: ${Boost_LIBRARIES}")
