@@ -182,6 +182,7 @@ add_subdirectory(tools/bbnote)
 # installation
 set(main_CONFIGS
   config/menu.rc 
+  config/search.rc 
   config/blackbox.rc
   config/extensions.rc
   config/plugins.rc
