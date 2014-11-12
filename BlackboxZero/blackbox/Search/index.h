@@ -12,9 +12,13 @@ namespace bb { namespace search {
 struct Props
 {
 	tstring m_fname; /// filename part only
-	tstring m_fpath; /// file name with complete path
+	std::vector<tstring> m_fpath; /// file name with complete path
 
-	Props (tstring const & fname, tstring const & fpath) : m_fname(fname), m_fpath(fpath) { }
+	Props (tstring const & fname, tstring const & fpath)
+		: m_fname(fname)
+	{
+		m_fpath.push_back(fpath);
+	}
 	Props () { }
 };
 inline std::istream & read (std::istream & is, Props & t)
@@ -30,7 +34,7 @@ inline std::ostream & write (std::ostream & os, Props const & t)
 	return os;
 }
 
-typedef std::vector<Props> props_t;
+typedef std::vector<Props> props_t; // vecor
 typedef cedar::da<int> trie_t;
 
 void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring const & fpath);
@@ -126,7 +130,8 @@ protected:
 			for (size_t i = 0; i < n && i < max_results; ++i)
 			{
 				m_trie.suffix(suffix, result_triple[i].length, result_triple[i].id);
-				on_match(m_props[result_triple[i].value].m_fname, m_props[result_triple[i].value].m_fpath);
+				for (tstring const & s : m_props[result_triple[i].value].m_fpath)
+					on_match(m_props[result_triple[i].value].m_fname, s);
 			}
 			return true;
 		}

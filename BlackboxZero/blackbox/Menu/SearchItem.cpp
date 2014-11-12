@@ -81,11 +81,9 @@ void SearchItem::Paint (HDC hDC)
 
 				SetWindowLongPtr(m_hText, GWLP_USERDATA, (LONG_PTR)this);
 				m_wpEditProc = (WNDPROC)SetWindowLongPtr(m_hText, GWLP_WNDPROC, (LONG_PTR)EditProc);
-#if 0
-				int n = GetWindowTextLength(m_hText);
+				int const n = GetWindowTextLength(m_hText);
 				SendMessage(m_hText, EM_SETSEL, 0, n);
 				SendMessage(m_hText, EM_SCROLLCARET, 0, 0);
-#endif
 				m_pMenu->m_hwndChild = m_hText;
 				if (GetFocus() == m_pMenu->m_hwnd)
 						SetFocus(m_hText);
@@ -137,6 +135,7 @@ void SearchItem::OnInput ()
 	{
 		return;
 	}
+	SendMessage(hText,  EM_SETREADONLY, 0, FALSE);
 
 	tstring const what(buffer);
 	std::vector<tstring> hkeys;
@@ -150,12 +149,22 @@ void SearchItem::OnInput ()
 		{
 			// ask to rebuild index?
 			bool ret = bb::search::getLookup().LoadOrBuild(false);
+
+			char buffer[] = "Indexing...";
+			SendMessage(m_hText, WM_SETTEXT, (WPARAM)len + 1, (LPARAM)buffer);
+			SendMessage(hText,  EM_SETREADONLY, 0, TRUE);
+			//GetItemRect(&r);
+			//InvalidateRect(m_pMenu->m_hwnd, &r, false);
+			InvalidateRect(m_hText, &m_textrect, true);
+			UpdateWindow(m_hText);
+			RECT r;
+			GetItemRect(&r);
+			InvalidateRect(m_pMenu->m_hwnd, &r, true);
+			UpdateWindow(m_pMenu->m_hwnd);
 			return;
 			// if (sync) bb::search::getLookup().Stop(); // due to sync
 		}
 	}
-
-	bool const found2 = bb::search::getLookup().Find(what, hkeys, hres, ikeys, ires);
 
 	//m_results.clear();
 
@@ -196,6 +205,7 @@ void SearchItem::OnInput ()
 		MakeMenuItem(ctx, TEXT("run"), broam, false);
 		MakeMenuItem(ctx, TEXT("pin to history"), broam, false);
 		MakeMenuItem(ctx, TEXT("unpin from history"), broam, false);
+		MakeMenuItem(ctx, TEXT("forget"), broam, false);
 		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
 		mi->m_pRightmenu = ctx;
 	}

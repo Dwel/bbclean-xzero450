@@ -332,7 +332,7 @@ skip:
 
 		case e_search:
 		{
-			pItem = new SearchItem(p_data, "aa");
+			pItem = new SearchItem(p_data, TEXT("powershell.exe"));
 			pMenu->AddMenuItem(pItem);
 			break;
 		}
