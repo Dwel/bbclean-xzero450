@@ -95,6 +95,8 @@ Menu::~Menu()
 
     // remove from the list
     remove_assoc(&g_MenuStructList, this);
+	//dbg_printf("%s GMWL ~~~remove_assoc(&g_MenuWindowList, this) this=%x", __FUNCTION__, this);
+	remove_assoc(&g_MenuWindowList, this);
     --g_menu_count;
 }
 
