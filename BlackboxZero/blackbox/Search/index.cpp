@@ -8,13 +8,19 @@
 
 namespace bb { namespace search {
 
+struct icasecompare : std::binary_function<tstring, tstring, bool> {
+    bool operator() (tstring const & lhs, tstring const & rhs) const {
+        return _tcsicmp(lhs.c_str(), rhs.c_str()) < 0;
+    }
+};
+
 void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring const & fname)
 {
 	try
 	{
 		props_t tmp_props;
 		tmp_props.reserve(1024);
-		std::map<tstring, int> tmp_propmap;
+		std::map<tstring, int, icasecompare> tmp_propmap;
 		for (SearchLocationInfo const & info : cfg.m_locations)
 		{
 			SearchDirectory(
@@ -26,11 +32,13 @@ void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring cons
 						std::map<tstring, int>::iterator it = tmp_propmap.find(fname);
 						if (it == tmp_propmap.end())
 						{
-							tmp_props.push_back(Props(fname, fpath));
+							tstring fname_lwr = fname;
+							boost::algorithm::to_lower(fname_lwr);
+							tmp_props.push_back(Props(fname_lwr, fpath));
 							trie_t::result_type const id = static_cast<trie_t::result_type>(tmp_props.size() - 1);
-							tmp_propmap[fname] = id;
-							//dbg_printf("insert: fname=%s fpath=%s idx=%i\n", fname.c_str(), fpath.c_str(), id);
-							trie.update(fname.c_str(), fname.length(), id);
+							tmp_propmap[fname_lwr] = id;
+							//dbg_printf("insert: fname=%s fpath=%s idx=%i\n", fname_lwr.c_str(), fpath.c_str(), id);
+							trie.update(fname_lwr.c_str(), fname_lwr.length(), id);
 						}
 						else
 						{

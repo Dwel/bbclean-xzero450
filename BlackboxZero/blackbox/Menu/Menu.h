@@ -240,6 +240,7 @@ protected:
     friend MenuItem* MakeSubmenu(Menu *ParentMenu, Menu *ChildMenu, const char* Title);
     friend MenuItem* MakeMenuItem(Menu *PluginMenu, const char* Title, const char* Cmd, bool ShowIndicator);
 	friend MenuItem* MakeMenuResultItem(Menu *PluginMenu, const char* Title, const char* Cmd, const char* typed, bool ShowIndicator);
+	friend MenuItem * MakeMenuItemResultContext(Menu * PluginMenu, const char * Title, const char * Cmd);
     friend MenuItem* MakeMenuItemInt(Menu *PluginMenu, const char* Title, const char* Cmd, int val, int minval, int maxval);
     friend MenuItem* MakeMenuItemString(Menu *PluginMenu, const char* Title, const char* Cmd, const char* init_string);
     friend MenuItem* MakeMenuNOP(Menu *PluginMenu, const char* Title);

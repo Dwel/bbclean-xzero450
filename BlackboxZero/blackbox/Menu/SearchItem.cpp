@@ -14,6 +14,12 @@ MenuItem * MakeMenuItemSearch(Menu * PluginMenu, const char * Title, const char 
 	return helper_menu(PluginMenu, Title, MENU_ID_STRING, new SearchItem(Cmd, init_string));
 }
 
+MenuItem * MakeMenuItemResultContext (Menu * PluginMenu, const char * Title, const char * Cmd)
+{
+	return PluginMenu->AddMenuItem(new ResultItemContext(Cmd, NLS1(Title)));
+}
+
+
 SearchItem::SearchItem (const char* pszCommand, const char *init_string)
 		: StringItem(pszCommand, init_string)
 		, m_bbPath(getBlackboxPath())
@@ -133,6 +139,11 @@ void SearchItem::OnInput ()
 
 	if (bb::search::getLookup().IsIndexing())
 	{
+		TCHAR const indexing_msg[] = TEXT("Indexing...");
+
+		size_t const ln = sizeof(indexing_msg) / sizeof(*indexing_msg);
+		SendMessage(m_hText, WM_SETTEXT, (WPARAM)ln + 1, (LPARAM)indexing_msg);
+		SendMessage(hText,  EM_SETREADONLY, 0, TRUE);
 		return;
 	}
 	SendMessage(hText,  EM_SETREADONLY, 0, FALSE);
@@ -150,17 +161,11 @@ void SearchItem::OnInput ()
 			// ask to rebuild index?
 			bool ret = bb::search::getLookup().LoadOrBuild(false);
 
-			char buffer[] = "Indexing...";
-			SendMessage(m_hText, WM_SETTEXT, (WPARAM)len + 1, (LPARAM)buffer);
+			TCHAR const indexing_msg[] = TEXT("Indexing...");
+
+			size_t const ln = sizeof(indexing_msg) / sizeof(*indexing_msg);
+			SendMessage(m_hText, WM_SETTEXT, (WPARAM)ln + 1, (LPARAM)indexing_msg);
 			SendMessage(hText,  EM_SETREADONLY, 0, TRUE);
-			//GetItemRect(&r);
-			//InvalidateRect(m_pMenu->m_hwnd, &r, false);
-			InvalidateRect(m_hText, &m_textrect, true);
-			UpdateWindow(m_hText);
-			RECT r;
-			GetItemRect(&r);
-			InvalidateRect(m_pMenu->m_hwnd, &r, true);
-			UpdateWindow(m_pMenu->m_hwnd);
 			return;
 			// if (sync) bb::search::getLookup().Stop(); // due to sync
 		}
@@ -173,7 +178,7 @@ void SearchItem::OnInput ()
 	char broam[1024];
 	char text[1024];
 
-	MakeMenuNOP(menu, TEXT("History"));
+	//MakeMenuNOP(menu, TEXT("History"));
 
 	for (size_t i = 0, ie = hres.size(); i < ie; ++i)
 	{
@@ -206,6 +211,8 @@ void SearchItem::OnInput ()
 		MakeMenuItem(ctx, TEXT("pin to history"), broam, false);
 		MakeMenuItem(ctx, TEXT("unpin from history"), broam, false);
 		MakeMenuItem(ctx, TEXT("forget"), broam, false);
+
+		_snprintf_s(broam, 1024, "@BBCore.Exec explorer /select,\"%s\"", ires[i].c_str()); // explorer /select,c:\windows\calc.exe 
 		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
 		mi->m_pRightmenu = ctx;
 	}
@@ -342,5 +349,25 @@ void ResultItem::Invoke (int button)
 	tstring const fpath = m_pszTitle;
 	bb::search::getLookup().m_history.Insert(m_typed, fname, fpath);
 	bb::search::getLookup().m_history.Save();
+}
+
+void ResultItemContext::Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam)
+{
+	CommandItem::Mouse(hwnd, uMsg, wParam, lParam);
+}
+
+void ResultItemContext::Invoke (int button)
+{
+	CommandItem::Invoke(button);
+
+	//char drive[_MAX_DRIVE];
+	//char dir[_MAX_DIR];
+	//char fname[_MAX_FNAME];
+	//char ext[_MAX_EXT];
+	//errno_t err = _splitpath_s(m_pszTitle, drive, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, ext, _MAX_EXT );
+
+	//tstring const fpath = m_pszTitle;
+	//bb::search::getLookup().m_history.Insert(m_typed, fname, fpath);
+	//bb::search::getLookup().m_history.Save();
 }
 

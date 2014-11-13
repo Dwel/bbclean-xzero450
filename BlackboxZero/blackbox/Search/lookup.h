@@ -106,6 +106,7 @@ struct ProgramLookup
 		std::vector<HistoryItem *> history_res; //@TODO: unlocal
 		history_res.reserve(32);
 		bool found_some = false;
+
 		if (m_history.Find(what, history_res, 8))
 		{
 			for (HistoryItem const * h : history_res)
@@ -114,7 +115,9 @@ struct ProgramLookup
 				hres.push_back(h->m_fpath);
 			found_some = true;
 		}
-		if (m_index.Suggest(what, ikeys, ires, 64))
+		tstring what_lwr = what;
+		boost::algorithm::to_lower(what_lwr);
+		if (m_index.Suggest(what_lwr, ikeys, ires, 64))
 		{
 			found_some = true;
 		}
