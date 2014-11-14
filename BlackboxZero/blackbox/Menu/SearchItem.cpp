@@ -8,24 +8,40 @@
 #include <blackbox/Search/config.h>
 #include <blackbox/Search/tmp.h>
 //#include <richedit.h>
+/*HWND CreateRichEdit(HWND hwndOwner,        // Dialog box handle.  int x, int y,          // Location.  int width, int height, // Dimensions.  HINSTANCE hinst)       // Application or DLL instance.
+{
+    LoadLibrary(TEXT("Msftedit.dll"));
+    HWND hwndEdit= CreateWindowEx(0, TEXT("RICHEDIT50W"), TEXT("Type here"),
+        ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_TABSTOP,
+        x, y, width, height,
+        hwndOwner, NULL, hinst, NULL);
+    return hwndEdit;
+}*/
+
 
 MenuItem * MakeMenuItemSearch(Menu * PluginMenu, const char * Title, const char * Cmd, const char * init_string)
 {
 	return helper_menu(PluginMenu, Title, MENU_ID_STRING, new SearchItem(Cmd, init_string));
 }
 
-MenuItem * MakeMenuItemResultContext (Menu * PluginMenu, const char * Title, const char * Cmd)
+MenuItem * MakeMenuItemResultContext(Menu * PluginMenu, const char * Title, const char * Cmd
+		, E_ResultItemAction action, tstring const & typed, tstring const & fname, tstring const & fpath)
 {
-	return PluginMenu->AddMenuItem(new ResultItemContext(Cmd, NLS1(Title)));
+	ResultItemContext * r = new ResultItemContext(Cmd, NLS1(Title));
+	r->m_action = action;
+	r->m_typed = typed;
+	r->m_fname = fname;
+	r->m_fpath = fpath;
+	PluginMenu->AddMenuItem(r);
+	return r;
 }
 
-
 SearchItem::SearchItem (const char* pszCommand, const char *init_string)
-		: StringItem(pszCommand, init_string)
-		, m_bbPath(getBlackboxPath())
-		, m_hText(0)
-		, m_wpEditProc(0)
-		, m_textrect()
+	: StringItem(pszCommand, init_string)
+	, m_bbPath(getBlackboxPath())
+	, m_hText(0)
+	, m_wpEditProc(0)
+	, m_textrect()
 {
 	bb::search::startLookup(m_bbPath);
 }
@@ -39,78 +55,63 @@ SearchItem::~SearchItem ()
 	}
 }
 
-/*HWND CreateRichEdit(HWND hwndOwner,        // Dialog box handle.
-                    int x, int y,          // Location.
-                    int width, int height, // Dimensions.
-                    HINSTANCE hinst)       // Application or DLL instance.
-{
-    LoadLibrary(TEXT("Msftedit.dll"));
-    
-    HWND hwndEdit= CreateWindowEx(0, TEXT("RICHEDIT50W"), TEXT("Type here"),
-        ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 
-        x, y, width, height, 
-        hwndOwner, NULL, hinst, NULL);
-        
-    return hwndEdit;
-}*/
-
 void SearchItem::Paint (HDC hDC)
 {
-		RECT r;
-		HFONT hFont;
-		int x, y, w, h, padd;
-		if (Settings_menu.showBroams)
+	RECT r;
+	HFONT hFont;
+	int x, y, w, h, padd;
+	if (Settings_menu.showBroams)
+	{
+		if (m_hText)
 		{
-				if (m_hText)
-				{
-						DestroyWindow(m_hText);
-						m_hText = NULL;
-				}
-				m_Justify = MENUITEM_STANDARD_JUSTIFY;
-				MenuItem::Paint(hDC);
-				return;
+			DestroyWindow(m_hText);
+			m_hText = NULL;
 		}
-
-		m_Justify = MENUITEM_CUSTOMTEXT;
+		m_Justify = MENUITEM_STANDARD_JUSTIFY;
 		MenuItem::Paint(hDC);
+		return;
+	}
 
-		GetTextRect(&r);
-		if (EqualRect(&m_textrect, &r))
-				return;
+	m_Justify = MENUITEM_CUSTOMTEXT;
+	MenuItem::Paint(hDC);
 
-		m_textrect = r;
+	GetTextRect(&r);
+	if (EqualRect(&m_textrect, &r))
+		return;
 
-		if (NULL == m_hText)
-		{
-				//m_hText = CreateRichEdit(m_pMenu->m_hwnd, 0, 0, 0, 0, hMainInstance);
-				m_hText = CreateWindow( TEXT("EDIT"), m_pszTitle, WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_MULTILINE, 0, 0, 0, 0, m_pMenu->m_hwnd, (HMENU)1234, hMainInstance, NULL);
+	m_textrect = r;
 
-				SetWindowLongPtr(m_hText, GWLP_USERDATA, (LONG_PTR)this);
-				m_wpEditProc = (WNDPROC)SetWindowLongPtr(m_hText, GWLP_WNDPROC, (LONG_PTR)EditProc);
-				int const n = GetWindowTextLength(m_hText);
-				SendMessage(m_hText, EM_SETSEL, 0, n);
-				SendMessage(m_hText, EM_SCROLLCARET, 0, 0);
-				m_pMenu->m_hwndChild = m_hText;
-				if (GetFocus() == m_pMenu->m_hwnd)
-						SetFocus(m_hText);
-		}
+	if (NULL == m_hText)
+	{
+		//m_hText = CreateRichEdit(m_pMenu->m_hwnd, 0, 0, 0, 0, hMainInstance);
+		m_hText = CreateWindow( TEXT("EDIT"), m_pszTitle, WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_MULTILINE, 0, 0, 0, 0, m_pMenu->m_hwnd, (HMENU)1234, hMainInstance, NULL);
 
-		hFont = MenuInfo.hFrameFont;
-		SendMessage(m_hText, WM_SETFONT, (WPARAM)hFont, 0);
+		SetWindowLongPtr(m_hText, GWLP_USERDATA, (LONG_PTR)this);
+		m_wpEditProc = (WNDPROC)SetWindowLongPtr(m_hText, GWLP_WNDPROC, (LONG_PTR)EditProc);
+		int const n = GetWindowTextLength(m_hText);
+		SendMessage(m_hText, EM_SETSEL, 0, n);
+		SendMessage(m_hText, EM_SCROLLCARET, 0, 0);
+		m_pMenu->m_hwndChild = m_hText;
+		if (GetFocus() == m_pMenu->m_hwnd)
+			SetFocus(m_hText);
+	}
 
-		x = r.left - 1;
-		y = r.top + 2;
-		h = r.bottom - r.top - 4;
-		w = r.right - r.left + 2;
+	hFont = MenuInfo.hFrameFont;
+	SendMessage(m_hText, WM_SETFONT, (WPARAM)hFont, 0);
 
-		SetWindowPos(m_hText, NULL, x, y, w, h, SWP_NOZORDER);
+	x = r.left - 1;
+	y = r.top + 2;
+	h = r.bottom - r.top - 4;
+	w = r.right - r.left + 2;
 
-		padd = imax(0, (h - get_fontheight(hFont)) / 2);
-		r.left	= padd+2;
-		r.right = w - (padd+2);
-		r.top		= padd;
-		r.bottom = h - padd;
-		SendMessage(m_hText, EM_SETRECT, 0, (LPARAM)&r);
+	SetWindowPos(m_hText, NULL, x, y, w, h, SWP_NOZORDER);
+
+	padd = imax(0, (h - get_fontheight(hFont)) / 2);
+	r.left	= padd+2;
+	r.right = w - (padd+2);
+	r.top		= padd;
+	r.bottom = h - padd;
+	SendMessage(m_hText, EM_SETRECT, 0, (LPARAM)&r);
 }
 
 void SearchItem::Measure (HDC hDC, SIZE * size, StyleItem * pSI)
@@ -128,7 +129,7 @@ MenuItem * MakeMenuResultItem (Menu * PluginMenu, const char * Title, const char
 {
 	ResultItem * r = new ResultItem(Cmd, NLS1(Title), ShowIndicator);
 	r->m_typed = typed;
-    return PluginMenu->AddMenuItem(r);
+	return PluginMenu->AddMenuItem(r);
 }
 
 void SearchItem::OnInput ()
@@ -179,38 +180,43 @@ void SearchItem::OnInput ()
 	char text[1024];
 
 	//MakeMenuNOP(menu, TEXT("History"));
-
 	for (size_t i = 0, ie = hres.size(); i < ie; ++i)
 	{
+		// result menu item
 		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", hres[i].c_str());
 		_snprintf_s(text, 1024, "%s", hres[i].c_str());
 		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what.c_str(), false);
 		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
 
+		// context menu for result item
 		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
 		MakeMenuItem(ctx, TEXT("run"), broam, false);
-		MakeMenuItem(ctx, TEXT("pin to history"), broam, false);
-		MakeMenuItem(ctx, TEXT("unpin from history"), broam, false);
+		MakeMenuItemResultContext(ctx, TEXT("run as admin"), broam, e_RunAsAdmin, what, hkeys[i], hres[i]);
+		MakeMenuItemResultContext(ctx, TEXT("unpin from history"), broam, e_UnpinFromHistory, what, hkeys[i], hres[i]);
+
+		_snprintf_s(broam, 1024, "@BBCore.Exec explorer /select,\"%s\"", ires[i].c_str()); // explorer /select,c:\windows\calc.exe 
 		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
 		mi->m_pRightmenu = ctx;
 		//MenuOption(ctx, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_ONTOP, 512);
 	}
 
 	MakeMenuNOP(menu, nullptr);
-	MakeMenuNOP(menu, TEXT("Index"));
 
+	MakeMenuNOP(menu, TEXT("Index"));
 	for (size_t i = 0, ie = ires.size(); i < ie; ++i)
 	{
+		// result menu item
 		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", ires[i].c_str());
 		_snprintf_s(text, 1024, "%s", ires[i].c_str());
 		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what.c_str(), false);
 		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
 
+		// context menu for result item
 		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
 		MakeMenuItem(ctx, TEXT("run"), broam, false);
-		MakeMenuItem(ctx, TEXT("pin to history"), broam, false);
-		MakeMenuItem(ctx, TEXT("unpin from history"), broam, false);
-		MakeMenuItem(ctx, TEXT("forget"), broam, false);
+		MakeMenuItemResultContext(ctx, TEXT("run as admin"), broam, e_RunAsAdmin, what, ikeys[i], ires[i]);
+		MakeMenuItemResultContext(ctx, TEXT("pin to history"), broam, e_PinToHistory, what, ikeys[i], ires[i]);
+		MakeMenuItemResultContext(ctx, TEXT("forget"), broam, e_PinToHistory, what, ikeys[i], ires[i]);
 
 		_snprintf_s(broam, 1024, "@BBCore.Exec explorer /select,\"%s\"", ires[i].c_str()); // explorer /select,c:\windows\calc.exe 
 		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
@@ -266,16 +272,17 @@ LRESULT CALLBACK SearchItem::EditProc(HWND hText, UINT msg, WPARAM wParam, LPARA
 			break;
 		}
 		case WM_CHAR:
-				switch (wParam)
-				{
-					case 'A' - 0x40: // ctrl-A: select all
-							SendMessage(hText, EM_SETSEL, 0, GetWindowTextLength(hText));
-					case 13:
-					case 27:
-							goto leave;
-				}
-				break;
-
+		{
+			switch (wParam)
+			{
+				case 'A' - 0x40: // ctrl-A: select all
+						SendMessage(hText, EM_SETSEL, 0, GetWindowTextLength(hText));
+				case 13:
+				case 27:
+						goto leave;
+			}
+			break;
+		}
 		// --------------------------------------------------------
 		// Paint
 
@@ -346,9 +353,9 @@ void ResultItem::Invoke (int button)
 	char ext[_MAX_EXT];
 	errno_t err = _splitpath_s(m_pszTitle, drive, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, ext, _MAX_EXT );
 
-	tstring const fpath = m_pszTitle;
-	bb::search::getLookup().m_history.Insert(m_typed, fname, fpath);
-	bb::search::getLookup().m_history.Save();
+	//tstring const fpath = m_pszTitle;
+	//bb::search::getLookup().m_history.Insert(m_typed, fname, fpath);
+	//bb::search::getLookup().m_history.Save();
 }
 
 void ResultItemContext::Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam)
@@ -360,14 +367,13 @@ void ResultItemContext::Invoke (int button)
 {
 	CommandItem::Invoke(button);
 
-	//char drive[_MAX_DRIVE];
-	//char dir[_MAX_DIR];
-	//char fname[_MAX_FNAME];
-	//char ext[_MAX_EXT];
-	//errno_t err = _splitpath_s(m_pszTitle, drive, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, ext, _MAX_EXT );
-
-	//tstring const fpath = m_pszTitle;
-	//bb::search::getLookup().m_history.Insert(m_typed, fname, fpath);
-	//bb::search::getLookup().m_history.Save();
+	switch (m_action)
+	{
+		case e_PinToHistory:
+		{
+			bb::search::getLookup().m_history.Insert(m_typed, m_fname, m_fpath);
+			bb::search::getLookup().m_history.Save();
+		}
+	};
 }
 

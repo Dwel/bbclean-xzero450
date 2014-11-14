@@ -54,9 +54,13 @@ struct ResultItem : CommandItem
 struct ResultItemContext : CommandItem
 {
     tstring m_typed;
+    tstring m_fname;
+    tstring m_fpath;
+    E_ResultItemAction m_action;
 
     ResultItemContext (const char* pszCommand, const char* pszTitle)
         : CommandItem(pszCommand, pszTitle, false)
+        , m_action(e_Run)
     { }
     void Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam);
     void Invoke (int button);
