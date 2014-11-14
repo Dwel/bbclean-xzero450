@@ -16,8 +16,8 @@
 #include "Menu.h"
 #include <vector>
 #include <string>
-
 #include <blackbox/Search/lookup.h>
+#include "ResultItemAction.h"
 
 class SearchItem : public StringItem
 {
