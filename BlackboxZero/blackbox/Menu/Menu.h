@@ -244,6 +244,7 @@ protected:
     friend MenuItem* MakeMenuNOP(Menu *PluginMenu, const char* Title);
     friend MenuItem* MakeMenuGrip(Menu *PluginMenu, LPCSTR Title);
     friend MenuItem* MakeMenuItemPath(Menu *ParentMenu, const char* Title, const char* path, const char* Cmd);
+	friend MenuItem* MakeMenuInsertPath(Menu *ParentMenu, const char* Title, const char* path, const char* Cmd);
     friend Menu* MakeFolderMenu(const char *title, const char* path, const char *cmd);
     friend void MenuOption(Menu *pMenu, int flags, ...);
     friend void MenuItemOption(MenuItem *pItem, int option, ...);
