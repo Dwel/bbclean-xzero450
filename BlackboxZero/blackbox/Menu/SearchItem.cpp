@@ -18,22 +18,31 @@
     return hwndEdit;
 }*/
 
+namespace {
+	MenuItem * MakeMenuItemSearch(Menu * PluginMenu, const char * Title, const char * Cmd, const char * init_string)
+	{
+		return helper_menu(PluginMenu, Title, MENU_ID_STRING, new SearchItem(Cmd, init_string));
+	}
 
-MenuItem * MakeMenuItemSearch(Menu * PluginMenu, const char * Title, const char * Cmd, const char * init_string)
-{
-	return helper_menu(PluginMenu, Title, MENU_ID_STRING, new SearchItem(Cmd, init_string));
-}
-
-MenuItem * MakeMenuItemResultContext(Menu * PluginMenu, const char * Title, const char * Cmd
-		, E_ResultItemAction action, tstring const & typed, tstring const & fname, tstring const & fpath)
-{
-	ResultItemContext * r = new ResultItemContext(Cmd, NLS1(Title));
-	r->m_action = action;
-	r->m_typed = typed;
-	r->m_fname = fname;
-	r->m_fpath = fpath;
-	PluginMenu->AddMenuItem(r);
-	return r;
+	MenuItem * MakeMenuItemResultContext(Menu * PluginMenu, const char * Title, const char * Cmd
+			, E_ResultItemAction action, tstring const & typed, tstring const & fname, tstring const & fpath)
+	{
+		ResultItemContext * r = new ResultItemContext(Cmd, NLS1(Title));
+		r->m_action = action;
+		r->m_typed = typed;
+		r->m_fname = fname;
+		r->m_fpath = fpath;
+		PluginMenu->AddMenuItem(r);
+		return r;
+	}
+	MenuItem * MakeMenuResultItem (Menu * PluginMenu, const char * Title, const char * Cmd
+			, tstring const & typed, tstring const & fname, tstring const & fpath)
+	{
+		ResultItem * r = new ResultItem(Cmd, NLS1(Title), false);
+		r->m_typed = typed;
+		r->m_pidl_list = get_folder_pidl_list(fpath.c_str());
+		return PluginMenu->AddMenuItem(r);
+	}
 }
 
 SearchItem::SearchItem (const char* pszCommand, const char *init_string)
@@ -125,13 +134,6 @@ void SearchItem::Invoke (int button)
 		OnInput();
 }
 
-MenuItem * MakeMenuResultItem (Menu * PluginMenu, const char * Title, const char * Cmd, char const * typed, bool ShowIndicator)
-{
-	ResultItem * r = new ResultItem(Cmd, NLS1(Title), ShowIndicator);
-	r->m_typed = typed;
-	return PluginMenu->AddMenuItem(r);
-}
-
 void SearchItem::OnInput ()
 {
 	int const len = SendMessage(m_hText, WM_GETTEXTLENGTH, 0, 0);
@@ -154,12 +156,12 @@ void SearchItem::OnInput ()
 	std::vector<tstring> hres;
 	std::vector<tstring> ikeys;
 	std::vector<tstring> ires;
-	bool const found = bb::search::getLookup().Find(what, hkeys, hres, ikeys, ires);
+	bool found = bb::search::getLookup().Find(what, hkeys, hres, ikeys, ires);
 	if (!found)
 	{
 		if (!bb::search::getLookup().IsLoaded())
 		{
-			// ask to rebuild index?
+			//@TODO: ask user to rebuild index?
 			bool ret = bb::search::getLookup().LoadOrBuild(false);
 			if (!ret)
 			{
@@ -168,8 +170,13 @@ void SearchItem::OnInput ()
 				size_t const ln = sizeof(indexing_msg) / sizeof(*indexing_msg);
 				SendMessage(m_hText, WM_SETTEXT, (WPARAM)ln + 1, (LPARAM)indexing_msg);
 				SendMessage(hText, EM_SETREADONLY, 0, TRUE);
-				// if (sync) bb::search::getLookup().Stop(); // due to sync
+				//this is only if synchronous mode enabled: if (sync) bb::search::getLookup().Stop();
 				return;
+			}
+			else
+			{
+				// retry after load
+				found = bb::search::getLookup().Find(what, hkeys, hres, ikeys, ires);
 			}
 		}
 	}
@@ -189,7 +196,7 @@ void SearchItem::OnInput ()
 		// result menu item
 		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", hres[i].c_str());
 		_snprintf_s(text, 1024, "%s", hres[i].c_str());
-		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what.c_str(), false);
+		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what, hkeys[i], hres[i]);
 		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
 
 		if (i == 0)
@@ -220,7 +227,7 @@ void SearchItem::OnInput ()
 		// result menu item
 		_snprintf_s(broam, 1024, "@BBCore.Exec \"%s\"", ires[i].c_str());
 		_snprintf_s(text, 1024, "%s", ires[i].c_str());
-		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what.c_str(), false);
+		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what, ikeys[i], ires[i]);
 		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
 		if (i == 0 && !first_activated)
 		{
@@ -355,11 +362,17 @@ leave:
 	return r;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
+ResultItem::ResultItem (const char * pszCommand, const char * pszTitle, bool bChecked)
+	: CommandItem(pszCommand, pszTitle, bChecked)
+{ }
+ResultItem::~ResultItem ()
+{ }
 void ResultItem::Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam)
 {
 	CommandItem::Mouse(hwnd, uMsg, wParam, lParam);
 }
-
 void ResultItem::Invoke (int button)
 {
 	CommandItem::Invoke(button);
@@ -375,11 +388,16 @@ void ResultItem::Invoke (int button)
 	//bb::search::getLookup().m_history.Save();
 }
 
+ResultItemContext::ResultItemContext (const char* pszCommand, const char* pszTitle)
+	: CommandItem(pszCommand, pszTitle, false)
+	, m_action(e_Run)
+{ }
+ResultItemContext::~ResultItemContext ()
+{ }
 void ResultItemContext::Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam)
 {
 	CommandItem::Mouse(hwnd, uMsg, wParam, lParam);
 }
-
 void ResultItemContext::Invoke (int button)
 {
 	CommandItem::Invoke(button);
@@ -391,6 +409,6 @@ void ResultItemContext::Invoke (int button)
 			bb::search::getLookup().m_history.Insert(m_typed, m_fname, m_fpath);
 			bb::search::getLookup().m_history.Save();
 		}
-	};
+	}
 }
 

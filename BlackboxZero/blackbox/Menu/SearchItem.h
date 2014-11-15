@@ -43,10 +43,11 @@ protected:
 struct ResultItem : CommandItem
 {
     tstring m_typed;
+    tstring m_fname;
+    tstring m_fpath;
 
-    ResultItem (const char* pszCommand, const char* pszTitle, bool bChecked)
-        : CommandItem(pszCommand, pszTitle, bChecked)
-    { }
+    ResultItem (const char* pszCommand, const char* pszTitle, bool bChecked);
+    ~ResultItem ();
     void Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam);
     void Invoke (int button);
 };
@@ -58,10 +59,8 @@ struct ResultItemContext : CommandItem
     tstring m_fpath;
     E_ResultItemAction m_action;
 
-    ResultItemContext (const char* pszCommand, const char* pszTitle)
-        : CommandItem(pszCommand, pszTitle, false)
-        , m_action(e_Run)
-    { }
+    ResultItemContext (const char* pszCommand, const char* pszTitle);
+    ~ResultItemContext ();
     void Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam);
     void Invoke (int button);
 };
