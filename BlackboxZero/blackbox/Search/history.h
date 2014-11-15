@@ -17,6 +17,11 @@ struct HistoryItem
 	HistoryItem () : m_ref(0) { }
 };
 
+inline bool operator== (HistoryItem const & lhs, HistoryItem const & rhs)
+{
+	return lhs.m_typed == rhs.m_typed && lhs.m_fname == rhs.m_fname && lhs.m_fpath == rhs.m_fpath;
+}
+
 inline std::ostream & write (std::ostream & os, HistoryItem const & t)
 {
 	if (!write(os, t.m_typed)) return os;
@@ -67,23 +72,31 @@ struct History
 
 	bool Insert (tstring const & typed, tstring const & fname, tstring const & fpath)
 	{
-		for (size_t i = 0; i < m_items.size(); ++i)
-		{
-			if (m_items[i].m_typed == typed && m_items[i].m_fname == fname && m_items[i].m_fpath == fpath)
-			{
-				++m_items[i].m_ref;
-				// save
-				return true;
-			}
-		}
 		HistoryItem hi;
 		hi.m_typed = typed;
 		hi.m_fname = fname;
 		hi.m_fpath = fpath;
+		for (size_t i = 0; i < m_items.size(); ++i)
+		{
+			if (m_items[i] == hi)
+			{
+				++m_items[i].m_ref;
+				return true;
+			}
+		}
 		hi.m_ref = 1;
 		m_items.push_back(hi);
-		// save
 		return false;
+	}
+
+	bool Remove (tstring const & typed, tstring const & fname, tstring const & fpath)
+	{
+		HistoryItem hi;
+		hi.m_typed = typed;
+		hi.m_fname = fname;
+		m_items.erase(std::remove_if(m_items.begin(), m_items.end()
+					, [&fname, &fpath] (HistoryItem const & lhs) { return lhs.m_fname == fname && lhs.m_fpath == fpath; }), m_items.end());
+		return true;
 	}
 
 	//bool Suggest (tstring const & what, std::vector<tstring> & keywords, std::vector<tstring> & results, size_t max_results = 128)

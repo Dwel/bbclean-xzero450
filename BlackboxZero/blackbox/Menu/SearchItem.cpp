@@ -408,7 +408,16 @@ void ResultItemContext::Invoke (int button)
 		{
 			bb::search::getLookup().m_history.Insert(m_typed, m_fname, m_fpath);
 			bb::search::getLookup().m_history.Save();
-		}
+		} break;
+		case e_UnpinFromHistory:
+		{
+			bb::search::getLookup().m_history.Remove(m_typed, m_fname, m_fpath);
+			bb::search::getLookup().m_history.Save();
+		} break;
+		case e_PinToIconBox:
+		{
+			post_command("@bbIconBox.add Search");
+		} break;
 	}
 }
 
