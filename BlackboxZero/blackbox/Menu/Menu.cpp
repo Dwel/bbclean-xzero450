@@ -2634,14 +2634,19 @@ MenuItem* MakeMenuGrip(Menu *PluginMenu, LPCSTR Title)
 // API: MakeMenuItemPath
 //===========================================================================
 
-MenuItem* MakeMenuItemPath(Menu *ParentMenu, const char* Title, const char* path, const char* Cmd)
+MenuItem* MakeMenuItemPath (Menu *ParentMenu, const char* Title, const char* path, const char* Cmd)
 {
-    MenuItem *pItem;
-    if (Title)
-        pItem = new SpecialFolderItem(NLS1(Title), path, NULL, Cmd);
-    else
-        pItem = new SFInsert(path, Cmd);
-    return ParentMenu->AddMenuItem(pItem);
+	MenuItem * pItem = new SpecialFolderItem(NLS1(Title), path, NULL, Cmd);
+	return ParentMenu->AddMenuItem(pItem);
+}
+
+MenuItem* MakeMenuInsertPath (Menu *ParentMenu, const char* Title, const char* path, const char* Cmd)
+{
+ 	MenuItem * items = NULL;
+	pidl_node * p = get_folder_pidl_list(path);
+	ParentMenu->AddFolderContents(p, NULL);
+	delete_pidl_list(&p);
+	return NULL;
 }
 
 //===========================================================================

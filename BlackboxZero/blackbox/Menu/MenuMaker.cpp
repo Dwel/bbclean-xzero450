@@ -283,7 +283,7 @@ skip:
         // a [insertpath] item will insert items from a folder...
         case e_insertpath:
             p_cmd = get_special_command(&p_data, buffer, sizeof buffer);
-            pItem = MakeMenuItemPath(pMenu, NULL, p_data, p_cmd);
+            pItem = MakeMenuInsertPath(pMenu, NULL, p_data, p_cmd);
             break;
 
         // a [stylemenu] item is pointing to a dynamic style folder...

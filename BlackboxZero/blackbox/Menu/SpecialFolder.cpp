@@ -197,6 +197,7 @@ void SFInsert::RemoveStuff(void)
 
 void SFInsert::Paint(HDC hDC)
 {
+	// @FIXME: there is some code missing here... or am i missing something?
 }
 
 //===========================================================================
