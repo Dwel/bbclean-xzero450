@@ -161,14 +161,16 @@ void SearchItem::OnInput ()
 		{
 			// ask to rebuild index?
 			bool ret = bb::search::getLookup().LoadOrBuild(false);
-
-			TCHAR const indexing_msg[] = TEXT("Indexing...");
-
-			size_t const ln = sizeof(indexing_msg) / sizeof(*indexing_msg);
-			SendMessage(m_hText, WM_SETTEXT, (WPARAM)ln + 1, (LPARAM)indexing_msg);
-			SendMessage(hText,  EM_SETREADONLY, 0, TRUE);
-			return;
-			// if (sync) bb::search::getLookup().Stop(); // due to sync
+			if (!ret)
+			{
+				// not loaded, have to build index
+				TCHAR const indexing_msg[] = TEXT("Indexing...");
+				size_t const ln = sizeof(indexing_msg) / sizeof(*indexing_msg);
+				SendMessage(m_hText, WM_SETTEXT, (WPARAM)ln + 1, (LPARAM)indexing_msg);
+				SendMessage(hText, EM_SETREADONLY, 0, TRUE);
+				// if (sync) bb::search::getLookup().Stop(); // due to sync
+				return;
+			}
 		}
 	}
 
@@ -179,7 +181,9 @@ void SearchItem::OnInput ()
 	char broam[1024];
 	char text[1024];
 
-	//MakeMenuNOP(menu, TEXT("History"));
+	if (hres.size() > 0)
+		MakeMenuNOP(menu, TEXT("History"));
+	bool first_activated = false;
 	for (size_t i = 0, ie = hres.size(); i < ie; ++i)
 	{
 		// result menu item
@@ -187,6 +191,12 @@ void SearchItem::OnInput ()
 		_snprintf_s(text, 1024, "%s", hres[i].c_str());
 		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what.c_str(), false);
 		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
+
+		if (i == 0)
+		{
+			mi->Active(true);
+			first_activated = true;
+		}
 
 		// context menu for result item
 		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
@@ -200,8 +210,10 @@ void SearchItem::OnInput ()
 		//MenuOption(ctx, BBMENU_MAXWIDTH | BBMENU_CENTER | BBMENU_ONTOP, 512);
 	}
 
-	MakeMenuNOP(menu, nullptr);
-
+	if (hres.size() > 0)
+	{
+		MakeMenuNOP(menu, nullptr);
+	}
 	MakeMenuNOP(menu, TEXT("Index"));
 	for (size_t i = 0, ie = ires.size(); i < ie; ++i)
 	{
@@ -210,6 +222,11 @@ void SearchItem::OnInput ()
 		_snprintf_s(text, 1024, "%s", ires[i].c_str());
 		MenuItem * mi = MakeMenuResultItem(menu, text, broam, what.c_str(), false);
 		MenuItemOption(mi, BBMENUITEM_JUSTIFY, DT_RIGHT);
+		if (i == 0 && !first_activated)
+		{
+			mi->Active(true);
+			first_activated = true;
+		}
 
 		// context menu for result item
 		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);

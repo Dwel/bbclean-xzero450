@@ -6,6 +6,7 @@
 #include <3rd_party/cedar/cedar.h>
 #include "serialize.h"
 #include "config.h"
+//#include <blackbox/BBApi.h>
 
 namespace bb { namespace search {
 
@@ -121,17 +122,31 @@ protected:
 		if (!IsLoaded())
 			return false;
 
-		trie_t::result_triple_type * const result_triple = static_cast<trie_t::result_triple_type *>(alloca(max_results * sizeof(trie_t::result_triple_type)));
+		/*trie_t::result_pair_type * const result_pair = static_cast<trie_t::result_pair_type *>(alloca(max_results * sizeof(trie_t::result_pair_type)));
+		if (const size_t n = m_trie.commonPrefixSearch(str.c_str(), result_pair, max_results))
+		{
+			for (size_t i = 0; i < n && i < max_results; ++i)
+			{
+				//m_trie.suffix(suffix, result_triple[i].length, result_triple[i].id);
+				for (tstring const & s : m_props[result_pair[i].value].m_fpath)
+					dbg_printf("found %s:%ld", m_props[result_pair[i].value].m_fname, result_pair[i].length);
+					//on_match(m_props[result_triple[i].value].m_fname, s);
+			}
+			//return true;
+		}*/
 
+		trie_t::result_triple_type * const result_triple = static_cast<trie_t::result_triple_type *>(alloca(max_results * sizeof(trie_t::result_triple_type)));
 		TCHAR suffix[1024];
 		if (const size_t n = m_trie.commonPrefixPredict(str.c_str(), result_triple, max_results))
 		{
-			//printf("%s: found, num=%ld \n", str.c_str(), n);
 			for (size_t i = 0; i < n && i < max_results; ++i)
 			{
 				m_trie.suffix(suffix, result_triple[i].length, result_triple[i].id);
 				for (tstring const & s : m_props[result_triple[i].value].m_fpath)
+				{
+					//dbg_printf("%s: prefix found, [%d/%d] %s\n", str.c_str(), n, i, s.c_str());
 					on_match(m_props[result_triple[i].value].m_fname, s);
+				}
 			}
 			return true;
 		}
