@@ -37,6 +37,7 @@ inline std::ostream & write (std::ostream & os, Props const & t)
 
 typedef std::vector<Props> props_t; // vecor
 typedef cedar::da<int> trie_t;
+typedef tstrings forget_t;
 
 void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring const & fpath);
 bool loadIndex (trie_t & t, tstring const & fpath);
@@ -44,17 +45,26 @@ bool saveIndex (trie_t const & t, tstring const & fpath);
 bool searchIndex (trie_t & t, tstring const & str, std::function<void(tstring const &, tstring const &)> on_match);
 bool loadProps (props_t & t, tstring const & fpath);
 bool saveProps (props_t const & t, tstring const & fpath);
+bool loadForget (forget_t & t, tstring const & fpath);
+bool saveForget (forget_t const & t, tstring const & fpath);
 
 struct Index
 {
 	trie_t m_trie;
 	props_t m_props;
+	forget_t m_forget; //@TODO: better container
 	tstring m_path;
 	tstring m_name;
 	Config m_cfg;
 
 	Index (tstring const & path, tstring const & name, Config const & cfg) : m_path(path), m_name(name), m_cfg(cfg) { }
 	bool IsLoaded () const { return m_props.size() > 0; }
+
+	bool Forget (tstring const & s)
+	{
+		m_forget.push_back(s);
+		return true;
+	}
 
 	bool Find (tstring const & what, std::vector<tstring> & results, size_t max_results = 128)
 	{
@@ -83,6 +93,8 @@ struct Index
 
 	bool Load ()
 	{
+		tstring const fgt_fpath = m_path + m_name + TEXT(".forget");
+		loadForget(m_forget, fgt_fpath);
 		tstring const idx_fpath = m_path + m_name + TEXT(".index");
 		tstring const prop_fpath = m_path + m_name + TEXT(".props");
 		if (loadIndex(m_trie, idx_fpath))
@@ -103,6 +115,14 @@ struct Index
 		saveIndex(m_trie, idx_fpath);
 		tstring const prop_fpath = m_path + m_name + TEXT(".props");
 		saveProps(m_props, prop_fpath);
+		SaveForget();
+		return true; // ehm
+	}
+
+	bool SaveForget ()
+	{
+		tstring const fgt_fpath = m_path + m_name + TEXT(".forget");
+		saveForget(m_forget, fgt_fpath);
 		return true; // ehm
 	}
 

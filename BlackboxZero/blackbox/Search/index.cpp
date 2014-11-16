@@ -121,4 +121,32 @@ bool saveProps (props_t const & t, tstring const & fpath)
 	return true;
 }
 
+bool loadForget (forget_t & t, tstring const & fpath)
+{
+	t.reserve(512);
+	std::ifstream f(fpath.c_str());
+	if (f.fail())
+		return false;
+
+	std::string line;
+	while (std::getline(f, line))
+	{
+		if (!line.empty())
+			t.push_back(line);
+	}
+	f.close();
+	return true;
+}
+
+bool saveForget (forget_t const & t, tstring const & fpath)
+{
+	std::ofstream f(fpath.c_str());
+	if (f.fail())
+		return false;
+	for (tstring const & s : t)
+		f << s << std::endl;
+	f.close();
+	return true;
+}
+
 }}

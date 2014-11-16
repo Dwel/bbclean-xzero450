@@ -241,7 +241,7 @@ void SearchItem::OnInput ()
 		MakeMenuItemResultContext(ctx, TEXT("run as admin"), NULL, e_RunAsAdmin, what, ikeys[i], ires[i]);
 		MakeMenuItemResultContext(ctx, TEXT("pin to history"), NULL, e_PinToHistory, what, ikeys[i], ires[i]);
 		MakeMenuItemResultContext(ctx, TEXT("pin to iconbox"), NULL, e_PinToIconBox, what, ikeys[i], ires[i]);
-		MakeMenuItemResultContext(ctx, TEXT("forget"), NULL, e_UnpinFromHistory, what, ikeys[i], ires[i]);
+		MakeMenuItemResultContext(ctx, TEXT("forget"), NULL, e_UnpinFromIndex, what, ikeys[i], ires[i]);
 
 		_snprintf_s(broam, 1024, "@BBCore.Exec explorer /select,\"%s\"", ires[i].c_str()); // explorer /select,c:\windows\calc.exe 
 		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
@@ -484,6 +484,16 @@ void ResultItemContext::Invoke (int button)
 			post_command_fmt("@bbIconBox.create ", link);
 			link += "\\" + m_fname + ".lnk";
 			CreateLink(m_fpath.c_str(), link.c_str(), TEXT("pinned search result"));
+			dbg_printf("create link src=%s tgt=%s", m_fpath.c_str(), link.c_str());
+		} break;
+		case e_UnpinFromIndex:
+		{
+			bb::search::getLookup().m_index.Forget(m_fpath);
+			bb::search::getLookup().m_index.SaveForget();
+			// remove
+			// from
+			// index
+			bb::search::getLookup().m_index.Save();
 		} break;
 	}
 }
