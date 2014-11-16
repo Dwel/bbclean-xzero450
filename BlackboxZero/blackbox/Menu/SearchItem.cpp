@@ -489,6 +489,7 @@ void ResultItemContext::Invoke (int button)
 		case e_UnpinFromIndex:
 		{
 			bb::search::getLookup().m_index.Forget(m_fpath);
+			bb::search::getLookup().m_index.RemoveFromIndex(m_fname, m_fpath);
 			bb::search::getLookup().m_index.SaveForget();
 			// remove
 			// from

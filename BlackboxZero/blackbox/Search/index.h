@@ -66,6 +66,25 @@ struct Index
 		return true;
 	}
 
+	bool RemoveFromIndex (tstring const & fname, tstring const & fpath)
+	{
+		for (size_t i = 0; i < m_props.size(); ++i) // @TODO: efficiency
+		{
+			if (m_props[i].m_fname == fname)
+			{
+				tstrings & paths = m_props[i].m_fpath;
+				paths.erase(std::remove_if(paths.begin(), paths.end()
+							, [&fpath] (tstring const & lhs) { return boost::iequals(lhs, fpath); }), paths.end());
+
+				// @NOTE: following erase crashes, *sigh*
+				//if (paths.size() == 0)
+				//	m_trie.erase(fname.c_str());
+				return true;
+			}
+		}
+		return false;
+	}
+
 	bool Find (tstring const & what, std::vector<tstring> & results, size_t max_results = 128)
 	{
 		results.clear();
