@@ -482,7 +482,7 @@ void ResultItemContext::Invoke (int button)
 			tstring link(path); // @TODO: tmp
 			link += "search";
 			post_command_fmt("@bbIconBox.create ", link);
-			link += "\\" + m_fname;
+			link += "\\" + m_fname + ".lnk";
 			CreateLink(m_fpath.c_str(), link.c_str(), TEXT("pinned search result"));
 		} break;
 	}
