@@ -208,8 +208,8 @@ void SearchItem::OnInput ()
 		// context menu for result item
 		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
 		MakeMenuItem(ctx, TEXT("run"), broam, false);
-		MakeMenuItemResultContext(ctx, TEXT("run as admin"), broam, e_RunAsAdmin, what, hkeys[i], hres[i]);
-		MakeMenuItemResultContext(ctx, TEXT("unpin from history"), broam, e_UnpinFromHistory, what, hkeys[i], hres[i]);
+		MakeMenuItemResultContext(ctx, TEXT("run as admin"), NULL, e_RunAsAdmin, what, hkeys[i], hres[i]);
+		MakeMenuItemResultContext(ctx, TEXT("unpin from history"), NULL, e_UnpinFromHistory, what, hkeys[i], hres[i]);
 
 		_snprintf_s(broam, 1024, "@BBCore.Exec explorer /select,\"%s\"", ires[i].c_str()); // explorer /select,c:\windows\calc.exe 
 		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
@@ -238,9 +238,10 @@ void SearchItem::OnInput ()
 		// context menu for result item
 		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
 		MakeMenuItem(ctx, TEXT("run"), broam, false);
-		MakeMenuItemResultContext(ctx, TEXT("run as admin"), broam, e_RunAsAdmin, what, ikeys[i], ires[i]);
-		MakeMenuItemResultContext(ctx, TEXT("pin to history"), broam, e_PinToHistory, what, ikeys[i], ires[i]);
-		MakeMenuItemResultContext(ctx, TEXT("forget"), broam, e_PinToHistory, what, ikeys[i], ires[i]);
+		MakeMenuItemResultContext(ctx, TEXT("run as admin"), NULL, e_RunAsAdmin, what, ikeys[i], ires[i]);
+		MakeMenuItemResultContext(ctx, TEXT("pin to history"), NULL, e_PinToHistory, what, ikeys[i], ires[i]);
+		MakeMenuItemResultContext(ctx, TEXT("pin to iconbox"), NULL, e_PinToIconBox, what, ikeys[i], ires[i]);
+		MakeMenuItemResultContext(ctx, TEXT("forget"), NULL, e_UnpinFromHistory, what, ikeys[i], ires[i]);
 
 		_snprintf_s(broam, 1024, "@BBCore.Exec explorer /select,\"%s\"", ires[i].c_str()); // explorer /select,c:\windows\calc.exe 
 		MakeMenuItem(ctx, TEXT("open explorer here"), broam, false);
@@ -398,6 +399,66 @@ void ResultItemContext::Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam)
 {
 	CommandItem::Mouse(hwnd, uMsg, wParam, lParam);
 }
+
+/*#include "windows.h"
+#include "winnls.h"
+#include "shobjidl.h"
+#include "objbase.h"
+#include "objidl.h"
+#include "shlguid.h"*/
+
+// CreateLink - Uses the Shell's IShellLink and IPersistFile interfaces 
+//              to create and store a shortcut to the specified object. 
+//
+// Returns the result of calling the member functions of the interfaces. 
+//
+// Parameters:
+// lpszPathObj  - Address of a buffer that contains the path of the object,
+//                including the file name.
+// lpszPathLink - Address of a buffer that contains the path where the 
+//                Shell link is to be stored, including the file name.
+// lpszDesc     - Address of a buffer that contains a description of the 
+//                Shell link, stored in the Comment field of the link
+//                properties.
+HRESULT CreateLink(LPCTSTR lpszPathObj, LPCTSTR lpszPathLink, LPCTSTR lpszDesc) 
+{ 
+    HRESULT hres; 
+    IShellLink* psl; 
+ 
+    // Get a pointer to the IShellLink interface. It is assumed that CoInitialize
+    // has already been called.
+    hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID*)&psl); 
+    if (SUCCEEDED(hres)) 
+    { 
+        IPersistFile* ppf; 
+ 
+        // Set the path to the shortcut target and add the description. 
+        psl->SetPath(lpszPathObj); 
+        psl->SetDescription(lpszDesc); 
+ 
+        // Query IShellLink for the IPersistFile interface, used for saving the 
+        // shortcut in persistent storage. 
+        hres = psl->QueryInterface(IID_IPersistFile, (LPVOID*)&ppf); 
+ 
+        if (SUCCEEDED(hres)) 
+        { 
+            WCHAR wsz[MAX_PATH]; 
+ 
+            // Ensure that the string is Unicode. 
+            MultiByteToWideChar(CP_ACP, 0, lpszPathLink, -1, wsz, MAX_PATH); 
+            
+            // Add code here to check return value from MultiByteWideChar 
+            // for success.
+ 
+            // Save the link by calling IPersistFile::Save. 
+            hres = ppf->Save(wsz, TRUE); 
+            ppf->Release(); 
+        } 
+        psl->Release(); 
+    } 
+    return hres;
+}
+
 void ResultItemContext::Invoke (int button)
 {
 	CommandItem::Invoke(button);
@@ -416,7 +477,13 @@ void ResultItemContext::Invoke (int button)
 		} break;
 		case e_PinToIconBox:
 		{
-			post_command("@bbIconBox.add Search");
+			TCHAR path[1024];
+			GetBlackboxPath(path, 1024);
+			tstring link(path); // @TODO: tmp
+			link += "search";
+			post_command_fmt("@bbIconBox.create ", link);
+			link += "\\" + m_fname;
+			CreateLink(m_fpath.c_str(), link.c_str(), TEXT("pinned search result"));
 		} break;
 	}
 }

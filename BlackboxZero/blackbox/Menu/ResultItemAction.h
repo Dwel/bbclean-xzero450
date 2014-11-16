@@ -3,7 +3,9 @@
 enum E_ResultItemAction
 {
     e_Run,
+    e_RunWithArgs,
     e_RunAsAdmin,
+    e_RunWithArgsAsAdmin,
     e_PinToHistory,
     e_UnpinFromHistory,
     e_PinToIconBox,
