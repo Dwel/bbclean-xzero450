@@ -64,6 +64,8 @@ SearchItem::~SearchItem ()
 	}
 }
 
+bool enable_completion (HWND hwnd);
+
 void SearchItem::Paint (HDC hDC)
 {
 	RECT r;
@@ -94,6 +96,8 @@ void SearchItem::Paint (HDC hDC)
 	{
 		//m_hText = CreateRichEdit(m_pMenu->m_hwnd, 0, 0, 0, 0, hMainInstance);
 		m_hText = CreateWindow( TEXT("EDIT"), m_pszTitle, WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_MULTILINE, 0, 0, 0, 0, m_pMenu->m_hwnd, (HMENU)1234, hMainInstance, NULL);
+
+		enable_completion(m_hText);
 
 		SetWindowLongPtr(m_hText, GWLP_USERDATA, (LONG_PTR)this);
 		m_wpEditProc = (WNDPROC)SetWindowLongPtr(m_hText, GWLP_WNDPROC, (LONG_PTR)EditProc);
