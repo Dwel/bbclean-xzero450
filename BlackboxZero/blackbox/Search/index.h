@@ -145,6 +145,13 @@ struct Index
 		return true; // ehm
 	}
 
+	void Clear ()
+	{
+		m_trie.clear();
+		m_props.clear();
+		m_forget.clear();
+	}
+
 	bool Rebuild ()
 	{
 		//_tprintf(TEXT("*** Rebuilding index ***\n"));

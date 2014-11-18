@@ -70,6 +70,25 @@ struct ProgramLookup
 		return m_indexing && !m_job.IsFinished();
 	}
 
+	void Clear ()
+	{
+		m_history.Clear();
+		m_index.Clear();
+	}
+
+	void ReloadOrBuild ()
+	{
+		Clear();
+
+		Config cfg;
+		if (!readRC(m_path + TEXT("search.rc"), cfg))
+			defaultConfig(cfg);
+		m_index.m_cfg.clear();
+		m_index.m_cfg = cfg;
+
+		LoadOrBuild(false);
+	}
+
 	bool LoadOrBuild (bool sync = false)
 	{
 		m_history.Load();
@@ -89,7 +108,6 @@ struct ProgramLookup
 			}
 			return false;
 		}
-
 		return true;
 	}
 

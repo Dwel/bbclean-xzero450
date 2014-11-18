@@ -99,6 +99,8 @@ struct History
 		return true;
 	}
 
+	void Clear () { m_items.clear(); }
+
 	//bool Suggest (tstring const & what, std::vector<tstring> & keywords, std::vector<tstring> & results, size_t max_results = 128)
 	bool Load ();
 	bool Save ();

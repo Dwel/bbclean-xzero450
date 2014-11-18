@@ -8,6 +8,7 @@
 #include <blackbox/Search/config.h>
 #include <blackbox/Search/tmp.h>
 #include <blackbox/Search/complete.h>
+#include <Shlwapi.h>
 //#include <richedit.h>
 /*HWND CreateRichEdit(HWND hwndOwner,        // Dialog box handle.  int x, int y,          // Location.  int width, int height, // Dimensions.  HINSTANCE hinst)       // Application or DLL instance.
 {
@@ -472,15 +473,31 @@ void ResultItemContext::Invoke (int button)
 		} break;
 		case e_PinToIconBox:
 		{
-			TCHAR path[1024];
-			GetBlackboxPath(path, 1024);
-			tstring link(path); // @TODO: tmp
-			link += "search";
-			CreateDirectory(link.c_str(), NULL);
-			post_command_fmt("@bbIconBox.create %s", link.c_str());
-			link += "\\" + m_fname + ".lnk";
-			CreateLink(m_fpath.c_str(), link.c_str(), TEXT("pinned search result"));
-			dbg_printf("create link src=%s tgt=%s", m_fpath.c_str(), link.c_str());
+			TCHAR bbpath[1024];
+			GetBlackboxPath(bbpath, 1024);
+			tstring path(bbpath); // @TODO: tmp
+			path += "search";
+			CreateDirectory(path.c_str(), NULL);
+			post_command_fmt("@bbIconBox.create.unique %s", path.c_str());
+
+			tstring linkfpath = path + "\\" + m_fname + ".lnk";
+			if (!PathFileExists(linkfpath.c_str()))
+			{
+				CreateLink(m_fpath.c_str(), linkfpath.c_str(), TEXT("pinned search result"));
+				dbg_printf("create link src=%s tgt=%s", m_fpath.c_str(), linkfpath.c_str());
+			}
+			else
+			{
+				for (int i = 1; i < 32; ++i)
+				{
+					linkfpath = path + "\\" + m_fname + "_" + std::to_string(i) + ".lnk";
+					if (PathFileExists(linkfpath.c_str()))
+						continue;
+					CreateLink(m_fpath.c_str(), linkfpath.c_str(), TEXT("pinned search result"));
+					dbg_printf("create link src=%s tgt=%s", m_fpath.c_str(), linkfpath.c_str());
+					break;
+				}
+			}
 		} break;
 		case e_UnpinFromIndex:
 		{
