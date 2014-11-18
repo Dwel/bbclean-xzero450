@@ -7,6 +7,7 @@
 #include <blackbox/Search/lookup.h>
 #include <blackbox/Search/config.h>
 #include <blackbox/Search/tmp.h>
+#include <blackbox/Search/complete.h>
 //#include <richedit.h>
 /*HWND CreateRichEdit(HWND hwndOwner,        // Dialog box handle.  int x, int y,          // Location.  int width, int height, // Dimensions.  HINSTANCE hinst)       // Application or DLL instance.
 {
@@ -59,12 +60,11 @@ SearchItem::~SearchItem ()
 {
 	if (m_hText)
 	{
+		disableCompletion();
 		DestroyWindow(m_hText);
 		m_hText = NULL;
 	}
 }
-
-bool enable_completion (HWND hwnd);
 
 void SearchItem::Paint (HDC hDC)
 {
@@ -94,11 +94,17 @@ void SearchItem::Paint (HDC hDC)
 
 	if (NULL == m_hText)
 	{
+		TCHAR const indexing_msg[] = TEXT("Indexing...");
+
+
+		TCHAR const * text = 0;
+		if (bb::search::getLookup().IsIndexing())
+			text = indexing_msg;
+		else
+			text = m_pszTitle; //@TODO: last search?
+
 		//m_hText = CreateRichEdit(m_pMenu->m_hwnd, 0, 0, 0, 0, hMainInstance);
-		m_hText = CreateWindow( TEXT("EDIT"), m_pszTitle, WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_MULTILINE, 0, 0, 0, 0, m_pMenu->m_hwnd, (HMENU)1234, hMainInstance, NULL);
-
-		enable_completion(m_hText);
-
+		m_hText = CreateWindow(TEXT("EDIT"), text, WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_MULTILINE, 0, 0, 0, 0, m_pMenu->m_hwnd, (HMENU)1234, hMainInstance, NULL);
 		SetWindowLongPtr(m_hText, GWLP_USERDATA, (LONG_PTR)this);
 		m_wpEditProc = (WNDPROC)SetWindowLongPtr(m_hText, GWLP_WNDPROC, (LONG_PTR)EditProc);
 		int const n = GetWindowTextLength(m_hText);
@@ -107,6 +113,30 @@ void SearchItem::Paint (HDC hDC)
 		m_pMenu->m_hwndChild = m_hText;
 		if (GetFocus() == m_pMenu->m_hwnd)
 			SetFocus(m_hText);
+
+		bool rebuilding = false;
+		if (!bb::search::getLookup().IsIndexing() && !bb::search::getLookup().IsLoaded())
+		{
+			//@TODO: ask user to rebuild index?
+			bool const loaded = bb::search::getLookup().LoadOrBuild(false);
+			if (!loaded)
+			{
+				rebuilding = true;
+				// not loaded, have to build index
+				size_t const ln = sizeof(indexing_msg) / sizeof(*indexing_msg);
+				SendMessage(m_hText, WM_SETTEXT, (WPARAM)ln + 1, (LPARAM)indexing_msg);
+				SendMessage(hText, EM_SETREADONLY, 0, TRUE);
+			}
+		}
+
+		if (!rebuilding && bb::search::getLookup().IsLoaded())
+		{
+			tstrings tmp;
+			tmp.reserve(bb::search::getLookup().m_index.m_props.size());
+			for (bb::search::Props const & p : bb::search::getLookup().m_index.m_props)
+				tmp.push_back(p.m_fname);
+			enableCompletion(m_hText, tmp);
+		}
 	}
 
 	hFont = MenuInfo.hFrameFont;
@@ -155,38 +185,15 @@ void SearchItem::OnInput ()
 	}
 	SendMessage(hText,  EM_SETREADONLY, 0, FALSE);
 
+	// query
 	tstring const what(buffer);
 	std::vector<tstring> hkeys;
 	std::vector<tstring> hres;
 	std::vector<tstring> ikeys;
 	std::vector<tstring> ires;
-	bool found = bb::search::getLookup().Find(what, hkeys, hres, ikeys, ires);
-	if (!found)
-	{
-		if (!bb::search::getLookup().IsLoaded())
-		{
-			//@TODO: ask user to rebuild index?
-			bool ret = bb::search::getLookup().LoadOrBuild(false);
-			if (!ret)
-			{
-				// not loaded, have to build index
-				TCHAR const indexing_msg[] = TEXT("Indexing...");
-				size_t const ln = sizeof(indexing_msg) / sizeof(*indexing_msg);
-				SendMessage(m_hText, WM_SETTEXT, (WPARAM)ln + 1, (LPARAM)indexing_msg);
-				SendMessage(hText, EM_SETREADONLY, 0, TRUE);
-				//this is only if synchronous mode enabled: if (sync) bb::search::getLookup().Stop();
-				return;
-			}
-			else
-			{
-				// retry after load
-				found = bb::search::getLookup().Find(what, hkeys, hres, ikeys, ires);
-			}
-		}
-	}
+	bb::search::getLookup().Find(what, hkeys, hres, ikeys, ires);
 
-	//m_results.clear();
-
+	// result menu creation
 	Menu * menu = MakeNamedMenu(NLS0("Search results"), "Search_results", true);
 
 	char broam[1024];
@@ -404,33 +411,20 @@ void ResultItemContext::Mouse (HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam)
 	CommandItem::Mouse(hwnd, uMsg, wParam, lParam);
 }
 
-/*#include "windows.h"
-#include "winnls.h"
-#include "shobjidl.h"
-#include "objbase.h"
-#include "objidl.h"
-#include "shlguid.h"*/
-
-// CreateLink - Uses the Shell's IShellLink and IPersistFile interfaces 
-//              to create and store a shortcut to the specified object. 
+// CreateLink - Uses the Shell's IShellLink and IPersistFile interfaces to create and store a shortcut to the specified object. 
 //
 // Returns the result of calling the member functions of the interfaces. 
 //
 // Parameters:
-// lpszPathObj  - Address of a buffer that contains the path of the object,
-//                including the file name.
-// lpszPathLink - Address of a buffer that contains the path where the 
-//                Shell link is to be stored, including the file name.
-// lpszDesc     - Address of a buffer that contains a description of the 
-//                Shell link, stored in the Comment field of the link
-//                properties.
+// lpszPathObj  - Address of a buffer that contains the path of the object, including the file name.
+// lpszPathLink - Address of a buffer that contains the path where the Shell link is to be stored, including the file name.
+// lpszDesc     - Address of a buffer that contains a description of the Shell link, stored in the Comment field of the link properties.
 HRESULT CreateLink(LPCTSTR lpszPathObj, LPCTSTR lpszPathLink, LPCTSTR lpszDesc) 
 { 
     HRESULT hres; 
-    IShellLink* psl; 
+    IShellLink * psl = 0;
  
-    // Get a pointer to the IShellLink interface. It is assumed that CoInitialize
-    // has already been called.
+    // Get a pointer to the IShellLink interface. It is assumed that CoInitialize has already been called.
     hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID*)&psl); 
     if (SUCCEEDED(hres)) 
     { 
@@ -440,8 +434,7 @@ HRESULT CreateLink(LPCTSTR lpszPathObj, LPCTSTR lpszPathLink, LPCTSTR lpszDesc)
         psl->SetPath(lpszPathObj); 
         psl->SetDescription(lpszDesc); 
  
-        // Query IShellLink for the IPersistFile interface, used for saving the 
-        // shortcut in persistent storage. 
+        // Query IShellLink for the IPersistFile interface, used for saving the shortcut in persistent storage. 
         hres = psl->QueryInterface(IID_IPersistFile, (LPVOID*)&ppf); 
  
         if (SUCCEEDED(hres)) 
@@ -450,10 +443,8 @@ HRESULT CreateLink(LPCTSTR lpszPathObj, LPCTSTR lpszPathLink, LPCTSTR lpszDesc)
  
             // Ensure that the string is Unicode. 
             MultiByteToWideChar(CP_ACP, 0, lpszPathLink, -1, wsz, MAX_PATH); 
+            // @TODO: Add code here to check return value from MultiByteWideChar for success.
             
-            // Add code here to check return value from MultiByteWideChar 
-            // for success.
- 
             // Save the link by calling IPersistFile::Save. 
             hres = ppf->Save(wsz, TRUE); 
             ppf->Release(); 
@@ -495,9 +486,6 @@ void ResultItemContext::Invoke (int button)
 			bb::search::getLookup().m_index.Forget(m_fpath);
 			bb::search::getLookup().m_index.RemoveFromIndex(m_fname, m_fpath);
 			bb::search::getLookup().m_index.SaveForget();
-			// remove
-			// from
-			// index
 			bb::search::getLookup().m_index.Save();
 		} break;
 	}

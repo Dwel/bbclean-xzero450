@@ -6,7 +6,7 @@
 #include "unicode.h"
 
 // custom auto complete
-class CCustomAutoComplete : public IEnumString
+class StringAutoComplete : public IEnumString
 {
 	tstrings m_list;
 	ULONG m_current;
@@ -15,23 +15,23 @@ class CCustomAutoComplete : public IEnumString
 	CComPtr<IAutoComplete> m_pac;
 
 public:
-	CCustomAutoComplete () 
+	StringAutoComplete () 
 		: m_current(0), m_ref(0), m_bound(false)
 	{
 		m_list.reserve(256);
 	}
 
-	CCustomAutoComplete (tstrings const & list)
+	StringAutoComplete (tstrings const & list)
 		: m_list(list), m_current(0), m_ref(0), m_bound(false)
 	{ }
 
-	~CCustomAutoComplete () { }
+	~StringAutoComplete () { }
 
 	bool Bind (HWND hwnd, DWORD p_dwOptions = 0, LPCTSTR p_lpszFormatString = NULL)
 	{
 		ATLASSERT(::IsWindow(hwnd));
 
-		if ((m_bound) || (m_pac))
+		if (m_bound || m_pac)
 			return false;
 
 		HRESULT hr = m_pac.CoCreateInstance(CLSID_AutoComplete);
@@ -70,11 +70,7 @@ public:
 		}
 	}
 
-	bool SetList (tstrings const & list)
-	{
-		m_list = list;
-		return true;
-	}
+  void SetList (tstrings const & list) { m_list = list; }
 
 	bool AddItem (tstring const & item)
 	{
@@ -91,6 +87,7 @@ public:
 		m_current = 0;
 		return true;
 	}
+  bool IsBound () const { return m_bound; }
 
 public:
 	//	IUnknown implementation
@@ -174,7 +171,7 @@ public:
 	{
 		if (!ppenum)
 			return E_POINTER;
-		CCustomAutoComplete * pnew = new CCustomAutoComplete();
+		StringAutoComplete * pnew = new StringAutoComplete();
 		pnew->AddRef();
 		*ppenum = pnew;
 		return S_OK;
@@ -189,38 +186,53 @@ private:
 	}
 };
 
-bool enable_completion (HWND hwnd)
+StringAutoComplete * autocomplete = 0;
+
+bool enableCompletion (HWND hwnd, tstrings const & keys)
 {
+  if (autocomplete) // already exists
+    return false;
+
 	// Initialize Autocomplete object and source object
-	IAutoComplete * pac = 0;
-	HRESULT hr = CoCreateInstance(CLSID_AutoComplete, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pac));
-	IUnknown * punkSource = 0;
+	IAutoComplete * iac = 0;
+	if (!SUCCEEDED(CoCreateInstance(CLSID_AutoComplete, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&iac))))
+    return false;
 
-	tstrings s;
-	s.push_back("asdf");
-	s.push_back("adsf");
-	s.push_back("asfa");
-	s.push_back("asba");
-	s.push_back("aska");
-
-	CCustomAutoComplete * pes = new CCustomAutoComplete(s);
-	hr = pes->Bind(hwnd);
-	// initialize the IUnknown Interface
-	hr = pes->QueryInterface(IID_PPV_ARGS(&punkSource));
-
-	if (!SUCCEEDED(hr))
-	{
+	autocomplete = new StringAutoComplete(keys);
+	if (!SUCCEEDED(autocomplete->Bind(hwnd)))
 		return false;
-	}
 
-	hr = pac->Init(hwnd, punkSource, NULL, NULL);
+	// initialize the IUnknown Interface
+	IUnknown * iu = 0;
+	if (!SUCCEEDED(autocomplete->QueryInterface(IID_PPV_ARGS(&iu))))
+		return false;
 
-	IAutoComplete2 * pac2 = 0;
-	if (SUCCEEDED(pac->QueryInterface(IID_PPV_ARGS(&pac2))))
+	if (!SUCCEEDED(iac->Init(hwnd, iu, NULL, NULL)))
+    return false;
+
+	IAutoComplete2 * iac2 = 0;
+	if (SUCCEEDED(iac->QueryInterface(IID_PPV_ARGS(&iac2))))
 	{
-		hr = pac2->SetOptions(ACO_AUTOSUGGEST | ACO_AUTOAPPEND);
+		iac2->SetOptions(ACO_AUTOSUGGEST | ACO_AUTOAPPEND);
 		return true;
 	}
 	return false;
+}
+
+void disableCompletion ()
+{
+  if (autocomplete)
+  {
+    autocomplete->Unbind();
+    autocomplete->Release();
+    autocomplete = 0;
+  }
+}
+
+bool iSCompletionEnabled ()
+{
+  if (autocomplete && autocomplete->IsBound())
+    return true;
+  return false;
 }
 
