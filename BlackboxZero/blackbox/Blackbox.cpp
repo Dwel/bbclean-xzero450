@@ -638,6 +638,7 @@ void reconfigure_blackbox ()
 
 	set_misc_options();
 	getWorkspaces().Reconfigure();
+	bb::search::getLookup().ReloadOrBuild();
 	Menu_Reconfigure();
 	Menu_All_Redraw(0);
 
