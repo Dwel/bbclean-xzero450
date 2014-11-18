@@ -476,7 +476,8 @@ void ResultItemContext::Invoke (int button)
 			GetBlackboxPath(path, 1024);
 			tstring link(path); // @TODO: tmp
 			link += "search";
-			post_command_fmt("@bbIconBox.create ", link);
+			CreateDirectory(link.c_str(), NULL);
+			post_command_fmt("@bbIconBox.create %s", link.c_str());
 			link += "\\" + m_fname + ".lnk";
 			CreateLink(m_fpath.c_str(), link.c_str(), TEXT("pinned search result"));
 			dbg_printf("create link src=%s tgt=%s", m_fpath.c_str(), link.c_str());

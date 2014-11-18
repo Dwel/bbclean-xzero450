@@ -147,7 +147,7 @@ struct Index
 
 	bool Rebuild ()
 	{
-		_tprintf(TEXT("*** Rebuilding index ***\n"));
+		//_tprintf(TEXT("*** Rebuilding index ***\n"));
 		m_trie.clear();
 		m_props.clear();
 		makeIndex(m_trie, m_props, m_cfg, TEXT("C:\\devel\\dir\\filesystem.index"));
