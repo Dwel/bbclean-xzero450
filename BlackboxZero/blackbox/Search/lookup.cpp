@@ -26,9 +26,10 @@ namespace bb { namespace search {
 	{
 		if (g_lookup)
 		{
-			tstring tmp = g_lookup->m_path;
-			tmp += TEXT("search.rc");
-			writeRC(tmp, g_lookup->m_index.m_cfg);
+      //@NOTE: users says that writing rc on quit is a bad idea.. theyr probably right
+			//tstring tmp = g_lookup->m_path;
+			//tmp += TEXT("search.rc");
+			//writeRC(tmp, g_lookup->m_index.m_cfg);
 			g_lookup->Stop();
 			delete g_lookup;
 			g_lookup = nullptr;
