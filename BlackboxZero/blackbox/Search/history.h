@@ -12,6 +12,7 @@ struct HistoryItem
 	tstring m_typed;
 	tstring m_fname;
 	tstring m_fpath;
+	tstrings m_args;
 	unsigned m_ref;
 
 	HistoryItem () : m_ref(0) { }
@@ -27,6 +28,7 @@ inline std::ostream & write (std::ostream & os, HistoryItem const & t)
 	if (!write(os, t.m_typed)) return os;
 	if (!write(os, t.m_fname)) return os;
 	if (!write(os, t.m_fpath)) return os;
+	if (!write(os, t.m_args)) return os;
 	if (!write(os, t.m_ref)) return os;
 	return os;
 }
@@ -35,6 +37,7 @@ inline std::istream & read (std::istream & is, HistoryItem & t)
 	if (!read(is, t.m_typed)) return is;
 	if (!read(is, t.m_fname)) return is;
 	if (!read(is, t.m_fpath)) return is;
+	if (!read(is, t.m_args)) return is;
 	if (!read(is, t.m_ref)) return is;
 	return is;
 }

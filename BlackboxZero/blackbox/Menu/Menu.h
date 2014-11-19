@@ -288,6 +288,7 @@ protected:
     friend class SFInsert;
     friend class ContextMenu;
     friend class ContextItem;
+	friend class ArgItem;
 };
 
 //---------------------------------

@@ -3,6 +3,7 @@
 enum E_ResultItemAction
 {
     e_Run,
+    e_RunInCmd,
     e_RunWithArgs,
     e_RunAsAdmin,
     e_RunWithArgsAsAdmin,

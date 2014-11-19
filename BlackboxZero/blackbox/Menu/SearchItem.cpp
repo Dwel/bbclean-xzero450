@@ -220,6 +220,7 @@ void SearchItem::OnInput ()
 		// context menu for result item
 		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
 		MakeMenuItem(ctx, TEXT("run"), broam, false);
+		MakeMenuItemResultContext(ctx, TEXT("run in cmd"), NULL, e_RunInCmd, what, hkeys[i], hres[i]);
 		MakeMenuItemResultContext(ctx, TEXT("run as admin"), NULL, e_RunAsAdmin, what, hkeys[i], hres[i]);
 		MakeMenuItemResultContext(ctx, TEXT("unpin from history"), NULL, e_UnpinFromHistory, what, hkeys[i], hres[i]);
 
@@ -250,6 +251,7 @@ void SearchItem::OnInput ()
 		// context menu for result item
 		Menu * ctx = MakeNamedMenu(NLS0("Result context"), NULL, true);
 		MakeMenuItem(ctx, TEXT("run"), broam, false);
+		MakeMenuItemResultContext(ctx, TEXT("run in cmd"), NULL, e_RunInCmd, what, ikeys[i], ires[i]);
 		MakeMenuItemResultContext(ctx, TEXT("run as admin"), NULL, e_RunAsAdmin, what, ikeys[i], ires[i]);
 		MakeMenuItemResultContext(ctx, TEXT("pin to history"), NULL, e_PinToHistory, what, ikeys[i], ires[i]);
 		MakeMenuItemResultContext(ctx, TEXT("pin to iconbox"), NULL, e_PinToIconBox, what, ikeys[i], ires[i]);
@@ -461,6 +463,10 @@ void ResultItemContext::Invoke (int button)
 
 	switch (m_action)
 	{
+		case e_RunInCmd:
+		{
+			//cmd.exe /k "foo.exe"
+		} break;
 		case e_PinToHistory:
 		{
 			bb::search::getLookup().m_history.Insert(m_typed, m_fname, m_fpath);
@@ -508,4 +514,204 @@ void ResultItemContext::Invoke (int button)
 		} break;
 	}
 }
+
+ArgItem::ArgItem (const char* pszCommand, const char* pszTitle)
+	: CommandItem(pszCommand, pszTitle, false)
+{ }
+ArgItem::~ArgItem ()
+{
+	if (m_combo)
+	{
+		disableCompletion();
+		DestroyWindow(m_combo);
+		m_combo = NULL;
+	}
+
+}
+/*
+TCHAR A[16]; 
+int  k = 0; 
+
+memset(&A,0,sizeof(A));       
+for (k = 0; k <= 8; k += 1)
+{
+    wcscpy_s(A, sizeof(A)/sizeof(TCHAR),  (TCHAR*)Planets[k]);
+
+    // Add string to combobox.
+    SendMessage(hWndComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) A); 
+}
+  
+// Send the CB_SETCURSEL message to display an initial item 
+//  in the selection field  
+SendMessage(hWndComboBox, CB_SETCURSEL, (WPARAM)2, (LPARAM)0);
+*/
+
+void ArgItem::Paint (HDC hDC)
+{
+	RECT r;
+	HFONT hFont;
+	int x, y, w, h, padd;
+	if (Settings_menu.showBroams)
+	{
+		if (m_combo)
+		{
+			DestroyWindow(m_combo);
+			m_combo = NULL;
+		}
+		m_Justify = MENUITEM_STANDARD_JUSTIFY;
+		MenuItem::Paint(hDC);
+		return;
+	}
+
+	m_Justify = MENUITEM_CUSTOMTEXT;
+	MenuItem::Paint(hDC);
+
+	GetTextRect(&r);
+	if (EqualRect(&m_comboRect, &r))
+		return;
+
+	m_comboRect = r;
+
+	if (NULL == m_combo)
+	{
+		HWND m_combo = CreateWindow(WC_COMBOBOX, TEXT(""), 
+							 CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+							 0, 0, 0, 0, m_pMenu->m_hwnd, NULL, hMainInstance, NULL);
+
+		SetWindowLongPtr(m_combo, GWLP_USERDATA, (LONG_PTR)this);
+		m_comboProc = (WNDPROC)SetWindowLongPtr(m_combo, GWLP_WNDPROC, (LONG_PTR)ComboProc);
+		//int const n = GetWindowTextLength(m_combo);
+		//SendMessage(m_combo, EM_SETSEL, 0, n);
+		//SendMessage(m_combo, EM_SCROLLCARET, 0, 0);
+		m_pMenu->m_hwndChild = m_combo;
+		if (GetFocus() == m_pMenu->m_hwnd)
+			SetFocus(m_combo);
+	}
+
+	hFont = MenuInfo.hFrameFont;
+	SendMessage(m_combo, WM_SETFONT, (WPARAM)hFont, 0);
+
+	x = r.left - 1;
+	y = r.top + 2;
+	h = r.bottom - r.top - 4;
+	w = r.right - r.left + 2;
+
+	SetWindowPos(m_combo, NULL, x, y, w, h, SWP_NOZORDER);
+
+	padd = imax(0, (h - get_fontheight(hFont)) / 2);
+	r.left	= padd+2;
+	r.right = w - (padd+2);
+	r.top		= padd;
+	r.bottom = h - padd;
+	SendMessage(m_combo, EM_SETRECT, 0, (LPARAM)&r);
+}
+
+void ArgItem::Measure (HDC hDC, SIZE * size, StyleItem * pSI)
+{
+	CommandItem::Measure(hDC, size, pSI);
+}
+
+void ArgItem::Invoke (int button)
+{
+	if (button == INVOKE_RET)
+		OnInput();
+}
+
+void ArgItem::OnInput ()
+{
+	int const len = SendMessage(m_combo, WM_GETTEXTLENGTH, 0, 0);
+	char * buffer = static_cast<char *>(alloca(sizeof(char) * (len + 1)));
+	SendMessage(m_combo, WM_GETTEXT, (WPARAM)len + 1, (LPARAM)buffer);
+}
+
+LRESULT CALLBACK ArgItem::ComboProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	ArgItem * pItem = reinterpret_cast<ArgItem *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	LRESULT r = 0;
+	Menu * pMenu = pItem->m_pMenu;
+
+	pMenu->incref();
+	switch(msg)
+	{
+		// Send Result
+		case WM_MOUSEMOVE:
+			PostMessage(pMenu->m_hwnd, WM_MOUSEMOVE, wParam, MAKELPARAM(10, pItem->m_nTop+2));
+			break;
+
+		// Key Intercept
+		case WM_KEYDOWN:
+		{
+			switch (wParam)
+			{
+				case VK_DOWN:
+				case VK_UP:
+				case VK_TAB:
+					pItem->Invoke(0);
+					pItem->next_item(wParam);
+					goto leave;
+
+				case VK_RETURN:
+					pItem->Invoke(INVOKE_RET);
+					pItem->next_item(0);
+					goto leave;
+
+				case VK_ESCAPE:
+					SetWindowText(hwnd, pItem->m_pszTitle);
+					pItem->next_item(0);
+					goto leave;
+			}
+			//pItem->OnInput();
+			break;
+		}
+		case WM_COMMAND:
+
+			if(HIWORD(wParam) == CBN_SELCHANGE)
+			// If the user makes a selection from the list:
+			//   Send CB_GETCURSEL message to get the index of the selected list item.
+			//   Send CB_GETLBTEXT message to get the item.
+			//   Display the item in a messagebox.
+			{ 
+				int ItemIndex = SendMessage((HWND) lParam, (UINT) CB_GETCURSEL, (WPARAM) 0, (LPARAM) 0);
+				TCHAR  ListItem[256];
+				SendMessage((HWND) lParam, (UINT) CB_GETLBTEXT, (WPARAM) ItemIndex, (LPARAM) ListItem);
+				//MessageBox(hwnd, (LPCWSTR) ListItem, TEXT("Item Selected"), MB_OK);                        
+				goto leave;
+			}
+			break;
+		// --------------------------------------------------------
+		// Paint
+		case WM_PAINT:
+		{
+			PAINTSTRUCT ps;
+			HDC hdc;
+			RECT r;
+			StyleItem *pSI;
+
+			hdc = BeginPaint(hwnd, &ps);
+			GetClientRect(hwnd, &r);
+			pSI = &mStyle.MenuFrame;
+			MakeGradientEx(hdc, r, pSI->type, pSI->Color, pSI->ColorTo, pSI->ColorSplitTo, pSI->ColorToSplitTo, pSI->interlaced, BEVEL_SUNKEN, BEVEL1, 0, 0, 0);
+			CallWindowProc(pItem->m_comboProc, hwnd, msg, (WPARAM)hdc, lParam);
+			EndPaint(hwnd, &ps);
+			goto leave;
+		}
+
+		case WM_DESTROY:
+			pItem->m_combo = NULL;
+			pMenu->m_hwndChild = NULL;
+			break;
+
+		case WM_SETFOCUS:
+			break;
+
+		case WM_KILLFOCUS:
+			pItem->Invoke(0);
+			break;
+	}
+	r = CallWindowProc(pItem->m_comboProc, hwnd, msg, wParam, lParam);
+leave:
+	pMenu->decref();
+	return r;
+}
+
 

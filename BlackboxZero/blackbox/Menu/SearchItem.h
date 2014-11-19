@@ -65,3 +65,29 @@ struct ResultItemContext : CommandItem
     void Invoke (int button);
 };
 
+class ArgItem : public CommandItem
+{
+  tstring m_bbPath;
+  HWND m_combo;
+  WNDPROC m_comboProc;
+  RECT m_comboRect;
+  tstring m_typed;
+  tstring m_fname;
+  tstring m_fpath;
+  tstring m_arg;
+ 
+public:
+  ArgItem (const char * pszCommand, const char * init_string);
+  ~ArgItem ();
+
+  virtual void Paint (HDC hDC);
+  virtual void Measure (HDC hDC, SIZE *size, StyleItem * pSI);
+  virtual void Invoke (int button);
+
+  static LRESULT CALLBACK ComboProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+protected:
+  void OnInput ();
+};
+
+
