@@ -70,6 +70,14 @@ struct ProgramLookup
 		return m_indexing && !m_job.IsFinished();
 	}
 
+	void Reindex ()
+	{
+		Clear();
+		m_history.DeleteFiles();
+		m_index.DeleteFiles();
+		ReloadOrBuild();
+	}
+
 	void Clear ()
 	{
 		m_history.Clear();

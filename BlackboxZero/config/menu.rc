@@ -40,6 +40,11 @@
             [editextensions] (extensions.rc)
             [editplugins] (plugins.rc)
             [edit] (bbKeys.rc) {plugins\bbKeys\bbKeys.rc}
+            [edit] (search.rc) {search.rc}
+            [end]
+        [submenu] (Search)
+            [reindex] (Reindex)
+            [edit] (search.rc) {search.rc}
             [end]
         [nop]
         # Also note that relative paths refer to the blackbox directory

@@ -922,6 +922,10 @@ bb_quit:
 
 			goto dispatch_bb_message;
 
+		case BB_REINDEX:
+			bb::search::getLookup().Reindex();
+			goto dispatch_bb_message;
+
 		//====================
 
 		case BB_REDRAWGUI:
@@ -1369,6 +1373,7 @@ static const corebroam_table g_corebroam_table[] = {
 	{ "AboutStyle",				BB_ABOUTSTYLE,		e_post, 0 },
 	{ "AboutPlugins",			BB_ABOUTPLUGINS,	e_post, 0 },
 	{ "Reconfig",				BB_RECONFIGURE,		e_post, 0 },
+	{ "Reindex",                BB_REINDEX,         e_post, 0 },
 	{ "Reconfigure",			BB_RECONFIGURE,		e_post, 0 },
 	{ "Restart",				BB_RESTART,			e_post|e_pause, 0 },
 	{ "Exit",					BB_QUIT,			e_post|e_quiet, 0 },

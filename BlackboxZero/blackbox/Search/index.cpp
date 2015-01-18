@@ -14,7 +14,7 @@ struct icasecompare : std::binary_function<tstring, tstring, bool> {
     }
 };
 
-void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring const & fname)
+void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring const & fname2)
 {
 	try
 	{

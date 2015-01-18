@@ -73,6 +73,12 @@ struct History
 		return results.size() > 0;
 	}
 
+	void DeleteFiles ()
+	{
+		tstring const item_fpath = m_path + m_name + TEXT(".props");
+		DeleteFile(item_fpath.c_str());
+	}
+
 	bool Insert (tstring const & typed, tstring const & fname, tstring const & fpath)
 	{
 		HistoryItem hi;

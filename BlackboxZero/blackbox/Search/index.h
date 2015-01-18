@@ -152,6 +152,14 @@ struct Index
 		m_forget.clear();
 	}
 
+	void DeleteFiles()
+	{
+		tstring const idx_fpath = m_path + m_name + TEXT(".index");
+		DeleteFile(idx_fpath.c_str());
+		tstring const prop_fpath = m_path + m_name + TEXT(".props");
+		DeleteFile(prop_fpath.c_str());
+	}
+
 	bool Rebuild ()
 	{
 		//_tprintf(TEXT("*** Rebuilding index ***\n"));
