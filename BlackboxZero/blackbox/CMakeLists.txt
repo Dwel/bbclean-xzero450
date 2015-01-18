@@ -25,6 +25,12 @@ set(blackbox_SOURCES
 	Menu/RecentItem.cpp
 	Menu/SpecialFolder.cpp
 	Menu/TitleItem.cpp
+	Menu/SearchItem.cpp
+  Search/index.cpp
+  Search/history.cpp
+  Search/lookup.cpp
+  Search/complete.cpp
+  Search/rc.cpp
 	
 	BBApi.cpp
 	BBRoot.cpp
@@ -68,6 +74,7 @@ set (blackbox_HEADERS
 	Menu/Menu.h
 	Menu/MenuMaker.h
 	Menu/RecentItem.h
+	Menu/SearchItem.h
 )
 
 set(PluginManager_HEADERS
@@ -91,6 +98,7 @@ endif(MINGW)
 
 add_definitions(-D__BBCORE__)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 add_executable(blackbox WIN32
 	${blackbox_SOURCES}

@@ -74,7 +74,7 @@ protected:
     bool        m_bOnTop;       // z-order
     bool        m_bPinned;      // pinned
     bool        m_bNoTitle;     // dont draw title
-	bool        m_bIconized;    // iconized to titlebar
+    bool        m_bIconized;    // iconized to titlebar
 
     bool        m_kbdpos;  // save position to blackbox.rc on changes
     bool        m_bIsDropTarg;  // window should be registered as DT
@@ -96,11 +96,11 @@ protected:
     int         m_height;
 
     HBITMAP     m_hBitMap;      // background bitmap, only while onscreen
-	HBITMAP     m_hBmpScroll;   // bitmap to paint scroller
+    HBITMAP     m_hBmpScroll;   // bitmap to paint scroller
     HWND        m_hwnd;         // window handle, only while onscreen
     HWND        m_hwndChild;    // edit control of StringItems
     HWND        m_hwndRef;      // hwnd to send notifications to */
-	int         m_minwidth; /* BlackboxZero 12.17.2011 */
+    int         m_minwidth; /* BlackboxZero 12.17.2011 */
     int         m_maxwidth;
     int         m_maxheight;
 
@@ -130,8 +130,9 @@ protected:
 
     int decref(void);
     int incref(void);
-
+public:
     MenuItem *AddMenuItem(MenuItem* m);
+protected:
     void DeleteMenuItems(void);
 
     void LinkToParentItem(MenuItem *pItem);
@@ -248,7 +249,7 @@ protected:
     friend Menu* MakeFolderMenu(const char *title, const char* path, const char *cmd);
     friend void MenuOption(Menu *pMenu, int flags, ...);
     friend void MenuItemOption(MenuItem *pItem, int option, ...);
-	friend Menu* ParseMenu(struct menu_src *src, const char *title, const char *IDString);
+    friend Menu* ParseMenu(struct menu_src *src, const char *title, const char *IDString);
 
     friend void DelMenu(Menu *PluginMenu);
     friend MenuItem* helper_menu(Menu *PluginMenu, const char* Title, int menuID, MenuItem *pItem);
@@ -281,11 +282,13 @@ protected:
     friend class CommandItemEx;
     friend class IntegerItem;
     friend class StringItem;
+    friend class SearchItem;
     friend class SpecialFolder;
     friend class SpecialFolderItem;
     friend class SFInsert;
     friend class ContextMenu;
     friend class ContextItem;
+	friend class ArgItem;
 };
 
 //---------------------------------
@@ -332,7 +335,7 @@ public:
     void LinkSubmenu(Menu *pSubMenu);
     void Active(int bActive);
     void ShowRightMenu(Menu *pSub);
-	void ShowContextMenu(const char *path, const void * pidl);
+    void ShowContextMenu(const char *path, const void * pidl);
 
     void GetItemRect(RECT* r);
     void GetTextRect(RECT* r);
@@ -451,7 +454,7 @@ struct MenuInfo
     int nScrollerSize;
     int nScrollerSideOffset;
     int nScrollerTopOffset;
-	int nScrollerPosition; /* BlackboxZero 1.7.2012 */
+    int nScrollerPosition; /* BlackboxZero 1.7.2012 */
     StyleItem Scroller;
 
     int nBulletPosition;
@@ -532,7 +535,7 @@ public:
     void Mouse(HWND hwnd, UINT uMsg, DWORD wParam, DWORD lParam);
     void Invoke(int button);
     void ItemTimer(UINT nTimer);
-	void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
+    void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
     void Key(UINT nMsg, WPARAM wParam);
     void set_next_value(void);
 
@@ -554,7 +557,7 @@ public:
     ~StringItem();
 
     void Paint(HDC hDC);
-	void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
+    void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
     void Invoke(int button);
 
     static LRESULT CALLBACK EditProc(HWND hText, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -625,7 +628,7 @@ public:
     ContextItem(Menu *m, char* pszTitle, int id, DWORD data, UINT type);
     ~ContextItem();
     void Paint(HDC hDC);
-	void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
+    void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
     void Invoke(int button);
     void DrawItem(HDC hdc, int w, int h, bool active);
 private:

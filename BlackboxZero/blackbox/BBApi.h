@@ -169,6 +169,7 @@
 
 #define BB_TOOLBARUPDATE        10106 /* toolbar changed position/size */
 #define BB_SETTHEME             10107 /* xoblite */
+#define BB_REINDEX             10108
 
 /* ----------------------------------- */
 #define BB_EDITFILE             10201
@@ -899,6 +900,7 @@ extern "C" {
     /* ------------------------------------ */
     /* often used structure */
 
+#if !defined STRING_NODE_DEFINED
     typedef struct string_node
     {
         struct string_node *next;
@@ -906,6 +908,7 @@ extern "C" {
     } string_node;
 
     #define STRING_NODE_DEFINED
+#endif
 
     /* ------------------------------------ */
     /* windows on workspace placement interface */

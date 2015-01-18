@@ -1529,6 +1529,7 @@ void icon_box::common_broam(const char *temp)
     int n, x;
     const char *rest;
     plugin_info *p;
+	bool unique = false;
 
     path[0] = 0;
 
@@ -1550,7 +1551,9 @@ void icon_box::common_broam(const char *temp)
         GetBlackboxPath(path, sizeof path);
         if (false == select_folder(NULL, szAppName, name, path))
             path[0] = 0;
-
+	} else if (BBP_broam_string(NULL, temp, "create.unique", &rest)) {
+		strcpy(path, rest);
+		unique = true;
     } else if (BBP_broam_string(NULL, temp, "create", &rest)) {
         strcpy(path, rest);
     }
@@ -1580,6 +1583,7 @@ void icon_box::common_broam(const char *temp)
             dolist (p, g_PI)
                 if (0 == _stricmp(((icon_box*)p)->m_name, name)) break;
             if (NULL == p) break;
+			if (unique) return;
             sprintf(name + n, "/%d", ++x);
         }
 

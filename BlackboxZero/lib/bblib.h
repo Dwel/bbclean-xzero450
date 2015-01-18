@@ -203,6 +203,7 @@ typedef struct list_node { struct list_node *next; void *v; } list_node;
 #endif
 #ifndef STRING_NODE_DEFINED
 typedef struct string_node { struct string_node *next; char str[1]; } string_node;
+#define STRING_NODE_DEFINED
 #endif
 
 #define dolist(_e,_l) for (_e=(_l);_e;_e=_e->next)

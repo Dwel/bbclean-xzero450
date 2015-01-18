@@ -33,6 +33,7 @@
 #include "bbshell.h"
 #include "bbrc.h"
 #include <logging.h>
+#include "Search/lookup.h"
 
 #include <mmsystem.h>
 #include <process.h>
@@ -610,6 +611,7 @@ void shutdown_blackbox ()
 	if (g_shutting_down)
 		return;
 	g_shutting_down = true;
+	bb::search::stopLookup();
 
 	kill_plugins();
 	Tray_Exit();
@@ -636,6 +638,7 @@ void reconfigure_blackbox ()
 
 	set_misc_options();
 	getWorkspaces().Reconfigure();
+	bb::search::getLookup().ReloadOrBuild();
 	Menu_Reconfigure();
 	Menu_All_Redraw(0);
 
@@ -917,6 +920,10 @@ bb_quit:
 			if (1 == wParam) // sent from exec_cfg_command
 				break;
 
+			goto dispatch_bb_message;
+
+		case BB_REINDEX:
+			bb::search::getLookup().Reindex();
 			goto dispatch_bb_message;
 
 		//====================
@@ -1366,6 +1373,7 @@ static const corebroam_table g_corebroam_table[] = {
 	{ "AboutStyle",				BB_ABOUTSTYLE,		e_post, 0 },
 	{ "AboutPlugins",			BB_ABOUTPLUGINS,	e_post, 0 },
 	{ "Reconfig",				BB_RECONFIGURE,		e_post, 0 },
+	{ "Reindex",                BB_REINDEX,         e_post, 0 },
 	{ "Reconfigure",			BB_RECONFIGURE,		e_post, 0 },
 	{ "Restart",				BB_RESTART,			e_post|e_pause, 0 },
 	{ "Exit",					BB_QUIT,			e_post|e_quiet, 0 },

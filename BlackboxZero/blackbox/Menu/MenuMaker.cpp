@@ -24,6 +24,7 @@
 #include "bbshell.h"
 #include "MenuMaker.h"
 #include "Menu.h"
+#include "SearchItem.h"
 
 // when no menu.rc file is found, use this default menu
 static const char default_root_menu[] =
@@ -77,6 +78,7 @@ static const char * const menu_cmds[] = {
     "tasks"             ,
     "config"            ,
     "exec"              ,
+	"search"			,
     // ------------------
     NULL
 };
@@ -104,6 +106,7 @@ enum menu_cmd_tokens
     e_tasks             ,
     e_config            ,
     e_exec              ,
+	e_search			,
     // ------------------
     e_no_end            ,
     e_other             = -1
@@ -327,6 +330,12 @@ skip:
             }
             break;
 
+		case e_search:
+		{
+			pItem = new SearchItem(p_data, TEXT("powershell.exe"));
+			pMenu->AddMenuItem(pItem);
+			break;
+		}
         //====================
         case e_other:
             f = get_workspace_number(command); // check for 'workspace1..'

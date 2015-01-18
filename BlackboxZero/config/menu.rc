@@ -5,6 +5,7 @@
 # Available menu commands are listed in the documentation.
 
 [begin] (BlackBox)
+    [search] (Search) {SEARCHMENU|COMMON_SEARCHMENU}
     [path] (Start) {STARTMENU|COMMON_STARTMENU}
     [path] (Desktop) {DESKTOPDIRECTORY|COMMON_DESKTOPDIRECTORY}
     [path] (Quick) {APPDATA\Microsoft\Internet Explorer\Quick Launch}
@@ -39,6 +40,11 @@
             [editextensions] (extensions.rc)
             [editplugins] (plugins.rc)
             [edit] (bbKeys.rc) {plugins\bbKeys\bbKeys.rc}
+            [edit] (search.rc) {search.rc}
+            [end]
+        [submenu] (Search)
+            [reindex] (Reindex)
+            [edit] (search.rc) {search.rc}
             [end]
         [nop]
         # Also note that relative paths refer to the blackbox directory

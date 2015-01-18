@@ -81,6 +81,7 @@ Menu::Menu(const char *pszTitle)
     // start with a refcount of 1, assuming that
     // the menu is either shown or linked as submenu.
     m_refc = 1;
+	//dbg_printf("%s this=%x %d %s", __FUNCTION__, this, m_refc, m_pMenuItems->m_pszTitle);
 }
 
 //==============================================
@@ -88,6 +89,7 @@ Menu::Menu(const char *pszTitle)
 
 Menu::~Menu()
 {
+	//dbg_printf("%s this=%x %d %s", __FUNCTION__, this, m_refc, m_pMenuItems->m_pszTitle);
     DeleteMenuItems();
     delete m_pMenuItems; // TitleItem
     free_str(&m_IDString);
@@ -95,6 +97,8 @@ Menu::~Menu()
 
     // remove from the list
     remove_assoc(&g_MenuStructList, this);
+	//dbg_printf("%s GMWL ~~~remove_assoc(&g_MenuWindowList, this) this=%x", __FUNCTION__, this);
+	remove_assoc(&g_MenuWindowList, this);
     --g_menu_count;
 }
 
@@ -106,7 +110,7 @@ Menu::~Menu()
 
 int Menu::decref(void)
 {
-    //dbg_printf("decref %d %s", m_refc-1, m_pMenuItems->m_pszTitle);
+    //dbg_printf("%s this=%x decref %d %s", __FUNCTION__, this, m_refc-1, m_pMenuItems->m_pszTitle);
     int n = m_refc - 1;
     if (n)
         return m_refc = n;
@@ -121,7 +125,7 @@ int Menu::decref(void)
 
 int Menu::incref(void)
 {
-    //dbg_printf("incref %d %s", m_refc, m_pMenuItems->m_pszTitle);
+	//dbg_printf("%s this=%x incref %d %s", __FUNCTION__, this, m_refc, m_pMenuItems->m_pszTitle);
     return ++m_refc;
 }
 
@@ -140,7 +144,7 @@ void Menu::g_decref()
     MenuList *ml;
     if (--g_menu_ref || NULL == g_MenuRefList)
         return;
-    // dbg_printf("MenuDelList %d", listlen(g_MenuRefList));
+    //dbg_printf("MenuDelList %d", listlen(g_MenuRefList));
     dolist (ml, g_MenuRefList)
         ml->m->decref();
     freeall(&g_MenuRefList);
@@ -180,6 +184,7 @@ void Menu::make_menu_window(void)
 
 void Menu::destroy_menu_window(bool force)
 {
+	//dbg_printf("%s this=%x", __FUNCTION__, this);
     HWND hwnd = m_hwnd;
     if (NULL == hwnd)
         return;
@@ -207,6 +212,7 @@ void Menu::destroy_menu_window(bool force)
         return;
 
     register_droptarget(false);
+	//dbg_printf("%s GMWL remove_assoc(&g_MenuWindowList, this) this=%x", __FUNCTION__, this);
     remove_assoc(&g_MenuWindowList, this);
     m_hwnd = m_hwndRef = NULL;
     DestroyWindow(hwnd);
@@ -335,6 +341,7 @@ Menu *Menu::find_named_menu(const char *IDString, bool fuzzy)
 // list, so that it is set to the top of the z-order with "Menu_All_BringOnTop()"
 void Menu::insert_at_last (void)
 {
+	//dbg_printf("%s GMWL this=%x", __FUNCTION__, this);
     MenuList **mp, *ml, *mn = NULL;
     for (mp = &g_MenuWindowList; NULL != (ml = *mp); ) {
         if (this == ml->m)
@@ -405,6 +412,7 @@ bool Menu::has_hwnd_in_chain(HWND hwnd)
 // Get the root of the last active menu
 Menu *Menu::last_active_menu_root(void)
 {
+	//dbg_printf("%s GMWL this=%x", __FUNCTION__, 0x2);
     MenuList *ml;
     dolist (ml, g_MenuWindowList)
         if (NULL == ml->next)
@@ -1315,6 +1323,7 @@ void Menu::kbd_hilite(MenuItem *pItem)
 //--------------------------------------
 void Menu_Tab_Next(Menu *p)
 {
+	//dbg_printf("%s GMWL this=%x", __FUNCTION__, 2);
     MenuList *ml;
     Menu *m = NULL;
     //bool backwards = 0x8000 & GetAsyncKeyState(VK_SHIFT);
@@ -2102,6 +2111,7 @@ void Menu_All_Hide(void)
 // bring all menus on top, restoring the previous z-order
 void Menu_All_BringOnTop(void)
 {
+	//dbg_printf("%s GMWL this=%x", __FUNCTION__, 2);
     MenuList *ml;
     Menu *m;
     dolist (ml, Menu::g_MenuWindowList)
@@ -2113,6 +2123,7 @@ void Menu_All_BringOnTop(void)
 
 bool Menu_Exists(bool pinned)
 {
+	//dbg_printf("%s GMWL this=%x", __FUNCTION__, 2);
     MenuList *ml;
     dolist (ml, Menu::g_MenuWindowList)
         if (pinned == ml->m->m_bPinned)
@@ -2135,6 +2146,7 @@ void Menu_Stats(struct menu_stats *st)
 // Operate on all currently visible menus
 Menu *MenuEnum(MENUENUMPROC fn, void *ud)
 {
+	//dbg_printf("%s GMWL this=%x", __FUNCTION__, 2);
     MenuList *ml, *ml_copy = (MenuList*)copy_list(Menu::g_MenuWindowList);
     Menu *m = NULL;
     Menu::g_incref();
