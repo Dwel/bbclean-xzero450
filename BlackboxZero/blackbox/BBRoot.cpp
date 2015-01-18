@@ -84,7 +84,7 @@ HBITMAP make_root_bmp(const char *command)
     return bmp;
 }
 
-static HBITMAP read_bitmap(const char* path, bool delete_after)
+ HBITMAP read_bitmap(const char* path, bool delete_after)
 {
     HWND hwnd_desk = GetDesktopWindow();
     HDC hdc_desk = GetDC(hwnd_desk);
@@ -205,7 +205,7 @@ bbexec:
 
 #ifndef BBTINY
     if (makebmp)
-        return read_bitmap(bmp_path, true);
+        return read_bitmap(bmp_path, false);
 #endif
 
     return NULL;

@@ -172,13 +172,48 @@ void Desk_new_background(const char *p)
     makebmp = hDesktopWnd && Settings_smartWallpaper;
     if (0 == strcmp(Root.command, p) && *p && (Root.bmp || !makebmp))
         return;
-    set_bitmap(load_desk_bitmap(p, makebmp));
+	set_bitmap(load_desk_bitmap(p, makebmp));
     if (hDesktopWnd)
         Desk_SetPosition();
     strcpy(Root.command, p);
     if (g_usingVista && 0 == *p)
         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, NULL, SPIF_SENDCHANGE);
 }
+
+void Desk_read_background(const char *p)
+{
+	bool makebmp;
+
+	Desk_Reset(true);
+
+	p = Desk_extended_rootCommand(p);
+	if (p)
+	{
+		if (0 == _stricmp(p, "none"))
+			p = "";
+		if (0 == _stricmp(p, "style"))
+			p = NULL;
+	}
+	if (false == Settings_enableBackground)
+		p = "";
+	else
+		if (NULL == p)
+			p = mStyle.rootCommand;
+
+	makebmp = hDesktopWnd && Settings_smartWallpaper;
+	if (0 == strcmp(Root.command, p) && *p && (Root.bmp || !makebmp))
+		return;
+	HBITMAP read_bitmap(const char* path, bool delete_after);
+	set_bitmap(read_bitmap(p, makebmp));
+	if (hDesktopWnd)
+		Desk_SetPosition();
+	strcpy(Root.command, p);
+	if (g_usingVista && 0 == *p)
+		SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, NULL, SPIF_SENDCHANGE);
+
+	//PostMessage(BBhwnd, BB_REDRAWGUI, BBRG_DESK, 0);
+}
+
 
 //===========================================================================
 // Desktop's window procedure
@@ -214,9 +249,19 @@ ST LRESULT CALLBACK Desk_WndProc (HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
             break;
 
         case WM_SETTINGCHANGE:
-            if (SPI_SETDESKWALLPAPER == wParam)
-                InvalidateRect(hwnd, NULL, FALSE);
+			if (SPI_SETDESKWALLPAPER == wParam)
+			{
+				CHAR oldWallPaper[(MAX_PATH + 1)];
+				if (TRUE == SystemParametersInfo(SPI_GETDESKWALLPAPER, sizeof(oldWallPaper), &oldWallPaper, 0))
+					Desk_read_background(oldWallPaper);
+					//Desk_new_background(oldWallPaper);
+					//Desk_read_background(oldWallPaper);
+				Desk_SetPosition();
+
+				//InvalidateRect(hwnd, NULL, FALSE);
+			}
             break;
+
 
         //====================
         case WM_CLOSE:
