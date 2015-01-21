@@ -44,6 +44,7 @@
             [end]
         [submenu] (Search)
             [reindex] (Reindex)
+            [abortindex] (Abort indexing)
             [edit] (search.rc) {search.rc}
             [end]
         [nop]

@@ -6,7 +6,7 @@
 #include <3rd_party/cedar/cedar.h>
 #include "serialize.h"
 #include "config.h"
-//#include <blackbox/BBApi.h>
+#include "rc.h"
 
 namespace bb { namespace search {
 
@@ -39,7 +39,7 @@ typedef std::vector<Props> props_t; // vecor
 typedef cedar::da<int> trie_t;
 typedef tstrings forget_t;
 
-void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring const & fpath);
+void makeIndex (trie_t & trie, props_t & props, bool & abort, Config const & cfg);
 bool loadIndex (trie_t & t, tstring const & fpath);
 bool saveIndex (trie_t const & t, tstring const & fpath);
 bool searchIndex (trie_t & t, tstring const & str, std::function<void(tstring const &, tstring const &)> on_match);
@@ -56,8 +56,9 @@ struct Index
 	tstring m_path;
 	tstring m_name;
 	Config m_cfg;
+	bool m_abort;
 
-	Index (tstring const & path, tstring const & name, Config const & cfg) : m_path(path), m_name(name), m_cfg(cfg) { }
+	Index (tstring const & path, tstring const & name, Config const & cfg) : m_path(path), m_name(name), m_cfg(cfg), m_abort(false) { }
 	bool IsLoaded () const { return m_props.size() > 0; }
 
 	bool Forget (tstring const & s)
@@ -152,7 +153,7 @@ struct Index
 		m_forget.clear();
 	}
 
-	void DeleteFiles()
+	void DeleteFiles ()
 	{
 		tstring const idx_fpath = m_path + m_name + TEXT(".index");
 		DeleteFile(idx_fpath.c_str());
@@ -160,13 +161,31 @@ struct Index
 		DeleteFile(prop_fpath.c_str());
 	}
 
+	void AbortIndexing ()
+	{
+		m_abort = true;
+	}
+
 	bool Rebuild ()
 	{
 		//_tprintf(TEXT("*** Rebuilding index ***\n"));
+		m_abort = false;
 		m_trie.clear();
 		m_props.clear();
-		makeIndex(m_trie, m_props, m_cfg, TEXT("C:\\devel\\dir\\filesystem.index"));
-		Save();
+		m_cfg.clear();
+		loadConfig(m_path, m_cfg);
+		makeIndex(m_trie, m_props, m_abort, m_cfg);
+		if (m_abort)
+		{
+			m_trie.clear();
+			m_props.clear();
+			DeleteFiles();
+			m_abort = false;
+		}
+		else
+		{
+			Save();
+		}
 		return IsLoaded();
 	}
 

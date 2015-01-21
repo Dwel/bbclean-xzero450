@@ -12,6 +12,7 @@ struct ProgramLookup;
 ProgramLookup & getLookup();
 void startLookup (tstring const & path);
 void stopLookup ();
+void loadConfig (tstring const & path, Config & cfg);
 
 struct RebuildJob : Runnable
 {
@@ -44,7 +45,7 @@ struct ProgramLookup
 	RebuildJob m_job;
 	bool m_indexing;
 
-	ProgramLookup (tstring const & path, Config const & cfg) 
+	ProgramLookup (tstring const & path, Config const & cfg)
 		: m_path(path)
 		, m_history(path, TEXT("programs_history"))
 		, m_index(path, TEXT("programs"), cfg)
@@ -70,6 +71,11 @@ struct ProgramLookup
 		return m_indexing && !m_job.IsFinished();
 	}
 
+	void AbortIndexing ()
+	{
+		m_index.AbortIndexing();
+	}
+
 	void Reindex ()
 	{
 		Clear();
@@ -89,8 +95,7 @@ struct ProgramLookup
 		Clear();
 
 		Config cfg;
-		if (!readRC(m_path + TEXT("search.rc"), cfg))
-			defaultConfig(cfg);
+		loadConfig(m_path, cfg);
 		m_index.m_cfg.clear();
 		m_index.m_cfg = cfg;
 

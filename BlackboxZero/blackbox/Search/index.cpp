@@ -9,12 +9,12 @@
 namespace bb { namespace search {
 
 struct icasecompare : std::binary_function<tstring, tstring, bool> {
-    bool operator() (tstring const & lhs, tstring const & rhs) const {
-        return _tcsicmp(lhs.c_str(), rhs.c_str()) < 0;
-    }
+	bool operator() (tstring const & lhs, tstring const & rhs) const {
+		return _tcsicmp(lhs.c_str(), rhs.c_str()) < 0;
+	}
 };
 
-void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring const & fname2)
+void makeIndex (trie_t & trie, props_t & props, bool & abort, Config const & cfg)
 {
 	try
 	{
@@ -23,6 +23,9 @@ void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring cons
 		std::map<tstring, int, icasecompare> tmp_propmap;
 		for (SearchLocationInfo const & info : cfg.m_locations)
 		{
+			if (abort)
+				return;
+
 			SearchDirectory(
 				  info.m_dir_path, info.m_includes, info.m_excludes, info.m_recursive, info.m_follow_symlinks
 				, TEXT("")
@@ -45,7 +48,8 @@ void makeIndex (trie_t & trie, props_t & props, Config const & cfg, tstring cons
 							tmp_props[it->second].m_fpath.push_back(fpath);
 							//dbg_printf("update: fname=%s fpath=%s idx=%i\n", fname.c_str(), fpath.c_str(), it->second);
 						}
-					 });
+					 }
+				, abort);
 		}
 		props = tmp_props;
 	}

@@ -4,6 +4,12 @@
 
 namespace bb { namespace search {
 
+	void loadConfig (tstring const & path, Config & cfg)
+	{
+		if (!readRC(path + TEXT("search.rc"), cfg))
+			defaultConfig(cfg);
+	}
+
 	bool readRC (tstring const & fpath, Config & cfg)
 	{
 		cfg.clear();

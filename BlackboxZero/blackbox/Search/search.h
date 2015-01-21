@@ -24,8 +24,11 @@ inline int SearchDirectory (
 				  tstring const & dir_path, std::vector<tstring> const & includes, std::vector<tstring> const & excludes, bool recursive, bool follow_symlinks
 				, tstring const & file_name
 				, std::function<bool(tstring const &, tstring const &)> compare
-				, std::function<void(tstring const &, tstring const &)> on_match)
+				, std::function<void(tstring const &, tstring const &)> on_match
+				, bool & abortFlag)
 {
+	if (abortFlag) return ERROR_PRINT_CANCELLED;
+
 	tstring filePath;
 	tstring pattern = dir_path;
 	if (!boost::algorithm::ends_with(pattern, TEXT("\\")))
@@ -33,11 +36,13 @@ inline int SearchDirectory (
 	pattern += TEXT("*.*");
 
 	WIN32_FIND_DATA fi;
-	HANDLE hFile = ::FindFirstFile(pattern.c_str(), &fi);
+	HANDLE hFile = ::FindFirstFile(pattern.c_str(), &fi); // @TODO: RAII on hFile
 	if (hFile != INVALID_HANDLE_VALUE)
 	{
 		do
 		{
+			if (abortFlag) return ERROR_PRINT_CANCELLED;
+
 			if (fi.cFileName[0] != '.')
 			{
 				filePath.erase();
@@ -53,7 +58,7 @@ inline int SearchDirectory (
 						if (!matchExclude(excludes, filePath))
 						{
 							// descend into subdirectory
-							if (int const iRC = SearchDirectory(filePath, includes, excludes, recursive, follow_symlinks, file_name, compare, on_match))
+							if (int const iRC = SearchDirectory(filePath, includes, excludes, recursive, follow_symlinks, file_name, compare, on_match, abortFlag))
 								return iRC;
 						}
 					}
@@ -64,6 +69,8 @@ inline int SearchDirectory (
 					{
 						for (tstring const & ws : includes)
 						{
+							if (abortFlag) return ERROR_PRINT_CANCELLED;
+
 							if (std::regex_match(fi.cFileName, tregex(ws, std::tr1::regex_constants::icase)))
 							{
 								if (compare(fi.cFileName, file_name))
@@ -78,13 +85,15 @@ inline int SearchDirectory (
 					}
 				}
 			}
+
+			if (abortFlag) return ERROR_PRINT_CANCELLED;
 		}
 		while(::FindNextFile(hFile, &fi) == TRUE);
 
-		::FindClose(hFile);// Close handle
+		::FindClose(hFile); // Close handle
 
 		DWORD dwError = ::GetLastError();
-		if(dwError != ERROR_NO_MORE_FILES)
+		if (dwError != ERROR_NO_MORE_FILES)
 			return dwError;
 	}
 	return 0;
