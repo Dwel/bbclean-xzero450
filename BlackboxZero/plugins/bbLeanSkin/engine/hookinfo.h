@@ -26,7 +26,7 @@
 
 ============================================================================
 */
-
+#pragma once
 #include "BBApi.h" // we require the StyleItem definition..
 
 // This file contains information common to both the loader and the skinner

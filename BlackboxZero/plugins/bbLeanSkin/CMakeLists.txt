@@ -23,6 +23,9 @@ add_library(${target_name}
 	SHARED
 	engine/hookctl.cpp
 	engine/subclass.cpp
+	engine/utils.cpp
+	engine/draw_gdi.cpp
+	engine/button_actions.cpp
 )
 set_target_properties(bbLeanSkinEng PROPERTIES LINK_FLAGS_DEBUG          "/SUBSYSTEM:WINDOWS")
 set_target_properties(bbLeanSkinEng PROPERTIES LINK_FLAGS_RELEASE        "/SUBSYSTEM:WINDOWS")

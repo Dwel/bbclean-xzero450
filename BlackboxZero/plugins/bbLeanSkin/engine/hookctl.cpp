@@ -30,6 +30,7 @@
 #include "BImage.h"
 #include "hookinfo.h"
 #include "subclass.h"
+#include "utils.h"
 
 #ifdef __GNUC__
 #define SHARED(T,X) T X __attribute__((section(".shared"), shared)) = (T)0
