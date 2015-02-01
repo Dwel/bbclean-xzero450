@@ -88,7 +88,7 @@ struct shmem
     HANDLE hMapObject;
 };
 
-void ReleaseSharedMem(struct shmem *psh)
+void ReleaseSharedMem (shmem * psh)
 {
     if (psh->hMapObject)
     {
@@ -98,7 +98,7 @@ void ReleaseSharedMem(struct shmem *psh)
     }
 }
 
-void *GetSharedMem(struct shmem *psh)
+void * GetSharedMem (shmem * psh)
 {
     psh->hMapObject = OpenFileMapping(FILE_MAP_READ, FALSE, BBLEANSKIN_SHMEMID);
     if (psh->hMapObject)
@@ -117,16 +117,16 @@ void *GetSharedMem(struct shmem *psh)
     return NULL;
 }
 
-static void copy_skin(SkinStruct *pSkin)
+static void copy_skin (SkinStruct * pSkin)
 {
     memcpy(&mSkin, pSkin, offset_exInfo);
     bimage_init(mSkin.imageDither, mSkin.is_style070);
 }
 
-bool GetSkin(void)
+bool GetSkin ()
 {
     struct shmem sh;
-    SkinStruct *pSkin = (SkinStruct *)GetSharedMem(&sh);
+    SkinStruct * pSkin = (SkinStruct *)GetSharedMem(&sh);
     if (NULL == pSkin)
         return false;
     copy_skin(pSkin);
@@ -135,57 +135,6 @@ bool GetSkin(void)
 }
 
 //===========================================================================
-
-HWND GetRootWindow(HWND hwnd)
-{
-    HWND pw, dw;
-    dw = GetDesktopWindow();
-    while (NULL != (pw = GetParent(hwnd)) && dw != pw)
-        hwnd = pw;
-    return hwnd;
-}
-
-int get_module(HWND hwnd, char *buffer, int buffsize)
-{
-    char sFileName[MAX_PATH]; HINSTANCE hi; int i, r;
-    hi = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
-    r = GetModuleFileName(hi, sFileName, MAX_PATH);
-    if (0 == r)
-        r = GetModuleFileName(NULL, sFileName, MAX_PATH);
-    for (i = r; i && sFileName[i-1] != '\\'; i--);
-    r -= i;
-    if (r >= buffsize)
-        r = buffsize-1;
-    memcpy(buffer, sFileName + i, r);
-    buffer[r] = 0;
-    return r;
-}
-
-char *sprint_window(char *buffer, size_t max_ln, HWND hwnd, const char *msg)
-{
-    char sClassName[200]; sClassName[0] = 0;
-    GetClassName(hwnd, sClassName, sizeof sClassName);
-
-    char sFileName[200]; sFileName[0] = 0;
-    get_module(hwnd, sFileName, sizeof sFileName);
-
-    char caption[128]; caption[0] = 0;
-    GetWindowText(hwnd, caption, sizeof caption);
-
-    sprintf_s(buffer, max_ln,
-        
-#ifdef BBLEANSKIN_ENG32
-        "%s window/32 with title \"%s\"\r\n\t%s:%s"
-#else
-        "%s window with title \"%s\"\r\n\t%s:%s"
-#endif
-        //" - %08x %08x"
-        , msg, caption, sFileName, sClassName
-        //, GetWindowLongPtr(hwnd, GWL_STYLE), GetWindowLongPtr(hwnd, GWL_EXSTYLE),
-        );
-    return buffer;
-}
-
 void send_log(HWND hwnd, const char *msg)
 {
     char buffer[1000];
@@ -203,7 +152,6 @@ void send_log(HWND hwnd, const char *msg)
 
 //===========================================================================
 // simple wildcard pattern matcher
-
 int match (const char *str, const char *pat)
 {
     for (;;)
@@ -223,7 +171,7 @@ int match (const char *str, const char *pat)
 }
 
 //===========================================================================
-int HookWindow(HWND hwnd, int early)
+int HookWindow (HWND hwnd, int early)
 {
     LONG_PTR lStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
 
@@ -234,7 +182,7 @@ int HookWindow(HWND hwnd, int early)
         return 0;
     }
 
-	LONG_PTR lExStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+    LONG_PTR lExStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
     // child windows are excluded unless they have a sysmenu or are MDI clients
     if ((lStyle & WS_CHILD)
@@ -308,7 +256,6 @@ int HookWindow(HWND hwnd, int early)
     ReleaseSharedMem(&sh);
 
     // ------------------------------------------------------
-
     if (early && 0 == found)
     {
         //send_log(hwnd, "Checking later:");
@@ -335,8 +282,7 @@ int HookWindow(HWND hwnd, int early)
 }
 
 //===========================================================================
-
-LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CallWndProc (int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode >= 0)
     {
@@ -350,7 +296,7 @@ LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(hCallWndHook, nCode, wParam, lParam);
 }
 
-LRESULT CALLBACK GetMsgProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK GetMsgProc (int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode >= 0)
     {
@@ -365,7 +311,7 @@ LRESULT CALLBACK GetMsgProc(int nCode, WPARAM wParam, LPARAM lParam)
 }
 
 // this is called for process 'blackbox' only
-int EntryFunc(int option)
+int EntryFunc (int option)
 {
     if (ENGINE_GETVERSION == option)
     {
@@ -391,7 +337,7 @@ int EntryFunc(int option)
 }
 
 //===========================================================================
-extern "C" BOOL WINAPI DllMain(HINSTANCE hDLLInst, DWORD fdwReason, LPVOID lpvReserved)
+extern "C" BOOL WINAPI DllMain (HINSTANCE hDLLInst, DWORD fdwReason, LPVOID lpvReserved)
 {
     switch (fdwReason)
     {
@@ -399,11 +345,11 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hDLLInst, DWORD fdwReason, LPVOID lpvRe
         // The DLL is being loaded for the first time by a given process.
         // Perform per-process initialization here.  If the initialization
         // is successful, return TRUE; if unsuccessful, return FALSE.
-        
+
         // TODO: DisableThreadLibraryCalls screws with msvcrt
         // TODO: RegisterWindowMessage is not safe to called from the dllmain, it can lead to deadlocks.
         //       we should put it into some initializer instead.
-        
+
         hInstance = hDLLInst;
         DisableThreadLibraryCalls(hDLLInst);
         bbSkinMsg = RegisterWindowMessage(BBLEANSKIN_MSG);

@@ -1,6 +1,4 @@
 /*
- ============================================================================
-
   This file is part of the bbLeanSkin source code.
   This file is part of the bbLeanSkin+ source code.
   Copyright © 2003-2009 grischka (grischka@users.sourceforge.net)
@@ -23,10 +21,7 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
   or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
   for more details.
-
- ============================================================================
 */
-
 #include "BBApi.h"
 #include "win0x500.h"
 #include "BImage.h"
@@ -53,23 +48,22 @@ bool set_region (WinInfo *WI);
 
 //-----------------------------------------------------------------
 // This is where it all starts from
-void subclass_window(HWND hwnd)
+void subclass_window (HWND hwnd)
 {
     char dllpath[MAX_PATH];
-    WinInfo *WI;
-    WI = (WinInfo *)GlobalAlloc(GMEM_FIXED|GMEM_ZEROINIT, sizeof *WI);
+    WinInfo * WI = static_cast<WinInfo *>(GlobalAlloc(GMEM_FIXED | GMEM_ZEROINIT, sizeof(WinInfo)));
 
     // Keep a reference to this piece of code to prevent the
     // engine from being unloaded by chance (i.e. if BB crashes)
     GetModuleFileName(hInstance, dllpath, sizeof dllpath);
     WI->hModule = LoadLibrary(dllpath);
-
     WI->hwnd = hwnd;
     WI->is_unicode = FALSE != IsWindowUnicode(hwnd);
     WI->pCallWindowProc = WI->is_unicode ? CallWindowProcW : CallWindowProcA;
     WI->is_active_app = true;
 
     set_WinInfo(hwnd, WI);
+
     WI->wpOrigWindowProc = (WNDPROC)
         (WI->is_unicode ? SetWindowLongPtrW : SetWindowLongPtrA)
             (hwnd, GWLP_WNDPROC, (LONG_PTR)WindowSubclassProc);
@@ -84,7 +78,7 @@ void subclass_window(HWND hwnd)
 }
 
 // This is where it ends then
-void detach_skinner (WinInfo *WI)
+void detach_skinner (WinInfo * WI)
 {
     HWND hwnd = WI->hwnd;
     HMODULE hModule = WI->hModule;
@@ -93,16 +87,17 @@ void detach_skinner (WinInfo *WI)
     // the currently set WindowProc
     WNDPROC wpNow = (WNDPROC)(WI->is_unicode ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
     // check, if it's still what we have set
-    if (WindowSubclassProc == wpNow) {
+    if (WindowSubclassProc == wpNow)
+    {
         // if so, set back to the original WindowProc
         SetLastError(0);
-        (WI->is_unicode ? SetWindowLongPtrW : SetWindowLongPtrA)
-            (hwnd, GWLP_WNDPROC, (LONG_PTR)WI->wpOrigWindowProc);
-        if (0 == GetLastError()) {
+        (WI->is_unicode ? SetWindowLongPtrW : SetWindowLongPtrA) (hwnd, GWLP_WNDPROC, (LONG_PTR)WI->wpOrigWindowProc);
+        if (0 == GetLastError())
+        {
             // remove the property
             del_WinInfo(hwnd);
             // free the WinInfo structure
-            GlobalFree (WI);
+            GlobalFree(WI);
             // if blackbox is still there, release this dll
             if (hModule && IsWindow(mSkin.loghwnd))
                 FreeLibrary(hModule);
@@ -117,7 +112,7 @@ void detach_skinner (WinInfo *WI)
 
 //-----------------------------------------------------------------
 // cut off left/right sizeborder and adjust title height
-bool set_region (WinInfo *WI)
+bool set_region (WinInfo * WI)
 {
     HWND hwnd = WI->hwnd;
 
@@ -146,7 +141,8 @@ bool set_region (WinInfo *WI)
 
     SizeInfo S = WI->S;
 
-    RECT rc; GetWindowRect(hwnd, &rc);
+    RECT rc;
+    GetWindowRect(hwnd, &rc);
     WI->S.width  = rc.right - rc.left;
     WI->S.height = rc.bottom - rc.top;
     GetClientRect(hwnd, &WI->S.rcClient);
@@ -162,10 +158,8 @@ bool set_region (WinInfo *WI)
         b = mSkin.cxFixedFrame;
         bh = mSkin.frameWidth;
     }
-    else
-    if (WI->is_zoomed && false == WI->is_rolled) {
+    else if (WI->is_zoomed && false == WI->is_rolled)
         bh = mSkin.frameWidth;
-    }
 
     WI->S.HiddenTop = imax(0, b - mSkin.ncTop + c);
     WI->S.HiddenSide = imax(0, b - mSkin.frameWidth);
@@ -176,7 +170,7 @@ bool set_region (WinInfo *WI)
     if (WI->is_rolled)
         WI->S.HiddenBottom = 0;
 
-    if (0 == memcmp(&S, &WI->S, sizeof S) && WI->apply_skin)
+    if (0 == memcmp(&S, &WI->S, sizeof(S)) && WI->apply_skin)
         return false; // nothing changed
 
     WI->apply_skin = true;
@@ -191,7 +185,6 @@ bool set_region (WinInfo *WI)
     WI->in_set_region = true;
     SetWindowRgn(hwnd, hrgn, TRUE);
     WI->in_set_region = false;
-
     return true;
 }
 
@@ -199,19 +192,17 @@ bool set_region (WinInfo *WI)
 //#define LOGMSGS
 
 #ifdef LOGMSGS
-#include "../winmsgs.cpp"
+#   include "../winmsgs.cpp"
 #endif
 
 //===========================================================================
 
-LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT APIENTRY WindowSubclassProc (HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    WinInfo *WI;
-    LRESULT result;
-    int n;
+    LRESULT result = 0;
+    int n = 0;
 
-    result = 0;
-    WI = get_WinInfo(hwnd);
+    WinInfo * WI = get_WinInfo(hwnd);
 
 #ifdef LOGMSGS
     dbg_printf("hw %08x  msg %s  wP %08x  lp %08x", hwnd, wm_str(uMsg), wParam, lParam);
@@ -289,10 +280,7 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         goto leave;
 
     //----------------------------------
-
-    //----------------------------------
     // Windows draws the caption on WM_SETTEXT/WM_SETICON
-
     case WM_SETICON:
     case WM_SETTEXT:
         if ((WI->exstyle & WS_EX_MDICHILD) && IsZoomed(hwnd))
@@ -305,7 +293,6 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     //----------------------------------
     // Windows draws the caption buttons on WM_SETCURSOR (size arrows),
     // which looks completely unsmooth, have to override this
-
     case WM_SETCURSOR:
     {
         LPCSTR CU;
@@ -313,14 +300,14 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         {
             case HTLEFT:
             case HTRIGHT: CU = IDC_SIZEWE;  break;
-                
+
             case HTTOPRIGHT:
             case HTBOTTOMLEFT: CU = IDC_SIZENESW; break;
-                
+
             case HTTOPLEFT:
             case HTGROWBOX:
             case HTBOTTOMRIGHT: CU = IDC_SIZENWSE; break;
-                
+
             case HTTOP:
             case HTBOTTOM: CU = IDC_SIZENS; break;
 
@@ -330,8 +317,6 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         result = 1;
         goto leave;
     }
-
-    //----------------------------------
 
     case WM_ACTIVATEAPP:
         //dbg_printf("WM_ACTIVATEAPP %d", wParam);
@@ -345,14 +330,12 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         post_redraw(hwnd);
         goto paint_after;
 
-    //----------------------------------
     case WM_NCHITTEST:
         n = get_button(WI, (short)LOWORD(lParam), (short)HIWORD(lParam));
-        if (btn_None == n) {
+        if (btn_None == n)
             result = CALLORIGWINDOWPROC(hwnd, uMsg, wParam, lParam);
-        } else {
+        else
             result = translate_hittest(WI, n);
-        }
 
         if (WI->is_rolled)
         {
@@ -377,7 +360,6 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         }
         goto leave;
 
-    //----------------------------------
     case WM_MOUSEMOVE:
         if (btn_None == (n = WI->capture_button))
             break;
@@ -398,7 +380,6 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 
     //----------------------------------
-
     set_capture:
         WI->capture_button = WI->button_down = (char)n;
         SetCapture(hwnd);
@@ -566,15 +547,13 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     {
         WINDOWPOS *wp = (WINDOWPOS*)lParam;
         if (WI->is_moving
-         && mSkin.snapWindows
-         && 0 == (WS_CHILD & WI->style)
-         && ((wp->flags & SWP_NOSIZE)
-             || (WI->S.width == wp->cx 
-                && WI->S.height == wp->cy)
-            ))
+                 && mSkin.snapWindows
+                 && 0 == (WS_CHILD & WI->style)
+                 && ((wp->flags & SWP_NOSIZE) || (WI->S.width == wp->cx && WI->S.height == wp->cy)))
             SnapWindowToEdge(WI, (WINDOWPOS*)lParam, mSkin.snapWindows);
 
-        if (get_rolled(WI)) {
+        if (get_rolled(WI))
+        {
             wp->cy = mSkin.rollupHeight + WI->S.HiddenTop;
             // prevent app from possibly setting a minimum size
             goto leave;
@@ -602,7 +581,6 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         set_region(WI);
         break;
 
-    //----------------------------------
     // adjust for the bottom border (handleHeight)
     case WM_NCCALCSIZE:
         if (wParam)
@@ -618,18 +596,17 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     {
         LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
         lpmmi->ptMinTrackSize.x = 12 * mSkin.buttonSize;
-        lpmmi->ptMinTrackSize.y = 
-            mSkin.ncTop 
-            + WI->S.HiddenTop 
-            + WI->S.BottomHeight 
-            - WI->S.HiddenBottom 
+        lpmmi->ptMinTrackSize.y =
+            mSkin.ncTop
+            + WI->S.HiddenTop
+            + WI->S.BottomHeight
+            - WI->S.HiddenBottom
             - mSkin.frameWidth;
         break;
     }
 
     //----------------------------------
     // Terminate subclassing
-
     case WM_NCDESTROY:
         WI->apply_skin = false;
         result = CALLORIGWINDOWPROC(hwnd, uMsg, wParam, lParam);
@@ -690,8 +667,6 @@ LRESULT APIENTRY WindowSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
             }
             goto leave;
         }
-
-    //----------------------------------
     } //switch
 
     result = CALLORIGWINDOWPROC(hwnd, uMsg, wParam, lParam);
@@ -699,4 +674,3 @@ leave:
     return result;
 }
 
-//===========================================================================

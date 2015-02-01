@@ -8,18 +8,21 @@ int imax(int a, int b);
 int imin(int a, int b);
 
 //-----------------------------------------------------------------
-void DeleteBitmaps(WinInfo *WI)
+void DeleteBitmaps (WinInfo *WI)
 {
     int n = NUMOFGDIOBJS;
-    GdiInfo *pGdi = WI->gdiobjs;
+    GdiInfo * pGdi = WI->gdiobjs;
     do {
         if (pGdi->hObj)
-            DeleteObject(pGdi->hObj), pGdi->hObj = NULL;
+        {
+            DeleteObject(pGdi->hObj);
+            pGdi->hObj = NULL;
+        }
         pGdi++;
     } while (--n);
 }
 
-void PutGradient(WinInfo *WI, HDC hdc, RECT *rc, StyleItem *pG)
+void PutGradient (WinInfo * WI, HDC hdc, RECT * rc, StyleItem * pG)
 {
     if (pG->parentRelative) {
         if (pG->borderWidth)
@@ -68,17 +71,14 @@ void PutGradient(WinInfo *WI, HDC hdc, RECT *rc, StyleItem *pG)
 }
 
 //-----------------------------------------------------------------
-
-void DrawButton(WinInfo *WI, HDC hdc, RECT rc, int btn, int state, StyleItem *pG)
+void DrawButton (WinInfo * WI, HDC hdc, RECT rc, int btn, int state, StyleItem * pG)
 {
     int x, y, xa, ya, xe, ye;
     unsigned char *up;
-    COLORREF c;
-    unsigned bits;
 
     PutGradient(WI, hdc, &rc, pG);
 
-    c = pG->picColor;
+    COLORREF c = pG->picColor;
     up = mSkin.glyphmap;
     x = up[0];
     y = up[1];
@@ -87,7 +87,7 @@ void DrawButton(WinInfo *WI, HDC hdc, RECT rc, int btn, int state, StyleItem *pG
     xe = (xa = (rc.left + rc.right - x)/2) + x;
     ye = (ya = (rc.top + rc.bottom - y)/2) + y;
 
-    bits = 0;
+    unsigned bits = 0;
     y = ya;
     do {
         x = xa;
@@ -101,33 +101,38 @@ void DrawButton(WinInfo *WI, HDC hdc, RECT rc, int btn, int state, StyleItem *pG
     } while (++y < ye);
 }
 
-void draw_line(HDC hDC, int x1, int x2, int y1, int y2, int w)
+void draw_line (HDC hDC, int x1, int x2, int y1, int y2, int w)
 {
     while (w)
     {
         MoveToEx(hDC, x1, y1, NULL);
         LineTo  (hDC, x2, y2);
-        if (x1 == x2) x2 = ++x1; else y2 = ++y1;
+        if (x1 == x2)
+            x2 = ++x1;
+        else
+            y2 = ++y1;
         --w;
     }
 }
 
 //-----------------------------------------------------------------
 #if 1
-int get_window_icon(HWND hwnd, HICON *picon)
+int get_window_icon (HWND hwnd, HICON * picon)
 {
     HICON hIco = NULL;
-    SendMessageTimeout(hwnd, WM_GETICON, ICON_SMALL,
-        0, SMTO_ABORTIFHUNG|SMTO_NORMAL, 1000, (DWORD_PTR*)&hIco);
-    if (NULL==hIco) {
-    SendMessageTimeout(hwnd, WM_GETICON, ICON_BIG,
-        0, SMTO_ABORTIFHUNG|SMTO_NORMAL, 1000, (DWORD_PTR*)&hIco);
-    if (NULL==hIco) {
-        hIco = (HICON)GetClassLongPtr(hwnd, GCLP_HICONSM);
-    if (NULL==hIco) {
-        hIco = (HICON)GetClassLongPtr(hwnd, GCLP_HICON);
-    if (NULL==hIco) {
-        return 0;
+    SendMessageTimeout(hwnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG|SMTO_NORMAL, 1000, (DWORD_PTR*)&hIco);
+    if (NULL == hIco)
+    {
+        SendMessageTimeout(hwnd, WM_GETICON, ICON_BIG, 0, SMTO_ABORTIFHUNG|SMTO_NORMAL, 1000, (DWORD_PTR*)&hIco);
+        if (NULL == hIco)
+        {
+            hIco = (HICON)GetClassLongPtr(hwnd, GCLP_HICONSM);
+            if (NULL == hIco)
+            {
+                hIco = (HICON)GetClassLongPtr(hwnd, GCLP_HICON);
+                if (NULL == hIco)
+                {
+                    return 0;
     }}}}
     *picon = hIco;
     return 1;
@@ -139,26 +144,25 @@ int get_window_icon(HWND hwnd, HICON *picon)
 #endif
 
 //-----------------------------------------------------------------
-
-void PaintAll(struct WinInfo* WI)
+void PaintAll (WinInfo * WI)
 {
-    int left    = WI->S.HiddenSide;
-    int width   = WI->S.width;
-    int right   = width - WI->S.HiddenSide;
+    int const left    = WI->S.HiddenSide;
+    int const width   = WI->S.width;
+    int const right   = width - WI->S.HiddenSide;
 
-    int top     = WI->S.HiddenTop;
-    int bottom  = WI->S.height - WI->S.HiddenBottom;
-    int title_height = mSkin.ncTop;
-    int title_bottom = top + title_height;
+    int const top     = WI->S.HiddenTop;
+    int const bottom  = WI->S.height - WI->S.HiddenBottom;
+    int const title_height = mSkin.ncTop;
+    int const title_bottom = top + title_height;
 
     HWND focus;
-    int active;
+    int active = 0;
 
     RECT rc;
     HDC hdc, hdc_win;
     HGDIOBJ hbmpOld;
-    StyleItem *pG;
-    windowGradients *wG;
+    StyleItem * pG = 0;
+    windowGradients * wG = 0;
 
     //dbg_printf("painting %x", WI->hwnd);
 
@@ -199,8 +203,8 @@ void PaintAll(struct WinInfo* WI)
 
     int label_left = left;
     int label_right = right;
-	int barrier = mSkin.labelBarrier !=-1 ? 
-		((right - left) * (mSkin.labelBarrier) / 200) : 0;
+    int barrier = mSkin.labelBarrier !=-1 ? 
+        ((right - left) * (mSkin.labelBarrier) / 200) : 0;
     int space = mSkin.buttonMargin;
     int d, i;
 
@@ -279,7 +283,8 @@ void PaintAll(struct WinInfo* WI)
         p->pos = rc.left;
         space = mSkin.buttonSpace;
 
-        if (btn_Icon == b) {
+        if (btn_Icon == b)
+        {
             int s = mSkin.buttonSize;
             int o = (s - 20)/2;
             if (o < 0)
@@ -287,8 +292,10 @@ void PaintAll(struct WinInfo* WI)
             else
                 s = 20;
             DrawIconSatnHue(hdc, rc.left+o, rc.top+o, hico, s, s, 0, NULL, DI_NORMAL, state, mSkin.iconSat, mSkin.iconHue);
-        } else {
-            int pressed = WI->button_down == b
+        }
+        else
+        {
+            int const pressed = WI->button_down == b
                 || ((2 & mSkin.bbsm_option) && btn_Close == b);
             DrawButton(WI, hdc, rc, b-1, state, pG + pressed);
         }
@@ -300,10 +307,8 @@ void PaintAll(struct WinInfo* WI)
     //----------------------------------
     // Titlebar Label gradient
 
-    rc.left = label_left + barrier + 
-		(left == label_left ? mSkin.labelMargin : mSkin.buttonInnerMargin);
-    rc.right = label_right - barrier - 
-		(right == label_right ? mSkin.labelMargin : mSkin.buttonInnerMargin);
+    rc.left = label_left + barrier + (left == label_left ? mSkin.labelMargin : mSkin.buttonInnerMargin);
+    rc.right = label_right - barrier - (right == label_right ? mSkin.labelMargin : mSkin.buttonInnerMargin);
     rc.top = top + mSkin.labelMargin;
     rc.bottom = title_bottom - mSkin.labelMargin;
 
@@ -322,67 +327,55 @@ void PaintAll(struct WinInfo* WI)
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, pG->TextColor);
 
-    WCHAR wTitle[200];
+    int const title_sz = 192;
+    WCHAR wTitle[title_sz];
     wTitle[0] = 0;
 
-    if (WI->is_unicode) {
-		GetWindowTextW(WI->hwnd, wTitle, sizeof(wTitle) / sizeof(*wTitle));
+    if (WI->is_unicode)
+    {
+        GetWindowTextW(WI->hwnd, wTitle, title_sz);
         BBDrawTextAltW(hdc, wTitle, -1, &rc,
-            mSkin.Justify
-            | DT_SINGLELINE
-            | DT_NOPREFIX
-            | DT_END_ELLIPSIS
-            | DT_VCENTER,
-            pG
-            );
-    } else {
-		GetWindowText(WI->hwnd, (char*)wTitle, sizeof(wTitle) / sizeof(*wTitle));
-		BBDrawTextAlt(hdc, (char*)wTitle, -1, &rc,
-            mSkin.Justify
-            | DT_SINGLELINE
-            | DT_NOPREFIX
-            | DT_END_ELLIPSIS
-            | DT_VCENTER,
-            pG
-            );
+            mSkin.Justify | DT_SINGLELINE | DT_NOPREFIX | DT_END_ELLIPSIS | DT_VCENTER,
+            pG);
+    }
+    else
+    {
+        GetWindowText(WI->hwnd, (char*)wTitle, title_sz);
+        BBDrawTextAlt(hdc, (char*)wTitle, -1, &rc,
+            mSkin.Justify | DT_SINGLELINE | DT_NOPREFIX | DT_END_ELLIPSIS | DT_VCENTER,
+            pG);
     }
 
-    SelectObject(hdc, hfontOld);    
+    SelectObject(hdc, hfontOld);
 
     //----------------------------------
     // Blit the title
-
     BitBlt(hdc_win, left, top, right-left, title_height, hdc, left, top, SRCCOPY);
 
     //----------------------------------
     // Frame and Bottom
-
     if (false == WI->is_iconic
-      && (false == WI->is_rolled
-            || (false == mSkin.nixShadeStyle && mSkin.handleHeight)))
+          && (false == WI->is_rolled || (false == mSkin.nixShadeStyle && mSkin.handleHeight)))
     {
-        int fw = mSkin.frameWidth;
-
-        if (fw)
+        if (int fw = mSkin.frameWidth)
         {
             //----------------------------------
             // Frame left/right(/bottom) border, drawn directly on screen
-
             rc.top = title_bottom;
             rc.left = left;
             rc.right = right;
             rc.bottom = bottom - WI->S.BottomHeight;
-			if (!mSkin.is_style070)
-			{
-				COLORREF pc = active ? mSkin.F.Title.borderColor : mSkin.U.Title.borderColor;
-				HGDIOBJ oldPen = SelectObject(hdc_win, CreatePen(PS_SOLID, 1, pc));
-				int bw = imax(mSkin.F.Title.borderWidth, mSkin.U.Title.borderWidth);
-				draw_line(hdc_win, rc.left, rc.left, rc.top, rc.bottom, bw);
-				draw_line(hdc_win, rc.right-bw, rc.right-bw, rc.top, rc.bottom, bw);
-				DeleteObject(SelectObject(hdc_win, oldPen));
-				rc.left += bw;
-				rc.right -= bw;
-			}
+            if (!mSkin.is_style070)
+            {
+                COLORREF pc = active ? mSkin.F.Title.borderColor : mSkin.U.Title.borderColor;
+                HGDIOBJ oldPen = SelectObject(hdc_win, CreatePen(PS_SOLID, 1, pc));
+                int const bw = imax(mSkin.F.Title.borderWidth, mSkin.U.Title.borderWidth);
+                draw_line(hdc_win, rc.left, rc.left, rc.top, rc.bottom, bw);
+                draw_line(hdc_win, rc.right-bw, rc.right-bw, rc.top, rc.bottom, bw);
+                DeleteObject(SelectObject(hdc_win, oldPen));
+                rc.left += bw;
+                rc.right -= bw;
+            }
 
             COLORREF bc = wG->FrameColor;
             HGDIOBJ oldPen = SelectObject(hdc_win, CreatePen(PS_SOLID, 1, bc));
@@ -390,22 +383,21 @@ void PaintAll(struct WinInfo* WI)
             draw_line(hdc_win, rc.right-fw, rc.right-fw, rc.top, rc.bottom, fw);
             if (WI->S.BottomHeight == fw)
                 draw_line(hdc_win, rc.left, rc.right, rc.bottom, rc.bottom, fw);
-			if (!mSkin.is_style070)
-			{
-				rc.bottom -= fw;
-				draw_line(hdc_win, rc.left, rc.right, rc.top, rc.top, fw);
-				draw_line(hdc_win, rc.left, rc.right, rc.bottom, rc.bottom, fw);
-			}
+            if (!mSkin.is_style070)
+            {
+                rc.bottom -= fw;
+                draw_line(hdc_win, rc.left, rc.right, rc.top, rc.top, fw);
+                draw_line(hdc_win, rc.left, rc.right, rc.bottom, rc.bottom, fw);
+            }
             DeleteObject(SelectObject(hdc_win, oldPen));
         }
 
         if (WI->S.BottomHeight > 0)
         {
-            int gw = mSkin.gripWidth;
-            StyleItem *pG2;
+            int const gw = mSkin.gripWidth;
             pG = &wG->Handle;
-            pG2 = &wG->Grip;
-            int bw = imin(pG->borderWidth, pG2->borderWidth);
+            StyleItem * pG2 = &wG->Grip;
+            int const bw = imin(pG->borderWidth, pG2->borderWidth);
 
             //----------------------------------
             // Bottom Handle gradient
@@ -420,7 +412,7 @@ void PaintAll(struct WinInfo* WI)
             PutGradient(WI, hdc, &rc, pG);
 
             //----------------------------------
-            //Bottom Grips
+            // Bottom Grips
             if (false == pG2->parentRelative) {
                 rc.right = (rc.left = left) + gw;
                 PutGradient(WI, hdc, &rc, pG2);

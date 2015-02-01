@@ -6,32 +6,83 @@ extern HINSTANCE hInstance;
 extern unsigned bbSkinMsg;
 extern SkinStruct mSkin;
 
-bool get_rolled (WinInfo *WI)
+HWND GetRootWindow (HWND hwnd)
+{
+    HWND pw, dw;
+    dw = GetDesktopWindow();
+    while (NULL != (pw = GetParent(hwnd)) && dw != pw)
+        hwnd = pw;
+    return hwnd;
+}
+
+int get_module (HWND hwnd, char * buffer, int buffsize)
+{
+    char sFileName[MAX_PATH]; HINSTANCE hi; int i, r;
+    hi = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
+    r = GetModuleFileName(hi, sFileName, MAX_PATH);
+    if (0 == r)
+        r = GetModuleFileName(NULL, sFileName, MAX_PATH);
+    for (i = r; i && sFileName[i-1] != '\\'; i--);
+    r -= i;
+    if (r >= buffsize)
+        r = buffsize-1;
+    memcpy(buffer, sFileName + i, r);
+    buffer[r] = 0;
+    return r;
+}
+
+char * sprint_window (char *buffer, size_t max_ln, HWND hwnd, const char *msg)
+{
+    char sClassName[200]; sClassName[0] = 0;
+    GetClassName(hwnd, sClassName, sizeof sClassName);
+
+    char sFileName[200]; sFileName[0] = 0;
+    get_module(hwnd, sFileName, sizeof sFileName);
+
+    char caption[128]; caption[0] = 0;
+    GetWindowText(hwnd, caption, sizeof caption);
+
+    sprintf_s(buffer, max_ln,
+
+#ifdef BBLEANSKIN_ENG32
+        "%s window/32 with title \"%s\"\r\n\t%s:%s"
+#else
+        "%s window with title \"%s\"\r\n\t%s:%s"
+#endif
+        //" - %08x %08x"
+        , msg, caption, sFileName, sClassName
+        //, GetWindowLongPtr(hwnd, GWL_STYLE), GetWindowLongPtr(hwnd, GWL_EXSTYLE),
+        );
+    return buffer;
+}
+
+bool get_rolled (WinInfo * WI)
 {
     DWORD prop = (DWORD)(DWORD_PTR)GetProp(WI->hwnd, BBSHADE_PROP);
-    bool rolled = 0 != (IsZoomed(WI->hwnd) 
-        ? HIWORD(prop) 
+    bool const rolled = 0 != (IsZoomed(WI->hwnd)
+        ? HIWORD(prop)
         : LOWORD(prop));
     return WI->is_rolled = rolled;
 }
 
-void window_set_pos(HWND hwnd, RECT rc)
+void window_set_pos (HWND hwnd, RECT rc)
 {
-    int width = rc.right - rc.left;
-    int height = rc.bottom - rc.top;
+    int const width = rc.right - rc.left;
+    int const height = rc.bottom - rc.top;
     SetWindowPos(hwnd, NULL,
         rc.left, rc.top, width, height,
         SWP_NOZORDER|SWP_NOACTIVATE);
 }
 
-int get_shade_height(HWND hwnd)
+int get_shade_height (HWND hwnd)
 {
     return SendMessage(hwnd, bbSkinMsg, BBLS_GETSHADEHEIGHT, 0);
 }
 
-void ShadeWindow(HWND hwnd)
+void ShadeWindow (HWND hwnd)
 {
-    RECT rc; get_rect(hwnd, &rc);
+    RECT rc;
+    get_rect(hwnd, &rc);
     int height = rc.bottom - rc.top;
     LPARAM prop = (LPARAM)GetProp(hwnd, BBSHADE_PROP);
 
@@ -50,17 +101,16 @@ void ShadeWindow(HWND hwnd)
     }
 
     prop = MAKELPARAM(h1, h2);
-    if (0 == prop) 
+    if (0 == prop)
         RemoveProp(hwnd, BBSHADE_PROP);
-    else 
+    else
         SetProp(hwnd, BBSHADE_PROP, (PVOID)prop);
 
     rc.bottom = rc.top + height;
     window_set_pos(hwnd, rc);
 }
 
-//===========================================================================
-void ToggleShadeWindow(HWND hwnd)
+void ToggleShadeWindow (HWND hwnd)
 {
     if (BBVERSION_LEAN == mSkin.BBVersion)
         SendMessage(mSkin.BBhwnd, BB_WINDOWSHADE, 0, (LPARAM)hwnd);
@@ -68,12 +118,10 @@ void ToggleShadeWindow(HWND hwnd)
         ShadeWindow(hwnd);
 }
 
-//-----------------------------------------------------------------
-void post_redraw(HWND hwnd)
+void post_redraw (HWND hwnd)
 {
     PostMessage(hwnd, bbSkinMsg, BBLS_REDRAW, 0);
 }
-
 
 void get_workarea (HWND hwnd, RECT * w, RECT * s)
 {
@@ -125,7 +173,7 @@ void SnapWindowToEdge (WinInfo * WI, WINDOWPOS * pwPos, int nDist)
 
     //if (workArea.bottom < scrnArea.bottom) bo += 4;
     //if (workArea.top > scrnArea.top) fy += 4;
-    
+
     // top/bottom edge
     dy = y = pwPos->y + fy - workArea.top;
     dz = z = pwPos->y + pwPos->cy - bo - workArea.bottom;
@@ -160,26 +208,26 @@ void get_rect (HWND hwnd, RECT *rp)
 
 /*int BBDrawTextAltW(HDC hDC, LPCWSTR lpString, RECT *lpRect, unsigned uFormat, StyleItem* pG){
 
-	if (pG->ShadowXY){ // draw shadow
-		RECT rcShadow;
-		int x = pG->ShadowX;
-		int y = pG->ShadowY;
-		SetTextColor(hDC, pG->ShadowColor);
-		if (pG->FontShadow){ // draw shadow with outline
-			for (int i = 0; i <= 2; i++){
-				for (int j = 0; j <= 2; j++){
-					if (!((i|j)&0x2)) continue;
-					_CopyOffsetRect(&rcShadow, lpRect, i, j);
-					DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
-				}
-			}
-		}
-		else{
-			_CopyOffsetRect(&rcShadow, lpRect, x, y);
-			DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
-		}
-	}
-	if (pG->FontShadow){ // draw outline
+    if (pG->ShadowXY){ // draw shadow
+        RECT rcShadow;
+        int x = pG->ShadowX;
+        int y = pG->ShadowY;
+        SetTextColor(hDC, pG->ShadowColor);
+        if (pG->FontShadow){ // draw shadow with outline
+            for (int i = 0; i <= 2; i++){
+                for (int j = 0; j <= 2; j++){
+                    if (!((i|j)&0x2)) continue;
+                    _CopyOffsetRect(&rcShadow, lpRect, i, j);
+                    DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
+                }
+            }
+        }
+        else{
+            _CopyOffsetRect(&rcShadow, lpRect, x, y);
+            DrawTextW(hDC, lpString, -1, &rcShadow, uFormat);
+        }
+    }
+    if (pG->FontShadow){ // draw outline
         RECT rcOutline;
         SetTextColor(hDC, pG->OutlineColor);
         for (int i = -1; i <= 1; i++){
@@ -196,27 +244,27 @@ void get_rect (HWND hwnd, RECT *rp)
 }*/
 
 /*int BBDrawTextAlt(HDC hDC, const char *lpString, RECT *lpRect, unsigned uFormat, StyleItem * pG){
-	int i, j;
+    int i, j;
 
-	if (pG->ShadowXY){ // draw shadow
-		RECT rcShadow;
-		int x = pG->ShadowX;
-		int y = pG->ShadowY;
-		SetTextColor(hDC, pG->ShadowColor);
-		if (pG->FontShadow){ // draw shadow with outline
-			for (i = 0; i < 3; i++){
-				for (j = 0; j < 3; j++){
-					if (!((i|j)&0x2)) continue; 
-					_CopyOffsetRect(&rcShadow, lpRect, i-x, j-y);
-					DrawText(hDC, lpString, -1, &rcShadow, uFormat);
-				}
-			}
-		}
-		else{
-			_CopyOffsetRect(&rcShadow, lpRect, x, y);
-			DrawText(hDC, lpString, -1, &rcShadow, uFormat);
-		}
-	}
+    if (pG->ShadowXY){ // draw shadow
+        RECT rcShadow;
+        int x = pG->ShadowX;
+        int y = pG->ShadowY;
+        SetTextColor(hDC, pG->ShadowColor);
+        if (pG->FontShadow){ // draw shadow with outline
+            for (i = 0; i < 3; i++){
+                for (j = 0; j < 3; j++){
+                    if (!((i|j)&0x2)) continue; 
+                    _CopyOffsetRect(&rcShadow, lpRect, i-x, j-y);
+                    DrawText(hDC, lpString, -1, &rcShadow, uFormat);
+                }
+            }
+        }
+        else{
+            _CopyOffsetRect(&rcShadow, lpRect, x, y);
+            DrawText(hDC, lpString, -1, &rcShadow, uFormat);
+        }
+    }
    if (pG->FontShadow){ // draw outline
         RECT rcOutline;
         SetTextColor(hDC, pG->OutlineColor);

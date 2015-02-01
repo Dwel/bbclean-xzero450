@@ -15,6 +15,9 @@ void ShadeWindow (HWND hwnd);
 void ToggleShadeWindow (HWND hwnd);
 bool get_rolled (WinInfo *WI);
 void post_redraw (HWND hwnd);
+HWND GetRootWindow (HWND hwnd);
+int get_module (HWND hwnd, char * buffer, int buffsize);
+char * sprint_window (char *buffer, size_t max_ln, HWND hwnd, const char *msg);
 
 //===========================================================================
 // Function: SnapWindowToEdge
