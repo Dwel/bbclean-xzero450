@@ -30,6 +30,7 @@ void ShowExplorer(void);
 void HideExplorer(void);
 
 void Desk_new_background(const char *rootCommand);
+void Desk_read_background(const char *rootCommand);
 const char * Desk_extended_rootCommand(const char *p);
 bool Desk_mousebutton_event(int button);
 void Desk_Reset(bool all);
