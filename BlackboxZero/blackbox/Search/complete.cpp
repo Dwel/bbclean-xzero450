@@ -15,7 +15,7 @@ class StringAutoComplete : public IEnumString
 	CComPtr<IAutoComplete> m_pac;
 
 public:
-	StringAutoComplete () 
+	StringAutoComplete ()
 		: m_current(0), m_ref(0), m_bound(false)
 	{
 		m_list.reserve(256);
@@ -70,7 +70,7 @@ public:
 		}
 	}
 
-  void SetList (tstrings const & list) { m_list = list; }
+	void SetList (tstrings const & list) { m_list = list; }
 
 	bool AddItem (tstring const & item)
 	{
@@ -87,7 +87,7 @@ public:
 		m_current = 0;
 		return true;
 	}
-  bool IsBound () const { return m_bound; }
+	bool IsBound () const { return m_bound; }
 
 public:
 	//	IUnknown implementation
@@ -190,13 +190,13 @@ StringAutoComplete * autocomplete = 0;
 
 bool enableCompletion (HWND hwnd, tstrings const & keys)
 {
-  if (autocomplete) // already exists
-    return false;
+	if (autocomplete) // already exists
+		return false;
 
 	// Initialize Autocomplete object and source object
 	IAutoComplete * iac = 0;
 	if (!SUCCEEDED(CoCreateInstance(CLSID_AutoComplete, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&iac))))
-    return false;
+		return false;
 
 	autocomplete = new StringAutoComplete(keys);
 	if (!SUCCEEDED(autocomplete->Bind(hwnd)))
@@ -208,7 +208,7 @@ bool enableCompletion (HWND hwnd, tstrings const & keys)
 		return false;
 
 	if (!SUCCEEDED(iac->Init(hwnd, iu, NULL, NULL)))
-    return false;
+		return false;
 
 	IAutoComplete2 * iac2 = 0;
 	if (SUCCEEDED(iac->QueryInterface(IID_PPV_ARGS(&iac2))))
@@ -221,18 +221,18 @@ bool enableCompletion (HWND hwnd, tstrings const & keys)
 
 void disableCompletion ()
 {
-  if (autocomplete)
-  {
-    autocomplete->Unbind();
-    autocomplete->Release();
-    autocomplete = 0;
-  }
+	if (autocomplete)
+	{
+		autocomplete->Unbind();
+		autocomplete->Release();
+		autocomplete = 0;
+	}
 }
 
 bool iSCompletionEnabled ()
 {
-  if (autocomplete && autocomplete->IsBound())
-    return true;
-  return false;
+	if (autocomplete && autocomplete->IsBound())
+		return true;
+	return false;
 }
 
