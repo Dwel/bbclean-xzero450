@@ -3,7 +3,6 @@
 #include "../Settings.h"
 #include "Menu.h"
 #include "RecentItem.h"
-#include <blackbox/Search/find.h>
 #include <blackbox/Search/lookup.h>
 #include <blackbox/Search/config.h>
 #include <blackbox/Search/tmp.h>

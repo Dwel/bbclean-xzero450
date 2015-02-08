@@ -37,7 +37,7 @@ struct CoreLoad
 
 	void Update ();
 	size_t GetCoreCount () const { return m_nCount; }
-	bool GetCoreInfo () const { return m_coreInfos.size() > 0; }
+	bool HasCoreInfo (size_t i) const { return i < m_coreInfos.size(); }
 	CoreInfo const & GetCoreInfo (size_t i) const { return m_coreInfos[i]; }
 };
 
