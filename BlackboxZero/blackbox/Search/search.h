@@ -20,6 +20,20 @@ inline bool matchExclude (std::vector<tstring> const & excludes, tstring const &
 	return false;
 }
 
+struct RAII
+{
+	HANDLE & m_handle;
+	RAII (HANDLE & h) : m_handle(h) { }
+	~RAII ()
+	{
+		if (m_handle != INVALID_HANDLE_VALUE)
+		{
+			::FindClose(m_handle); // Close handle
+			m_handle = INVALID_HANDLE_VALUE;
+		}
+	}
+};
+
 inline int SearchDirectory (
 				  tstring const & dir_path, std::vector<tstring> const & includes, std::vector<tstring> const & excludes, bool recursive, bool follow_symlinks
 				, tstring const & file_name
@@ -36,9 +50,11 @@ inline int SearchDirectory (
 	pattern += TEXT("*.*");
 
 	WIN32_FIND_DATA fi;
-	HANDLE hFile = ::FindFirstFile(pattern.c_str(), &fi); // @TODO: RAII on hFile
+	HANDLE hFile = ::FindFirstFile(pattern.c_str(), &fi);
 	if (hFile != INVALID_HANDLE_VALUE)
 	{
+		RAII destroy_on_return(hFile); // raii guard
+
 		do
 		{
 			if (abortFlag) return ERROR_PRINT_CANCELLED;
@@ -89,8 +105,6 @@ inline int SearchDirectory (
 			if (abortFlag) return ERROR_PRINT_CANCELLED;
 		}
 		while(::FindNextFile(hFile, &fi) == TRUE);
-
-		::FindClose(hFile); // Close handle
 
 		DWORD dwError = ::GetLastError();
 		if (dwError != ERROR_NO_MORE_FILES)

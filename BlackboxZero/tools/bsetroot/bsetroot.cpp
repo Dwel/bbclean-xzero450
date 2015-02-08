@@ -446,6 +446,7 @@ int setwallpaper(const char *wpfile, int wpstyle)
     RegSetValueEx(key, "TileWallpaper",  0, REG_SZ, (BYTE*)s_tile, 2);
     RegSetValueEx(key, "WallpaperStyle", 0, REG_SZ, (BYTE*)s_full, 2);
     RegCloseKey(key);
+	PostMessage(HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETDESKWALLPAPER, 0);
     SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, tmp,
         SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
     return 1;

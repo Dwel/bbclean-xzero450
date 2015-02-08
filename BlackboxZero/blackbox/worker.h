@@ -20,8 +20,6 @@ struct ThreadPool
 	void Create (Runnable & runnable)
 	{
 		m_threads.push_back(std::thread(&Runnable::Run, std::ref(runnable)));
-		//GeNumaNodeProcessorMask(1, &nodeMask);
-		//SetThreadAffinityMask(m_tinfos[idx].m_handle, nodeMask);
 	}
 
 	void WaitForTerminate ()
