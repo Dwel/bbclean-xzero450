@@ -38,6 +38,7 @@ set(bbInterface_iTunes_SOURCES
 	./src/StyleMaster.cpp
 	./src/Tooltip.cpp
 	./src/WindowMaster.cpp
+	./src/utils/core_load.cpp
 )
 
 set(bbInterface_iTunes_RESOURCES bbInterface_iTunes.rc)

@@ -1,6 +1,6 @@
 #pragma once
 #include <windows.h>
-#include "worker.h"
+#include <blackbox/worker.h>
 #include "history.h"
 #include "index.h"
 #include "jobmanager.h"

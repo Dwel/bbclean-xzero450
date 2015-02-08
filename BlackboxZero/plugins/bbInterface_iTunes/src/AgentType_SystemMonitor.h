@@ -1,54 +1,5 @@
-/*===================================================
-
-	AGENTTYPE_SYSTEMMONITOR HEADERS
-
-===================================================*/
-
-//Multiple definition prevention
-#ifndef BBInterface_AgentType_SystemMonitor_h
-#define BBInterface_AgentType_SystemMonitor_h
-
-//Includes
+#pragma once
 #include "AgentMaster.h"
-
-//Define these structures
-struct agenttype_systemmonitor_details
-{
-	char *internal_identifier;
-	int monitor_type;
-};
-
-struct SYSTEM_BASIC_INFORMATION
-{
-	DWORD dwUnknown1;
-	ULONG uKeMaximumIncrement;
-	ULONG uPageSize;
-	ULONG uMmNumberOfPhysicalPages;
-	ULONG uMmLowestPhysicalPage;
-	ULONG uMmHighestPhysicalPage;
-	ULONG uAllocationGranularity;
-	PVOID pLowestUserAddress;
-	PVOID pMmHighestUserAddress;
-	ULONG uKeActiveProcessors;
-	BYTE bKeNumberProcessors;
-	BYTE bUnknown2;
-	WORD wUnknown3;
-};
-
-struct SYSTEM_PERFORMANCE_INFORMATION
-{
-	LARGE_INTEGER liIdleTime;
-	DWORD dwSpare[76];
-};
-
-struct SYSTEM_TIME_INFORMATION
-{
-	LARGE_INTEGER liKeBootTime;
-	LARGE_INTEGER liKeSystemTime;
-	LARGE_INTEGER liExpTimeZoneBias;
-	ULONG uCurrentTimeZoneId;
-	DWORD dwReserved;
-};
 
 //Define these function pointer types
 typedef BOOL (__stdcall *agenttype_systemmonitor_NtQuerySystemInformation)(DWORD SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
@@ -72,5 +23,3 @@ void    agenttype_systemmonitor_menu_set(Menu *m, control *c, agent *a,  char *a
 void    agenttype_systemmonitor_menu_context(Menu *m, agent *a);
 void    agenttype_systemmonitor_notifytype(int notifytype, void *messagedata);
 
-#endif
-/*=================================================*/
