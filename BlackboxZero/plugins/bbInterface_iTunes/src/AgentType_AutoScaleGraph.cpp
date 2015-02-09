@@ -165,7 +165,8 @@ int agenttype_autoscalegraph_destroy(agent *a)
 		agenttype_autoscalegraph_details *details =(agenttype_autoscalegraph_details *) a->agentdetails;
 
 		//Delete all subagents
-		for (int i = 0; i < AGENTTYPE_AUTOSCALEGRAPH_AGENTCOUNT; i++) agent_destroy(&details->agents[i]);		
+		for (int i = 0; i < AGENTTYPE_AUTOSCALEGRAPH_AGENTCOUNT; i++)
+      agent_destroy(&details->agents[i]);		
 
 		//Remove from tracking list
 		if (details->internal_identifier != NULL)
@@ -363,7 +364,8 @@ void agenttype_autoscalegraph_notify(agent *a, int notifytype, void *messagedata
 				config_write(config_getfull_control_setagentprop_c(a->controlptr,a->agentaction,"ChartColor",color));
 			}
 			//Save all child agents, if necessary
-			for (int i = 0; i < AGENTTYPE_AUTOSCALEGRAPH_AGENTCOUNT; i++) agent_notify(details->agents[i], NOTIFY_SAVE_AGENT, NULL);
+			for (int i = 0; i < AGENTTYPE_AUTOSCALEGRAPH_AGENTCOUNT; i++)
+        agent_notify(details->agents[i], NOTIFY_SAVE_AGENT, NULL);
 
 			break;
 	}
