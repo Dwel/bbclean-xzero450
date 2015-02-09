@@ -65,7 +65,6 @@ enum SYSTEMMONITOR_TYPE
 	SYSTEMMONITOR_TYPE_PAGEFILEFREE,
 	SYSTEMMONITOR_TYPE_PAGEFILEUSED,
 	SYSTEMMONITOR_TYPE_BATTERYPOWER,
-	SYSTEMMONITOR_TYPE_COREUSAGES,
 	SYSTEMMONITOR_TYPE_COREUSAGE,
 	SYSTEMMONITOR_NUMTYPES
 };
@@ -82,7 +81,6 @@ const char *agenttype_systemmonitor_types[] =
 	"PageFileFree",
 	"PageFileUsed",
 	"BatteryPower",
-	"CoreUsages",
 	"CoreUsage"
 };
 
@@ -666,10 +664,6 @@ void agenttype_systemmonitor_updatevalue (agenttype_systemmonitor_details const 
 		{
 			if (g_sysMon->m_coreLoad.HasCoreInfo(details->m_int_arg))
 				g_monitors[monitor_index].m_value = g_sysMon->m_coreLoad.GetCoreInfo(details->m_int_arg).m_proc / 100.0;
-			break;
-		}
-		case SYSTEMMONITOR_TYPE_COREUSAGES:
-		{
 			break;
 		}
 		default:
