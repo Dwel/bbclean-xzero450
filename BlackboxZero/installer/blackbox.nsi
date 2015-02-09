@@ -694,7 +694,7 @@ Function redistPageEnter
   File redist\vcredist_x86.exe
 
   ${If} $radio_64 == 1
-    ExecWait 'vcredist_x64.exe /install /passive'
+    ExecWait 'vcredist_x64.exe /install /passive /norestart'
     ExecWait 'vcredist_x86.exe /install /passive'
   ${Else}
     ExecWait 'vcredist_x86.exe /install /passive'
