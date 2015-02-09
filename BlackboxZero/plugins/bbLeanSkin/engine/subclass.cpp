@@ -27,7 +27,7 @@
 #include "BImage.h"
 #include "hookinfo.h"
 #include "subclass.h"
-#include "drawico.h"
+#include <plugins/bbPlugin/drawico.h>
 #include "../../../blackbox/DrawText.cpp"
 
 int imax(int a, int b);

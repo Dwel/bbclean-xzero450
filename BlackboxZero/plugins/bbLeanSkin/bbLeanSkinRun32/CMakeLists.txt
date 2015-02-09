@@ -1,4 +1,5 @@
 # bbLeanSkinEng32.dll and bbLeanSkinRun32.exe on 64b system
+project(bbLeanSkin32)
 cmake_minimum_required(VERSION 2.8)
 
 add_executable(bbLeanSkinRun32
@@ -8,15 +9,18 @@ add_executable(bbLeanSkinRun32
 
 add_library(bbLeanSkinEng32
   SHARED
-  ../engine/hookctl.cpp
-  ../engine/subclass.cpp
+	../engine/hookctl.cpp
+	../engine/subclass.cpp
+	../engine/utils.cpp
+	../engine/draw_gdi.cpp
+	../engine/button_actions.cpp
   ../../bbPlugin/drawico.cpp # FIXME: required DrawIconSatnHue
 )
 
 #FIXME: the paths are bit messed, this is a hotfix
+include_directories(${CMAKE_SOURCE_DIR}/../../..)
 include_directories(${CMAKE_SOURCE_DIR}/../../../blackbox)
 include_directories(${CMAKE_SOURCE_DIR}/../../../lib)
-include_directories(${CMAKE_SOURCE_DIR}/../../../plugins/bbPlugin)
 
 target_link_libraries(bbLeanSkinEng32 version comctl32)
 target_link_libraries(bbLeanSkinRun32 bbLeanSkinEng32 version comctl32)
