@@ -819,36 +819,34 @@ void read_buttons(const char *buttonfile)
 //===========================================================================
 // get settings
 
-void readSettings(void)
+void readSettings ()
 {
-    int i;
-    const char *p;
+    memset(&mSkin, 0, sizeof(mSkin));
 
-    memset(&mSkin, 0, sizeof mSkin);
+    char * const buttons_ptr[4]  = { mSkin.captionClicks.Dbl, mSkin.captionClicks.Right, mSkin.captionClicks.Mid, mSkin.captionClicks.Left };
+    char const * const buttons[4]  = { "Dbl", "Right", "Mid", "Left" };
+    char const * const modifiers[4] = { "", "Shift", "Ctrl", "Alt" };
+    char const * const button_ids[] = {
+        /* same order as subclass.h: enum button_types */
+        "Close", "Maximize", "Minimize", "Rollup", "AlwaysOnTop", "Pin",
+        "Menu", "Lower", "MinimizeToTray", NULL
+    };
 
-    // titlebar click actions
-    for (i = 0; i < 16; i++)
-    {
-        static const char *modifiers[4] = { "", "Shift", "Ctrl", "Alt" };
-        static const char *buttons[4]  = { "Dbl", "Right", "Mid", "Left" };
-        static const char *button_ids[] = {
-            /* same order as subclass.h: enum button_types */
-            "Close", "Maximize", "Minimize", "Rollup", "AlwaysOnTop", "Pin",
-            "Menu", "Lower", "MinimizeToTray", NULL
-        };
-        char buf[80];
-        sprintf(buf, "bbleanskin.titlebar.%s%sClick:", modifiers[i%4], buttons[i/4]);
-        const char *p = ReadString(rcpath, buf, "");
-        //NOTE: changed from i to i%4 by mojmir. the array is not that big!
-        mSkin.captionClicks.Dbl[i%4] = (char)(1 + get_string_index(p, button_ids));
-    }
+    for (int b = 0; b < 4; ++b)
+        for (int m = 0; m < 4; ++m)
+        {
+            char buf[128];
+            _snprintf_s(buf, 128, "bbleanskin.titlebar.%s%sClick:", modifiers[m], buttons[b]);
+            char const * p = ReadString(rcpath, buf, "");
+            char const val = 1 + get_string_index(p, button_ids);
+            buttons_ptr[b][m] = val;
+        }
 
-    p = ReadString(rcpath, "bbleanskin.titlebar.buttons:", "4-321");
-    if (strchr(p, '-')) {
+    const char * p = ReadString(rcpath, "bbleanskin.titlebar.buttons:", "4-321");
+    if (strchr(p, '-'))
         sprintf(mSkin.button_string, "%.*s", (int)sizeof mSkin.button_string - 1, p);
-    } else {
+    else
         sprintf(mSkin.button_string, "%.3s-%.3s", p, p + imin(3, strlen(p)));
-    }
 
     // button glyphs
     read_buttons(ReadString(rcpath, "bbleanskin.titlebar.glyphs:", NULL));
