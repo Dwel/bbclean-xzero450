@@ -81,7 +81,7 @@ int beginPlugin (HINSTANCE hPluginInstance)
 	wc.lpfnWndProc = WndProc;			// our window procedure
 	wc.hInstance = hPluginInstance;		// hInstance of .dll
 	wc.lpszClassName = szAppName;		// our window class name
-	if (!RegisterClass(&wc)) 
+	if (!RegisterClass(&wc))
 	{
 		MessageBox(hwndBlackbox, TEXT("Error registering window class"), szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
 		return 1;
@@ -122,7 +122,7 @@ int beginPlugin (HINSTANCE hPluginInstance)
 	// Set window to accept doubleclicks...
 	SetClassLong(hwndPlugin, GCL_STYLE, CS_DBLCLKS | GetClassLong(hwndPlugin, GCL_STYLE));
 	// Make the plugin window sticky (= pin the window)...
-	MakeSticky(hwndPlugin);		
+	MakeSticky(hwndPlugin);
 
 	// Should we dock to the slit?
 	// *** Thanks to qwilk for all things slit! ***
@@ -166,7 +166,6 @@ int beginSlitPlugin (HINSTANCE hPluginInstance, HWND hwndBBSlit)
 {
 	SlitExists = true;
 	hwndSlit = hwndBBSlit;
-
 	return beginPlugin(hPluginInstance);
 }
 
@@ -213,7 +212,7 @@ LPCSTR pluginInfo (int field)
 		case 4: return szInfoRelDate;	// Release date, preferably in yyyy-mm-dd format
 		case 5: return szInfoLink;		// Link to author's website
 		case 6: return szInfoEmail;		// Author's email
-		case PLUGIN_BROAMS:			// List of bro@ms available to the end users
+		case PLUGIN_BROAMS:				// List of bro@ms available to the end users
 		{
 			return
 			"@bbfoomp About "
@@ -246,7 +245,7 @@ void show_foomp_menu ()
 	MakeMenuItem(scSubMenu, "Random", "@bbfoomp Random", false);
 	MakeMenuItem(scSubMenu, "Open file", "@bbfoomp Open", false);
 	MakeMenuItem(scSubMenu, "Add files", "@bbfoomp Add", false);
-	if (FooClass->FooHandle) 
+	if (FooClass->FooHandle)
 	{
 		MakeMenuNOP(scSubMenu, ""); // Separator
 		MakeMenuItem(scSubMenu, "Foobar > Off", "@bbfoomp FooOff", false);
@@ -285,7 +284,7 @@ void show_foomp_menu ()
 			MakeMenuItem(scSubMenu2, "Toolbar", "@bbfoomp ChangeInnerStyle 4", (getSettings().InnerStyleIndex == 4));
 			MakeMenuItem(scSubMenu2, "Button", "@bbfoomp ChangeInnerStyle 5", (getSettings().InnerStyleIndex == 5));
 			MakeMenuItem(scSubMenu2, "Button.Pressed", "@bbfoomp ChangeInnerStyle 6", (getSettings().InnerStyleIndex == 6));
-			MakeSubmenu(scSubMenu, scSubMenu2, "Inset Rectangle Style");			
+			MakeSubmenu(scSubMenu, scSubMenu2, "Inset Rectangle Style");
 		scSubMenu2 = MakeMenu("Outer Rectangle Style");
 			MakeMenuItem(scSubMenu2, "Label", "@bbfoomp ChangeOuterStyle 1", (getSettings().OuterStyleIndex == 1));
 			MakeMenuItem(scSubMenu2, "Window Label", "@bbfoomp ChangeOuterStyle 2", (getSettings().OuterStyleIndex == 2));
@@ -293,7 +292,7 @@ void show_foomp_menu ()
 			MakeMenuItem(scSubMenu2, "Toolbar", "@bbfoomp ChangeOuterStyle 4", (getSettings().OuterStyleIndex == 4));
 			MakeMenuItem(scSubMenu2, "Button", "@bbfoomp ChangeOuterStyle 5", (getSettings().OuterStyleIndex == 5));
 			MakeMenuItem(scSubMenu2, "Button.Pressed", "@bbfoomp ChangeOuterStyle 6", (getSettings().OuterStyleIndex == 6));
-			MakeSubmenu(scSubMenu, scSubMenu2, "Outer Rectangle Style");			
+			MakeSubmenu(scSubMenu, scSubMenu2, "Outer Rectangle Style");
 		scSubMenu2 = MakeMenu("FooMegaMode Alignment");
 			MakeMenuItem(scSubMenu2, "Buttons on Right", "@bbfoomp ChangeMegaAlign 1", (getSettings().FooAlign == false));
 			MakeMenuItem(scSubMenu2, "Buttons on Left", "@bbfoomp ChangeMegaAlign 2", (getSettings().FooAlign == true));
@@ -314,8 +313,7 @@ void show_foomp_menu ()
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
-	{		
-		// Window update process...
+	{
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps;
@@ -327,145 +325,137 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			HBITMAP oldbuf = (HBITMAP)SelectObject(buf, bufbmp);
 			RECT r;
 
-			//====================
-
 			// Paint border+background according to the current style...
 			GetClientRect(hwnd, &r);
 			MakeStyleGradient(buf, &r, &getStyles().OuterStyle, getStyles().OuterStyle.bordered);
-			
-			int offset = getStyles().OuterStyle.borderWidth + getSettings().BorderWidth;
+
+			const int offset = getStyles().OuterStyle.borderWidth + getSettings().BorderWidth;
 			r.left += offset;
 			r.top += offset;
 			r.right -= offset;
 			r.bottom -= offset;
-			 
 
-		//******* Begin control button calculations
-		// Paint pressed button-control buttons...
-		if (DisplayMode == 2)
-		{
-			CalculateButtonPositions(r); //Now we know how where the buttons are in this rect.
-			DispModeControls(r, buf);
-		}
-		// Here follows the DisplayMode = Title stuff. (Scrolling title, etc.)
-		if	(!DisplayMode) {
-			DisplayMode = 1;
-		}
-
-		if	(DisplayMode == 1 || DisplayMode == 3) 
-		{
-			// DisplayMode 3 (side-by-side support)
-			if (getSettings().FooMode == 3)
+			//******* Begin control button calculations
+			// Paint pressed button-control buttons...
+			if (DisplayMode == 2)
 			{
-				if (getSettings().FooAlign == false) r.left = getSettings().FooWidth;
-
-				DisplayMode = 3;
-				r.right = r.left + 140 + 18;
+				CalculateButtonPositions(r); //Now we know how where the buttons are in this rect.
 				DispModeControls(r, buf);
-				int offset3 = 150 + 18;
-				r.left = r.left + offset3;
-				r.right = getSettings().width - 4;
-
-				if (getSettings().FooAlign == false) 
-				{
-					r.left = getSettings().BorderWidth + 1;
-					r.right = getSettings().FooWidth - offset3;
-				}
 			}
+			// Here follows the DisplayMode = Title stuff. (Scrolling title, etc.)
+			if (!DisplayMode)
+				DisplayMode = 1;
 
-			MakeStyleGradient(buf, &r, &getStyles().InnerStyle, false);
-			int offset2 = getStyles().OuterStyle.borderWidth + 3;
-			r.left += offset2;
-			r.top += offset2;
-			r.right -= offset2;
-			r.bottom -= offset2;
-
-			//====================
-			FooClass->update(); // make sure the current data is updated
-			_tcscpy(CurrentSong, FooClass->song_title);
-			// ===== End of grabbing name and handle, time to draw the text.
-
-			// Song title scrolling if songtitle > X characters as it will be clipped.
-			if (getSettings().FooMode == 3) 
+			if (DisplayMode == 1 || DisplayMode == 3)
 			{
-				if (getSettings().FooAlign == true) r.left = r.left + 150 + 18;
-				if (getSettings().FooAlign == false) r.left = r.left;
-			}
-			static int txtRefX = r.left;
-			TCHAR temp[512] = TEXT("");
-			int textWidth;
-			int ret;
-			textWidth = r.right;
-			r.right = r.right+2;
-			RECT r2;
-			SetRectEmpty(&r2);
-			r.top = r.top + 1;
-			r.top = getSettings().height / 2 - 5;
-			r.bottom = r.bottom+2;
+				// DisplayMode 3 (side-by-side support)
+				if (getSettings().FooMode == 3)
+				{
+					if (getSettings().FooAlign == false) r.left = getSettings().FooWidth;
 
-			_tcscat(temp, FooClass->song_title);//UNICODE
-			_tcscat(temp, jAmpScrollFiller);//UNICODE
+					DisplayMode = 3;
+					r.right = r.left + 140 + 18;
+					DispModeControls(r, buf);
+					const int offset3 = 150 + 18;
+					r.left = r.left + offset3;
+					r.right = getSettings().width - 4;
 
-			HFONT font =  CreateStyleFont((StyleItem *)GetSettingPtr(SN_TOOLBAR));
-			HGDIOBJ oldfont = SelectObject(buf, font);
-			SetBkMode(buf, TRANSPARENT);
+					if (getSettings().FooAlign == false)
+					{
+						r.left = getSettings().BorderWidth + 1;
+						r.right = getSettings().FooWidth - offset3;
+					}
+				}
 
-			ret = DrawText(buf, temp, _tcslen(temp), &r2, DT_SINGLELINE | DT_CALCRECT); //UNICODE
-			
-			// Scroll the text if needed
-			if ( (r2.right - r2.left + 118) > textWidth && _tcslen(FooClass->song_title) > 30) 
-			{	
-				SetTextAlign(buf,0);
-				// Title text repeater...
+				MakeStyleGradient(buf, &r, &getStyles().InnerStyle, false);
+				int offset2 = getStyles().OuterStyle.borderWidth + 3;
+				r.left += offset2;
+				r.top += offset2;
+				r.right -= offset2;
+				r.bottom -= offset2;
+
+				//====================
+				FooClass->update(); // make sure the current data is updated
+				_tcscpy(CurrentSong, FooClass->song_title);
+				// ===== End of grabbing name and handle, time to draw the text.
+
+				// Song title scrolling if songtitle > X characters as it will be clipped.
+				if (getSettings().FooMode == 3)
+				{
+					if (getSettings().FooAlign == true) r.left = r.left + 150 + 18;
+					if (getSettings().FooAlign == false) r.left = r.left;
+				}
+				static int txtRefX = r.left;
+				TCHAR temp[512] = TEXT("");
+				int textWidth;
+				int ret;
+				textWidth = r.right;
+				r.right = r.right + 2;
+				RECT r2;
+				SetRectEmpty(&r2);
+				r.top = r.top + 1;
+				r.top = getSettings().height / 2 - 5;
+				r.bottom = r.bottom + 2;
+
+				_tcscat(temp, FooClass->song_title); //UNICODE
+				_tcscat(temp, jAmpScrollFiller); //UNICODE
+
+				HFONT font =  CreateStyleFont((StyleItem *)GetSettingPtr(SN_TOOLBAR));
+				HGDIOBJ oldfont = SelectObject(buf, font);
+				SetBkMode(buf, TRANSPARENT);
+
+				ret = DrawText(buf, temp, _tcslen(temp), &r2, DT_SINGLELINE | DT_CALCRECT); //UNICODE
+
+				// Scroll the text if needed
+				if ( (r2.right - r2.left + 118) > textWidth && _tcslen(FooClass->song_title) > 30)
+				{
+					SetTextAlign(buf, 0);
+					// Title text repeater...
 					_tcscat(temp, FooClass->song_title);
 					_tcscat(temp, jAmpScrollFiller);
-				
-				// The actual scroller and the sliding scroll pointer!
-				if (DisplayMode == 1 && txtRefX <= (r2.left-(r2.right-10))) txtRefX = r.left;
-				if (getSettings().FooMode == 3 && txtRefX <= (r2.left-(r2.right-150))) txtRefX = r.left;
-				txtRefX -= getSettings().FooScrollSpeed;  // Scroll speed.
-				r.left += 2;
-				r.right -= 2; //NOTE: I added this
-				r.bottom=r.bottom + 1;
 
-				if (getSettings().FooShadowsEnabled)
-				{
-					RECT srect;
-					srect.bottom	= r.bottom + 1; 
-					srect.left		= r.left;
-					srect.right		= r.right; // No weird shadow artifacting on the right hand side.
-					srect.top		= r.top + 1;
-					SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
-					ExtTextOut(buf, (txtRefX + 1), (srect.top), ETO_CLIPPED, &srect, temp, _tcslen(temp), NULL);
+					// The actual scroller and the sliding scroll pointer!
+					if (DisplayMode == 1 && txtRefX <= (r2.left - (r2.right - 10))) txtRefX = r.left;
+					if (getSettings().FooMode == 3 && txtRefX <= (r2.left - (r2.right - 150))) txtRefX = r.left;
+					txtRefX -= getSettings().FooScrollSpeed;  // Scroll speed.
+					r.left += 2;
+					r.right -= 2; //NOTE: I added this
+					r.bottom = r.bottom + 1;
+
+					if (getSettings().FooShadowsEnabled)
+					{
+						RECT srect;
+						srect.bottom = r.bottom + 1;
+						srect.left   = r.left;
+						srect.right  = r.right; // No weird shadow artifacting on the right hand side.
+						srect.top    = r.top + 1;
+						SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
+						ExtTextOut(buf, (txtRefX + 1), (srect.top), ETO_CLIPPED, &srect, temp, _tcslen(temp), NULL);
+					}
+					SetTextColor(buf, getStyles().InnerStyle.TextColor);
+					ExtTextOut(buf, (txtRefX), (r.top), ETO_CLIPPED, &r, temp, _tcslen(temp), NULL);
 				}
-				SetTextColor(buf, getStyles().InnerStyle.TextColor);
-				ExtTextOut(buf, (txtRefX), (r.top), ETO_CLIPPED, &r, temp, _tcslen(temp), NULL);
-			}
-
-			
-			else // Normally draw the text since it doesn't need to scroll/get clipped.
-			{
-				r.top = getSettings().height / 2 - 5;
-				r.left = r.left + 1;
-				
-				if (getSettings().FooShadowsEnabled)
+				else // Normally draw the text since it doesn't need to scroll/get clipped.
 				{
-					RECT srect;
-					srect.bottom	= r.bottom + 1; 
-					srect.left		= r.left + 1;
-					srect.right		= r.right + 1;
-					srect.top		= r.top + 1;
-					SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
-					DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
-				}
-				SetTextColor(buf, getStyles().InnerStyle.TextColor);
-				DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
-	
-			}
+					r.top = getSettings().height / 2 - 5;
+					r.left = r.left + 1;
 
-			DeleteObject(SelectObject(buf, oldfont));
-		}
-			//====================
+					if (getSettings().FooShadowsEnabled)
+					{
+						RECT srect;
+						srect.bottom = r.bottom + 1;
+						srect.left   = r.left + 1;
+						srect.right  = r.right + 1;
+						srect.top    = r.top + 1;
+						SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
+						DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
+					}
+					SetTextColor(buf, getStyles().InnerStyle.TextColor);
+					DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
+				}
+
+				DeleteObject(SelectObject(buf, oldfont));
+			}
 
 			// Copy from the paint buffer to the window...
 			BitBlt(hdc, 0, 0, getSettings().width, getSettings().height, buf, 0, 0, SRCCOPY);
@@ -479,7 +469,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			EndPaint(hwnd, &ps);
 			return 0;
 		}
-		break;
 		// ==========
 		case WM_CLOSE:
 			return 0;
@@ -487,27 +476,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case BB_RECONFIGURE:
 		{
 			UpdatePosition(); // Get new settings and resize window if needed...
-			if (getSettings().FooDockedToSlit) SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
+			if (getSettings().FooDockedToSlit)
+			  SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
 			InvalidateRect(hwndPlugin, NULL, false);
+			break;
 		}
-		break;
 		// ==========
 		case WM_TIMER:
 		{
 			UpdateTitle();
 			return 0;
 		}
-		break;
 		// ==========
 		case BB_BROADCAST:
 		{
 			char temp[MAX_LINE_LENGTH];
 			strcpy(temp, (LPCSTR)lParam);
 
-			//====================
-
 			// Global bro@ms...
-
 			if (!getSettings().FooDockedToSlit)
 			{
 				if (!_stricmp(temp, "@BBShowPlugins"))
@@ -525,10 +511,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 
-			//====================
-
 			// bbfoomp bro@ms...
-
 			if (IsInString(temp, "@bbfoomp"))
 			{
 				// bbFoomp internal commands (e.g. for the menu)...
@@ -541,23 +524,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				token1[0] = token2[0] = extra[0] = '\0';
 				BBTokenize (temp, tokens, 2, extra);
 
-				// ==========
 				if (!_stricmp(token2, "Readme"))
 				{
 					TCHAR path[MAX_LINE_LENGTH], directory[MAX_LINE_LENGTH];
-					int nLen;
 					// First we look for the readme file in the same folder as the plugin...
 					GetModuleFileName(hInstance, path, sizeof(path));
-					nLen = _tcslen(path) - 1;
-					while (nLen >0 && path[nLen] != '\\') nLen--;
+					int nLen = _tcslen(path) - 1;
+					while (nLen > 0 && path[nLen] != '\\')
+						nLen--;
 					path[nLen + 1] = 0;
 					_tcscpy(directory, path);
 					_tcscat(path, TEXT("bbFoomp.htm"));
 					if (FileExists(path))
 						BBExecute(GetDesktopWindow(), NULL, path, "", directory, SW_SHOWNORMAL, true);
 				}
-
-				// ==========
 				else if (!_stricmp(token2, "About"))
 				{
 					TCHAR temp[MAX_LINE_LENGTH];
@@ -567,16 +547,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 				}
 
-				// ==========
 				if (!_stricmp(token2, "EditSettings"))
 				{
 					char temp[MAX_LINE_LENGTH];
-					GetBlackboxEditor(temp);				
+					GetBlackboxEditor(temp);
 					if (FileExists(getSettings().rcpath))
-			  BBExecute(GetDesktopWindow(), NULL, temp, getSettings().rcpath, NULL, SW_SHOWNORMAL, true);
+						BBExecute(GetDesktopWindow(), NULL, temp, getSettings().rcpath, NULL, SW_SHOWNORMAL, true);
 				}
 
-				// ==========
 				if (!_stricmp(token2, "ReadSettings"))
 				{
 					getSettings().ReadRCSettings();
@@ -584,34 +562,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
 					InvalidateRect(hwndPlugin, NULL, false);
 				}
-
-				// ==========
 				else if (!_stricmp(token2, "Show_Hide"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, foobar_v9 ? "/command:\"Activate or hide\"" : "/command:\"foobar2000/Activate or hide\"", NULL, SW_SHOWNORMAL, false);
 					SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ==========
 				else if (!_stricmp(token2, "ToggDispMode"))
 				{
-					if (DisplayMode == 1) {
+					if (DisplayMode == 1)
 						DisplayMode = 2;
-					}
-					else {
+					else
 						DisplayMode = 1;
-					}
-						UpdatePosition(); // Get new settings and resize window if needed...
-						SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
-						InvalidateRect(hwndPlugin, NULL, false);
+
+					UpdatePosition(); // Get new settings and resize window if needed...
+					SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
+					InvalidateRect(hwndPlugin, NULL, false);
 					break;
 				}
-
-				// ==========
 				else if (!_stricmp(token2, "ChangeInnerStyle"))
 				{
-					int val = atoi(extra);
+					int const val = atoi(extra);
 					if (val > 0 && val <= 6)
 					{
 						WriteInt(getSettings().rcpath, "bbfoomp.InnerStyle:", val);
@@ -620,12 +591,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
 						InvalidateRect(hwndPlugin, NULL, false);
 					}
-
 					break;
 				}
 				else if (!_stricmp(token2, "ChangeOuterStyle"))
 				{
-					int val = atoi(extra);
+					int const val = atoi(extra);
 					if (val > 0 && val <= 6)
 					{
 						WriteInt(getSettings().rcpath, "bbfoomp.OuterStyle:", val);
@@ -634,14 +604,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
 						InvalidateRect(hwndPlugin, NULL, false);
 					}
-
 					break;
 				}
-
-				// ==========
 				else if (!_stricmp(token2, "ChangeMegaAlign"))
 				{
-					if(!_stricmp(extra, "1"))
+					if (!_stricmp(extra, "1"))
 					{
 						getSettings().FooAlign = false;
 						WriteBool(getSettings().rcpath, "bbfoomp.MegaLeftAlign:", getSettings().FooAlign);
@@ -655,70 +622,65 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					UpdatePosition(); // Get new settings and resize window if needed...
 					SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
 					InvalidateRect(hwndPlugin, NULL, false);
-
 					break;
 				}
-
-				// ==========
 				else if (!_stricmp(token2, "ToggFooMode"))
 				{
-					if (getSettings().FooMode == 1) {
+					if (getSettings().FooMode == 1)
+					{
 						getSettings().FooMode = 2;
 						UpdateTitle();
 					}
-					else {
+					else
+					{
 						getSettings().FooMode = 1;
 						UpdateTitle();
 					}
-						UpdatePosition(); // Get new settings and resize window if needed...
-						SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
-						InvalidateRect(hwndPlugin, NULL, false);
+
+					UpdatePosition(); // Get new settings and resize window if needed...
+					SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
+					InvalidateRect(hwndPlugin, NULL, false);
 					break;
 				}
-
-				// ==========
 				else if (!_stricmp(token2, "ToggFooMega"))
 				{
 					if (getSettings().width < 300)
 						MessageBox(0, TEXT("Please assign a Width greater than 300\nin the bbfoomp.rc for this feature to work."), "ERROR: Feature Unusable at this Width", MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
-					else 
+					else
 					{
-						if (getSettings().FooMode != 3) 
+						if (getSettings().FooMode != 3)
 						{
 							FooModePrev = getSettings().FooMode;
 						}
-						if (getSettings().FooMode == 1 || getSettings().FooMode == 2) {
+						if (getSettings().FooMode == 1 || getSettings().FooMode == 2)
+						{
 							getSettings().FooMode = 3;
 							UpdateTitle();
 						}
-						else {
+						else
+						{
 							getSettings().FooMode = FooModePrev;
 							if (getSettings().FooMode == 0) getSettings().FooMode = 1;
 							if (getSettings().FooMode == 2) DisplayMode = 1;
 							UpdateTitle();
-						}		
-							UpdatePosition(); // Get new settings and resize window if needed...
-							SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
-							InvalidateRect(hwndPlugin, NULL, false);
+						}
+						UpdatePosition(); // Get new settings and resize window if needed...
+						SendMessage(hwndSlit, SLIT_UPDATE, NULL, NULL);
+						InvalidateRect(hwndPlugin, NULL, false);
 					}
 					break;
 				}
-
-				// ==========
-
 				else if (!_stricmp(token2, "ToggleDockedToSlit"))
 				{
 					ToggleDockedToSlit();
 					break;
 				}
-
 				else if (!_stricmp(token2, "ToggleShadows"))
 				{
 					getSettings().FooShadowsEnabled = !getSettings().FooShadowsEnabled;
 					WriteBool(getSettings().rcpath, "bbfoomp.Shadows:", getSettings().FooShadowsEnabled);
 					break;
 				}
-
 				else if (!_stricmp(token2, "ScrollSpeed"))
 				{
 					int val = atoi(extra);
@@ -729,16 +691,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					break;
 				}
-
 				else if (!_stricmp(token2, "ToggleOnTop"))
 				{
 					if (getSettings().FooOnTop == true)
 					{
 						getSettings().FooOnTop = false;
 						SetWindowPos(hwndPlugin, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBFoomp -> Always On Top disabled");						
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBFoomp -> Always On Top disabled");
 						WriteBool(getSettings().rcpath, "bbfoomp.OnTop:", getSettings().FooOnTop);
-
 					}
 					else
 					{
@@ -746,11 +706,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						SetWindowPos(hwndPlugin, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBFoomp -> Always On Top enabled");
 						WriteBool(getSettings().rcpath, "bbfoomp.OnTop:", getSettings().FooOnTop);
-
 					}
 					break;
 				}
-				
 				else if (!_stricmp(token2, "ToggleTrans"))
 				{
 					if (usingWin2kXP)
@@ -778,142 +736,111 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				else if (!_stricmp(token2, "VolUp"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, foobar_v9 ? "/command:\"Volume up\"" : "/command:\"Playback/Volume up\"", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
 				else if (!_stricmp(token2, "VolDown"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, foobar_v9 ? "/command:\"Volume down\"" : "/command:\"Playback/Volume down\"", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
 				else if (!_stricmp(token2, "Play_Pause"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, "/playpause", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ========== 
 				else if (!_stricmp(token2, "Play"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, "/play", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ==========		
 				else if (!_stricmp(token2, "Stop"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, "/stop", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ==========
 				else if (!_stricmp(token2, "Previous"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, "/prev", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ==========
 				else if (!_stricmp(token2, "Next"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, "/next", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ==========											
 				else if (!_stricmp(token2, "Random"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, "/rand", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ==========											
 				else if (!_stricmp(token2, "Add"))
 				{
 					SendMessage(hwndPlugin, BB_BROADCAST, 0, (LPARAM)"@bbfoomp Show_Hide");
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, foobar_v9 ? "/command:\"Add files...\"" : "/command:\"Playlist/Add files...\"", NULL, SW_SHOWNORMAL, false);
 					break;
 				}
-
-				// ==========											
 				else if (!_stricmp(token2, "Open"))
 				{
 					SendMessage(hwndPlugin, BB_BROADCAST, 0, (LPARAM)"@bbfoomp Show_Hide");
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, foobar_v9 ? "/command:\"Open...\"" : "/command:\"Playlist/Open...\"", NULL, SW_SHOWNORMAL, false);
 					break;
 				}
-
-				// ==========					
 				else if (!_stricmp(token2, "FooOff"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, "/exit", NULL, SW_SHOWNORMAL, false);
 					break;
 				}
-
 				// ========== END CONTROLS BROAMS // BEGIN PLAYBACK ORDER BROAMS
-													
 				else if (!_stricmp(token2, "Order_Default"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, foobar_v9 ? "/command:\"Default\"" : "/command:\"Playback/Order/Default\"", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ==========																	
 				else if (!_stricmp(token2, "Order_Random"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, foobar_v9 ? "/command:\"Shuffle (tracks)\"" : "/command:\"Playback/Order/Random\"", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ==========																				
 				else if (!_stricmp(token2, "Order_Repeat"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, foobar_v9 ? "/command:\"Repeat (playlist)\"" : "/command:\"Playback/Order/Repeat\"", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ========== 
 				else if (!_stricmp(token2, "Order_RepeatOne"))
 				{
 					BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, foobar_v9 ? "/command:\"Repeat (track)\"" : "/command:\"Playback/Order/Repeat One\"", NULL, SW_SHOWNORMAL, false);
-				//	SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
-				//	SetForegroundWindow(FooClass->FooHandle);
+					//SendMessage(GetBBWnd(), BB_BRINGTOFRONT, 0, (LPARAM)FooClass->FooHandle);
+					//SetForegroundWindow(FooClass->FooHandle);
 					break;
 				}
-
-				// ========== END PLAYBACK ORDER BROAMS
-
 				// ========== CUSTOM COMMAND BROAMS
 				else if (!_strnicmp(token2, "Press", 5))
 				{
-					int button_idx = atoi(token2+5);
+					int const button_idx = atoi(token2+5);
 					if (button_idx > 0 && button_idx < e_last_button_item && getSettings().buttons[button_idx-1].cmdarg[0])
-					{
 						BBExecute(GetDesktopWindow(), NULL, getSettings().FooPath, getSettings().buttons[button_idx-1].cmdarg, NULL, SW_SHOWNORMAL, false);
-					}
 					break;
 				}
 				else if (!_strnicmp(token2, "AltPress", 8))
@@ -927,117 +854,100 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 		}
-		break;
-		// ==========
+
 		case WM_NCHITTEST:
 		{
-			if (!getSettings().FooDockedToSlit && (GetAsyncKeyState(VK_CONTROL) & 0x8000)) return HTCAPTION;
-			else return HTCLIENT;
+			if (!getSettings().FooDockedToSlit && (GetAsyncKeyState(VK_CONTROL) & 0x8000))
+				return HTCAPTION;
+			else
+				return HTCLIENT;
 		}
-		break;
-		// ==========
 		case WM_RBUTTONUP:
 		case WM_NCRBUTTONUP:
-		{	
 			show_foomp_menu();
-		}
-		break;
+			break;
 		case WM_RBUTTONDOWN:
-		case WM_NCRBUTTONDOWN: {} break;
-		// ==========
+		case WM_NCRBUTTONDOWN:
+			break;
 		case WM_LBUTTONDBLCLK:
 		{
 			if (DisplayMode == 1 || DisplayMode == 3)
-			{
 				SendMessage(hwndPlugin, BB_BROADCAST, 0, (LPARAM)"@bbfoomp Show_Hide");
-			}
+			break;
 		}
-		break;
-		// ==========
-		case WM_LBUTTONDOWN: 
+		case WM_LBUTTONDOWN:
 		{
 			TrackMouse();
 			ClickMouse(LOWORD(lParam), HIWORD(lParam));
+			break;
 		}
-		break;
-		// ==========
 		case WM_LBUTTONUP:
-			{
-				int i;
-				for (i = 0; i < e_last_button_item; ++i)
-					if (getSettings().buttons[i].pressed)
-					{
-						char buffer[128];
-						if (GetAsyncKeyState(VK_MENU) & 0x8000)	sprintf(buffer,"@bbfoomp AltPress%d",i+1);
-						else sprintf(buffer,"@bbfoomp Press%d",i+1);
-						SendMessage(hwndPlugin, BB_BROADCAST, 0, (LPARAM)buffer);
-					}
-				
-				for (i = 0; i < e_last_button_item; ++i) getSettings().buttons[i].pressed = false;
-				InvalidateRect(hwndPlugin, NULL, false);
-			}
-		break;
-
-		//====================
+		{
+			for (int i = 0; i < e_last_button_item; ++i)
+				if (getSettings().buttons[i].pressed)
+				{
+					char buffer[128];
+					if (GetAsyncKeyState(VK_MENU) & 0x8000)
+						sprintf(buffer,"@bbfoomp AltPress%d", i + 1);
+					else
+						sprintf(buffer,"@bbfoomp Press%d", i + 1);
+					SendMessage(hwndPlugin, BB_BROADCAST, 0, (LPARAM)buffer);
+				}
+			
+			for (int i = 0; i < e_last_button_item; ++i)
+				getSettings().buttons[i].pressed = false;
+			InvalidateRect(hwndPlugin, NULL, false);
+			break;
+		}
 
 		case WM_XBUTTONUP:
 		case WM_NCXBUTTONUP:
-		{
-			if (SlitExists) ToggleDockedToSlit();
-		}
-		break;
+			if (SlitExists)
+				ToggleDockedToSlit();
+			break;
 
 		case WM_XBUTTONDOWN:
-		case WM_NCXBUTTONDOWN: {} break;
-
-		// ==========
+		case WM_NCXBUTTONDOWN:
+			break;
 
 		case WM_MOUSELEAVE:
 		{
 			if (DisplayMode == 2 || DisplayMode == 3)
 			{
-
-				for (int i = 0; i < e_last_button_item; ++i) getSettings().buttons[i].pressed = false;
+				for (int i = 0; i < e_last_button_item; ++i)
+					getSettings().buttons[i].pressed = false;
 				InvalidateRect(hwndPlugin, NULL, false);
 				if (getSettings().FooMode == 1) // If 'mouseover' mode is on...
 				{
 					DisplayMode = 1;
-					UpdateTitle();			
+					UpdateTitle();
 				}
-
 			}
-
+			break;
 		}
-		break;
 
-		// ==========
 		case WM_MOUSEMOVE:
-		{	
+		{
 			TrackMouse();
 			if (getSettings().FooMode == 1) // If 'mouseover' mode is on...
 			{
 				if (DisplayMode == 1)
 				{
 					DisplayMode = 2;
-					UpdateTitle();			
+					UpdateTitle();
 				}
 			}
+			break;
 		}
-		break;
-
-		//====================
 
 		// Snap window to screen edges (or the currently defined DesktopArea)...
 		case WM_WINDOWPOSCHANGING:
 		{
 			if (!getSettings().FooDockedToSlit)
-			{
-				if (IsWindowVisible(hwnd)) SnapWindowToEdge((WINDOWPOS*)lParam, 10, true);
-			}
+				if (IsWindowVisible(hwnd))
+					SnapWindowToEdge((WINDOWPOS*)lParam, 10, true);
+			break;
 		}
-		break;
-
-		//====================
 
 		// Save window position if it changes...
 		case WM_WINDOWPOSCHANGED:
@@ -1048,10 +958,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				getSettings().xpos = windowpos->x;
 				getSettings().ypos = windowpos->y;
 			}
+			break;
 		}
-		break;
-
-		// ==========
 
 		default:
 			return DefWindowProc(hwnd,message,wParam,lParam);
@@ -1059,9 +967,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-//===========================================================================
-
-void UpdateTitle()
+void UpdateTitle ()
 {
 	bool UpdateDisplay = false;
 
@@ -1079,23 +985,19 @@ void UpdateTitle()
 		UpdateDisplay = true;
 	}
 
-	if (UpdateDisplay) { InvalidateRect(hwndPlugin, NULL, false); }
+	if (UpdateDisplay)
+		InvalidateRect(hwndPlugin, NULL, false);
 }
 
-//===========================================================================
-
-void UpdatePosition()
+void UpdatePosition ()
 {
 	getStyles().GetStyleSettings();
-  UpdateTitle();
+	UpdateTitle();
 	MoveWindow(hwndPlugin, getSettings().xpos, getSettings().ypos, getSettings().width, getSettings().height, true);
 	SetWindowPos(hwndPlugin, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-	return;
 }
 
-//===========================================================================
-
-void ToggleDockedToSlit()
+void ToggleDockedToSlit ()
 {
 	if (getSettings().FooDockedToSlit)
 	{
@@ -1105,7 +1007,7 @@ void ToggleDockedToSlit()
 		getSettings().xpos = ReadInt(getSettings().rcpath, "bbfoomp.xpos:", 0);
 		getSettings().ypos = ReadInt(getSettings().rcpath, "bbfoomp.ypos:", 0);
 		if (getSettings().FooTrans)
-      SetTransparency(hwndPlugin, (unsigned char)getSettings().transparencyAlpha);
+			SetTransparency(hwndPlugin, (unsigned char)getSettings().transparencyAlpha);
 		UpdatePosition();
 	}
 	else
@@ -1115,7 +1017,8 @@ void ToggleDockedToSlit()
 		WriteInt(getSettings().rcpath, "bbfoomp.xpos:", getSettings().xpos);
 		WriteInt(getSettings().rcpath, "bbfoomp.ypos:", getSettings().ypos);
 		getSettings().FooDockedToSlit = true;
-		if (getSettings().FooTrans) SetTransparency(hwndPlugin, (BYTE)255);
+		if (getSettings().FooTrans)
+			SetTransparency(hwndPlugin, (BYTE)255);
 		SendMessage(hwndSlit, SLIT_ADD, NULL, (LPARAM)hwndPlugin);
 	}
 	WriteBool(getSettings().rcpath, "bbfoomp.dockedtoslit:", getSettings().FooDockedToSlit);
@@ -1123,15 +1026,13 @@ void ToggleDockedToSlit()
 	static char msg[MAX_LINE_LENGTH];
 	static char status[9];
 	if (getSettings().FooDockedToSlit)
-    sprintf(msg, "bbfoomp -> Docked! (slit mode)", status);
+		sprintf(msg, "bbfoomp -> Docked! (slit mode)", status);
 	else
-    sprintf(msg, "bbfoomp -> Undocked! (plugin mode)", status);
+		sprintf(msg, "bbfoomp -> Undocked! (plugin mode)", status);
 	SendMessage(GetBBWnd(), BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
 }
 
-//===========================================================================
-
-void TrackMouse()
+void TrackMouse ()
 {
 	TRACKMOUSEEVENT track;
 	ZeroMemory(&track,sizeof(track));
@@ -1143,30 +1044,26 @@ void TrackMouse()
 }
 
 
-// ==================
-void CalculateButtonPositions(RECT r)
+void CalculateButtonPositions (RECT r)
 {
 	// NOTE: merge into DispMode controls, perhaps?
-	int i;
-	// Generate X, Y coordinates for the shapes
-	int xpos;
-	int ypos;
 
+	// Generate X, Y coordinates for the shapes
 	int sumWidth = 0;
-	for (i = 0; i< e_last_button_item; ++i)
+	for (int i = 0; i< e_last_button_item; ++i)
 		sumWidth += getSettings().buttons[i].width();
 	sumWidth += (e_last_button_item-1) * button_spacing;
-	
+
 	// Position within rect.
-	xpos= (r.right - r.left)/2 - (sumWidth/2);
-	ypos= (r.bottom - r.top)/2 - 3;
+	int xpos= (r.right - r.left)/2 - (sumWidth/2);
+	int ypos= (r.bottom - r.top)/2 - 3;
 
 	//Adjust position for global rect.
 	xpos+= r.left;
 	ypos+= r.top;
 
-	
-	for (i = 0; i < e_last_button_item; ++i)
+
+	for (int i = 0; i < e_last_button_item; ++i)
 	{
 		getSettings().buttons[i].x = xpos;
 		getSettings().buttons[i].y = ypos;
@@ -1174,35 +1071,31 @@ void CalculateButtonPositions(RECT r)
 	}
 
 	// Generate hit rectangles
-	int rtop = r.top + 1;
-	int rbottom = r.bottom - 1;
+	int const rtop = r.top + 1;
+	int const rbottom = r.bottom - 1;
 
-	for (i = 0; i < e_last_button_item; ++i)
+	for (int i = 0; i < e_last_button_item; ++i)
 	{
 		FoompButton &b = getSettings().buttons[i];
 		b.hitrect.top = rtop;
 		b.hitrect.bottom = rbottom;
-		int padding = (12 - b.width())/2;
+		int const padding = (12 - b.width())/2;
 		b.hitrect.left = b.x - padding;
 		b.hitrect.right = b.x + b.width() + padding;
 	}
 }
-// ==================
-void DispModeControls(RECT r, HDC buf)
+
+void DispModeControls (RECT r, HDC buf)
 {
-	int i;
-	for (i = 0; i < e_last_button_item; ++i)
+	for (int i = 0; i < e_last_button_item; ++i)
 		getSettings().buttons[i].draw(buf);
 }
 
-
-//===========================================================================
-
-void ClickMouse(int mouseX, int mouseY) 
+void ClickMouse (int mouseX, int mouseY)
 {
 	if (DisplayMode == 2 || DisplayMode == 3)
 		for (int i = 0; i < e_last_button_item; ++i)
-			if (getSettings().buttons[i].clicked(mouseX,mouseY)) 
+			if (getSettings().buttons[i].clicked(mouseX,mouseY))
 			{
 				getSettings().buttons[i].pressed = true;
 				InvalidateRect(hwndPlugin, NULL, false);
@@ -1210,8 +1103,6 @@ void ClickMouse(int mouseX, int mouseY)
 			}
 }
 
-
-//===========================================================================
 void Transparency ()
 {
 	// Transparency is only supported under Windows 2000/XP...
@@ -1220,9 +1111,9 @@ void Transparency ()
 	osInfo.dwOSVersionInfoSize = sizeof(osInfo);
 	GetVersionEx(&osInfo);
 
-	if (osInfo.dwPlatformId == VER_PLATFORM_WIN32_NT && osInfo.dwMajorVersion == 5) 
+	if (osInfo.dwPlatformId == VER_PLATFORM_WIN32_NT && osInfo.dwMajorVersion == 5)
 		usingWin2kXP = true;
-	else 
+	else
 		usingWin2kXP = false;
 	if (usingWin2kXP)
 	{
@@ -1269,7 +1160,7 @@ BOOL CALLBACK FindWindowImpl (HWND hWnd, LPARAM lParam)
 }
 
 // Returns the window handle when found if it returns 0 GetLastError() will return more information
-HWND FindWindowStart(TCHAR const * windowTitle)
+HWND FindWindowStart (TCHAR const * windowTitle)
 {
 	if (!windowTitle)
 	{
@@ -1289,7 +1180,6 @@ HWND FindWindowStart(TCHAR const * windowTitle)
 	return 0;
 }
 
-//===========================================================================
 void Finfo::update ()
 {
 	// ===== Gets the Handle for FooBar and then uses that to get the windowname.
@@ -1328,5 +1218,4 @@ void Finfo::update ()
 		_tcscpy(song_title, getSettings().NoInfoText);
 }
 
-// EOF
 
