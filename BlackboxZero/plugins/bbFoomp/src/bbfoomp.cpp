@@ -128,8 +128,8 @@ int beginPlugin (HINSTANCE hPluginInstance)
 	// *** Thanks to qwilk for all things slit! ***
 	if (SlitExists && getSettings().FooDockedToSlit) SendMessage(hwndSlit, SLIT_ADD, NULL, (LPARAM)hwndPlugin);
 
-	// Set the update timer to 250 milliseconds...
-	int UpdateInterval = 250;
+	// Set the update timer to 33 milliseconds...
+	const int UpdateInterval = 33;
 	if (!SetTimer(hwndPlugin, BBFOOMP_UPDATE_TIMER, UpdateInterval, (TIMERPROC)NULL))
 	{
 		MessageBox(0, TEXT("Error creating update timer"), szVersion, MB_OK | MB_ICONERROR | MB_TOPMOST);
