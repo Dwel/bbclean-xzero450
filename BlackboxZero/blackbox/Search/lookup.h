@@ -12,6 +12,9 @@ struct ProgramLookup;
 ProgramLookup & getLookup();
 void startLookup (tstring const & path);
 void stopLookup ();
+void reconfigureLookup ();
+void reindexLookup ();
+void abortReindexLookup ();
 void loadConfig (tstring const & path, Config & cfg);
 
 struct RebuildJob : Runnable

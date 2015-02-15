@@ -638,7 +638,7 @@ void reconfigure_blackbox ()
 
 	set_misc_options();
 	getWorkspaces().Reconfigure();
-	bb::search::getLookup().ReloadOrBuild();
+	bb::search::reconfigureLookup();
 	Menu_Reconfigure();
 	Menu_All_Redraw(0);
 
@@ -923,11 +923,11 @@ bb_quit:
 			goto dispatch_bb_message;
 
 		case BB_REINDEX:
-			bb::search::getLookup().Reindex();
+			bb::search::reindexLookup();
 			goto dispatch_bb_message;
 
 		case BB_ABORTINDEX:
-			bb::search::getLookup().AbortIndexing();
+			bb::search::abortReindexLookup();
 			goto dispatch_bb_message;
 
 		//====================

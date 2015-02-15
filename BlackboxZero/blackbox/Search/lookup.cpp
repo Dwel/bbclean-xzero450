@@ -27,4 +27,19 @@ namespace bb { namespace search {
 		}
 	}
 
+	void reconfigureLookup ()
+	{
+		if (g_lookup)
+			g_lookup->ReloadOrBuild();
+	}
+	void reindexLookup ()
+	{
+		if (g_lookup)
+			g_lookup->Reindex();
+	}
+	void abortReindexLookup ()
+	{
+		if (g_lookup)
+			g_lookup->AbortIndexing();
+	}
 }}
