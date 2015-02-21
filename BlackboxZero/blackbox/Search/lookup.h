@@ -95,6 +95,13 @@ struct ProgramLookup
 
 	void ReloadOrBuild ()
 	{
+		if (IsIndexing())
+		{
+			AbortIndexing();
+			while (!m_job.IsFinished())
+				Sleep(1);
+		}
+
 		Clear();
 
 		Config cfg;
