@@ -572,7 +572,8 @@ LRESULT CALLBACK SystemBarExWndProc(HWND hwnd, UINT message, WPARAM wParam, LPAR
 
         case BB_SETTOOLBARLABEL:
             //strncpy_s(WindowLabelText, sizeof(WindowLabelText), (char*)lParam, MINI_MAX_LINE_LENGTH);
-			strncpy(WindowLabelText, (char*)lParam, MINI_MAX_LINE_LENGTH);
+			bbWC2MB((wchar_t*)lParam, WindowLabelText, 100);
+			//strncpy(WindowLabelText, (char*)lParam, MINI_MAX_LINE_LENGTH);
             SetTimer(hwnd, WINDOWLABEL_TIMER, (isLean ? 1000: 2000), 0);
             InvalidateRect(hwnd, &TaskbarRect, false);
             break;
