@@ -1,7 +1,8 @@
 /* tooltips.h */
 
 void ClearToolTips(HWND hwnd);
-void SetToolTip(HWND hwnd, RECT *tipRect, const char *tipText);
+void SetToolTip (HWND hwnd, RECT *tipRect, const char *tipText);
+void SetToolTipW (HWND hwnd, RECT *tipRect, WCHAR const * tipText);
 void InitToolTips(HINSTANCE hInstance);
 void ExitToolTips();
 

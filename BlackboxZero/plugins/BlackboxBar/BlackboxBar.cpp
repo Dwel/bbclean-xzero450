@@ -92,7 +92,7 @@ enum E_BarTimers
 //====================
 HWND BBhwnd;
 ST int currentScreen = 0;
-ST char screenName[80];
+ST WCHAR screenName[256];
 
 ST StyleItem NTaskStyle;
 ST StyleItem ATaskStyle;
@@ -206,9 +206,9 @@ struct barinfo : plugin_info
 
 	// runtime temp variables
 	int old_place;
-	char clockTime[80];
-	char clockTimeTips[80];
-	char windowlabel[256];
+	WCHAR clockTime[80];
+	WCHAR clockTimeTips[80];
+	WCHAR windowlabel[1024];
 	int labelWidth;
 	int clockWidth;
 	bool force_button_pressed;
@@ -283,7 +283,8 @@ struct barinfo : plugin_info
 	void set_screen_info ();
 	void set_clock_string ();
 	void update_windowlabel ();
-	int get_text_width (const char * cp, StyleItem * si);
+	//int get_text_width (const char * cp, StyleItem * si);
+	int GetTextWidth (WCHAR const * cp, StyleItem * si);
 
 	void update (int);
 
@@ -736,12 +737,12 @@ void barinfo::make_cfg()
 
 //===========================================================================
 
-int barinfo::get_text_width(const char *cp, StyleItem * si)
+int barinfo::GetTextWidth (WCHAR const * cp, StyleItem * si)
 {
 	HDC hdc = GetDC(hwnd);
 	RECT s = {0,0,0,0};
 	HGDIOBJ oldfont = SelectObject(hdc, hFont);
-	BBDrawTextAlt(hdc, cp, -1, &s, DT_CALCRECT | DT_NOPREFIX, si);
+	BBDrawTextAltW(hdc, cp, -1, &s, DT_CALCRECT | DT_NOPREFIX, si);
 	SelectObject(hdc, oldfont);
 	ReleaseDC(hwnd, hdc);
 	return s.right;
@@ -752,11 +753,16 @@ void barinfo::set_screen_info(void)
 	DesktopInfo DI;
 	getWorkspaces().GetDesktopInfo(DI);
 	currentScreen = DI.number;
-	strcpy(screenName, DI.name);
+	WCHAR wmsg[MAX_LINE_LENGTH];
+	bbMB2WC(DI.name, wmsg, MAX_LINE_LENGTH);
+	wcsncpy_s(screenName, wmsg, _TRUNCATE);
 	labelWidth = 0;
 	struct string_node *p;
-	dolist (p, DI.deskNames)
-		labelWidth = imax(get_text_width(p->str, I), labelWidth);
+	dolist(p, DI.deskNames)
+	{
+		bbMB2WC(p->str, wmsg, MAX_LINE_LENGTH);
+		labelWidth = imax(GetTextWidth(wmsg, I), labelWidth);
+	}
 }
 
 //===========================================================================
@@ -805,18 +811,18 @@ void barinfo::set_clock_string (void)
 
 	// <--------------------------------------
 
-	WCHAR wfmt[200], result[200];
+	WCHAR wfmt[256], result[1024];
 	bbMB2WC(fmt1, wfmt, sizeof wfmt);
 	wcsftime(result, sizeof result, wfmt, ltp);
-	bbWC2MB(result, clockTime, sizeof clockTime);
+	wcsncpy_s(clockTime, result, _TRUNCATE);
 	if(this->clockTips)
 	{
 		bbMB2WC(fmt2, wfmt, sizeof wfmt);
 		wcsftime(result, sizeof result, wfmt, ltp);
-		bbWC2MB(result, clockTimeTips, sizeof clockTimeTips);
+		wcsncpy_s(clockTimeTips, result, _TRUNCATE);
 	}
 
-	clockWidth = get_text_width(clockTime, I);
+	clockWidth = GetTextWidth(clockTime, I);
 
 	SYSTEMTIME lt;
 	GetLocalTime(&lt);
@@ -857,17 +863,9 @@ void barinfo::update(int flag)
 	this->pLeanBar->invalidate(flag);
 }
 
-void get_window_text(HWND hwnd, char *buffer, int size)
+void getWindowText (HWND hwnd, WCHAR * buffer, size_t size)
 {
-	if (0 == (GetVersion() & 0x80000000)) {
-		WCHAR wbuf[1000];
-		wbuf[0] = 0;
-		GetWindowTextW(hwnd, wbuf, size);
-		bbWC2MB(wbuf, buffer, size);
-	} else {
-		buffer[0] = 0;
-		GetWindowTextA(hwnd, buffer, size);
-	}
+	GetWindowTextW(hwnd, buffer, size); 
 }
 
 void barinfo::update_windowlabel(void)
@@ -878,7 +876,7 @@ void barinfo::update_windowlabel(void)
 			return;
 		hwnd = BBhwnd;
 	}
-	get_window_text(hwnd, windowlabel, sizeof windowlabel);
+	getWindowText(hwnd, windowlabel, sizeof(windowlabel) / sizeof (*windowlabel));
 }
 
 //===========================================================================
@@ -1218,7 +1216,7 @@ LRESULT barinfo::wnd_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
 
 			SetTimer(hwnd, LABEL_TIMER, 2000, NULL);
 			ShowingExternalLabel = true;
-			strcpy_max(windowlabel, (LPCSTR)lParam, sizeof windowlabel);
+			wcsncpy_s(windowlabel, (LPWSTR)lParam, _TRUNCATE);
 			this->update(M_WINL);
 			break;
 

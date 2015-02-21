@@ -867,6 +867,7 @@ extern "C" {
         HICON   icon;
         int     wkspc;
         char    caption[248];
+		WCHAR   wcaption[256];
         bool    active;
         bool    flashing;
         /* below: obsolete */

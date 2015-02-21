@@ -414,11 +414,11 @@ public:
         RECT ThisWin = mr;
         RECT s1 = {0,0,0,0};
         RECT s2 = {0,0,0,0};
-        char buf[8];
-        strncpy(buf, tl->caption, 8);
-        buf[7] = 0;
-		BBDrawTextAlt(m_bar->hdcPaint, buf, -1, &s1, DT_CALCRECT | DT_NOPREFIX, pSI);
-		BBDrawTextAlt(m_bar->hdcPaint, tl->caption, -1, &s2, DT_CALCRECT | DT_NOPREFIX, pSI);
+        WCHAR buf[8];
+        wcsncpy(buf, tl->wcaption, 8);
+        buf[7] = L'\0';
+		BBDrawTextAltW(m_bar->hdcPaint, buf, -1, &s1, DT_CALCRECT | DT_NOPREFIX, pSI);
+		BBDrawTextAltW(m_bar->hdcPaint, tl->wcaption, -1, &s2, DT_CALCRECT | DT_NOPREFIX, pSI);
 
         int o, f, i;
         o = f = 0;
@@ -433,7 +433,7 @@ public:
         ThisWin.right   -= i;
         int s = ThisWin.right - ThisWin.left;
 
-        BBDrawTextAlt(m_bar->hdcPaint, tl->caption, -1, &ThisWin,
+        BBDrawTextAltW(m_bar->hdcPaint, tl->wcaption, -1, &ThisWin,
             (s > s1.right ? TBJustify : DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX),
             pSI
             );
@@ -458,7 +458,8 @@ public:
         if (m_showtip)
         {
             struct tasklist *tl = m_bar->GetTaskPtrEx(m_index);
-            if (tl) SetToolTip(m_bar->hwnd, &mr, tl->caption);
+            if (tl)
+				SetToolTipW(m_bar->hwnd, &mr, tl->wcaption);
         }
     }
 #endif
@@ -686,13 +687,14 @@ class barlabel : public baritem
 {
 public:
     int m_Style;
-    const char *m_text;
+    WCHAR const * m_text;
 
     //-----------------------------
-    barlabel(int type, barinfo *bi, char *text, int S) : baritem(type, bi)
-    {
-        m_Style = S; m_text = text;
-    }
+	barlabel(int type, barinfo * bi, WCHAR const * text, int s)
+		: baritem(type, bi)
+		, m_Style(s)
+		, m_text(text)
+    { }
 
     //-----------------------------
     void draw()
@@ -708,7 +710,7 @@ public:
         r.right = mr.right - i;
         r.top   = mr.top;
         r.bottom = mr.bottom;
-        BBDrawTextAlt(m_bar->hdcPaint, m_text, -1, &r, TBJustify, pSI);
+        BBDrawTextAltW(m_bar->hdcPaint, m_text, -1, &r, TBJustify, pSI);
         SelectObject(m_bar->hdcPaint, oldfont);
 
     }
@@ -776,7 +778,7 @@ public:
 	{
 		if (m_bar->clockTips)
         {
-			SetToolTip(m_bar->hwnd,&mr,m_bar->clockTimeTips);
+			SetToolTipW(m_bar->hwnd, &mr, m_bar->clockTimeTips);
         }
 	}
     //-----------------------------

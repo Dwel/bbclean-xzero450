@@ -1172,8 +1172,11 @@ void Workspaces::SetTopTask (tasklist * tl, int set_where)
 
 void Workspaces::get_caption (tasklist * tl, int force)
 {
-    if (force || 0 == tl->caption[0])
-        get_window_text(tl->hwnd, tl->caption, sizeof tl->caption);
+	if (force || 0 == tl->caption[0])
+	{
+		get_window_text(tl->hwnd, tl->caption, sizeof tl->caption);
+		getWindowText(tl->hwnd, tl->wcaption, sizeof(tl->wcaption) / sizeof(*tl->wcaption));
+	}
     if (force || NULL == tl->icon)
         get_window_icon(tl->hwnd, &tl->icon);
 }
@@ -1437,6 +1440,7 @@ void Workspaces::TaskProc (WPARAM wParam, HWND hwnd)
         {
             UINT msg = TASKITEM_MODIFIED;
             get_window_text(tl->hwnd, tl->caption, sizeof tl->caption);
+			getWindowText(tl->hwnd, tl->wcaption, sizeof(tl->wcaption) / sizeof(*tl->wcaption));
             get_window_icon(tl->hwnd, &tl->icon); // disable for foobar delay issue ?
             if (wParam & 0x8000) {
                 msg = TASKITEM_FLASHED;

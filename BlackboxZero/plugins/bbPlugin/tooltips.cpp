@@ -35,7 +35,7 @@ struct tt
     struct tt *next;
     char used_flg;
     char text[256];
-    WCHAR wstr[256];
+    WCHAR wtext[256];
     TOOLINFOW ti;
 } *tt0;
 
@@ -112,12 +112,8 @@ void SetToolTip(HWND hwnd, RECT *tipRect, const char *tipText)
             if (0 != strcmp(t->text, tipText))
             {
                 strcpy(t->text, tipText);
-                if (usingNT) {
-                    bbMB2WC(t->text, t->wstr, array_count(t->wstr));
-                    SendMessage(hToolTips, TTM_UPDATETIPTEXTW, 0, (LPARAM)&t->ti);
-                } else {
-                    SendMessage(hToolTips, TTM_UPDATETIPTEXTA, 0, (LPARAM)&t->ti);
-                }
+				bbMB2WC(t->text, t->wtext, sizeof(t->wtext) / sizeof(*t->wtext));
+                SendMessage(hToolTips, TTM_UPDATETIPTEXTW, 0, (LPARAM)&t->ti);
             }
             return;
         }
@@ -136,15 +132,51 @@ void SetToolTip(HWND hwnd, RECT *tipRect, const char *tipText)
     t->ti.uId      = n+1;
     t->ti.hinst    = NULL;
     t->ti.rect = *tipRect;
-    if (usingNT) {
-        bbMB2WC(t->text, t->wstr, array_count(t->wstr));
-        t->ti.lpszText = t->wstr;
-        SendMessage(hToolTips, TTM_ADDTOOLW, 0, (LPARAM)&t->ti);
-    } else {
-        t->ti.lpszText = (WCHAR*)t->text;
-        SendMessage(hToolTips, TTM_ADDTOOLA, 0, (LPARAM)&t->ti);
-    }
+
+    bbMB2WC(t->text, t->wtext, array_count(t->wtext));
+    t->ti.lpszText = t->wtext;
+    SendMessage(hToolTips, TTM_ADDTOOLW, 0, (LPARAM)&t->ti);
 }
+
+void SetToolTipW(HWND hwnd, RECT *tipRect, WCHAR const * tipText)
+{
+	struct tt **tp, *t;
+	UINT_PTR n = 0;
+
+	if (NULL == hToolTips || 0 == *tipText)
+		return;
+
+	for (tp = &tt0; NULL != (t = *tp); tp = &t->next)
+	{
+		if (hwnd == t->ti.hwnd && 0 == memcmp(&t->ti.rect, tipRect, sizeof(RECT)))
+		{
+			t->used_flg = 1;
+			if (0 != wcscmp(t->wtext, tipText))
+			{
+				wcscpy(t->wtext, tipText);
+				SendMessage(hToolTips, TTM_UPDATETIPTEXTW, 0, (LPARAM)&t->ti);
+			}
+			return;
+		}
+		if (t->ti.uId > n)
+			n = t->ti.uId;
+	}
+
+	*tp = t = c_new(struct tt);
+	t->used_flg = 1;
+
+	wcscpy(t->wtext, tipText);
+
+	t->ti.cbSize = sizeof t->ti;
+	t->ti.uFlags = TTF_SUBCLASS;
+	t->ti.hwnd = hwnd;
+	t->ti.uId = n + 1;
+	t->ti.hinst = NULL;
+	t->ti.rect = *tipRect;
+	t->ti.lpszText = t->wtext;
+	SendMessage(hToolTips, TTM_ADDTOOLW, 0, (LPARAM)&t->ti);
+}
+
 
 //===========================================================================
 // Function: ClearToolTips

@@ -148,7 +148,7 @@ int beginPlugin (HINSTANCE hPluginInstance)
 	if (getSettings().FooOnTop==true)
 	{
 		SetWindowPos(hwndPlugin, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-		SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBFoomp -> Always On Top enabled");
+		SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBFoomp -> Always On Top enabled");
 	}
 	// This is a check to see if transparency exists in the settings and if so enable it.
 	Transparency();
@@ -697,14 +697,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 						getSettings().FooOnTop = false;
 						SetWindowPos(hwndPlugin, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBFoomp -> Always On Top disabled");
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBFoomp -> Always On Top disabled");
 						WriteBool(getSettings().rcpath, "bbfoomp.OnTop:", getSettings().FooOnTop);
 					}
 					else
 					{
 						getSettings().FooOnTop = true;
 						SetWindowPos(hwndPlugin, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBFoomp -> Always On Top enabled");
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBFoomp -> Always On Top enabled");
 						WriteBool(getSettings().rcpath, "bbfoomp.OnTop:", getSettings().FooOnTop);
 					}
 					break;
@@ -717,14 +717,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						{
 							getSettings().FooTrans = false;
 							SetTransparency(hwndPlugin, 255);
-							SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBFoomp -> Transparency disabled");
+							SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBFoomp -> Transparency disabled");
 							WriteBool(getSettings().rcpath, "bbfoomp.transparency:", getSettings().FooTrans);
 						}
 						else if (!getSettings().FooDockedToSlit)
 						{
 							getSettings().FooTrans = true;
 							SetTransparency(hwndPlugin, (unsigned char)getSettings().transparencyAlpha);
-							SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBFoomp -> Transparency enabled");
+							SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBFoomp -> Transparency enabled");
 							WriteBool(getSettings().rcpath, "bbfoomp.transparency:", getSettings().FooTrans);
 						}
 					}
@@ -1024,12 +1024,14 @@ void ToggleDockedToSlit ()
 	WriteBool(getSettings().rcpath, "bbfoomp.dockedtoslit:", getSettings().FooDockedToSlit);
 
 	static char msg[MAX_LINE_LENGTH];
+	static WCHAR wmsg[MAX_LINE_LENGTH];
 	static char status[9];
 	if (getSettings().FooDockedToSlit)
 		sprintf(msg, "bbfoomp -> Docked! (slit mode)", status);
 	else
 		sprintf(msg, "bbfoomp -> Undocked! (plugin mode)", status);
-	SendMessage(GetBBWnd(), BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+	bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+	SendMessage(GetBBWnd(), BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 }
 
 void TrackMouse ()

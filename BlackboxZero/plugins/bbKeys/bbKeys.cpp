@@ -487,7 +487,9 @@ void send_command(HotkeyType *h)
     if (showlabel)
     {
         sprintf(buffer, "BBKeys -> %s", h->action);
-        SendMessage(BBhwnd, BB_SETTOOLBARLABEL, 0, (LPARAM)buffer);
+		WCHAR wmsg[MAX_LINE_LENGTH];
+		bbMB2WC(buffer, wmsg, MAX_LINE_LENGTH);
+        SendMessage(BBhwnd, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
     }
 }
 

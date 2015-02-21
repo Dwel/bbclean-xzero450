@@ -851,9 +851,10 @@ void set_setting(bool *flag, const char *toolbar_message, const char *rc_string)
 {
 	// send a display sting to the toolbar
 	char msg[80];
-	sprintf(msg, "BBmusePlugin -> %s %sabled!",
-		toolbar_message, *flag ? "en" : "dis");
-	SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+	sprintf(msg, "BBmusePlugin -> %s %sabled!", toolbar_message, *flag ? "en" : "dis");
+	WCHAR wmsg[MAX_LINE_LENGTH];
+	bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+	SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 
 	// write the new setting to the rc - file
 	WriteBool(rcpath, rc_string, *flag);
@@ -872,9 +873,10 @@ void toggle_setting(bool *flag, const char *toolbar_message, const char *rc_stri
 
 	// send a display sting to the toolbar
 	char msg[80];
-	sprintf(msg, "BBmusePlugin -> %s %sabled!",
-		toolbar_message, *flag ? "en" : "dis");
-	SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+	sprintf(msg, "BBmusePlugin -> %s %sabled!", toolbar_message, *flag ? "en" : "dis");
+	WCHAR wmsg[MAX_LINE_LENGTH];
+	bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+	SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 
 	// write the new setting to the rc - file
 	WriteBool(rcpath, rc_string, *flag);

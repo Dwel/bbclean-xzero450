@@ -105,6 +105,7 @@ struct hwnd_list
 };
 void get_window_icon (HWND hwnd, HICON * picon);
 void get_window_text (HWND hwnd, char * buffer, int size);
+void getWindowText (HWND hwnd, WCHAR * buffer, size_t size);
 
 // ==============================================================
 /* BBApi.cpp - some (non api) utils */

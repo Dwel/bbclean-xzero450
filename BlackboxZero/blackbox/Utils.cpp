@@ -185,6 +185,11 @@ void get_window_text(HWND hwnd, char *buffer, int size)
     }
 }
 
+void getWindowText(HWND hwnd, WCHAR * buffer, size_t size)
+{
+	GetWindowTextW(hwnd, buffer, size);
+}
+
 void get_window_icon(HWND hwnd, HICON *picon)
 {
     HICON hIco = NULL;

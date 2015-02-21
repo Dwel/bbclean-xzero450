@@ -459,7 +459,9 @@ void bbTooltip::MouseEvent(POINT pos, UINT message) { // grischka
     if (message == WM_MOUSEMOVE) {
         if (tx) {                           // show the tip under the mouse, if necessary
 			if (m_pInfo->bSetLabel) {
-                PostMessage(m_hCore, BB_SETTOOLBARLABEL, 0, (LPARAM)tx->text);
+				WCHAR wmsg[MAX_LINE_LENGTH];
+				bbMB2WC(tx->text, wmsg, MAX_LINE_LENGTH);
+                PostMessage(m_hCore, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 			}
 
             if (tx->showTip) {

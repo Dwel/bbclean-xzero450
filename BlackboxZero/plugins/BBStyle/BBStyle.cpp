@@ -440,6 +440,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			else if (IsInString(temp, "@BBStyleInternal"))
 			{
 				static char msg[MAX_LINE_LENGTH];
+				static WCHAR wmsg[MAX_LINE_LENGTH];
 				static char status[9];
 				char token1[4096], token2[4096], extra[4096];
 				LPSTR tokens[2];
@@ -453,7 +454,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (!_stricmp(token2, "EditStyle")) 
 				{
 					SendMessage(hwndBlackbox, BB_EDITFILE, 0, 0);
-					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Edit Style");
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBStyle -> Edit Style");
 					return 0;
 				}
 				else if (!_stricmp(token2, "AboutStyle")) 
@@ -475,7 +476,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 						KillTimer(hwndPlugin, 1);
 						timer = false;
-						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Style Change On Timer disabled");
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBStyle -> Style Change On Timer disabled");
 					}
 					else
 					{
@@ -487,7 +488,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 							return 0;
 						}
 						timer = true;
-						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Style Change On Timer enabled");
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBStyle -> Style Change On Timer enabled");
 					}
 				}
 				else if (!_stricmp(token2, "RefreshList"))
@@ -496,7 +497,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					NewStyle(true);
 					//MessageBox(0, styleToSet, "Before NewStyle()...", MB_OK);
 					//NewStyle();
-					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Refresh Style List");
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBStyle -> Refresh Style List");
 					return 0;
 				}
 				else if (!_stricmp(token2, "AlwaysOnTop"))
@@ -516,7 +517,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 						(alwaysOnTop) ? strcpy(status, "enabled") : strcpy(status, "disabled");
 						sprintf(msg, "BBStyle -> Always On Top %s", status);
-						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+						bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 					}
 				}
 				else if (!_stricmp(token2, "ToggleStartChange"))
@@ -526,7 +528,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					(changeOnStart) ? strcpy(status, "enabled") : strcpy(status, "disabled");
 					sprintf(msg, "BBStyle -> Style Change On Start %s", status);
-					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+					bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 				}
 				else if (!_stricmp(token2, "ToggleStyleTwice"))
 				{
@@ -544,7 +547,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 
 					sprintf(msg, "BBStyle -> No Style Twice %s", status);
-					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+					bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 				}
 				/*else if (!_stricmp(token2, "ToggleRootCommands"))
 				{
@@ -576,7 +580,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					(rootCommands) ? strcpy(status, "enabled") : strcpy(status, "disabled");
 					sprintf(msg, "BBStyle -> Workspace RootCommands %s", status);
-					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 				}*/
 				else if (!_stricmp(token2, "ToggleWindow"))
 				{
@@ -596,7 +600,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 						(hideWindow) ? strcpy(status, "enabled") : strcpy(status, "disabled");
 						sprintf(msg, "BBStyle -> Hide Window %s", status);
-						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+						bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 					}
 				}
 				else if (!_stricmp(token2, "SnapWindowToEdge"))
@@ -608,7 +613,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 						(snapWindow) ? strcpy(status, "enabled") : strcpy(status, "disabled");
 						sprintf(msg, "BBStyle -> Snap Window To Edge %s", status);
-						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+						bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 					}
 				}
 				else if (!_stricmp(token2, "ToggleSlit"))
@@ -634,7 +640,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					(frame.drawBorder) ? strcpy(status, "enabled") : strcpy(status, "disabled");
 					sprintf(msg, "BBStyle -> Draw Border %s", status);
-					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);					
+					bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);					
 				}
 				else if (!_stricmp(token2, "ToggleToolbar"))
 				{
@@ -703,7 +710,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					(inheritToolbar) ? strcpy(status, "enabled") : strcpy(status, "disabled");
 					sprintf(msg, "BBStyle -> Inherit Toolbar Height %s", status);
-					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+					bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+					SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 				}
 				else if (!_stricmp(token2, "Transparency"))
 				{
@@ -723,7 +731,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 						(transparency) ? strcpy(status, "enabled") : strcpy(status, "disabled");
 						sprintf(msg, "BBStyle -> Transparency %s", status);
-						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+						bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+						SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 					}
 				}
 				else if (!_stricmp(token2, "About"))
@@ -1070,7 +1079,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (middleButtonDownNC)
 			{
 				SendMessage(hwndBlackbox, BB_EDITFILE, 0, 0);
-				SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Edit Style");
+				SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBStyle -> Edit Style");
 				middleButtonDownNC = false;
 			}			
 		}
@@ -1081,7 +1090,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (middleButtonDown)
 			{
 				SendMessage(hwndBlackbox, BB_EDITFILE, 0, 0);
-				SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Edit Style");
+				SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBStyle -> Edit Style");
 				middleButtonDown = false;
 			}			
 		}
@@ -1219,7 +1228,9 @@ void ToggleSlit()
 	{
 		(inSlit) ? strcpy(status, "enabled") : strcpy(status, "disabled");
 		sprintf(msg, "BBStyle -> Use Slit %s", status);
-		SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)msg);
+		WCHAR wmsg[MAX_LINE_LENGTH];
+		bbMB2WC(msg, wmsg, MAX_LINE_LENGTH);
+		SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)wmsg);
 		WriteBool(rcpath, "bbstyle.useSlit:", inSlit);
 	}
 }
@@ -1458,7 +1469,7 @@ void SetStyle()
 	{
 		// Set new style...
 		SendMessage(hwndBlackbox, BB_SETSTYLE, 0, (LPARAM)styleToSet);
-		SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)"BBStyle -> Apply random style");
+		SendMessage(hwndBlackbox, BB_SETTOOLBARLABEL, 0, (LPARAM)L"BBStyle -> Apply random style");
 		if (timer)
 			SetTimer(hwndPlugin, 1, changeTime, (TIMERPROC)NULL);
 	}
