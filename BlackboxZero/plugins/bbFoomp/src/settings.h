@@ -17,7 +17,7 @@ struct Settings
   // paths
   char rcpath[MAX_PATH];
   char FooPath[MAX_LINE_LENGTH];
-  char NoInfoText[MAX_LINE_LENGTH];
+  wchar_t NoInfoText[MAX_LINE_LENGTH];
 
   void ReadRCSettings ();
   void WriteRCSettings ();

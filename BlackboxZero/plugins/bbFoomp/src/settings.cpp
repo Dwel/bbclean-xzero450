@@ -104,7 +104,9 @@ void Settings::ReadRCSettings ()
 #else
 	_tcscpy(FooPath, ReadString(rcpath, "bbfoomp.foobar.path:", "C:\\Progra~1\\foobar2000\\foobar2000.exe"));
 #endif
-  _tcscpy(NoInfoText, ReadString(rcpath, "bbfoomp.DefaultText:", "Nothing is playing"));
+	const char * def_text = ReadString(rcpath, "bbfoomp.DefaultText:", "Nothing is playing");
+
+	bbMB2WC(def_text, NoInfoText, MAX_LINE_LENGTH);
 	FooWidth = ReadInt(rcpath, "bbfoomp.foowidth:" , 200);
 	height = ReadInt(rcpath, "bbfoomp.height:", 20);
 	FooMode = ReadInt(rcpath, "bbfoomp.displaytype:", 2);

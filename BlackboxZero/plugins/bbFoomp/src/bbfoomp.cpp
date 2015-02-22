@@ -4,6 +4,7 @@
 #include <tchar.h>
 #include <string>
 #include <vector>
+#include <blackbox/DrawText.h>
 
 #define BBFOOMP_UPDATE_TIMER 1
 #define BB_BRINGTOFRONT 10504
@@ -51,14 +52,14 @@ int DisplayMode;	// If 1 = display mode, then mode = title; if 2 = display mode,
 // Title [DisplayMode] variables, classes, etc.
 struct Finfo
 {
-	TCHAR song_title[MAX_LINE_LENGTH]; // UNICODE
+	wchar_t song_title[MAX_LINE_LENGTH]; // UNICODE
 	HWND FooHandle;
 	void update ();
 };
 Finfo * FooClass = 0;
-TCHAR CurrentSong[MAX_LINE_LENGTH];
-TCHAR DisplayedSong[MAX_LINE_LENGTH];
-TCHAR jAmpScrollFiller[256] = TEXT("		 ");
+wchar_t CurrentSong[MAX_LINE_LENGTH];
+wchar_t DisplayedSong[MAX_LINE_LENGTH];
+wchar_t jAmpScrollFiller[256] = L"    ";
 bool foobar_v9 = false; // Different commandline syntax needed for newer versions.
 bool SlitExists = false;
 
@@ -376,7 +377,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				//====================
 				FooClass->update(); // make sure the current data is updated
-				_tcscpy(CurrentSong, FooClass->song_title);
+				wcscpy_s(CurrentSong, FooClass->song_title);
 				// ===== End of grabbing name and handle, time to draw the text.
 
 				// Song title scrolling if songtitle > X characters as it will be clipped.
@@ -386,7 +387,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					if (getSettings().FooAlign == false) r.left = r.left;
 				}
 				static int txtRefX = r.left;
-				TCHAR temp[512] = TEXT("");
+				wchar_t temp[512] = L"";
 				int textWidth;
 				int ret;
 				textWidth = r.right;
@@ -397,22 +398,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				r.top = getSettings().height / 2 - 5;
 				r.bottom = r.bottom + 2;
 
-				_tcscat(temp, FooClass->song_title); //UNICODE
-				_tcscat(temp, jAmpScrollFiller); //UNICODE
+				wcscat(temp, FooClass->song_title); //UNICODE
+				wcscat(temp, jAmpScrollFiller); //UNICODE
 
 				HFONT font =  CreateStyleFont((StyleItem *)GetSettingPtr(SN_TOOLBAR));
 				HGDIOBJ oldfont = SelectObject(buf, font);
 				SetBkMode(buf, TRANSPARENT);
+				StyleItem * lbl = (StyleItem *)GetSettingPtr(SN_TOOLBARLABEL);
+				//BBDrawTextAlt(hdc, text, -1, &s, DT_LEFT | DT_EXPANDTABS | DT_CALCRECT, pSI);
 
-				ret = DrawText(buf, temp, _tcslen(temp), &r2, DT_SINGLELINE | DT_CALCRECT); //UNICODE
+				ret = BBDrawTextAltW(buf, temp, wcslen(temp), &r2, DT_SINGLELINE | DT_CALCRECT, lbl);
+				//	BBDrawTextAltW(buf, temp, _tcslen(temp), &r2, DT_SINGLELINE | DT_CALCRECT); //UNICODE
 
 				// Scroll the text if needed
-				if ( (r2.right - r2.left + 118) > textWidth && _tcslen(FooClass->song_title) > 30)
+				if ( (r2.right - r2.left + 118) > textWidth && wcslen(FooClass->song_title) > 30)
 				{
 					SetTextAlign(buf, 0);
 					// Title text repeater...
-					_tcscat(temp, FooClass->song_title);
-					_tcscat(temp, jAmpScrollFiller);
+					wcscat_s(temp, FooClass->song_title);
+					wcscat_s(temp, jAmpScrollFiller);
 
 					// The actual scroller and the sliding scroll pointer!
 					if (DisplayMode == 1 && txtRefX <= (r2.left - (r2.right - 10))) txtRefX = r.left;
@@ -430,10 +434,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						srect.right  = r.right; // No weird shadow artifacting on the right hand side.
 						srect.top    = r.top + 1;
 						SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
-						ExtTextOut(buf, (txtRefX + 1), (srect.top), ETO_CLIPPED, &srect, temp, _tcslen(temp), NULL);
+						ExtTextOutW(buf, (txtRefX + 1), (srect.top), ETO_CLIPPED, &srect, temp, wcslen(temp), NULL);
 					}
 					SetTextColor(buf, getStyles().InnerStyle.TextColor);
-					ExtTextOut(buf, (txtRefX), (r.top), ETO_CLIPPED, &r, temp, _tcslen(temp), NULL);
+					ExtTextOutW(buf, (txtRefX), (r.top), ETO_CLIPPED, &r, temp, wcslen(temp), NULL);
 				}
 				else // Normally draw the text since it doesn't need to scroll/get clipped.
 				{
@@ -448,10 +452,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						srect.right  = r.right + 1;
 						srect.top    = r.top + 1;
 						SetTextColor(buf, GetShadowColor(getStyles().InnerStyle));
-						DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
+						StyleItem * lbl = (StyleItem *)GetSettingPtr(SN_TOOLBARLABEL);
+
+						BBDrawTextAltW(buf, FooClass->song_title, wcslen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX, lbl);
+						//DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
 					}
 					SetTextColor(buf, getStyles().InnerStyle.TextColor);
-					DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
+					//DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
+					BBDrawTextAltW(buf, FooClass->song_title, wcslen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX, lbl);
 				}
 
 				DeleteObject(SelectObject(buf, oldfont));
@@ -981,7 +989,7 @@ void UpdateTitle ()
 	if (CurrentSong != DisplayedSong || UpdateDisplay)
 	{
 		// Setting the CurrentSong as the Displayed song for the next Update.
-		_tcscpy(DisplayedSong, CurrentSong);
+		wcscpy(DisplayedSong, CurrentSong);
 		UpdateDisplay = true;
 	}
 
@@ -1189,35 +1197,35 @@ void Finfo::update ()
 	// and plugins such as Foo_UI Columns change the handle name! So we have to figure out
 	// if UI Columns is being used and then re-grab the handle. Here goes!
 	// *** NOTE: Current support for foobar 9.1 and Columns UI 0.1.3 beta 1v5
-	_tcscpy(song_title, TEXT(""));
+	wcscpy(song_title, L"");
 	foobar_v9 = false;
 	if (FooHandle = FindWindow(TEXT("{DA7CD0DE-1602-45e6-89A1-C2CA151E008E}"), NULL)) // Foobar 8.3
 	{
-		GetWindowText(FooHandle, song_title, sizeof(song_title));
-		if (_stricmp(song_title, "uninteresting")==0) // It seems Columns UI 1.2 is loaded for 8.3
+		GetWindowTextW(FooHandle, song_title, sizeof(song_title) / sizeof(*song_title));
+		if (wcsicmp(song_title, L"uninteresting")==0) // It seems Columns UI 1.2 is loaded for 8.3
 		{
 			FooHandle = FindWindow(TEXT("{E7076D1C-A7BF-4f39-B771-BCBE88F2A2A8}"), NULL);
-			GetWindowText(FooHandle, song_title, sizeof(song_title));
+			GetWindowTextW(FooHandle, song_title, sizeof(song_title) / sizeof(*song_title));
 		}
 	}
 	else if (FooHandle = FindWindow(TEXT("{DA7CD0DE-1602-45e6-89A1-C2CA151E008E}/1"), NULL)) // Plain foobar 9.1
 	{
 		foobar_v9 = true;
-		GetWindowText(FooHandle, song_title, sizeof(song_title));
-		if (char *c = strstr(song_title,"	[foobar2000 v0.9.") ) *c = 0; // Cut off trailing text
+		GetWindowTextW(FooHandle, song_title, sizeof(song_title) / sizeof(*song_title));
+		if (wchar_t *c = wcsstr(song_title,L"	[foobar2000 v0.9.") ) *c = L'\0'; // Cut off trailing text
 	}
 	else if (FooHandle = FindWindow(TEXT("{E7076D1C-A7BF-4f39-B771-BCBE88F2A2A8}"), NULL)) // Foobar 9.1 with Coloumns UI
 	{
 		foobar_v9 = true;
-		GetWindowText(FooHandle, song_title, sizeof(song_title));
+		GetWindowTextW(FooHandle, song_title, sizeof(song_title) / sizeof(*song_title));
 	}
 	else if (FooHandle = FindWindowStart(TEXT("[foobar2000 ")))
 	{
 		//foobar_v10 = true;
-		GetWindowText(FooHandle, song_title, sizeof(song_title));
+		GetWindowTextW(FooHandle, song_title, sizeof(song_title) / sizeof(*song_title));
 	}
 	else // If there is no handle (foobar is not on), then display the NoInfoText var.
-		_tcscpy(song_title, getSettings().NoInfoText);
+		wcscpy(song_title, getSettings().NoInfoText);
 }
 
 
