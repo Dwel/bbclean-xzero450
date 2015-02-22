@@ -407,7 +407,7 @@ void MenuItem::Paint(HDC hDC)
 
 //===========================================================================
 
-void SeparatorItem::Measure(HDC hDC, SIZE *size)
+void SeparatorItem::Measure(HDC hDC, SIZE *size, StyleItem * pSI)
 {
     size->cy = 0;
     size->cx = 0;

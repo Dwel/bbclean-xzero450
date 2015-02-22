@@ -483,7 +483,7 @@ class SeparatorItem : public MenuItem
 {
 public:
     SeparatorItem() : MenuItem("") {}
-    void Measure(HDC hDC, SIZE *size);
+	virtual void Measure(HDC hDC, SIZE *size, StyleItem * pSI);
     void Paint(HDC hDC);
 };
 
