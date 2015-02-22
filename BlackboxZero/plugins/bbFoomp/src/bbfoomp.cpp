@@ -405,10 +405,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				HGDIOBJ oldfont = SelectObject(buf, font);
 				SetBkMode(buf, TRANSPARENT);
 				StyleItem * lbl = (StyleItem *)GetSettingPtr(SN_TOOLBARLABEL);
-				//BBDrawTextAlt(hdc, text, -1, &s, DT_LEFT | DT_EXPANDTABS | DT_CALCRECT, pSI);
-
 				ret = BBDrawTextAltW(buf, temp, wcslen(temp), &r2, DT_SINGLELINE | DT_CALCRECT, lbl);
-				//	BBDrawTextAltW(buf, temp, _tcslen(temp), &r2, DT_SINGLELINE | DT_CALCRECT); //UNICODE
 
 				// Scroll the text if needed
 				if ( (r2.right - r2.left + 118) > textWidth && wcslen(FooClass->song_title) > 30)
@@ -455,10 +452,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 						StyleItem * lbl = (StyleItem *)GetSettingPtr(SN_TOOLBARLABEL);
 
 						BBDrawTextAltW(buf, FooClass->song_title, wcslen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX, lbl);
-						//DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &srect, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
 					}
 					SetTextColor(buf, getStyles().InnerStyle.TextColor);
-					//DrawText(buf, FooClass->song_title, _tcslen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX);
 					BBDrawTextAltW(buf, FooClass->song_title, wcslen(FooClass->song_title), &r, DT_CENTER | DT_SINGLELINE | DT_NOPREFIX, lbl);
 				}
 
