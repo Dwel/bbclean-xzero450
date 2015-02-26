@@ -2644,7 +2644,7 @@ MenuItem* MakeMenuInsertPath (Menu *ParentMenu, const char* Title, const char* p
 {
  	MenuItem * items = NULL;
 	pidl_node * p = get_folder_pidl_list(path);
-	ParentMenu->AddFolderContents(p, NULL);
+	ParentMenu->AddFolderContents(p, Cmd);
 	delete_pidl_list(&p);
 	return NULL;
 }
