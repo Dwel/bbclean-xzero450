@@ -159,6 +159,7 @@ add_subdirectory(plugins/bbIME)
 #add_subdirectory(plugins/bbLua)
 add_subdirectory(plugins/bbSetCursors)
 add_subdirectory(plugins/bbTaskSwitch)
+add_subdirectory(plugins/bbTcl)
 
 # NOTE: following plugins are not yet mingw compatible
 if (NOT MINGW)
