@@ -1,3 +1,6 @@
 [submodule "DbgToolkit"]
 	path = BlackboxZero/3rd_party/DbgToolkit
 	url = https://github.com/mojmir-svoboda/DbgToolkit.git
+[submodule "BlackboxZero/plugins/bbTcl"]
+	path = BlackboxZero/plugins/bbTcl
+	url = https://github.com/mojmir-svoboda/tcl-bb
