@@ -229,6 +229,8 @@ SkipXP32_3:
 	File /r "vs_xp_32\plugins\bbWorkspaceWheel\"
   SetOutPath $INSTDIR\plugins\SystemBarEx
 	File /r "vs_xp_32\plugins\SystemBarEx\"
+  SetOutPath $INSTDIR\plugins\bbTcl
+	File /r "vs_xp_32\plugins\bbTcl\"
 
 SkipXP32_4:
 
@@ -347,6 +349,8 @@ SkipXP64_3:
 	File /r "vs_xp_64\plugins\bbWorkspaceWheel\"
   SetOutPath $INSTDIR\plugins\SystemBarEx
 	File /r "vs_xp_64\plugins\SystemBarEx\"
+  SetOutPath $INSTDIR\plugins\bbTcl
+	File /r "vs_xp_64\plugins\bbTcl\"
 
 SkipXP64_4:
 
@@ -467,6 +471,8 @@ SkipVista32_3:
 	File /r "vs_vista_32\plugins\bbWorkspaceWheel\"
   SetOutPath $INSTDIR\plugins\SystemBarEx
 	File /r "vs_vista_32\plugins\SystemBarEx\"
+  SetOutPath $INSTDIR\plugins\bbTcl
+	File /r "vs_vista_32\plugins\bbTcl\"
 
 SkipVista32_4:
 
@@ -587,6 +593,8 @@ SkipVista64_3:
 	File /r "vs_vista_64\plugins\bbWorkspaceWheel\"
   SetOutPath $INSTDIR\plugins\SystemBarEx
 	File /r "vs_vista_64\plugins\SystemBarEx\"
+  SetOutPath $INSTDIR\plugins\bbTcl
+	File /r "vs_vista_64\plugins\bbTcl\"
 
 SkipVista64_4:
 
