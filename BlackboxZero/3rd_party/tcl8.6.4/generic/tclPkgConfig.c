@@ -66,8 +66,30 @@
 
 #ifdef TCL_CFG_DO64BIT
 #  define CFG_64		"1"
+#define CFG_INSTALL_LIBDIR "C:\\Program Files\\Tcl\\lib"
+#define CFG_INSTALL_BINDIR "C:\\Program Files\\Tcl\\bin"
+#define CFG_INSTALL_SCRDIR "C:\\Program Files\\Tcl\\lib\\tcl8.6"
+#define CFG_INSTALL_INCDIR "C:\\Program Files\\Tcl\\include"
+#define CFG_INSTALL_DOCDIR "C:\\Program Files\\Tcl\\doc"
+#define CFG_RUNTIME_LIBDIR "C:\\Program Files\\Tcl\\lib"
+#define CFG_RUNTIME_BINDIR "C:\\Program Files\\Tcl\\bin"
+#define CFG_RUNTIME_SCRDIR "C:\\Program Files\\Tcl\\lib\\tcl8.6"
+#define CFG_RUNTIME_INCDIR "C:\\Program Files\\Tcl\\include"
+#define CFG_RUNTIME_DOCDIR "C:\\Program Files\\Tcl\\doc"
+
 #else
 #  define CFG_64		"0"
+
+#define CFG_INSTALL_LIBDIR "C:\\Program Files (x86)\\Tcl\\lib"
+#define CFG_INSTALL_BINDIR "C:\\Program Files (x86)\\Tcl\\bin"
+#define CFG_INSTALL_SCRDIR "C:\\Program Files (x86)\\Tcl\\lib\\tcl8.6"
+#define CFG_INSTALL_INCDIR "C:\\Program Files (x86)\\Tcl\\include"
+#define CFG_INSTALL_DOCDIR "C:\\Program Files (x86)\\Tcl\\doc"
+#define CFG_RUNTIME_LIBDIR "C:\\Program Files (x86)\\Tcl\\lib"
+#define CFG_RUNTIME_BINDIR "C:\\Program Files (x86)\\Tcl\\bin"
+#define CFG_RUNTIME_SCRDIR "C:\\Program Files (x86)\\Tcl\\lib\\tcl8.6"
+#define CFG_RUNTIME_INCDIR "C:\\Program Files (x86)\\Tcl\\include"
+#define CFG_RUNTIME_DOCDIR "C:\\Program Files (x86)\\Tcl\\doc"
 #endif
 
 #ifndef NDEBUG
