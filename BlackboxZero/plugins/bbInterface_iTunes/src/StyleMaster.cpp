@@ -108,7 +108,8 @@ int style_startup()
 	StyleItem * B = (StyleItem *)GetSettingPtr(SN_TOOLBARBUTTON);
 	StyleItem * P = (StyleItem *)GetSettingPtr(SN_TOOLBARBUTTONP);
 	StyleItem * X;
-	if(BBVersion == BBVERSION_LEAN){
+	if (BBP_is_bbversion_lean())
+	{
 		T->ShadowX = T->ShadowY = 1;
 		W->ShadowX = W->ShadowY = 1;
 		L->ShadowX = L->ShadowY = 1;

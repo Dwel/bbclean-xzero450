@@ -365,10 +365,10 @@ void make_menuitem_str(Menu *m, const char *title, const char* cmd, const char *
 {
 	char buffer[BBI_MAX_LINE_LENGTH];
 
-	if (BBVERSION_LEAN == BBVersion)
+	if (BBP_is_bbversion_lean())
 		sprintf(buffer, "%s \"%%s\"", cmd), cmd = buffer;
 
-	if (BBVERSION_09X == BBVersion)
+	if (BBP_is_bbversion_09x())
 		sprintf(buffer, "\"%s\"", init_string), init_string = buffer;
 
 	MakeMenuItemString(m, title, cmd, init_string);
@@ -376,7 +376,7 @@ void make_menuitem_str(Menu *m, const char *title, const char* cmd, const char *
 
 void make_menuitem_int(Menu *m, const char *title, const char* cmd, int val, int minval, int maxval)
 {
-	if (BBVERSION_09X == BBVersion)
+	if (BBP_is_bbversion_09x())
 	{
 		char buffer[20]; sprintf(buffer, "%d", val);
 		MakeMenuItemString(m, title, cmd, buffer);

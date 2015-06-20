@@ -271,14 +271,7 @@ int beginPlugin(HINSTANCE hMainInstance)
 	plugin_hwnd_blackbox = GetBBWnd();
 
 	const char *bbv = GetBBVersion();
-	
-	// Mojmir: do not know how to define _CLEAN
-	/*if (NULL != strstr(bbv, "Clean")) BBVersion = BBVERSION_CLEAN;
-	else*/
-	if (0 == _memicmp(bbv, "bblean", 6)) BBVersion = BBVERSION_LEAN;
-	else
-	if (0 == _memicmp(bbv, "bb", 2)) BBVersion = BBVERSION_XOB;
-	else BBVersion = BBVERSION_09X;
+	BBVersion = BBP_bbversion();
 
 	//Deal with os info
 	plugin_getosinfo();

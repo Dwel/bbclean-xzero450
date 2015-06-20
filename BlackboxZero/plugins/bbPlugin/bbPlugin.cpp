@@ -346,7 +346,7 @@ struct _menuitemint : _menuitem
     }
     MenuItem* _make_item(Menu *pMenu)
     {
-        if (BBVERSION_09X) {
+        if (BBP_is_bbversion_09x) {
             char buffer[20]; sprintf(buffer, "%d", initval);
             return MakeMenuItemString(pMenu, text, menu->addid(cmd), buffer);
         } else {
@@ -1154,7 +1154,7 @@ bool BBP_get_rcpath(char *rcpath, HINSTANCE hInstance, const char *rcfile)
 
 void BBP_edit_file(const char *path)
 {
-    if (BBVERSION_LEAN) {
+    if (BBP_is_bbversion_lean) {
         SendMessage(GetBBWnd(), BB_EDITFILE, (WPARAM)-1, (LPARAM)path);
     } else {
         char szTemp[MAX_PATH];
@@ -1597,7 +1597,7 @@ LRESULT CALLBACK BBP_WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPar
             }
 
             if (PI->auto_shown) {
-                if (PI->suspend_autohide && BBVERSION_LEAN)
+                if (PI->suspend_autohide && BBP_is_bbversion_lean)
                     goto pass_result;
                 PI->auto_shown = false;
                 BBP_set_window_modes(PI);

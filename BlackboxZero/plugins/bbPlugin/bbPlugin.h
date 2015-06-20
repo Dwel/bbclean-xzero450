@@ -157,10 +157,6 @@ extern "C" {
 #define BBP_DLL_EXPORT
 #endif
 
-#define BBVERSION_LEAN (BBP_bbversion()>=2)
-#define BBVERSION_XOB (BBP_bbversion()==1)
-#define BBVERSION_09X (BBP_bbversion()==0)
-
 #define AUTOHIDE_TIMER 1
 
 BBP_DLL_EXPORT int  BBP_Init_Plugin(plugin_info *PI);
@@ -200,6 +196,10 @@ BBP_DLL_EXPORT int GetOSVersion(void);
 
 #define BBP_clear(_struct,_first)\
     memset(&_first, 0, sizeof(*_struct)-((char*)&_struct->_first-(char*)_struct))
+
+inline int BBP_is_bbversion_lean() { return BBP_bbversion() >= 2; }
+inline int BBP_is_bbversion_xob() { return BBP_bbversion() == 1; }
+inline int BBP_is_bbversion_09x() { return BBP_bbversion() == 0; }
 
 //===========================================================================
 typedef struct n_menu n_menu;

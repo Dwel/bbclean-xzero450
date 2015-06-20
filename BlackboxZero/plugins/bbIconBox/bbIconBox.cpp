@@ -1896,7 +1896,7 @@ void icon_box::register_msg(bool set)
     UINT bb = set ? BB_REGISTERMESSAGE : BB_UNREGISTERMESSAGE;
     SendMessage(BBhwnd, bb, (WPARAM)hwnd, (LPARAM)msg_common);
     if (MODE_TASK == my_Folder.mode || MODE_PAGER == my_Folder.mode)
-        SendMessage(BBhwnd, bb, (WPARAM)hwnd, (LPARAM)(BBVERSION_XOB?msg_task2:msg_task1));
+        SendMessage(BBhwnd, bb, (WPARAM)hwnd, (LPARAM)(BBP_is_bbversion_xob() ? msg_task2 : msg_task1));
     if (MODE_TRAY == my_Folder.mode)
         SendMessage(BBhwnd, bb, (WPARAM)hwnd, (LPARAM)msg_tray);
 
