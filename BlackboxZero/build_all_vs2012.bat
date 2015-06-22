@@ -3,7 +3,7 @@ rem this file is intended for usage from cmd.exe or from explorer (clicking on i
 
 pushd %~dp0
 
-set PATH=C:\Program Files (x86)\CMake 2.8\bin;%PATH%
+set PATH=C:\Program Files (x86)\CMake\bin;%PATH%
 
 set INSTDIR=c:/_builds/vs_vista_64
 mkdir _projects.vs11.64
