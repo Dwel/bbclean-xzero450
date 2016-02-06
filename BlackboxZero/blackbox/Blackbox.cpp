@@ -1138,7 +1138,7 @@ void about_style ()
 	TRACE_SCOPE(trace::e_Debug, trace::CTX_BBCore);
 	const char * cp = stylePath(NULL);
 	BBMessageBox(MB_OK,
-		"#"BBAPPNAME" - %s#"
+		"#" BBAPPNAME " - %s#"
 		"%s"
 		"\n%s %s"
 		"\n%s"

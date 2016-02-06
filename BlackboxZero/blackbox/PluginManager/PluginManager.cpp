@@ -596,7 +596,7 @@ void PluginManager_aboutPlugins(void)
     }
     
     BBMessageBox(MB_OK,
-        "#"BBAPPNAME" - %s#%s\t",
+        "#" BBAPPNAME " - %s#%s\t",
         NLS2("$About_Plugins_Title$", "About loaded plugins"),
         x ? msg : NLS1("No plugins loaded.")
         );

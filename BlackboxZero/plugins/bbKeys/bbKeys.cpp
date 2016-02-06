@@ -22,7 +22,7 @@
 #include "BBApi.h"
 #include "bbversion.h"
 
-const char szVersion     [] = "bbKeys "BBLEAN_VERSION;
+const char szVersion     [] = "bbKeys " BBLEAN_VERSION;
 const char szAppName     [] = "bbKeys";
 const char szInfoVersion [] = BBLEAN_VERSION;
 const char szInfoAuthor  [] = "grischka";
