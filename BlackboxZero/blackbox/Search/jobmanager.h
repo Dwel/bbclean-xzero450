@@ -75,7 +75,7 @@ struct JobManager
 		for (size_t i = 0; i < n; ++i)
 		{
 			m_workers.push_back(new JobWorkerThread(*this));
-			m_pool.Create(*m_workers[i]);
+			m_pool.Create(m_workers[i]);
 		}
 	}
 

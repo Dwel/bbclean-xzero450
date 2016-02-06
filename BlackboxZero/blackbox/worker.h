@@ -17,9 +17,10 @@ struct ThreadPool
 	size_t size () const { return m_threads.size(); }
 	void clear () { m_threads.clear(); }
 
-	void Create (Runnable & runnable)
+	void Create (Runnable * runnable)
 	{
-		m_threads.push_back(std::thread(&Runnable::Run, std::ref(runnable)));
+		std::thread t(&Runnable::Run, runnable);
+		m_threads.push_back(std::move(t));
 	}
 
 	void WaitForTerminate ()
